@@ -1,0 +1,566 @@
+[
+  {
+    "id": "res-1",
+    "property": "narjis-gardens",
+    "name": "Salman Alharbi",
+    "email": "salman.alharbi@example.com",
+    "unit": null,
+    "stage": "prospect",
+    "corporateAccount": null,
+    "since": "2026-06-19T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": false
+      },
+      {
+        "item": "Unit orientation done",
+        "done": false
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  },
+  {
+    "id": "res-2",
+    "property": "narjis-gardens",
+    "name": "Lina Alqahtani",
+    "email": "lina.alqahtani@example.com",
+    "unit": "102",
+    "stage": "onboarding",
+    "corporateAccount": "Crescent Partners",
+    "since": "2026-06-02T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": false
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-3",
+    "property": "narjis-gardens",
+    "name": "Omar Aldossary",
+    "email": "omar.aldossary@example.com",
+    "unit": "104",
+    "stage": "active",
+    "corporateAccount": "Northstar Consulting",
+    "since": "2026-05-16T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-4",
+    "property": "narjis-gardens",
+    "name": "Reem Alshehri",
+    "email": "reem.alshehri@example.com",
+    "unit": "105",
+    "stage": "active",
+    "corporateAccount": "Deema Tech",
+    "since": "2026-04-29T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  },
+  {
+    "id": "res-5",
+    "property": "narjis-gardens",
+    "name": "Faisal Alghamdi",
+    "email": "faisal.alghamdi@example.com",
+    "unit": "106",
+    "stage": "active",
+    "corporateAccount": "Crescent Partners",
+    "since": "2026-04-12T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-6",
+    "property": "narjis-gardens",
+    "name": "Nora Alotaibi",
+    "email": "nora.alotaibi@example.com",
+    "unit": "108",
+    "stage": "renewal",
+    "corporateAccount": "Northstar Consulting",
+    "since": "2026-03-26T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-7",
+    "property": "narjis-gardens",
+    "name": "Khalid Almutairi",
+    "email": "khalid.almutairi@example.com",
+    "unit": null,
+    "stage": "departed",
+    "corporateAccount": null,
+    "since": "2026-03-09T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  },
+  {
+    "id": "res-8",
+    "property": "narjis-gardens",
+    "name": "Dana Alzahrani",
+    "email": "dana.alzahrani@example.com",
+    "unit": null,
+    "stage": "prospect",
+    "corporateAccount": null,
+    "since": "2026-02-20T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-9",
+    "property": "narjis-gardens",
+    "name": "Yousef Alharbi",
+    "email": "yousef.alharbi@example.com",
+    "unit": "203",
+    "stage": "onboarding",
+    "corporateAccount": "Northstar Consulting",
+    "since": "2026-02-03T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": false
+      },
+      {
+        "item": "Unit orientation done",
+        "done": false
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-10",
+    "property": "narjis-gardens",
+    "name": "Aisha Alqahtani",
+    "email": "aisha.alqahtani@example.com",
+    "unit": "205",
+    "stage": "active",
+    "corporateAccount": "Crescent Partners",
+    "since": "2026-01-17T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  },
+  {
+    "id": "res-11",
+    "property": "narjis-gardens",
+    "name": "Tariq Aldossary",
+    "email": "tariq.aldossary@example.com",
+    "unit": "206",
+    "stage": "active",
+    "corporateAccount": "Meridian Energy",
+    "since": "2025-12-31T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-12",
+    "property": "narjis-gardens",
+    "name": "Maha Alshehri",
+    "email": "maha.alshehri@example.com",
+    "unit": "207",
+    "stage": "active",
+    "corporateAccount": "Northstar Consulting",
+    "since": "2025-12-14T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-13",
+    "property": "narjis-gardens",
+    "name": "Sami Alghamdi",
+    "email": "sami.alghamdi@example.com",
+    "unit": "209",
+    "stage": "renewal",
+    "corporateAccount": "Crescent Partners",
+    "since": "2025-11-27T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": true
+      },
+      {
+        "item": "30-day check-in held",
+        "done": true
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  },
+  {
+    "id": "res-14",
+    "property": "narjis-gardens",
+    "name": "Hala Alotaibi",
+    "email": "hala.alotaibi@example.com",
+    "unit": null,
+    "stage": "departed",
+    "corporateAccount": null,
+    "since": "2025-11-10T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": false
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-15",
+    "property": "narjis-gardens",
+    "name": "Ziad Almutairi",
+    "email": "ziad.almutairi@example.com",
+    "unit": null,
+    "stage": "prospect",
+    "corporateAccount": null,
+    "since": "2025-10-24T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": false
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": []
+  },
+  {
+    "id": "res-16",
+    "property": "narjis-gardens",
+    "name": "Amal Alzahrani",
+    "email": "amal.alzahrani@example.com",
+    "unit": "303",
+    "stage": "onboarding",
+    "corporateAccount": "Deema Tech",
+    "since": "2025-10-07T07:01:29.155Z",
+    "milestones": [
+      {
+        "item": "Welcome call completed",
+        "done": true
+      },
+      {
+        "item": "Unit orientation done",
+        "done": true
+      },
+      {
+        "item": "Building app activated",
+        "done": true
+      },
+      {
+        "item": "Community intro shared",
+        "done": false
+      },
+      {
+        "item": "30-day check-in held",
+        "done": false
+      }
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T07:01:29.155Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers late housekeeping slot."
+      }
+    ]
+  }
+]

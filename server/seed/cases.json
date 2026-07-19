@@ -1,0 +1,54 @@
+[
+  {
+    "id": "case-1",
+    "property": "narjis-gardens",
+    "title": "Gym access cards failing",
+    "category": "facilities",
+    "priority": "high",
+    "status": "open",
+    "createdAt": "2026-07-19T01:01:29.155Z",
+    "createdBy": "karim.saleh@pulse.sa",
+    "assignee": null,
+    "linkedFeedback": null,
+    "history": []
+  },
+  {
+    "id": "case-2",
+    "property": "narjis-gardens",
+    "title": "Wi-Fi drops on floor 2",
+    "category": "it",
+    "priority": "normal",
+    "status": "in-progress",
+    "createdAt": "2026-07-18T01:01:29.155Z",
+    "createdBy": "karim.saleh@pulse.sa",
+    "assignee": null,
+    "linkedFeedback": null,
+    "history": []
+  },
+  {
+    "id": "case-3",
+    "property": "narjis-gardens",
+    "title": "Parking permit renewal batch",
+    "category": "admin",
+    "priority": "low",
+    "status": "open",
+    "createdAt": "2026-07-17T05:01:29.155Z",
+    "createdBy": "karim.saleh@pulse.sa",
+    "assignee": null,
+    "linkedFeedback": null,
+    "history": []
+  },
+  {
+    "id": "case-4",
+    "property": "narjis-gardens",
+    "title": "Loading-dock camera offline",
+    "category": "security",
+    "priority": "normal",
+    "status": "open",
+    "createdAt": "2026-07-18T19:01:29.155Z",
+    "createdBy": "karim.saleh@pulse.sa",
+    "assignee": null,
+    "linkedFeedback": null,
+    "history": []
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "name": "PULSE — Resident Experience Co.",
+  "short_name": "PULSE",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3EBE0",
+  "theme_color": "#4A1620",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

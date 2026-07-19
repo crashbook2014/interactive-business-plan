@@ -1,0 +1,69 @@
+{
+  "narjis-gardens": {
+    "dataMode": {
+      "occupancy": "live-sheet-stub",
+      "financials": "sample",
+      "satisfaction": "sample"
+    },
+    "csat": 4.3,
+    "nps": 41,
+    "retention90": 0.86,
+    "revenue": 1265000,
+    "cost": 742000,
+    "reserve": 190000,
+    "noi": 523000,
+    "bufferCash": 465000,
+    "adr": 1050,
+    "b2bRevenueConcentration": 0.71,
+    "b2bAccounts": [
+      {
+        "name": "Meridian Energy",
+        "units": 9,
+        "share": 0.31
+      },
+      {
+        "name": "Northstar Consulting",
+        "units": 7,
+        "share": 0.22
+      },
+      {
+        "name": "Deema Tech",
+        "units": 5,
+        "share": 0.11
+      },
+      {
+        "name": "Crescent Partners",
+        "units": 4,
+        "share": 0.07
+      }
+    ]
+  },
+  "olaya-nine": {
+    "dataMode": {
+      "occupancy": "awaiting-data",
+      "financials": "awaiting-data",
+      "satisfaction": "awaiting-data"
+    }
+  },
+  "hittin-hills": {
+    "dataMode": {
+      "occupancy": "awaiting-data",
+      "financials": "awaiting-data",
+      "satisfaction": "awaiting-data"
+    }
+  },
+  "yasmin-grove": {
+    "dataMode": {
+      "occupancy": "awaiting-data",
+      "financials": "awaiting-data",
+      "satisfaction": "awaiting-data"
+    }
+  },
+  "malqa-oasis": {
+    "dataMode": {
+      "occupancy": "awaiting-data",
+      "financials": "awaiting-data",
+      "satisfaction": "awaiting-data"
+    }
+  }
+}

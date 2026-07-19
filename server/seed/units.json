@@ -1,0 +1,322 @@
+[
+  {
+    "id": "101",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "102",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "103",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "Studio",
+    "status": "vacant-ready",
+    "corporateAccount": null
+  },
+  {
+    "id": "104",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "105",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "106",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "107",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "Studio",
+    "status": "arriving",
+    "corporateAccount": null
+  },
+  {
+    "id": "108",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "109",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "110",
+    "property": "narjis-gardens",
+    "floor": 1,
+    "type": "2BR",
+    "status": "vacant-dirty",
+    "corporateAccount": null
+  },
+  {
+    "id": "201",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "2BR",
+    "status": "vacant-dirty",
+    "corporateAccount": null
+  },
+  {
+    "id": "202",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "203",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "204",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "1BR",
+    "status": "out-of-order",
+    "corporateAccount": null
+  },
+  {
+    "id": "205",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "206",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "207",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "208",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "1BR",
+    "status": "arriving",
+    "corporateAccount": null
+  },
+  {
+    "id": "209",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "210",
+    "property": "narjis-gardens",
+    "floor": 2,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "301",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "302",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "1BR",
+    "status": "vacant-dirty",
+    "corporateAccount": null
+  },
+  {
+    "id": "303",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "304",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "305",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "Studio",
+    "status": "vacant-ready",
+    "corporateAccount": null
+  },
+  {
+    "id": "306",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "307",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "308",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "309",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "Studio",
+    "status": "arriving",
+    "corporateAccount": null
+  },
+  {
+    "id": "310",
+    "property": "narjis-gardens",
+    "floor": 3,
+    "type": "1BR",
+    "status": "departing",
+    "corporateAccount": null
+  },
+  {
+    "id": "401",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "402",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Deema Tech"
+  },
+  {
+    "id": "403",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "2BR",
+    "status": "vacant-dirty",
+    "corporateAccount": null
+  },
+  {
+    "id": "404",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "405",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "406",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "vacant-ready",
+    "corporateAccount": null
+  },
+  {
+    "id": "407",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "2BR",
+    "status": "occupied",
+    "corporateAccount": "Crescent Partners"
+  },
+  {
+    "id": "408",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "Studio",
+    "status": "occupied",
+    "corporateAccount": "Meridian Energy"
+  },
+  {
+    "id": "409",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "occupied",
+    "corporateAccount": "Northstar Consulting"
+  },
+  {
+    "id": "410",
+    "property": "narjis-gardens",
+    "floor": 4,
+    "type": "1BR",
+    "status": "arriving",
+    "corporateAccount": null
+  }
+]

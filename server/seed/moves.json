@@ -1,0 +1,526 @@
+[
+  {
+    "id": "mv-1",
+    "property": "narjis-gardens",
+    "kind": "move-in",
+    "unit": "108",
+    "resident": "res-2",
+    "due": "2026-07-20T07:01:29.155Z",
+    "status": "in-progress",
+    "checklist": [
+      {
+        "item": "Keys & fobs returned/coded",
+        "done": true
+      },
+      {
+        "item": "Locks re-coded",
+        "done": true
+      },
+      {
+        "item": "Smoke detector test",
+        "done": true
+      },
+      {
+        "item": "AC filter replaced",
+        "done": true
+      },
+      {
+        "item": "AC performance check",
+        "done": true
+      },
+      {
+        "item": "Water heater check",
+        "done": true
+      },
+      {
+        "item": "All lights working",
+        "done": true
+      },
+      {
+        "item": "All sockets tested",
+        "done": true
+      },
+      {
+        "item": "Wi-Fi router reset & tested",
+        "done": true
+      },
+      {
+        "item": "TV & remotes working",
+        "done": true
+      },
+      {
+        "item": "Appliance run-through",
+        "done": true
+      },
+      {
+        "item": "Plumbing leak check",
+        "done": true
+      },
+      {
+        "item": "Drains clear",
+        "done": true
+      },
+      {
+        "item": "Balcony door & windows sealed",
+        "done": true
+      },
+      {
+        "item": "Blinds/curtains intact",
+        "done": true
+      },
+      {
+        "item": "Walls & paint touch-up",
+        "done": true
+      },
+      {
+        "item": "Flooring inspected",
+        "done": true
+      },
+      {
+        "item": "Furniture inventory complete",
+        "done": true
+      },
+      {
+        "item": "Mattress & linen refreshed",
+        "done": true
+      },
+      {
+        "item": "Kitchen inventory complete",
+        "done": true
+      },
+      {
+        "item": "Deep clean completed",
+        "done": true
+      },
+      {
+        "item": "Bathroom sanitised",
+        "done": true
+      },
+      {
+        "item": "Odour neutral",
+        "done": false
+      },
+      {
+        "item": "Pest control check",
+        "done": false
+      },
+      {
+        "item": "Welcome kit placed",
+        "done": false
+      },
+      {
+        "item": "Utility meters read",
+        "done": false
+      },
+      {
+        "item": "Access app provisioned",
+        "done": false
+      },
+      {
+        "item": "Parking bay assigned",
+        "done": false
+      },
+      {
+        "item": "Mailbox cleared & labeled",
+        "done": false
+      },
+      {
+        "item": "Final walkthrough signed",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "mv-2",
+    "property": "narjis-gardens",
+    "kind": "move-in",
+    "unit": "402",
+    "resident": "res-1",
+    "due": "2026-07-22T07:01:29.155Z",
+    "status": "scheduled",
+    "checklist": [
+      {
+        "item": "Keys & fobs returned/coded",
+        "done": true
+      },
+      {
+        "item": "Locks re-coded",
+        "done": true
+      },
+      {
+        "item": "Smoke detector test",
+        "done": true
+      },
+      {
+        "item": "AC filter replaced",
+        "done": true
+      },
+      {
+        "item": "AC performance check",
+        "done": true
+      },
+      {
+        "item": "Water heater check",
+        "done": true
+      },
+      {
+        "item": "All lights working",
+        "done": false
+      },
+      {
+        "item": "All sockets tested",
+        "done": false
+      },
+      {
+        "item": "Wi-Fi router reset & tested",
+        "done": false
+      },
+      {
+        "item": "TV & remotes working",
+        "done": false
+      },
+      {
+        "item": "Appliance run-through",
+        "done": false
+      },
+      {
+        "item": "Plumbing leak check",
+        "done": false
+      },
+      {
+        "item": "Drains clear",
+        "done": false
+      },
+      {
+        "item": "Balcony door & windows sealed",
+        "done": false
+      },
+      {
+        "item": "Blinds/curtains intact",
+        "done": false
+      },
+      {
+        "item": "Walls & paint touch-up",
+        "done": false
+      },
+      {
+        "item": "Flooring inspected",
+        "done": false
+      },
+      {
+        "item": "Furniture inventory complete",
+        "done": false
+      },
+      {
+        "item": "Mattress & linen refreshed",
+        "done": false
+      },
+      {
+        "item": "Kitchen inventory complete",
+        "done": false
+      },
+      {
+        "item": "Deep clean completed",
+        "done": false
+      },
+      {
+        "item": "Bathroom sanitised",
+        "done": false
+      },
+      {
+        "item": "Odour neutral",
+        "done": false
+      },
+      {
+        "item": "Pest control check",
+        "done": false
+      },
+      {
+        "item": "Welcome kit placed",
+        "done": false
+      },
+      {
+        "item": "Utility meters read",
+        "done": false
+      },
+      {
+        "item": "Access app provisioned",
+        "done": false
+      },
+      {
+        "item": "Parking bay assigned",
+        "done": false
+      },
+      {
+        "item": "Mailbox cleared & labeled",
+        "done": false
+      },
+      {
+        "item": "Final walkthrough signed",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "mv-3",
+    "property": "narjis-gardens",
+    "kind": "move-out",
+    "unit": "310",
+    "resident": "res-7",
+    "due": "2026-07-19T19:01:29.155Z",
+    "status": "in-progress",
+    "checklist": [
+      {
+        "item": "Keys & fobs returned/coded",
+        "done": true
+      },
+      {
+        "item": "Locks re-coded",
+        "done": true
+      },
+      {
+        "item": "Smoke detector test",
+        "done": true
+      },
+      {
+        "item": "AC filter replaced",
+        "done": true
+      },
+      {
+        "item": "AC performance check",
+        "done": true
+      },
+      {
+        "item": "Water heater check",
+        "done": true
+      },
+      {
+        "item": "All lights working",
+        "done": true
+      },
+      {
+        "item": "All sockets tested",
+        "done": true
+      },
+      {
+        "item": "Wi-Fi router reset & tested",
+        "done": true
+      },
+      {
+        "item": "TV & remotes working",
+        "done": true
+      },
+      {
+        "item": "Appliance run-through",
+        "done": true
+      },
+      {
+        "item": "Plumbing leak check",
+        "done": true
+      },
+      {
+        "item": "Drains clear",
+        "done": true
+      },
+      {
+        "item": "Balcony door & windows sealed",
+        "done": true
+      },
+      {
+        "item": "Blinds/curtains intact",
+        "done": true
+      },
+      {
+        "item": "Walls & paint touch-up",
+        "done": false
+      },
+      {
+        "item": "Flooring inspected",
+        "done": false
+      },
+      {
+        "item": "Furniture inventory complete",
+        "done": false
+      },
+      {
+        "item": "Mattress & linen refreshed",
+        "done": false
+      },
+      {
+        "item": "Kitchen inventory complete",
+        "done": false
+      },
+      {
+        "item": "Deep clean completed",
+        "done": false
+      },
+      {
+        "item": "Bathroom sanitised",
+        "done": false
+      },
+      {
+        "item": "Odour neutral",
+        "done": false
+      },
+      {
+        "item": "Pest control check",
+        "done": false
+      },
+      {
+        "item": "Welcome kit placed",
+        "done": false
+      },
+      {
+        "item": "Utility meters read",
+        "done": false
+      },
+      {
+        "item": "Access app provisioned",
+        "done": false
+      },
+      {
+        "item": "Parking bay assigned",
+        "done": false
+      },
+      {
+        "item": "Mailbox cleared & labeled",
+        "done": false
+      },
+      {
+        "item": "Final walkthrough signed",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "mv-4",
+    "property": "narjis-gardens",
+    "kind": "move-out",
+    "unit": "210",
+    "resident": "res-16",
+    "due": "2026-07-17T07:01:29.155Z",
+    "status": "done",
+    "checklist": [
+      {
+        "item": "Keys & fobs returned/coded",
+        "done": true
+      },
+      {
+        "item": "Locks re-coded",
+        "done": true
+      },
+      {
+        "item": "Smoke detector test",
+        "done": true
+      },
+      {
+        "item": "AC filter replaced",
+        "done": true
+      },
+      {
+        "item": "AC performance check",
+        "done": true
+      },
+      {
+        "item": "Water heater check",
+        "done": true
+      },
+      {
+        "item": "All lights working",
+        "done": true
+      },
+      {
+        "item": "All sockets tested",
+        "done": true
+      },
+      {
+        "item": "Wi-Fi router reset & tested",
+        "done": true
+      },
+      {
+        "item": "TV & remotes working",
+        "done": true
+      },
+      {
+        "item": "Appliance run-through",
+        "done": true
+      },
+      {
+        "item": "Plumbing leak check",
+        "done": true
+      },
+      {
+        "item": "Drains clear",
+        "done": true
+      },
+      {
+        "item": "Balcony door & windows sealed",
+        "done": true
+      },
+      {
+        "item": "Blinds/curtains intact",
+        "done": true
+      },
+      {
+        "item": "Walls & paint touch-up",
+        "done": true
+      },
+      {
+        "item": "Flooring inspected",
+        "done": true
+      },
+      {
+        "item": "Furniture inventory complete",
+        "done": true
+      },
+      {
+        "item": "Mattress & linen refreshed",
+        "done": true
+      },
+      {
+        "item": "Kitchen inventory complete",
+        "done": true
+      },
+      {
+        "item": "Deep clean completed",
+        "done": true
+      },
+      {
+        "item": "Bathroom sanitised",
+        "done": true
+      },
+      {
+        "item": "Odour neutral",
+        "done": true
+      },
+      {
+        "item": "Pest control check",
+        "done": true
+      },
+      {
+        "item": "Welcome kit placed",
+        "done": true
+      },
+      {
+        "item": "Utility meters read",
+        "done": true
+      },
+      {
+        "item": "Access app provisioned",
+        "done": true
+      },
+      {
+        "item": "Parking bay assigned",
+        "done": true
+      },
+      {
+        "item": "Mailbox cleared & labeled",
+        "done": true
+      },
+      {
+        "item": "Final walkthrough signed",
+        "done": true
+      }
+    ]
+  }
+]

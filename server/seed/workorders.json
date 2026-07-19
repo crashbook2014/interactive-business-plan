@@ -1,0 +1,93 @@
+[
+  {
+    "id": "wo-1",
+    "property": "narjis-gardens",
+    "title": "AC not cooling in 204",
+    "category": "HVAC",
+    "priority": "high",
+    "status": "in-progress",
+    "unit": "204",
+    "createdAt": "2026-07-19T02:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": "maintenance.narjisgardens@pulse.sa",
+    "history": []
+  },
+  {
+    "id": "wo-2",
+    "property": "narjis-gardens",
+    "title": "Water heater leak, 112",
+    "category": "Plumbing",
+    "priority": "high",
+    "status": "open",
+    "unit": "112",
+    "createdAt": "2026-07-19T00:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": null,
+    "history": []
+  },
+  {
+    "id": "wo-3",
+    "property": "narjis-gardens",
+    "title": "Corridor light flickering, floor 3",
+    "category": "Electrical",
+    "priority": "normal",
+    "status": "open",
+    "unit": null,
+    "createdAt": "2026-07-18T11:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": null,
+    "history": []
+  },
+  {
+    "id": "wo-4",
+    "property": "narjis-gardens",
+    "title": "Dishwasher error code, 301",
+    "category": "Appliance",
+    "priority": "normal",
+    "status": "open",
+    "unit": "301",
+    "createdAt": "2026-07-17T15:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": null,
+    "history": []
+  },
+  {
+    "id": "wo-5",
+    "property": "narjis-gardens",
+    "title": "Balcony door alignment, 407",
+    "category": "Doors & locks",
+    "priority": "low",
+    "status": "open",
+    "unit": "407",
+    "createdAt": "2026-07-16T19:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": null,
+    "history": []
+  },
+  {
+    "id": "wo-6",
+    "property": "narjis-gardens",
+    "title": "Repaint scuffed wall, lobby",
+    "category": "General",
+    "priority": "low",
+    "status": "open",
+    "unit": null,
+    "createdAt": "2026-07-18T01:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": null,
+    "history": []
+  },
+  {
+    "id": "wo-7",
+    "property": "narjis-gardens",
+    "title": "Washing machine drum noise, 210",
+    "category": "Appliance",
+    "priority": "normal",
+    "status": "done",
+    "unit": "210",
+    "createdAt": "2026-07-15T23:01:29.155Z",
+    "createdBy": "noor.hamdan@pulse.sa",
+    "assignee": "maintenance.narjisgardens@pulse.sa",
+    "history": []
+  }
+]

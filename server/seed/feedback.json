@@ -1,0 +1,62 @@
+[
+  {
+    "id": "fb-1",
+    "property": "narjis-gardens",
+    "resident": "res-3",
+    "csat": 5,
+    "sentiment": "positive",
+    "text": "The welcome basket was a lovely touch. The team remembered my coffee order.",
+    "status": "new",
+    "createdAt": "2026-07-19T03:01:29.155Z",
+    "linkedCase": null,
+    "source": "sample"
+  },
+  {
+    "id": "fb-2",
+    "property": "narjis-gardens",
+    "resident": "res-5",
+    "csat": 2,
+    "sentiment": "negative",
+    "text": "AC has been weak for two days and I work from home. Please prioritise.",
+    "status": "new",
+    "createdAt": "2026-07-18T22:01:29.155Z",
+    "linkedCase": null,
+    "source": "sample"
+  },
+  {
+    "id": "fb-3",
+    "property": "narjis-gardens",
+    "resident": "res-8",
+    "csat": 4,
+    "sentiment": "positive",
+    "text": "Housekeeping is consistent. Gym could use another bench.",
+    "status": "actioned",
+    "createdAt": "2026-07-17T07:01:29.155Z",
+    "linkedCase": null,
+    "source": "sample"
+  },
+  {
+    "id": "fb-4",
+    "property": "narjis-gardens",
+    "resident": "res-11",
+    "csat": 3,
+    "sentiment": "neutral",
+    "text": "Check-in took longer than expected, though the team was kind.",
+    "status": "new",
+    "createdAt": "2026-07-18T05:01:29.155Z",
+    "linkedCase": null,
+    "source": "sample"
+  },
+  {
+    "id": "fb-5",
+    "property": "narjis-gardens",
+    "resident": "res-6",
+    "csat": 5,
+    "sentiment": "positive",
+    "text": "Friday majlis evening was wonderful. More of these, please.",
+    "status": "thanked",
+    "createdAt": "2026-07-15T07:01:29.155Z",
+    "linkedCase": null,
+    "source": "sample"
+  }
+]

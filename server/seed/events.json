@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ev-1",
+    "property": "narjis-gardens",
+    "title": "Friday Majlis & Karak",
+    "when": "2026-07-21T07:01:29.155Z",
+    "where": "Rooftop terrace",
+    "capacity": 40,
+    "rsvps": [
+      "res-1",
+      "res-2",
+      "res-3",
+      "res-4"
+    ],
+    "attended": []
+  },
+  {
+    "id": "ev-2",
+    "property": "narjis-gardens",
+    "title": "Sunrise Run Club",
+    "when": "2026-07-23T07:01:29.155Z",
+    "where": "Lobby meet point",
+    "capacity": 15,
+    "rsvps": [
+      "res-3",
+      "res-4",
+      "res-5",
+      "res-6",
+      "res-7"
+    ],
+    "attended": []
+  },
+  {
+    "id": "ev-3",
+    "property": "narjis-gardens",
+    "title": "New Resident Welcome Dinner",
+    "when": "2026-07-25T07:01:29.155Z",
+    "where": "Courtyard",
+    "capacity": 25,
+    "rsvps": [
+      "res-5",
+      "res-6",
+      "res-7",
+      "res-8",
+      "res-9",
+      "res-10"
+    ],
+    "attended": []
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "pulse-ops-master-of-the-day",
+  "version": "1.0.0",
+  "description": "PULSE — Master of the Day. Role-aware operations console for a serviced-living operator (Riyadh portfolio).",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "vite build",
+    "start": "npm run build && node server/index.js",
+    "dev": "node server/index.js",
+    "test": "node --test server/test/*.test.js"
+  },
+  "dependencies": {
+    "express": "^5.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "mode": "stub",
+  "slack": [
+    {
+      "channel": "#narjis-gardens-ops",
+      "at": "2026-07-19T05:31:29.155Z",
+      "from": "Sara Nasser",
+      "text": "Reminder: fire-panel vendor on site 13:00-14:00, keep service lift free."
+    },
+    {
+      "channel": "#narjis-gardens-ops",
+      "at": "2026-07-19T04:01:29.155Z",
+      "from": "Maintenance",
+      "text": "204 AC part arrives today, fix expected by evening."
+    },
+    {
+      "channel": "#riyadh-portfolio",
+      "at": "2026-07-19T02:01:29.155Z",
+      "from": "Amal Rashed",
+      "text": "Portfolio review moved to Thursday. Narjis Gardens to present occupancy trend."
+    }
+  ],
+  "gmail": [
+    {
+      "at": "2026-07-19T05:01:29.155Z",
+      "from": "coordinator@northstarconsulting.example",
+      "subject": "Site visit today 11:00 — 4 guests",
+      "snippet": "Our relocation team will arrive at 11:00 to view 2BR options."
+    },
+    {
+      "at": "2026-07-19T00:01:29.155Z",
+      "from": "lina.alqahtani@example.com",
+      "subject": "Early check-in request",
+      "snippet": "Flight lands 09:40, could my unit be ready by 11:00?"
+    }
+  ],
+  "calendar": [
+    {
+      "at": "2026-07-19T09:01:29.155Z",
+      "durationMin": 60,
+      "title": "Northstar Consulting site visit",
+      "where": "Lobby"
+    },
+    {
+      "at": "2026-07-19T11:01:29.155Z",
+      "durationMin": 60,
+      "title": "Fire-panel vendor maintenance",
+      "where": "Service corridor"
+    },
+    {
+      "at": "2026-07-19T11:31:29.155Z",
+      "durationMin": 45,
+      "title": "Move-out walkthrough 310",
+      "where": "Unit 310"
+    },
+    {
+      "at": "2026-07-19T14:01:29.155Z",
+      "durationMin": 30,
+      "title": "15:00 team stand-up",
+      "where": "Back office"
+    }
+  ]
+}
