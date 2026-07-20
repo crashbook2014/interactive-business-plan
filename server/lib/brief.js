@@ -5,10 +5,11 @@ import { composeCore, meetingCore } from './brief-core.js';
 
 export function gatherSignals(property) {
   const signals = read('signals', { mode: 'stub', slack: [], gmail: [], calendar: [] });
-  const units = read('units', []).filter(u => u.property === property);
-  const wos = read('workorders', []).filter(w => w.property === property);
-  const moves = read('moves', []).filter(m => m.property === property && m.status !== 'done');
-  return { signals, units, wos, moves };
+  const events = read('events', []).filter(e => e.property === property);
+  const residents = read('residents', []).filter(r => r.property === property);
+  const feedback = read('feedback', []).filter(f => f.property === property);
+  const cases = read('cases', []).filter(c => c.property === property);
+  return { signals, events, residents, feedback, cases };
 }
 
 export function composeBriefDeterministic(property) {
@@ -28,7 +29,7 @@ export async function composeBrief(property) {
         max_tokens: 400,
         messages: [{
           role: 'user',
-          content: `Write a calm 3-sentence shift briefing for a serviced-living duty manager in Riyadh. No exclamation points. Facts: ${base.summary} Top actions: ${base.actions.slice(0, 4).map(a => a.title).join('; ')}`
+          content: `Write a calm 3-sentence shift briefing for an events and resident-experience duty manager in Riyadh. No exclamation points. Facts: ${base.summary} Top actions: ${base.actions.slice(0, 4).map(a => a.title).join('; ')}`
         }]
       })
     });
@@ -44,4 +45,3 @@ export async function composeBrief(property) {
 export function meetingBrief(property) {
   return meetingCore(composeBriefDeterministic(property));
 }
-

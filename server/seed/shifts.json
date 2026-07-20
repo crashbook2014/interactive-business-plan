@@ -5,52 +5,52 @@
         "email": "lina.fares@pulse.sa",
         "name": "Lina Fares",
         "on": true,
-        "since": "2026-07-19T04:01:29.155Z"
+        "since": "2026-07-19T17:33:13.218Z"
       },
       {
         "email": "noor.hamdan@pulse.sa",
         "name": "Noor Hamdan",
         "on": true,
-        "since": "2026-07-19T05:01:29.155Z"
+        "since": "2026-07-19T18:33:13.218Z"
       },
       {
         "email": "ziad.qassim@pulse.sa",
         "name": "Ziad Qassim",
         "on": false,
-        "since": "2026-07-18T21:01:29.155Z"
+        "since": "2026-07-19T10:33:13.218Z"
       },
       {
         "email": "maha.suleiman@pulse.sa",
         "name": "Maha Suleiman",
         "on": false,
-        "since": "2026-07-18T21:01:29.155Z"
+        "since": "2026-07-19T10:33:13.218Z"
       },
       {
         "email": "karim.saleh@pulse.sa",
         "name": "Karim Saleh",
         "on": false,
-        "since": "2026-07-18T21:01:29.155Z"
+        "since": "2026-07-19T10:33:13.218Z"
       }
     ],
     "checklist": [
       {
         "id": "c1",
-        "item": "Walk lobby, courtyard and gym",
+        "item": "Walk today’s event spaces",
         "done": true
       },
       {
         "id": "c2",
-        "item": "Review arrivals and confirm unit readiness",
+        "item": "Confirm run-of-show owners for the week",
         "done": false
       },
       {
         "id": "c3",
-        "item": "Check high-priority work orders with maintenance",
+        "item": "Reply to new resident feedback",
         "done": false
       },
       {
         "id": "c4",
-        "item": "Reply to overnight resident messages",
+        "item": "Check at-risk journey touchpoints",
         "done": false
       },
       {
@@ -62,23 +62,23 @@
     "tasks": [
       {
         "id": "t1",
-        "title": "Escort Northstar Consulting site visit at 11:00",
-        "assignee": "noor.hamdan@pulse.sa",
+        "title": "Escort Deema Tech walkthrough on Sunday",
+        "assignee": "karim.saleh@pulse.sa",
         "status": "open",
-        "createdAt": "2026-07-19T05:01:29.155Z"
+        "createdAt": "2026-07-19T18:33:13.218Z"
       },
       {
         "id": "t2",
-        "title": "Restock welcome kits (3 left)",
+        "title": "Restock run-club breakfast boxes",
         "assignee": null,
         "status": "open",
-        "createdAt": "2026-07-19T03:01:29.155Z"
+        "createdAt": "2026-07-19T16:33:13.218Z"
       }
     ],
     "handover": {
       "from": "karim.saleh@pulse.sa",
-      "at": "2026-07-18T22:01:29.155Z",
-      "note": "Quiet night. 204 AC complaint escalated to maintenance. Meridian Energy coordinator asked for February availability — flagged to GM. Two arrivals tomorrow need vacant-ready by noon.",
+      "at": "2026-07-19T11:33:13.218Z",
+      "note": "Quiet evening. AV contractor conflict for the Meridian dinner escalated — production is on it. Run club launches at dawn; hydration station is prepped. One negative welcome-kit feedback needs a personal follow-up today.",
       "readBy": []
     }
   }

@@ -2,49 +2,445 @@
   {
     "id": "ev-1",
     "property": "narjis-gardens",
-    "title": "Friday Majlis & Karak",
-    "when": "2026-07-21T07:01:29.155Z",
-    "where": "Rooftop terrace",
-    "capacity": 40,
-    "rsvps": [
-      "res-1",
-      "res-2",
-      "res-3",
-      "res-4"
+    "title": "Northstar Consulting — Annual Family Day",
+    "kind": "client",
+    "clientId": "cl-2",
+    "when": "2026-06-28T20:33:13.218Z",
+    "where": "Central lawn",
+    "capacity": 220,
+    "status": "reported",
+    "budget": 85000,
+    "spend": 78400,
+    "checklist": [
+      {
+        "item": "Concept & budget approved",
+        "owner": "amal.rashed@pulse.sa",
+        "due": "2026-07-09T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Venue booked & layout drawn",
+        "owner": "venue.narjisgardens@pulse.sa",
+        "due": "2026-07-12T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Vendors & catering confirmed",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-14T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Invitations sent",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-15T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Run-of-show approved",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-17T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Staffing roster confirmed",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-18T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Setup & sound check",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-19T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Post-event survey sent",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-20T20:33:13.218Z",
+        "done": true
+      }
     ],
-    "attended": []
+    "runOfShow": [
+      {
+        "time": "15:00",
+        "item": "Doors & welcome drinks",
+        "owner": "Noor Hamdan"
+      },
+      {
+        "time": "15:30",
+        "item": "Kids zone opens",
+        "owner": "Maha Suleiman"
+      },
+      {
+        "time": "17:00",
+        "item": "CEO welcome & awards",
+        "owner": "Lina Fares"
+      },
+      {
+        "time": "18:30",
+        "item": "Dinner service",
+        "owner": "Fadi Mansour"
+      },
+      {
+        "time": "20:30",
+        "item": "Close & farewell gifts",
+        "owner": "Noor Hamdan"
+      }
+    ],
+    "rsvps": 208,
+    "attended": 191,
+    "surveys": [
+      {
+        "csat": 5,
+        "comment": "Best family day we have had. The kids zone was a triumph."
+      },
+      {
+        "csat": 5,
+        "comment": "Flawless from arrival to farewell. Our CEO was delighted."
+      },
+      {
+        "csat": 4,
+        "comment": "Wonderful evening. Dinner queue was a touch long."
+      },
+      {
+        "csat": 5,
+        "comment": "The PULSE team thought of everything."
+      }
+    ],
+    "reportSentAt": "2026-06-30T20:33:13.218Z"
   },
   {
     "id": "ev-2",
     "property": "narjis-gardens",
-    "title": "Sunrise Run Club",
-    "when": "2026-07-23T07:01:29.155Z",
-    "where": "Lobby meet point",
-    "capacity": 15,
-    "rsvps": [
-      "res-3",
-      "res-4",
-      "res-5",
-      "res-6",
-      "res-7"
+    "title": "Sunset Majlis & Karak Night",
+    "kind": "resident",
+    "clientId": null,
+    "when": "2026-07-12T20:33:13.218Z",
+    "where": "Rooftop terrace",
+    "capacity": 60,
+    "status": "reported",
+    "budget": 6000,
+    "spend": 5200,
+    "checklist": [
+      {
+        "item": "Concept & budget approved",
+        "owner": "amal.rashed@pulse.sa",
+        "due": "2026-07-09T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Venue booked & layout drawn",
+        "owner": "venue.narjisgardens@pulse.sa",
+        "due": "2026-07-12T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Vendors & catering confirmed",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-14T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Invitations sent",
+        "owner": "noor.hamdan@pulse.sa",
+        "due": "2026-07-15T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Run-of-show approved",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-17T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Staffing roster confirmed",
+        "owner": "noor.hamdan@pulse.sa",
+        "due": "2026-07-18T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Setup & sound check",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-19T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Post-event survey sent",
+        "owner": "noor.hamdan@pulse.sa",
+        "due": "2026-07-20T20:33:13.218Z",
+        "done": true
+      }
     ],
-    "attended": []
+    "runOfShow": [
+      {
+        "time": "19:00",
+        "item": "Seating & lanterns ready",
+        "owner": "Huda Bakr"
+      },
+      {
+        "time": "19:30",
+        "item": "Karak & dates service",
+        "owner": "Ziad Qassim"
+      },
+      {
+        "time": "20:00",
+        "item": "Oud performance",
+        "owner": "Fadi Mansour"
+      }
+    ],
+    "rsvps": 54,
+    "attended": 49,
+    "surveys": [
+      {
+        "csat": 5,
+        "comment": "Magical evening. The oud player under the lanterns — perfect."
+      },
+      {
+        "csat": 4,
+        "comment": "Lovely. Would love it monthly."
+      },
+      {
+        "csat": 5,
+        "comment": "My guests from abroad were amazed."
+      }
+    ],
+    "reportSentAt": "2026-07-14T20:33:13.218Z"
   },
   {
     "id": "ev-3",
     "property": "narjis-gardens",
-    "title": "New Resident Welcome Dinner",
-    "when": "2026-07-25T07:01:29.155Z",
-    "where": "Courtyard",
-    "capacity": 25,
-    "rsvps": [
-      "res-5",
-      "res-6",
-      "res-7",
-      "res-8",
-      "res-9",
-      "res-10"
+    "title": "Sunrise Run Club — Season Opener",
+    "kind": "resident",
+    "clientId": null,
+    "when": "2026-07-20T02:33:13.218Z",
+    "where": "North gate meet point",
+    "capacity": 30,
+    "status": "live",
+    "budget": 1500,
+    "spend": 900,
+    "checklist": [
+      {
+        "item": "Concept & budget approved",
+        "owner": "amal.rashed@pulse.sa",
+        "due": "2026-07-09T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Venue booked & layout drawn",
+        "owner": "venue.narjisgardens@pulse.sa",
+        "due": "2026-07-12T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Vendors & catering confirmed",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-14T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Invitations sent",
+        "owner": "maha.suleiman@pulse.sa",
+        "due": "2026-07-15T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Run-of-show approved",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-17T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Staffing roster confirmed",
+        "owner": "maha.suleiman@pulse.sa",
+        "due": "2026-07-18T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Setup & sound check",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-19T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Post-event survey sent",
+        "owner": "maha.suleiman@pulse.sa",
+        "due": "2026-07-20T20:33:13.218Z",
+        "done": false
+      }
     ],
-    "attended": []
+    "runOfShow": [
+      {
+        "time": "05:30",
+        "item": "Hydration station set",
+        "owner": "Huda Bakr"
+      },
+      {
+        "time": "06:00",
+        "item": "Warm-up & route brief",
+        "owner": "Maha Suleiman"
+      },
+      {
+        "time": "07:00",
+        "item": "Breakfast boxes & photo",
+        "owner": "Ziad Qassim"
+      }
+    ],
+    "rsvps": 26,
+    "attended": 0,
+    "surveys": [],
+    "reportSentAt": null
+  },
+  {
+    "id": "ev-4",
+    "property": "narjis-gardens",
+    "title": "Meridian Energy — Leadership Offsite Dinner",
+    "kind": "client",
+    "clientId": "cl-1",
+    "when": "2026-07-28T20:33:13.218Z",
+    "where": "Courtyard pavilion",
+    "capacity": 80,
+    "status": "planning",
+    "budget": 52000,
+    "spend": 12500,
+    "checklist": [
+      {
+        "item": "Concept & budget approved",
+        "owner": "amal.rashed@pulse.sa",
+        "due": "2026-07-09T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Venue booked & layout drawn",
+        "owner": "venue.narjisgardens@pulse.sa",
+        "due": "2026-07-12T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Vendors & catering confirmed",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-14T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Invitations sent",
+        "owner": "karim.saleh@pulse.sa",
+        "due": "2026-07-15T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Run-of-show approved",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-17T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Staffing roster confirmed",
+        "owner": "karim.saleh@pulse.sa",
+        "due": "2026-07-18T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Setup & sound check",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-19T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Post-event survey sent",
+        "owner": "karim.saleh@pulse.sa",
+        "due": "2026-07-20T20:33:13.218Z",
+        "done": false
+      }
+    ],
+    "runOfShow": [
+      {
+        "time": "18:30",
+        "item": "Arrival & majlis coffee",
+        "owner": "Karim Saleh"
+      },
+      {
+        "time": "19:15",
+        "item": "Keynote & awards",
+        "owner": "Lina Fares"
+      },
+      {
+        "time": "20:00",
+        "item": "Dinner under the palms",
+        "owner": "Fadi Mansour"
+      }
+    ],
+    "rsvps": 64,
+    "attended": 0,
+    "surveys": [],
+    "reportSentAt": null
+  },
+  {
+    "id": "ev-5",
+    "property": "narjis-gardens",
+    "title": "National Day Community Festival",
+    "kind": "resident",
+    "clientId": null,
+    "when": "2026-08-12T20:33:13.218Z",
+    "where": "Central lawn",
+    "capacity": 400,
+    "status": "concept",
+    "budget": 40000,
+    "spend": 0,
+    "checklist": [
+      {
+        "item": "Concept & budget approved",
+        "owner": "amal.rashed@pulse.sa",
+        "due": "2026-07-09T20:33:13.218Z",
+        "done": true
+      },
+      {
+        "item": "Venue booked & layout drawn",
+        "owner": "venue.narjisgardens@pulse.sa",
+        "due": "2026-07-12T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Vendors & catering confirmed",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-14T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Invitations sent",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-15T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Run-of-show approved",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-17T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Staffing roster confirmed",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-18T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Setup & sound check",
+        "owner": "production.narjisgardens@pulse.sa",
+        "due": "2026-07-19T20:33:13.218Z",
+        "done": false
+      },
+      {
+        "item": "Post-event survey sent",
+        "owner": "lina.fares@pulse.sa",
+        "due": "2026-07-20T20:33:13.218Z",
+        "done": false
+      }
+    ],
+    "runOfShow": [],
+    "rsvps": 0,
+    "attended": 0,
+    "surveys": [],
+    "reportSentAt": null
   }
 ]

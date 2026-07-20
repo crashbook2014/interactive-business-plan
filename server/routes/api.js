@@ -6,7 +6,8 @@ import { read, update } from '../lib/store.js';
 import { requireModule, resolveProperty, redactFinancials, seesFinancials } from '../lib/rbac.js';
 import { withSla, slaState } from '../lib/sla.js';
 import { audit } from '../lib/audit.js';
-import { composeBrief, composeBriefDeterministic, meetingBrief } from '../lib/brief.js';
+import { composeBrief, meetingBrief } from '../lib/brief.js';
+import { eventScorecard, journeyStats, atRiskTravelers } from '../lib/brief-core.js';
 import { PROPERTIES, ORG, MODULE_ACCESS } from '../config.js';
 
 const router = express.Router();
@@ -16,37 +17,25 @@ const id = p => `${p}-${crypto.randomBytes(4).toString('hex')}`;
 const send = (req, res, data) => res.json(redactFinancials(data, req.user));
 const byProp = (name, prop) => read(name, []).filter(x => x.property === prop);
 
-function occupancySummary(units) {
-  const total = units.length;
-  const count = s => units.filter(u => u.status === s).length;
-  const occupied = count('occupied') + count('departing');
-  return {
-    total, occupied,
-    vacantReady: count('vacant-ready'), vacantDirty: count('vacant-dirty'),
-    arriving: count('arriving'), outOfOrder: count('out-of-order'), departing: count('departing'),
-    occupancyRate: total ? +(occupied / total).toFixed(3) : 0
-  };
-}
-
 /* ---------- Home / dashboard ---------- */
 router.get('/dashboard', requireModule('home'), (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  const units = byProp('units', prop);
-  const wos = withSla(byProp('workorders', prop));
+  const events = byProp('events', prop);
+  const residents = byProp('residents', prop);
+  const fb = byProp('feedback', prop);
   const cases = withSla(byProp('cases', prop));
   const shifts = read('shifts', {})[prop] || { duty: [] };
-  const fb = byProp('feedback', prop);
-  const metrics = read('metrics', {})[prop] || {};
+  const reported = events.filter(e => e.status === 'reported').map(eventScorecard).filter(Boolean);
   send(req, res, {
     property: PROPERTIES.find(p => p.id === prop),
-    occupancy: occupancySummary(units),
-    arrivalsDue: units.filter(u => u.status === 'arriving').length,
-    roomsToClean: units.filter(u => u.status === 'vacant-dirty').length,
-    highWorkOrders: wos.filter(w => w.priority === 'high' && w.status !== 'done').length,
-    slaAtRisk: [...wos, ...cases].filter(x => ['at-risk', 'breached'].includes(x.sla.state)).length,
-    onDuty: shifts.duty.filter(d => d.on).length,
+    eventsLive: events.filter(e => e.status === 'live').length,
+    eventsPlanning: events.filter(e => ['planning', 'concept'].includes(e.status)).length,
+    journeysAtRisk: atRiskTravelers(residents).length,
     newFeedback: fb.filter(f => f.status === 'new').length,
-    metrics,
+    slaAtRisk: cases.filter(x => ['at-risk', 'breached'].includes(x.sla.state)).length,
+    onDuty: shifts.duty.filter(d => d.on).length,
+    avgEventScore: reported.length ? Math.round(reported.reduce((s, r) => s + r.score, 0) / reported.length) : null,
+    metrics: read('metrics', {})[prop] || {},
     now: new Date().toISOString()
   });
 });
@@ -127,116 +116,262 @@ router.post('/shift/handover/ack', requireModule('shift'), async (req, res) => {
   send(req, res, { ok: true });
 });
 
-/* ---------- Units ---------- */
-router.get('/units', requireModule('units'), (req, res) => {
+/* ---------- Journeys ---------- */
+router.get('/journeys', requireModule('journeys'), (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  const units = byProp('units', prop);
-  send(req, res, { units, summary: occupancySummary(units), dataMode: PROPERTIES.find(p => p.id === prop)?.live ? (process.env.SHEETS_OCCUPANCY_ID ? 'live' : 'live-stub') : 'awaiting-data' });
-});
-
-const UNIT_STATUSES = ['occupied', 'vacant-ready', 'vacant-dirty', 'arriving', 'departing', 'out-of-order'];
-router.post('/units/:uid/status', requireModule('units'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const status = req.body.status;
-  if (!UNIT_STATUSES.includes(status)) return res.status(400).json({ error: 'Unknown status' });
-  let found = false;
-  await update('units', units => {
-    const u = units.find(x => x.id === req.params.uid && x.property === prop);
-    if (u) { u.status = status; found = true; }
-  }, []);
-  if (!found) return res.status(404).json({ error: 'Unit not found' });
-  audit(req.user, 'units.status', { property: prop, unit: req.params.uid, status });
-  send(req, res, { ok: true });
-});
-
-/* ---------- Moves ---------- */
-router.get('/moves', requireModule('moves'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
+  const journeys = byProp('journeys', prop);
   const residents = byProp('residents', prop);
-  const moves = byProp('moves', prop).map(m => ({
-    ...m,
-    residentName: residents.find(r => r.id === m.resident)?.name || null,
-    progress: m.checklist.filter(c => c.done).length + '/' + m.checklist.length
-  }));
-  send(req, res, { moves });
+  const clients = byProp('clients', prop);
+  send(req, res, {
+    journeys: journeys.map(j => ({
+      ...j,
+      stats: j.kind === 'resident'
+        ? journeyStats(j, residents)
+        : { stages: j.stages.map((s, si) => ({ name: s.name, touchpoints: s.touchpoints, travelersHere: clients.filter(c => ['inquiry','proposal','planning','event-day','report-renewal'][si] === c.stage).length })), travelers: clients.length }
+    })),
+    atRisk: atRiskTravelers(residents).map(r => ({ id: r.id, name: r.name, stageIndex: r.stageIndex }))
+  });
 });
 
-router.post('/moves/:mid/checklist/:index', requireModule('moves'), async (req, res) => {
+router.post('/journeys/resident/:rid/touchpoint', requireModule('journeys'), async (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  await update('moves', moves => {
-    const m = moves.find(x => x.id === req.params.mid && x.property === prop);
-    const item = m?.checklist[Number(req.params.index)];
-    if (item) {
-      item.done = !item.done;
-      if (m.checklist.every(c => c.done)) m.status = 'done';
-      else if (m.status === 'done') m.status = 'in-progress';
+  const { stage, index, done, score } = req.body;
+  let ok = false;
+  await update('residents', list => {
+    const r = list.find(x => x.id === req.params.rid && x.property === prop);
+    const tp = r?.touchpoints?.[Number(stage)]?.[Number(index)];
+    if (tp) {
+      if (done !== undefined) { tp.done = !!done; tp.at = tp.done ? new Date().toISOString() : null; }
+      if (score !== undefined) tp.score = score === null ? null : Math.max(1, Math.min(5, Number(score)));
+      // advance stageIndex to first incomplete stage
+      r.stageIndex = r.touchpoints.findIndex(st => st.some(t => !t.done));
+      if (r.stageIndex === -1) r.stageIndex = r.touchpoints.length - 1;
+      ok = true;
     }
   }, []);
-  audit(req.user, 'moves.checklist.toggle', { property: prop, move: req.params.mid, index: req.params.index });
+  if (!ok) return res.status(404).json({ error: 'Touchpoint not found' });
+  audit(req.user, 'journeys.touchpoint', { property: prop, resident: req.params.rid, stage, index, done, score });
   send(req, res, { ok: true });
 });
 
-/* ---------- Housekeeping ---------- */
-router.get('/housekeeping', requireModule('housekeeping'), (req, res) => {
+/* ---------- Events (studio) ---------- */
+router.get('/events', requireModule('events'), (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  const units = byProp('units', prop);
-  const board = units
-    .filter(u => u.status === 'vacant-dirty' || u.status === 'arriving' || u.status === 'departing')
-    .sort((a, b) => {
-      const rank = s => s === 'arriving' ? 0 : s === 'vacant-dirty' ? 1 : 2;
-      return rank(a.status) - rank(b.status) || a.id.localeCompare(b.id);
-    });
-  send(req, res, { board, toClean: units.filter(u => u.status === 'vacant-dirty').length });
+  const clients = byProp('clients', prop);
+  send(req, res, {
+    events: byProp('events', prop).map(e => ({
+      ...e,
+      clientName: clients.find(c => c.id === e.clientId)?.name || null,
+      scorecard: eventScorecard(e),
+      openTasks: e.checklist.filter(c => !c.done).length
+    })),
+    team: ORG.filter(u => u.property === prop || !u.property).map(u => ({ email: u.email, name: u.name }))
+  });
 });
 
-router.post('/housekeeping/:uid/clean', requireModule('housekeeping'), async (req, res) => {
+const EVENT_STATUSES = ['concept', 'planning', 'ready', 'live', 'wrap-up', 'reported'];
+router.post('/events', requireModule('events'), async (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  let ok = false;
-  await update('units', units => {
-    const u = units.find(x => x.id === req.params.uid && x.property === prop);
-    if (u && (u.status === 'vacant-dirty' || u.status === 'departing')) { u.status = 'vacant-ready'; ok = true; }
-  }, []);
-  if (!ok) return res.status(400).json({ error: 'Unit is not on the turn board' });
-  audit(req.user, 'housekeeping.clean', { property: prop, unit: req.params.uid });
-  send(req, res, { ok: true });
+  const { title, when, where = '', capacity = 50, kind = 'resident', clientId = null } = req.body;
+  if (!title || !when) return res.status(400).json({ error: 'Title and time required' });
+  const e = {
+    id: id('ev'), property: prop, title: String(title).slice(0, 140), kind, clientId,
+    when, where, capacity, status: 'concept', budget: null, spend: null,
+    checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null
+  };
+  await update('events', list => { list.push(e); }, []);
+  audit(req.user, 'events.create', { property: prop, id: e.id });
+  send(req, res, e);
 });
 
-/* ---------- Maintenance (work orders) ---------- */
-router.get('/workorders', requireModule('maintenance'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const assignees = ORG.filter(u => (u.property === prop || !u.property) && ['maintenance_manager', 'agm', 'gm'].includes(u.role))
-    .map(u => ({ email: u.email, name: u.name }));
-  send(req, res, { workorders: withSla(byProp('workorders', prop)), assignees });
-});
-
-router.post('/workorders', requireModule('maintenance'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const { title, category = 'General', priority = 'normal', unit = null } = req.body;
-  if (!title) return res.status(400).json({ error: 'Title required' });
-  if (!['high', 'normal', 'low'].includes(priority)) return res.status(400).json({ error: 'Bad priority' });
-  const wo = { id: id('wo'), property: prop, title: String(title).slice(0, 200), category, priority, status: 'open', unit, createdAt: new Date().toISOString(), createdBy: req.user.email, assignee: null, history: [] };
-  await update('workorders', list => { list.push(wo); }, []);
-  audit(req.user, 'workorders.create', { property: prop, id: wo.id, priority });
-  send(req, res, { ...wo, sla: slaState(wo) });
-});
-
-router.patch('/workorders/:wid', requireModule('maintenance'), async (req, res) => {
+router.patch('/events/:eid', requireModule('events'), async (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
   let out = null;
-  await update('workorders', list => {
-    const w = list.find(x => x.id === req.params.wid && x.property === prop);
-    if (!w) return;
-    for (const k of ['status', 'assignee', 'priority']) {
-      if (k in req.body && w[k] !== req.body[k]) {
-        w.history.push({ at: new Date().toISOString(), by: req.user.email, field: k, from: w[k], to: req.body[k] });
-        w[k] = req.body[k];
-      }
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (!e) return;
+    if (req.body.status && EVENT_STATUSES.includes(req.body.status)) {
+      e.status = req.body.status;
+      if (req.body.status === 'reported' && !e.reportSentAt) e.reportSentAt = new Date().toISOString();
     }
-    out = w;
+    for (const k of ['rsvps', 'attended']) if (k in req.body) e[k] = Math.max(0, Number(req.body[k]) || 0);
+    out = e;
   }, []);
-  if (!out) return res.status(404).json({ error: 'Work order not found' });
-  audit(req.user, 'workorders.update', { property: prop, id: req.params.wid, ...req.body });
-  send(req, res, { ...out, sla: slaState(out) });
+  if (!out) return res.status(404).json({ error: 'Event not found' });
+  audit(req.user, 'events.update', { property: prop, id: req.params.eid, ...req.body });
+  send(req, res, { ...out, scorecard: eventScorecard(out) });
+});
+
+router.post('/events/:eid/checklist', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (!e) return;
+    if (req.body.add) e.checklist.push({ item: String(req.body.add).slice(0, 160), owner: req.body.owner || null, due: req.body.due || null, done: false });
+    else if (req.body.toggle !== undefined) { const c = e.checklist[Number(req.body.toggle)]; if (c) c.done = !c.done; }
+  }, []);
+  audit(req.user, 'events.checklist', { property: prop, event: req.params.eid, ...req.body });
+  send(req, res, { ok: true });
+});
+
+router.post('/events/:eid/runofshow', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const { time, item, owner = '' } = req.body;
+  if (!time || !item) return res.status(400).json({ error: 'Time and item required' });
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (e) {
+      e.runOfShow.push({ time, item: String(item).slice(0, 160), owner });
+      e.runOfShow.sort((a, b) => a.time.localeCompare(b.time));
+    }
+  }, []);
+  audit(req.user, 'events.runofshow.add', { property: prop, event: req.params.eid });
+  send(req, res, { ok: true });
+});
+
+router.post('/events/:eid/survey', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const csat = Math.max(1, Math.min(5, Number(req.body.csat)));
+  if (!csat) return res.status(400).json({ error: 'Score 1-5 required' });
+  let out = null;
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (e) { e.surveys.push({ csat, comment: String(req.body.comment || '').slice(0, 400) }); out = e; }
+  }, []);
+  if (!out) return res.status(404).json({ error: 'Event not found' });
+  audit(req.user, 'events.survey.add', { property: prop, event: req.params.eid, csat });
+  send(req, res, { ok: true, scorecard: eventScorecard(out) });
+});
+
+/* ---------- Clients (B2B pipeline) ---------- */
+router.get('/clients', requireModule('clients'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const events = byProp('events', prop);
+  send(req, res, {
+    clients: byProp('clients', prop).map(c => ({
+      ...c,
+      events: events.filter(e => e.clientId === c.id).map(e => ({ id: e.id, title: e.title, status: e.status, scorecard: eventScorecard(e) }))
+    })),
+    pipelineValue: byProp('clients', prop).reduce((s, c) => s + (c.contractValue || 0), 0)
+  });
+});
+
+const PIPELINE = ['inquiry', 'proposal', 'planning', 'event-day', 'report-renewal'];
+router.post('/clients', requireModule('clients'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  if (!req.body.name) return res.status(400).json({ error: 'Name required' });
+  const c = { id: id('cl'), property: prop, name: String(req.body.name).slice(0, 120), contact: req.body.contact || '', stage: 'inquiry', contractValue: null, since: new Date().toISOString(), satisfaction: null, eventIds: [], nextStep: req.body.nextStep || 'Discovery call to book', journeyId: 'jr-client' };
+  await update('clients', list => { list.push(c); }, []);
+  audit(req.user, 'clients.create', { property: prop, id: c.id });
+  send(req, res, c);
+});
+
+router.patch('/clients/:cid', requireModule('clients'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  let out = null;
+  await update('clients', list => {
+    const c = list.find(x => x.id === req.params.cid && x.property === prop);
+    if (!c) return;
+    if (req.body.stage && PIPELINE.includes(req.body.stage)) c.stage = req.body.stage;
+    for (const k of ['nextStep', 'satisfaction', 'contractValue']) if (k in req.body) c[k] = req.body[k];
+    out = c;
+  }, []);
+  if (!out) return res.status(404).json({ error: 'Client not found' });
+  audit(req.user, 'clients.update', { property: prop, id: req.params.cid, stage: req.body.stage });
+  send(req, res, out);
+});
+
+/* ---------- Residents ---------- */
+router.get('/residents', requireModule('residents'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  send(req, res, { residents: byProp('residents', prop) });
+});
+
+router.get('/residents/:rid', requireModule('residents'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const r = byProp('residents', prop).find(x => x.id === req.params.rid);
+  if (!r) return res.status(404).json({ error: 'Not found' });
+  const journey = byProp('journeys', prop).find(j => j.id === r.journeyId);
+  send(req, res, {
+    resident: r, journey,
+    feedback: byProp('feedback', prop).filter(f => f.resident === r.id),
+    cases: withSla(byProp('cases', prop).filter(c => c.resident === r.id))
+  });
+});
+
+router.post('/residents/:rid/notes', requireModule('residents'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const text = String(req.body.text || '').slice(0, 2000);
+  if (!text) return res.status(400).json({ error: 'Note required' });
+  await update('residents', list => {
+    const r = list.find(x => x.id === req.params.rid && x.property === prop);
+    if (r) (r.notes ||= []).push({ at: new Date().toISOString(), by: req.user.email, text });
+  }, []);
+  audit(req.user, 'residents.note', { property: prop, resident: req.params.rid });
+  send(req, res, { ok: true });
+});
+
+// Draft-only compose. Returns text; never sends anything anywhere.
+router.post('/residents/:rid/compose', requireModule('residents'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const r = byProp('residents', prop).find(x => x.id === req.params.rid);
+  if (!r) return res.status(404).json({ error: 'Not found' });
+  const firstName = r.name.split(' ')[0];
+  const templates = {
+    welcome: `Welcome home, ${firstName}.\n\nYour community is live — events on the calendar, services a message away, and a team that answers in real time. Anything you need, reply here and it is handled.\n\n— The PULSE team`,
+    'event-invite': `${firstName}, you are invited.\n\nSomething special is coming up at the compound and we saved you a place. RSVP with one tap — we would love to see you there.\n\n— The PULSE team`,
+    'check-in': `A quick check-in from PULSE, ${firstName}.\n\nHow is everything so far. If anything is off, tell us — we move fast.\n\n— The PULSE team`
+  };
+  audit(req.user, 'residents.compose.draft', { property: prop, resident: r.id, template: req.body.template });
+  send(req, res, { draft: templates[req.body.template] || templates['check-in'], draftOnly: true });
+});
+
+/* ---------- Feedback ---------- */
+router.get('/feedback', requireModule('feedback'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const residents = byProp('residents', prop);
+  const events = byProp('events', prop);
+  send(req, res, {
+    feedback: byProp('feedback', prop).map(f => ({
+      ...f,
+      residentName: residents.find(r => r.id === f.resident)?.name || 'Unknown',
+      eventTitle: events.find(e => e.id === f.eventId)?.title || null
+    })),
+    dataMode: 'sample'
+  });
+});
+
+const TRIAGE = ['new', 'actioned', 'thanked', 'resolved', 'dismissed'];
+router.post('/feedback/:fid/triage', requireModule('feedback'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  if (!TRIAGE.includes(req.body.status)) return res.status(400).json({ error: 'Unknown status' });
+  await update('feedback', list => {
+    const f = list.find(x => x.id === req.params.fid && x.property === prop);
+    if (f) f.status = req.body.status;
+  }, []);
+  audit(req.user, 'feedback.triage', { property: prop, id: req.params.fid, status: req.body.status });
+  send(req, res, { ok: true });
+});
+
+router.post('/feedback/:fid/escalate', requireModule('feedback'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const f = byProp('feedback', prop).find(x => x.id === req.params.fid);
+  if (!f) return res.status(404).json({ error: 'Not found' });
+  if (f.linkedCase) return res.status(409).json({ error: 'Already escalated', caseId: f.linkedCase });
+  const c = {
+    id: id('case'), property: prop,
+    title: `Feedback follow-up: ${f.text.slice(0, 80)}`,
+    category: 'experience', priority: f.sentiment === 'negative' ? 'high' : 'normal',
+    status: 'open', createdAt: new Date().toISOString(), createdBy: req.user.email,
+    assignee: null, linkedFeedback: f.id, resident: f.resident, history: []
+  };
+  await update('cases', list => { list.push(c); }, []);
+  await update('feedback', list => {
+    const x = list.find(y => y.id === f.id);
+    if (x) { x.linkedCase = c.id; x.status = 'actioned'; }
+  }, []);
+  audit(req.user, 'feedback.escalate', { property: prop, feedback: f.id, case: c.id });
+  send(req, res, { ok: true, case: { ...c, sla: slaState(c) } });
 });
 
 /* ---------- Cases ---------- */
@@ -247,9 +382,9 @@ router.get('/cases', requireModule('cases'), (req, res) => {
 
 router.post('/cases', requireModule('cases'), async (req, res) => {
   const prop = resolveProperty(req, res); if (!prop) return;
-  const { title, category = 'admin', priority = 'normal' } = req.body;
+  const { title, category = 'production', priority = 'normal' } = req.body;
   if (!title) return res.status(400).json({ error: 'Title required' });
-  const c = { id: id('case'), property: prop, title: String(title).slice(0, 200), category, priority, status: 'open', createdAt: new Date().toISOString(), createdBy: req.user.email, assignee: null, linkedFeedback: req.body.linkedFeedback || null, history: [] };
+  const c = { id: id('case'), property: prop, title: String(title).slice(0, 200), category, priority, status: 'open', createdAt: new Date().toISOString(), createdBy: req.user.email, assignee: null, linkedFeedback: null, history: [] };
   await update('cases', list => { list.push(c); }, []);
   audit(req.user, 'cases.create', { property: prop, id: c.id });
   send(req, res, { ...c, sla: slaState(c) });
@@ -269,227 +404,53 @@ router.patch('/cases/:cid', requireModule('cases'), async (req, res) => {
   send(req, res, { ...out, sla: slaState(out) });
 });
 
-/* ---------- Residents ---------- */
-router.get('/residents', requireModule('residents'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  send(req, res, { residents: byProp('residents', prop) });
-});
-
-router.get('/residents/:rid', requireModule('residents'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const r = byProp('residents', prop).find(x => x.id === req.params.rid);
-  if (!r) return res.status(404).json({ error: 'Not found' });
-  send(req, res, {
-    resident: r,
-    feedback: byProp('feedback', prop).filter(f => f.resident === r.id),
-    cases: withSla(byProp('cases', prop).filter(c => c.resident === r.id || byProp('feedback', prop).some(f => f.resident === r.id && f.linkedCase === c.id))),
-    moves: byProp('moves', prop).filter(m => m.resident === r.id)
-  });
-});
-
-router.post('/residents/:rid/notes', requireModule('residents'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const text = String(req.body.text || '').slice(0, 2000);
-  if (!text) return res.status(400).json({ error: 'Note required' });
-  await update('residents', list => {
-    const r = list.find(x => x.id === req.params.rid && x.property === prop);
-    if (r) (r.notes ||= []).push({ at: new Date().toISOString(), by: req.user.email, text });
-  }, []);
-  audit(req.user, 'residents.note', { property: prop, resident: req.params.rid });
-  send(req, res, { ok: true });
-});
-
-router.post('/residents/:rid/milestones/:index', requireModule('residents'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  await update('residents', list => {
-    const r = list.find(x => x.id === req.params.rid && x.property === prop);
-    const m = r?.milestones[Number(req.params.index)];
-    if (m) m.done = !m.done;
-  }, []);
-  audit(req.user, 'residents.milestone', { property: prop, resident: req.params.rid, index: req.params.index });
-  send(req, res, { ok: true });
-});
-
-const STAGES = ['prospect', 'onboarding', 'active', 'renewal', 'departed'];
-router.post('/residents/:rid/stage', requireModule('residents'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  if (!STAGES.includes(req.body.stage)) return res.status(400).json({ error: 'Unknown stage' });
-  await update('residents', list => {
-    const r = list.find(x => x.id === req.params.rid && x.property === prop);
-    if (r) r.stage = req.body.stage;
-  }, []);
-  audit(req.user, 'residents.stage', { property: prop, resident: req.params.rid, stage: req.body.stage });
-  send(req, res, { ok: true });
-});
-
-// Draft-only compose. Returns text; never sends anything anywhere.
-router.post('/residents/:rid/compose', requireModule('residents'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const r = byProp('residents', prop).find(x => x.id === req.params.rid);
-  if (!r) return res.status(404).json({ error: 'Not found' });
-  const firstName = r.name.split(' ')[0];
-  const templates = {
-    welcome: `Welcome home, ${firstName}.
-
-Your unit ${r.unit || ''} is ready and your community is live — events on the calendar, services a message away, and a team that answers in real time. Anything you need, reply here and it is handled.
-
-— The PULSE team`,
-    'check-in': `A quick check-in from PULSE, ${firstName}.
-
-How is life in ${r.unit ? `unit ${r.unit}` : 'your home'} so far. If anything is off, tell us — we move fast.
-
-— The PULSE team`,
-    renewal: `${firstName}, your stay is coming up for renewal.
-
-We would love to keep you in the community. Reply here and we will walk you through the options.
-
-— The PULSE team`
-  };
-  const draft = templates[req.body.template] || templates['check-in'];
-  audit(req.user, 'residents.compose.draft', { property: prop, resident: r.id, template: req.body.template });
-  send(req, res, { draft, draftOnly: true, note: 'Draft only — this tool never sends messages.' });
-});
-
-/* ---------- Feedback ---------- */
-router.get('/feedback', requireModule('feedback'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const residents = byProp('residents', prop);
-  send(req, res, {
-    feedback: byProp('feedback', prop).map(f => ({ ...f, residentName: residents.find(r => r.id === f.resident)?.name || 'Unknown' })),
-    dataMode: 'sample'
-  });
-});
-
-const TRIAGE = ['new', 'actioned', 'thanked', 'resolved', 'dismissed'];
-router.post('/feedback/:fid/triage', requireModule('feedback'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  if (!TRIAGE.includes(req.body.status)) return res.status(400).json({ error: 'Unknown status' });
-  await update('feedback', list => {
-    const f = list.find(x => x.id === req.params.fid && x.property === prop);
-    if (f) f.status = req.body.status;
-  }, []);
-  audit(req.user, 'feedback.triage', { property: prop, id: req.params.fid, status: req.body.status });
-  send(req, res, { ok: true });
-});
-
-// Escalate a feedback item into a linked, SLA-tracked case.
-router.post('/feedback/:fid/escalate', requireModule('feedback'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const f = byProp('feedback', prop).find(x => x.id === req.params.fid);
-  if (!f) return res.status(404).json({ error: 'Not found' });
-  if (f.linkedCase) return res.status(409).json({ error: 'Already escalated', caseId: f.linkedCase });
-  const c = {
-    id: id('case'), property: prop,
-    title: `Feedback follow-up: ${f.text.slice(0, 80)}`,
-    category: 'facilities', priority: f.sentiment === 'negative' ? 'high' : 'normal',
-    status: 'open', createdAt: new Date().toISOString(), createdBy: req.user.email,
-    assignee: null, linkedFeedback: f.id, resident: f.resident, history: []
-  };
-  await update('cases', list => { list.push(c); }, []);
-  await update('feedback', list => {
-    const x = list.find(y => y.id === f.id);
-    if (x) { x.linkedCase = c.id; x.status = 'actioned'; }
-  }, []);
-  audit(req.user, 'feedback.escalate', { property: prop, feedback: f.id, case: c.id });
-  send(req, res, { ok: true, case: { ...c, sla: slaState(c) } });
-});
-
-/* ---------- Events ---------- */
-router.get('/events', requireModule('events'), (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const residents = byProp('residents', prop);
-  send(req, res, {
-    events: byProp('events', prop).map(e => ({
-      ...e,
-      rsvpNames: e.rsvps.map(rid => residents.find(r => r.id === rid)?.name).filter(Boolean)
-    })),
-    residents: residents.map(r => ({ id: r.id, name: r.name }))
-  });
-});
-
-router.post('/events', requireModule('events'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  const { title, when, where = '', capacity = 20 } = req.body;
-  if (!title || !when) return res.status(400).json({ error: 'Title and time required' });
-  const e = { id: id('ev'), property: prop, title: String(title).slice(0, 120), when, where, capacity, rsvps: [], attended: [] };
-  await update('events', list => { list.push(e); }, []);
-  audit(req.user, 'events.create', { property: prop, id: e.id });
-  send(req, res, e);
-});
-
-router.post('/events/:eid/rsvp', requireModule('events'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  await update('events', list => {
-    const e = list.find(x => x.id === req.params.eid && x.property === prop);
-    if (e && req.body.resident) {
-      const i = e.rsvps.indexOf(req.body.resident);
-      i >= 0 ? e.rsvps.splice(i, 1) : e.rsvps.push(req.body.resident);
-    }
-  }, []);
-  audit(req.user, 'events.rsvp', { property: prop, event: req.params.eid, resident: req.body.resident });
-  send(req, res, { ok: true });
-});
-
-router.post('/events/:eid/attendance', requireModule('events'), async (req, res) => {
-  const prop = resolveProperty(req, res); if (!prop) return;
-  await update('events', list => {
-    const e = list.find(x => x.id === req.params.eid && x.property === prop);
-    if (e && req.body.resident) {
-      const i = e.attended.indexOf(req.body.resident);
-      i >= 0 ? e.attended.splice(i, 1) : e.attended.push(req.body.resident);
-    }
-  }, []);
-  audit(req.user, 'events.attendance', { property: prop, event: req.params.eid, resident: req.body.resident });
-  send(req, res, { ok: true });
-});
-
-/* ---------- Operations ---------- */
-router.get('/operations', requireModule('operations'), (req, res) => {
+/* ---------- Experience dashboard ---------- */
+router.get('/experience', requireModule('experience'), (req, res) => {
   const metrics = read('metrics', {});
-  const allUnits = read('units', []);
-  const scoped = PROPERTIES; // operations roles are portfolio/region scoped by matrix
-  const board = scoped.map(p => {
-    const units = allUnits.filter(u => u.property === p.id);
-    return {
-      ...p,
-      occupancy: units.length ? occupancySummary(units) : null,
-      ...(metrics[p.id] || { dataMode: { occupancy: 'awaiting-data' } })
-    };
+  const allEvents = read('events', []);
+  const allResidents = read('residents', []);
+  const journeysAll = read('journeys', []);
+  const board = PROPERTIES.map(p => ({ ...p, ...(metrics[p.id] || { dataMode: { experience: 'awaiting-data' } }) }));
+  const reported = allEvents.filter(e => e.status === 'reported').map(e => ({ id: e.id, title: e.title, when: e.when, kind: e.kind, scorecard: eventScorecard(e) }));
+  const testimonials = reported.flatMap(e => (e.scorecard?.testimonials || []).map(t => ({ text: t, event: e.title })));
+  const rj = journeysAll.find(j => j.kind === 'resident');
+  send(req, res, {
+    board,
+    rollup: {
+      eventsReported: reported.length,
+      exceptional: reported.filter(e => e.scorecard?.tier === 'Exceptional').length,
+      avgEventScore: reported.length ? Math.round(reported.reduce((s, e) => s + (e.scorecard?.score || 0), 0) / reported.length) : null,
+      journey: rj ? journeyStats(rj, allResidents) : null,
+      atRisk: atRiskTravelers(allResidents).length
+    },
+    reported, testimonials: testimonials.slice(0, 8),
+    financialsVisible: seesFinancials(req.user), financialsSource: 'sample'
   });
-  const live = board.filter(b => b.occupancy);
-  const rollup = {
-    weightedOccupancy: live.length ? +(live.reduce((s, b) => s + b.occupancy.occupancyRate * b.occupancy.total, 0) / live.reduce((s, b) => s + b.occupancy.total, 0)).toFixed(3) : null,
-    propertiesLive: live.length, propertiesTotal: scoped.length,
-    revenue: live.reduce((s, b) => s + (b.revenue || 0), 0),
-    cost: live.reduce((s, b) => s + (b.cost || 0), 0),
-    reserve: live.reduce((s, b) => s + (b.reserve || 0), 0),
-    noi: live.reduce((s, b) => s + (b.noi || 0), 0),
-    csat: live.length ? +(live.reduce((s, b) => s + (b.csat || 0), 0) / live.filter(b => b.csat).length || 0).toFixed(2) : null
-  };
-  send(req, res, { board, rollup, financialsVisible: seesFinancials(req.user), financialsSource: process.env.YARDI_API_KEY ? 'yardi' : 'sample' });
 });
 
-router.get('/operations/trends', requireModule('operations'), (req, res) => {
+router.get('/experience/trends', requireModule('experience'), (req, res) => {
   send(req, res, { trends: read('trends', {}) });
 });
 
 /* ---------- Oversight ---------- */
 router.get('/oversight', requireModule('oversight'), (req, res) => {
   const shifts = read('shifts', {});
-  const board = PROPERTIES.map(p => {
-    const s = shifts[p.id];
-    if (!s) return { property: p, status: 'awaiting-data' };
-    return {
-      property: p,
-      onDuty: s.duty.filter(d => d.on),
-      offDuty: s.duty.filter(d => !d.on),
-      checklistDone: s.checklist?.filter(c => c.done).length || 0,
-      checklistTotal: s.checklist?.length || 0,
-      openTasks: s.tasks?.filter(t => t.status === 'open') || [],
-      handover: s.handover ? { from: s.handover.from, at: s.handover.at, readCount: s.handover.readBy.length, note: s.handover.note } : null
-    };
+  const allEvents = read('events', []);
+  send(req, res, {
+    board: PROPERTIES.map(p => {
+      const s = shifts[p.id];
+      if (!s) return { property: p, status: 'awaiting-data' };
+      return {
+        property: p,
+        onDuty: s.duty.filter(d => d.on), offDuty: s.duty.filter(d => !d.on),
+        checklistDone: s.checklist?.filter(c => c.done).length || 0,
+        checklistTotal: s.checklist?.length || 0,
+        openTasks: s.tasks?.filter(t => t.status === 'open') || [],
+        liveEvents: allEvents.filter(e => e.property === p.id && e.status === 'live').map(e => e.title),
+        handover: s.handover ? { from: s.handover.from, at: s.handover.at, readCount: s.handover.readBy.length, note: s.handover.note } : null
+      };
+    })
   });
-  send(req, res, { board });
 });
 
 /* ---------- Global search ---------- */
@@ -499,15 +460,14 @@ router.get('/search', (req, res) => {
   if (q.length < 2) return send(req, res, { results: [] });
   const results = [];
   const can = m => MODULE_ACCESS[m].includes(req.user.role);
-  const scope = new Set((req.user.property ? [req.user.property] : PROPERTIES.map(p => p.id)));
+  const scope = new Set(req.user.property ? [req.user.property] : PROPERTIES.map(p => p.id));
   const inScope = x => scope.has(x.property);
   const push = (module, title, sub, hash) => results.push({ module, title, sub, hash });
-  if (can('units')) for (const u of read('units', []).filter(inScope)) if (u.id.includes(q) || u.status.includes(q)) push('units', `Unit ${u.id}`, u.status, '#/units');
-  if (can('residents')) for (const r of read('residents', []).filter(inScope)) if (r.name.toLowerCase().includes(q) || (r.unit || '').includes(q)) push('residents', r.name, `${r.stage}${r.unit ? ' · unit ' + r.unit : ''}`, `#/residents/${r.id}`);
-  if (can('maintenance')) for (const w of read('workorders', []).filter(inScope)) if (w.title.toLowerCase().includes(q)) push('maintenance', w.title, `${w.priority} · ${w.status}`, '#/maintenance');
-  if (can('cases')) for (const c of read('cases', []).filter(inScope)) if (c.title.toLowerCase().includes(q)) push('cases', c.title, c.status, '#/cases');
+  if (can('events')) for (const e of read('events', []).filter(inScope)) if (e.title.toLowerCase().includes(q)) push('events', e.title, e.status, '#/events');
+  if (can('residents')) for (const r of read('residents', []).filter(inScope)) if (r.name.toLowerCase().includes(q)) push('residents', r.name, `stage ${r.stageIndex + 1}`, `#/residents/${r.id}`);
+  if (can('clients')) for (const c of read('clients', []).filter(inScope)) if (c.name.toLowerCase().includes(q)) push('clients', c.name, c.stage, '#/clients');
   if (can('feedback')) for (const f of read('feedback', []).filter(inScope)) if (f.text.toLowerCase().includes(q)) push('feedback', f.text.slice(0, 60), f.sentiment, '#/feedback');
-  if (can('events')) for (const e of read('events', []).filter(inScope)) if (e.title.toLowerCase().includes(q)) push('events', e.title, e.where, '#/events');
+  if (can('cases')) for (const c of read('cases', []).filter(inScope)) if (c.title.toLowerCase().includes(q)) push('cases', c.title, c.status, '#/cases');
   send(req, res, { results: results.slice(0, 20) });
 });
 

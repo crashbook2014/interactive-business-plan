@@ -1,9 +1,12 @@
-# PULSE — Master of the Day
+# PULSE — Resident Experience Co.
 
-Role-aware operations console for a serviced-living operator. One app for the daily
-shift, the physical estate, the resident experience, and management oversight —
-built for Narjis Gardens (Riyadh, Asia/Riyadh) and multi-property ready
-across the Riyadh portfolio.
+Event and customer-experience-journey platform for residential compounds
+(Riyadh, Asia/Riyadh). One console for the team's daily shift, journey
+design and tracking, the full event lifecycle, the B2B client pipeline,
+and the experience dashboard that proves satisfaction — journeys
+successful, events exceptional.
+
+All people and data are fictional placeholders (see SECURITY-NOTE.md).
 
 ```bash
 npm install
@@ -11,12 +14,11 @@ npm start      # http://localhost:8787 — stub mode, zero credentials
 npm test
 ```
 
-- **Stack**: Node ≥20, Express 5 (ESM), JSON file storage, React 19 + Vite,
-  single origin (Express serves the built client and `/api`).
-- **RBAC**: 8 roles from the org chart in `server/config.js`, enforced on every
-  API endpoint; financials redacted below GM; per-property scoping.
-- **Integrations**: all read-only (Slack/Gmail/Calendar, Google Sheets, Yardi),
-  stubbed with badged sample data until env vars activate them.
+Modules: Home, Shift (Master of the Day briefing), Journey Designer,
+Event Studio (checklist, run-of-show, guests, survey, auto report with
+Exceptional scorecard), Client pipeline, Residents 360, Feedback triage,
+Cases with SLA, Experience dashboard (trends, testimonial wall,
+portfolio board), Oversight. Server-enforced 8-role RBAC with financial
+redaction and per-compound scoping.
 
-See `DEPLOY.md` for Cloud Run / Render deployment and `REVIEW.md` for what is
-done, sample vs live data, and the full access matrix.
+See DEPLOY.md for production deployment.

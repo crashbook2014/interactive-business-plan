@@ -1,27 +1,26 @@
 // In-browser API for the shareable demo build. Implements the same endpoints
 // against in-memory copies of the seed data, reusing the real server modules
-// for the access matrix, redaction fields, SLA math and briefing — so the
+// for the access matrix, redaction, SLA, scorecards and journey math — so the
 // demo enforces exactly the rules the server does. State lives for the tab.
 import {
   MODULE_ACCESS, FINANCIAL_ROLES, FINANCIAL_FIELDS, PROPERTIES, ORG, ROLES,
   DEFAULT_LANDING, ALLOWED_DOMAIN, findUser, scopeProperties
 } from '../../server/config.js';
 import { slaState } from '../../server/lib/sla.js';
-import { composeCore, meetingCore } from '../../server/lib/brief-core.js';
-import seedUnits from '../../server/seed/units.json';
+import { composeCore, meetingCore, eventScorecard, journeyStats, atRiskTravelers } from '../../server/lib/brief-core.js';
+import seedJourneys from '../../server/seed/journeys.json';
 import seedResidents from '../../server/seed/residents.json';
-import seedWos from '../../server/seed/workorders.json';
-import seedCases from '../../server/seed/cases.json';
-import seedFeedback from '../../server/seed/feedback.json';
+import seedClients from '../../server/seed/clients.json';
 import seedEvents from '../../server/seed/events.json';
-import seedMoves from '../../server/seed/moves.json';
+import seedFeedback from '../../server/seed/feedback.json';
+import seedCases from '../../server/seed/cases.json';
 import seedShifts from '../../server/seed/shifts.json';
 import seedSignals from '../../server/seed/signals.json';
 import seedMetrics from '../../server/seed/metrics.json';
 import seedTrends from '../../server/seed/trends.json';
 
 // Shift every timestamp so the demo data is always "today", whenever opened.
-const SEED_EPOCH = Date.parse('2026-07-19T07:00:00Z');
+const SEED_EPOCH = Date.parse('2026-07-19T18:00:00Z');
 const DELTA = Date.now() - SEED_EPOCH;
 const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
 function shiftDates(v) {
@@ -33,16 +32,15 @@ function shiftDates(v) {
 const clone = v => shiftDates(JSON.parse(JSON.stringify(v)));
 
 const db = {
-  units: clone(seedUnits), residents: clone(seedResidents), workorders: clone(seedWos),
-  cases: clone(seedCases), feedback: clone(seedFeedback), events: clone(seedEvents),
-  moves: clone(seedMoves), shifts: clone(seedShifts), signals: clone(seedSignals),
-  metrics: clone(seedMetrics), trends: clone(seedTrends)
+  journeys: clone(seedJourneys), residents: clone(seedResidents), clients: clone(seedClients),
+  events: clone(seedEvents), feedback: clone(seedFeedback), cases: clone(seedCases),
+  shifts: clone(seedShifts), signals: clone(seedSignals), metrics: clone(seedMetrics), trends: clone(seedTrends)
 };
 
-// Session survives reloads where storage is available; memory otherwise.
 const store = (() => { try { sessionStorage.setItem('__t', '1'); sessionStorage.removeItem('__t'); return sessionStorage; } catch { return null; } })();
 let sessionEmail = store?.getItem('demo_email') || null;
 const remember = v => { sessionEmail = v; try { v ? store?.setItem('demo_email', v) : store?.removeItem('demo_email'); } catch { /* memory only */ } };
+
 let idn = 0;
 const id = p => `${p}-demo${++idn}`;
 const err = (status, message) => { throw Object.assign(new Error(message), { status }); };
@@ -69,7 +67,7 @@ function gate(user, module) { if (!can(user, module)) err(403, `Your role does n
 function scopeProp(user, params) {
   const allowed = scopeProperties(user);
   const requested = params.get('property') || user.property || allowed[0];
-  if (!allowed.includes(requested)) err(403, 'Property outside your scope');
+  if (!allowed.includes(requested)) err(403, 'Compound outside your scope');
   return requested;
 }
 
@@ -85,25 +83,13 @@ function contextFor(user) {
   };
 }
 
-function occupancySummary(units) {
-  const count = s => units.filter(u => u.status === s).length;
-  const occupied = count('occupied') + count('departing');
-  return {
-    total: units.length, occupied,
-    vacantReady: count('vacant-ready'), vacantDirty: count('vacant-dirty'),
-    arriving: count('arriving'), outOfOrder: count('out-of-order'), departing: count('departing'),
-    occupancyRate: units.length ? +(occupied / units.length).toFixed(3) : 0
-  };
-}
-
-function briefData(prop) {
-  return {
-    signals: db.signals,
-    units: byProp('units', prop),
-    wos: byProp('workorders', prop),
-    moves: byProp('moves', prop).filter(m => m.status !== 'done')
-  };
-}
+const briefData = prop => ({
+  signals: db.signals,
+  events: byProp('events', prop),
+  residents: byProp('residents', prop),
+  feedback: byProp('feedback', prop),
+  cases: byProp('cases', prop)
+});
 
 export function demoApi(path, opts = {}) {
   return new Promise((resolve, reject) => {
@@ -135,7 +121,7 @@ function handle(path, opts) {
   const user = requireUser();
   const R = data => redact(data, user);
 
-  /* ---- search (auth only, role+scope filtered) ---- */
+  /* ---- search ---- */
   if (p === '/search') {
     const q = (params.get('q') || '').toLowerCase().trim();
     if (q.length < 2) return { results: [] };
@@ -143,12 +129,11 @@ function handle(path, opts) {
     const inScope = x => scope.has(x.property);
     const results = [];
     const push = (module, title, sub, hash) => results.push({ module, title, sub, hash });
-    if (can(user, 'units')) for (const u of db.units.filter(inScope)) if (u.id.includes(q) || u.status.includes(q)) push('units', `Unit ${u.id}`, u.status, '#/units');
-    if (can(user, 'residents')) for (const r of db.residents.filter(inScope)) if (r.name.toLowerCase().includes(q) || (r.unit || '').includes(q)) push('residents', r.name, r.stage, `#/residents/${r.id}`);
-    if (can(user, 'maintenance')) for (const w of db.workorders.filter(inScope)) if (w.title.toLowerCase().includes(q)) push('maintenance', w.title, `${w.priority} · ${w.status}`, '#/maintenance');
-    if (can(user, 'cases')) for (const c of db.cases.filter(inScope)) if (c.title.toLowerCase().includes(q)) push('cases', c.title, c.status, '#/cases');
+    if (can(user, 'events')) for (const e of db.events.filter(inScope)) if (e.title.toLowerCase().includes(q)) push('events', e.title, e.status, '#/events');
+    if (can(user, 'residents')) for (const r of db.residents.filter(inScope)) if (r.name.toLowerCase().includes(q)) push('residents', r.name, `stage ${r.stageIndex + 1}`, `#/residents/${r.id}`);
+    if (can(user, 'clients')) for (const c of db.clients.filter(inScope)) if (c.name.toLowerCase().includes(q)) push('clients', c.name, c.stage, '#/clients');
     if (can(user, 'feedback')) for (const f of db.feedback.filter(inScope)) if (f.text.toLowerCase().includes(q)) push('feedback', f.text.slice(0, 60), f.sentiment, '#/feedback');
-    if (can(user, 'events')) for (const e of db.events.filter(inScope)) if (e.title.toLowerCase().includes(q)) push('events', e.title, e.where, '#/events');
+    if (can(user, 'cases')) for (const c of db.cases.filter(inScope)) if (c.title.toLowerCase().includes(q)) push('cases', c.title, c.status, '#/cases');
     return { results: results.slice(0, 20) };
   }
 
@@ -156,19 +141,19 @@ function handle(path, opts) {
   if (p === '/dashboard') {
     gate(user, 'home');
     const prop = scopeProp(user, params);
-    const units = byProp('units', prop);
-    const wos = withSla(byProp('workorders', prop));
+    const events = byProp('events', prop);
     const cases = withSla(byProp('cases', prop));
     const s = db.shifts[prop] || { duty: [] };
+    const reported = events.filter(e => e.status === 'reported').map(eventScorecard).filter(Boolean);
     return R({
       property: PROPERTIES.find(x => x.id === prop),
-      occupancy: occupancySummary(units),
-      arrivalsDue: units.filter(u => u.status === 'arriving').length,
-      roomsToClean: units.filter(u => u.status === 'vacant-dirty').length,
-      highWorkOrders: wos.filter(w => w.priority === 'high' && w.status !== 'done').length,
-      slaAtRisk: [...wos, ...cases].filter(x => ['at-risk', 'breached'].includes(x.sla.state)).length,
-      onDuty: s.duty.filter(d => d.on).length,
+      eventsLive: events.filter(e => e.status === 'live').length,
+      eventsPlanning: events.filter(e => ['planning', 'concept'].includes(e.status)).length,
+      journeysAtRisk: atRiskTravelers(byProp('residents', prop)).length,
       newFeedback: byProp('feedback', prop).filter(f => f.status === 'new').length,
+      slaAtRisk: cases.filter(x => ['at-risk', 'breached'].includes(x.sla.state)).length,
+      onDuty: s.duty.filter(d => d.on).length,
+      avgEventScore: reported.length ? Math.round(reported.reduce((a, r) => a + r.score, 0) / reported.length) : null,
       metrics: db.metrics[prop] || {},
       now: new Date().toISOString()
     });
@@ -179,7 +164,7 @@ function handle(path, opts) {
     gate(user, 'shift');
     const prop = scopeProp(user, params);
     const s = (db.shifts[prop] ||= { duty: [], checklist: [], tasks: [], handover: null });
-    if (p === '/shift') return R({ ...s, brief: composeCore(briefData(prop)), meetingBrief: meetingCore(composeCore(briefData(prop))) });
+    if (p === '/shift') { const b = composeCore(briefData(prop)); return R({ ...s, brief: b, meetingBrief: meetingCore(b) }); }
     if (seg[1] === 'checklist') { const c = s.checklist.find(x => x.id === seg[2]); if (c) c.done = !c.done; return { ok: true }; }
     if (seg[1] === 'tasks' && method === 'POST') {
       const t = { id: id('t'), title: String(body.title || '').slice(0, 200), assignee: body.assignee || null, status: 'open', createdAt: new Date().toISOString() };
@@ -204,81 +189,107 @@ function handle(path, opts) {
     }
   }
 
-  /* ---- units ---- */
-  if (seg[0] === 'units') {
-    gate(user, 'units');
+  /* ---- journeys ---- */
+  if (seg[0] === 'journeys') {
+    gate(user, 'journeys');
     const prop = scopeProp(user, params);
-    if (p === '/units') {
-      const units = byProp('units', prop);
-      return R({ units, summary: occupancySummary(units), dataMode: PROPERTIES.find(x => x.id === prop)?.live ? 'live-stub' : 'awaiting-data' });
-    }
-    const u = db.units.find(x => x.id === seg[1] && x.property === prop);
-    if (!u) err(404, 'Unit not found');
-    u.status = body.status; return { ok: true };
-  }
-
-  /* ---- moves ---- */
-  if (seg[0] === 'moves') {
-    gate(user, 'moves');
-    const prop = scopeProp(user, params);
-    if (p === '/moves') {
+    if (p === '/journeys') {
+      const journeys = byProp('journeys', prop);
       const residents = byProp('residents', prop);
-      return R({ moves: byProp('moves', prop).map(m => ({ ...m, residentName: residents.find(r => r.id === m.resident)?.name || null, progress: `${m.checklist.filter(c => c.done).length}/${m.checklist.length}` })) });
+      const clients = byProp('clients', prop);
+      return R({
+        journeys: journeys.map(j => ({
+          ...j,
+          stats: j.kind === 'resident'
+            ? journeyStats(j, residents)
+            : { stages: j.stages.map((s, si) => ({ name: s.name, touchpoints: s.touchpoints, travelersHere: clients.filter(c => ['inquiry','proposal','planning','event-day','report-renewal'][si] === c.stage).length })), travelers: clients.length }
+        })),
+        atRisk: atRiskTravelers(residents).map(r => ({ id: r.id, name: r.name, stageIndex: r.stageIndex }))
+      });
     }
-    const m = db.moves.find(x => x.id === seg[1] && x.property === prop);
-    const item = m?.checklist[Number(seg[3])];
-    if (item) { item.done = !item.done; m.status = m.checklist.every(c => c.done) ? 'done' : 'in-progress'; }
-    return { ok: true };
+    if (seg[1] === 'resident' && seg[3] === 'touchpoint') {
+      const r = db.residents.find(x => x.id === seg[2] && x.property === prop);
+      const tp = r?.touchpoints?.[Number(body.stage)]?.[Number(body.index)];
+      if (!tp) err(404, 'Touchpoint not found');
+      if (body.done !== undefined) { tp.done = !!body.done; tp.at = tp.done ? new Date().toISOString() : null; }
+      if (body.score !== undefined) tp.score = body.score === null ? null : Math.max(1, Math.min(5, Number(body.score)));
+      r.stageIndex = r.touchpoints.findIndex(st => st.some(t => !t.done));
+      if (r.stageIndex === -1) r.stageIndex = r.touchpoints.length - 1;
+      return { ok: true };
+    }
   }
 
-  /* ---- housekeeping ---- */
-  if (seg[0] === 'housekeeping') {
-    gate(user, 'housekeeping');
+  /* ---- events ---- */
+  if (seg[0] === 'events') {
+    gate(user, 'events');
     const prop = scopeProp(user, params);
-    if (p === '/housekeeping') {
-      const units = byProp('units', prop);
-      const rank = s => s === 'arriving' ? 0 : s === 'vacant-dirty' ? 1 : 2;
-      const board = units.filter(u => ['vacant-dirty', 'arriving', 'departing'].includes(u.status)).sort((a, b) => rank(a.status) - rank(b.status) || a.id.localeCompare(b.id));
-      return R({ board, toClean: units.filter(u => u.status === 'vacant-dirty').length });
+    if (p === '/events' && method === 'GET') {
+      const clients = byProp('clients', prop);
+      return R({
+        events: byProp('events', prop).map(e => ({
+          ...e,
+          clientName: clients.find(c => c.id === e.clientId)?.name || null,
+          scorecard: eventScorecard(e),
+          openTasks: e.checklist.filter(c => !c.done).length
+        })),
+        team: ORG.filter(u => u.property === prop || !u.property).map(u => ({ email: u.email, name: u.name }))
+      });
     }
-    const u = db.units.find(x => x.id === seg[1] && x.property === prop);
-    if (!u || !['vacant-dirty', 'departing'].includes(u.status)) err(400, 'Unit is not on the turn board');
-    u.status = 'vacant-ready'; return { ok: true };
-  }
-
-  /* ---- workorders ---- */
-  if (seg[0] === 'workorders') {
-    gate(user, 'maintenance');
-    const prop = scopeProp(user, params);
-    if (p === '/workorders' && method === 'GET') {
-      const assignees = ORG.filter(u => (u.property === prop || !u.property) && ['maintenance_manager', 'agm', 'gm'].includes(u.role)).map(u => ({ email: u.email, name: u.name }));
-      return R({ workorders: withSla(byProp('workorders', prop)), assignees });
-    }
-    if (method === 'POST') {
-      if (!body.title) err(400, 'Title required');
-      const wo = { id: id('wo'), property: prop, title: String(body.title).slice(0, 200), category: body.category || 'General', priority: body.priority || 'normal', status: 'open', unit: body.unit || null, createdAt: new Date().toISOString(), createdBy: user.email, assignee: null, history: [] };
-      db.workorders.push(wo); return { ...wo, sla: slaState(wo) };
-    }
-    const w = db.workorders.find(x => x.id === seg[1] && x.property === prop);
-    if (!w) err(404, 'Work order not found');
-    for (const k of ['status', 'assignee', 'priority']) if (k in body) w[k] = body[k];
-    return { ...w, sla: slaState(w) };
-  }
-
-  /* ---- cases ---- */
-  if (seg[0] === 'cases') {
-    gate(user, 'cases');
-    const prop = scopeProp(user, params);
-    if (p === '/cases' && method === 'GET') return R({ cases: withSla(byProp('cases', prop)) });
     if (method === 'POST' && seg.length === 1) {
-      if (!body.title) err(400, 'Title required');
-      const c = { id: id('case'), property: prop, title: String(body.title).slice(0, 200), category: body.category || 'admin', priority: body.priority || 'normal', status: 'open', createdAt: new Date().toISOString(), createdBy: user.email, assignee: null, linkedFeedback: null, history: [] };
-      db.cases.push(c); return { ...c, sla: slaState(c) };
+      if (!body.title || !body.when) err(400, 'Title and time required');
+      const e = { id: id('ev'), property: prop, title: String(body.title).slice(0, 140), kind: body.kind || 'resident', clientId: body.clientId || null, when: body.when, where: body.where || '', capacity: body.capacity || 50, status: 'concept', budget: null, spend: null, checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null };
+      db.events.push(e); return e;
     }
-    const c = db.cases.find(x => x.id === seg[1] && x.property === prop);
-    if (!c) err(404, 'Case not found');
-    for (const k of ['status', 'assignee', 'priority']) if (k in body) c[k] = body[k];
-    return { ...c, sla: slaState(c) };
+    const e = db.events.find(x => x.id === seg[1] && x.property === prop);
+    if (!e) err(404, 'Event not found');
+    if (seg[2] === 'checklist') {
+      if (body.add) e.checklist.push({ item: String(body.add).slice(0, 160), owner: body.owner || null, due: body.due || null, done: false });
+      else if (body.toggle !== undefined) { const c = e.checklist[Number(body.toggle)]; if (c) c.done = !c.done; }
+      return { ok: true };
+    }
+    if (seg[2] === 'runofshow') {
+      if (!body.time || !body.item) err(400, 'Time and item required');
+      e.runOfShow.push({ time: body.time, item: String(body.item).slice(0, 160), owner: body.owner || '' });
+      e.runOfShow.sort((a, b) => a.time.localeCompare(b.time));
+      return { ok: true };
+    }
+    if (seg[2] === 'survey') {
+      const csat = Math.max(1, Math.min(5, Number(body.csat)));
+      if (!csat) err(400, 'Score 1-5 required');
+      e.surveys.push({ csat, comment: String(body.comment || '').slice(0, 400) });
+      return { ok: true, scorecard: eventScorecard(e) };
+    }
+    if (method === 'PATCH') {
+      if (body.status) { e.status = body.status; if (body.status === 'reported' && !e.reportSentAt) e.reportSentAt = new Date().toISOString(); }
+      for (const k of ['rsvps', 'attended']) if (k in body) e[k] = Math.max(0, Number(body[k]) || 0);
+      return { ...e, scorecard: eventScorecard(e) };
+    }
+  }
+
+  /* ---- clients ---- */
+  if (seg[0] === 'clients') {
+    gate(user, 'clients');
+    const prop = scopeProp(user, params);
+    if (p === '/clients' && method === 'GET') {
+      const events = byProp('events', prop);
+      return R({
+        clients: byProp('clients', prop).map(c => ({
+          ...c,
+          events: events.filter(e => e.clientId === c.id).map(e => ({ id: e.id, title: e.title, status: e.status, scorecard: eventScorecard(e) }))
+        })),
+        pipelineValue: byProp('clients', prop).reduce((s, c) => s + (c.contractValue || 0), 0)
+      });
+    }
+    if (method === 'POST' && seg.length === 1) {
+      if (!body.name) err(400, 'Name required');
+      const c = { id: id('cl'), property: prop, name: String(body.name).slice(0, 120), contact: body.contact || '', stage: 'inquiry', contractValue: null, since: new Date().toISOString(), satisfaction: null, eventIds: [], nextStep: 'Discovery call to book', journeyId: 'jr-client' };
+      db.clients.push(c); return c;
+    }
+    const c = db.clients.find(x => x.id === seg[1] && x.property === prop);
+    if (!c) err(404, 'Client not found');
+    if (body.stage) c.stage = body.stage;
+    for (const k of ['nextStep', 'satisfaction', 'contractValue']) if (k in body) c[k] = body[k];
+    return c;
   }
 
   /* ---- residents ---- */
@@ -290,31 +301,17 @@ function handle(path, opts) {
     if (!r) err(404, 'Not found');
     if (seg.length === 2) return R({
       resident: r,
+      journey: byProp('journeys', prop).find(j => j.id === r.journeyId),
       feedback: byProp('feedback', prop).filter(f => f.resident === r.id),
-      cases: withSla(byProp('cases', prop).filter(c => c.resident === r.id || byProp('feedback', prop).some(f => f.resident === r.id && f.linkedCase === c.id))),
-      moves: byProp('moves', prop).filter(m => m.resident === r.id)
+      cases: withSla(byProp('cases', prop).filter(c => c.resident === r.id))
     });
     if (seg[2] === 'notes') { if (!body.text) err(400, 'Note required'); (r.notes ||= []).push({ at: new Date().toISOString(), by: user.email, text: String(body.text).slice(0, 2000) }); return { ok: true }; }
-    if (seg[2] === 'milestones') { const m = r.milestones[Number(seg[3])]; if (m) m.done = !m.done; return { ok: true }; }
-    if (seg[2] === 'stage') { r.stage = body.stage; return { ok: true }; }
     if (seg[2] === 'compose') {
       const firstName = r.name.split(' ')[0];
       const templates = {
-        welcome: `Welcome home, ${firstName}.
-
-Your unit ${r.unit || ''} is ready and your community is live — events on the calendar, services a message away, and a team that answers in real time. Anything you need, reply here and it is handled.
-
-— The PULSE team`,
-        'check-in': `A quick check-in from PULSE, ${firstName}.
-
-How is life in ${r.unit ? 'unit ' + r.unit : 'your home'} so far. If anything is off, tell us — we move fast.
-
-— The PULSE team`,
-        renewal: `${firstName}, your stay is coming up for renewal.
-
-We would love to keep you in the community. Reply here and we will walk you through the options.
-
-— The PULSE team`
+        welcome: `Welcome home, ${firstName}.\n\nYour community is live — events on the calendar, services a message away, and a team that answers in real time. Anything you need, reply here and it is handled.\n\n— The PULSE team`,
+        'event-invite': `${firstName}, you are invited.\n\nSomething special is coming up at the compound and we saved you a place. RSVP with one tap — we would love to see you there.\n\n— The PULSE team`,
+        'check-in': `A quick check-in from PULSE, ${firstName}.\n\nHow is everything so far. If anything is off, tell us — we move fast.\n\n— The PULSE team`
       };
       return { draft: templates[body.template] || templates['check-in'], draftOnly: true };
     }
@@ -326,63 +323,64 @@ We would love to keep you in the community. Reply here and we will walk you thro
     const prop = scopeProp(user, params);
     if (p === '/feedback') {
       const residents = byProp('residents', prop);
-      return R({ feedback: byProp('feedback', prop).map(f => ({ ...f, residentName: residents.find(r => r.id === f.resident)?.name || 'Unknown' })), dataMode: 'sample' });
+      const events = byProp('events', prop);
+      return R({
+        feedback: byProp('feedback', prop).map(f => ({
+          ...f,
+          residentName: residents.find(r => r.id === f.resident)?.name || 'Unknown',
+          eventTitle: events.find(e => e.id === f.eventId)?.title || null
+        })),
+        dataMode: 'sample'
+      });
     }
     const f = db.feedback.find(x => x.id === seg[1] && x.property === prop);
     if (!f) err(404, 'Not found');
     if (seg[2] === 'triage') { f.status = body.status; return { ok: true }; }
     if (seg[2] === 'escalate') {
       if (f.linkedCase) err(409, 'Already escalated');
-      const c = { id: id('case'), property: prop, title: `Feedback follow-up: ${f.text.slice(0, 80)}`, category: 'facilities', priority: f.sentiment === 'negative' ? 'high' : 'normal', status: 'open', createdAt: new Date().toISOString(), createdBy: user.email, assignee: null, linkedFeedback: f.id, resident: f.resident, history: [] };
+      const c = { id: id('case'), property: prop, title: `Feedback follow-up: ${f.text.slice(0, 80)}`, category: 'experience', priority: f.sentiment === 'negative' ? 'high' : 'normal', status: 'open', createdAt: new Date().toISOString(), createdBy: user.email, assignee: null, linkedFeedback: f.id, resident: f.resident, history: [] };
       db.cases.push(c); f.linkedCase = c.id; f.status = 'actioned';
       return { ok: true, case: { ...c, sla: slaState(c) } };
     }
   }
 
-  /* ---- events ---- */
-  if (seg[0] === 'events') {
-    gate(user, 'events');
+  /* ---- cases ---- */
+  if (seg[0] === 'cases') {
+    gate(user, 'cases');
     const prop = scopeProp(user, params);
-    if (p === '/events' && method === 'GET') {
-      const residents = byProp('residents', prop);
-      return R({
-        events: byProp('events', prop).map(e => ({ ...e, rsvpNames: e.rsvps.map(rid => residents.find(r => r.id === rid)?.name).filter(Boolean) })),
-        residents: residents.map(r => ({ id: r.id, name: r.name }))
-      });
-    }
+    if (p === '/cases' && method === 'GET') return R({ cases: withSla(byProp('cases', prop)) });
     if (method === 'POST' && seg.length === 1) {
-      if (!body.title || !body.when) err(400, 'Title and time required');
-      const e = { id: id('ev'), property: prop, title: body.title, when: body.when, where: body.where || '', capacity: body.capacity || 20, rsvps: [], attended: [] };
-      db.events.push(e); return e;
+      if (!body.title) err(400, 'Title required');
+      const c = { id: id('case'), property: prop, title: String(body.title).slice(0, 200), category: body.category || 'production', priority: body.priority || 'normal', status: 'open', createdAt: new Date().toISOString(), createdBy: user.email, assignee: null, linkedFeedback: null, history: [] };
+      db.cases.push(c); return { ...c, sla: slaState(c) };
     }
-    const e = db.events.find(x => x.id === seg[1] && x.property === prop);
-    if (!e) err(404, 'Not found');
-    const list = seg[2] === 'rsvp' ? e.rsvps : e.attended;
-    const i = list.indexOf(body.resident);
-    i >= 0 ? list.splice(i, 1) : list.push(body.resident);
-    return { ok: true };
+    const c = db.cases.find(x => x.id === seg[1] && x.property === prop);
+    if (!c) err(404, 'Case not found');
+    for (const k of ['status', 'assignee', 'priority']) if (k in body) c[k] = body[k];
+    return { ...c, sla: slaState(c) };
   }
 
-  /* ---- operations / oversight ---- */
-  if (p === '/operations') {
-    gate(user, 'operations');
-    const board = PROPERTIES.map(pr => {
-      const units = byProp('units', pr.id);
-      return { ...pr, occupancy: units.length ? occupancySummary(units) : null, ...(db.metrics[pr.id] || { dataMode: { occupancy: 'awaiting-data' } }) };
+  /* ---- experience / oversight ---- */
+  if (p === '/experience') {
+    gate(user, 'experience');
+    const board = PROPERTIES.map(pr => ({ ...pr, ...(db.metrics[pr.id] || { dataMode: { experience: 'awaiting-data' } }) }));
+    const reported = db.events.filter(e => e.status === 'reported').map(e => ({ id: e.id, title: e.title, when: e.when, kind: e.kind, scorecard: eventScorecard(e) }));
+    const testimonials = reported.flatMap(e => (e.scorecard?.testimonials || []).map(t => ({ text: t, event: e.title })));
+    const rj = db.journeys.find(j => j.kind === 'resident');
+    return R({
+      board,
+      rollup: {
+        eventsReported: reported.length,
+        exceptional: reported.filter(e => e.scorecard?.tier === 'Exceptional').length,
+        avgEventScore: reported.length ? Math.round(reported.reduce((s, e) => s + (e.scorecard?.score || 0), 0) / reported.length) : null,
+        journey: rj ? journeyStats(rj, db.residents) : null,
+        atRisk: atRiskTravelers(db.residents).length
+      },
+      reported, testimonials: testimonials.slice(0, 8),
+      financialsVisible: seesFin(user), financialsSource: 'sample'
     });
-    const live = board.filter(b => b.occupancy);
-    const rollup = {
-      weightedOccupancy: live.length ? +(live.reduce((s, b) => s + b.occupancy.occupancyRate * b.occupancy.total, 0) / live.reduce((s, b) => s + b.occupancy.total, 0)).toFixed(3) : null,
-      propertiesLive: live.length, propertiesTotal: PROPERTIES.length,
-      revenue: live.reduce((s, b) => s + (b.revenue || 0), 0),
-      cost: live.reduce((s, b) => s + (b.cost || 0), 0),
-      reserve: live.reduce((s, b) => s + (b.reserve || 0), 0),
-      noi: live.reduce((s, b) => s + (b.noi || 0), 0),
-      csat: live.length ? +(live.reduce((s, b) => s + (b.csat || 0), 0) / (live.filter(b => b.csat).length || 1)).toFixed(2) : null
-    };
-    return R({ board, rollup, financialsVisible: seesFin(user), financialsSource: 'sample' });
   }
-  if (p === '/operations/trends') { gate(user, 'operations'); return R({ trends: db.trends }); }
+  if (p === '/experience/trends') { gate(user, 'experience'); return R({ trends: db.trends }); }
   if (p === '/oversight') {
     gate(user, 'oversight');
     return R({
@@ -394,6 +392,7 @@ We would love to keep you in the community. Reply here and we will walk you thro
           onDuty: s.duty.filter(d => d.on), offDuty: s.duty.filter(d => !d.on),
           checklistDone: s.checklist?.filter(c => c.done).length || 0, checklistTotal: s.checklist?.length || 0,
           openTasks: s.tasks?.filter(t => t.status === 'open') || [],
+          liveEvents: db.events.filter(e => e.property === pr.id && e.status === 'live').map(e => e.title),
           handover: s.handover ? { from: s.handover.from, at: s.handover.at, readCount: s.handover.readBy.length, note: s.handover.note } : null
         };
       })

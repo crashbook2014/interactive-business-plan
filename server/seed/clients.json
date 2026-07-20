@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cl-1",
+    "name": "Meridian Energy",
+    "contact": "Events coordinator",
+    "stage": "planning",
+    "contractValue": 145000,
+    "since": "2026-06-09T20:33:13.218Z",
+    "satisfaction": 4.6,
+    "eventIds": [
+      "ev-4"
+    ],
+    "nextStep": "Final headcount due Thursday",
+    "property": "narjis-gardens",
+    "journeyId": "jr-client"
+  },
+  {
+    "id": "cl-2",
+    "name": "Northstar Consulting",
+    "contact": "People & culture lead",
+    "stage": "report-renewal",
+    "contractValue": 98000,
+    "since": "2026-03-21T20:33:13.218Z",
+    "satisfaction": 4.8,
+    "eventIds": [
+      "ev-1"
+    ],
+    "nextStep": "Propose Q4 team summit",
+    "property": "narjis-gardens",
+    "journeyId": "jr-client"
+  },
+  {
+    "id": "cl-3",
+    "name": "Deema Tech",
+    "contact": "Office manager",
+    "stage": "proposal",
+    "contractValue": 60000,
+    "since": "2026-07-07T20:33:13.218Z",
+    "satisfaction": null,
+    "eventIds": [],
+    "nextStep": "Walkthrough scheduled Sunday",
+    "property": "narjis-gardens",
+    "journeyId": "jr-client"
+  },
+  {
+    "id": "cl-4",
+    "name": "Crescent Partners",
+    "contact": "Executive assistant",
+    "stage": "inquiry",
+    "contractValue": null,
+    "since": "2026-07-17T20:33:13.218Z",
+    "satisfaction": null,
+    "eventIds": [],
+    "nextStep": "Discovery call to book",
+    "property": "narjis-gardens",
+    "journeyId": "jr-client"
+  }
+]

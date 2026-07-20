@@ -173,3 +173,14 @@ textarea { resize: vertical; min-height: 72px; }
 .map { position: relative; background: rgba(156,122,120,.14); border-radius: var(--radius); border: 1px solid var(--line); height: 300px; overflow: hidden; }
 .map .pin { position: absolute; transform: translate(-50%, -100%); text-align: center; cursor: pointer; color: var(--wine); }
 .map .pin .tag { background: #FFFDF9; border: 1px solid var(--line); border-radius: 8px; font-size: .68rem; padding: 2px 7px; box-shadow: var(--shadow); white-space: nowrap; color: var(--ink); }
+
+/* Journey map */
+.journey { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.jstage { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: #FFFDF9; }
+.jstage.here { border-color: var(--wine); border-width: 1.5px; }
+.jname { font-family: var(--font-head); font-weight: 600; font-size: .92rem; margin-bottom: 6px; }
+.jbar { height: 6px; border-radius: 999px; background: rgba(36,16,20,.08); overflow: hidden; margin: 6px 0; }
+.jfill { height: 100%; border-radius: 999px; background: var(--wine); }
+.jmeta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; }
+.jtp { margin: 6px 0 0; padding-left: 16px; font-size: .78rem; color: var(--rose); }
+.jtp li { margin: 2px 0; }

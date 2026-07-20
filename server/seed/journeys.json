@@ -1,0 +1,88 @@
+[
+  {
+    "id": "jr-resident",
+    "property": "narjis-gardens",
+    "name": "Resident Experience Journey",
+    "kind": "resident",
+    "stages": [
+      {
+        "name": "Arrival & Welcome",
+        "touchpoints": [
+          "Welcome call before move-in",
+          "Move-in day greeting",
+          "Welcome kit delivered"
+        ]
+      },
+      {
+        "name": "Settling In",
+        "touchpoints": [
+          "Compound orientation tour",
+          "App & services activated",
+          "First-week check-in"
+        ]
+      },
+      {
+        "name": "Engaged Living",
+        "touchpoints": [
+          "First event attended",
+          "30-day satisfaction pulse",
+          "Community group joined"
+        ]
+      },
+      {
+        "name": "Renewal & Advocacy",
+        "touchpoints": [
+          "90-day review",
+          "Renewal conversation",
+          "Referral or testimonial"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jr-client",
+    "property": "narjis-gardens",
+    "name": "Client Event Journey",
+    "kind": "client",
+    "stages": [
+      {
+        "name": "Inquiry",
+        "touchpoints": [
+          "First response within 4h",
+          "Discovery call held"
+        ]
+      },
+      {
+        "name": "Proposal",
+        "touchpoints": [
+          "Concept & quote sent",
+          "Walkthrough scheduled"
+        ]
+      },
+      {
+        "name": "Planning",
+        "touchpoints": [
+          "Kickoff meeting",
+          "Run-of-show approved",
+          "Final headcount confirmed"
+        ]
+      },
+      {
+        "name": "Event Day",
+        "touchpoints": [
+          "Setup signed off",
+          "Client greeted on arrival",
+          "Live pulse check"
+        ]
+      },
+      {
+        "name": "Report & Renewal",
+        "touchpoints": [
+          "Event report sent within 48h",
+          "Debrief call",
+          "Next event proposed"
+        ]
+      }
+    ]
+  }
+]

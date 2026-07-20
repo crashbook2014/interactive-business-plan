@@ -2,565 +2,1321 @@
   {
     "id": "res-1",
     "property": "narjis-gardens",
-    "name": "Salman Alharbi",
-    "email": "salman.alharbi@example.com",
-    "unit": null,
-    "stage": "prospect",
-    "corporateAccount": null,
-    "since": "2026-06-19T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": false
-      },
-      {
-        "item": "Unit orientation done",
-        "done": false
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Salman Haddad",
+    "email": "salman.haddad@example.com",
+    "unit": "101",
+    "since": "2026-06-29T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 1,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": [
       {
-        "at": "2026-07-14T07:01:29.155Z",
+        "at": "2026-07-14T20:33:13.218Z",
         "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
+        "text": "Prefers morning events. Two kids, ages 6 and 9."
       }
     ]
   },
   {
     "id": "res-2",
     "property": "narjis-gardens",
-    "name": "Lina Alqahtani",
-    "email": "lina.alqahtani@example.com",
-    "unit": "102",
-    "stage": "onboarding",
-    "corporateAccount": "Crescent Partners",
-    "since": "2026-06-02T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": false
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Layla Qureshi",
+    "email": "layla.qureshi@example.com",
+    "unit": "204",
+    "since": "2026-06-13T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 1,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-3",
     "property": "narjis-gardens",
-    "name": "Omar Aldossary",
-    "email": "omar.aldossary@example.com",
-    "unit": "104",
-    "stage": "active",
-    "corporateAccount": "Northstar Consulting",
-    "since": "2026-05-16T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Omar Aldabbagh",
+    "email": "omar.aldabbagh@example.com",
+    "unit": "307",
+    "since": "2026-05-28T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 2,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-25T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-4",
     "property": "narjis-gardens",
-    "name": "Reem Alshehri",
-    "email": "reem.alshehri@example.com",
-    "unit": "105",
-    "stage": "active",
-    "corporateAccount": "Deema Tech",
-    "since": "2026-04-29T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
-    ],
-    "notes": [
-      {
-        "at": "2026-07-14T07:01:29.155Z",
-        "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
-      }
-    ]
-  },
-  {
-    "id": "res-5",
-    "property": "narjis-gardens",
-    "name": "Faisal Alghamdi",
-    "email": "faisal.alghamdi@example.com",
-    "unit": "106",
-    "stage": "active",
-    "corporateAccount": "Crescent Partners",
-    "since": "2026-04-12T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Reem Shammari",
+    "email": "reem.shammari@example.com",
+    "unit": "410",
+    "since": "2026-05-12T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 2,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
+    "id": "res-5",
+    "property": "narjis-gardens",
+    "name": "Faisal Ghanem",
+    "email": "faisal.ghanem@example.com",
+    "unit": "103",
+    "since": "2026-04-26T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 2,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
+    ],
+    "notes": [
+      {
+        "at": "2026-07-14T20:33:13.218Z",
+        "by": "lina.fares@pulse.sa",
+        "text": "Prefers morning events. Two kids, ages 6 and 9."
+      }
+    ]
+  },
+  {
     "id": "res-6",
     "property": "narjis-gardens",
-    "name": "Nora Alotaibi",
-    "email": "nora.alotaibi@example.com",
-    "unit": "108",
-    "stage": "renewal",
-    "corporateAccount": "Northstar Consulting",
-    "since": "2026-03-26T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Nora Otaibi",
+    "email": "nora.otaibi@example.com",
+    "unit": "206",
+    "since": "2026-04-10T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-20T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-26T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-7",
     "property": "narjis-gardens",
-    "name": "Khalid Almutairi",
-    "email": "khalid.almutairi@example.com",
-    "unit": null,
-    "stage": "departed",
-    "corporateAccount": null,
-    "since": "2026-03-09T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Khalid Mutlaq",
+    "email": "khalid.mutlaq@example.com",
+    "unit": "309",
+    "since": "2026-03-25T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-14T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-20T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-26T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
-    "notes": [
-      {
-        "at": "2026-07-14T07:01:29.155Z",
-        "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
-      }
-    ]
+    "notes": []
   },
   {
     "id": "res-8",
     "property": "narjis-gardens",
-    "name": "Dana Alzahrani",
-    "email": "dana.alzahrani@example.com",
-    "unit": null,
-    "stage": "prospect",
-    "corporateAccount": null,
-    "since": "2026-02-20T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Dana Zahrani",
+    "email": "dana.zahrani@example.com",
+    "unit": "402",
+    "since": "2026-03-09T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-05-08T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-14T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-05-20T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-05-26T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-06-25T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-9",
     "property": "narjis-gardens",
-    "name": "Yousef Alharbi",
-    "email": "yousef.alharbi@example.com",
-    "unit": "203",
-    "stage": "onboarding",
-    "corporateAccount": "Northstar Consulting",
-    "since": "2026-02-03T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": false
-      },
-      {
-        "item": "Unit orientation done",
-        "done": false
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
-    ],
-    "notes": []
-  },
-  {
-    "id": "res-10",
-    "property": "narjis-gardens",
-    "name": "Aisha Alqahtani",
-    "email": "aisha.alqahtani@example.com",
-    "unit": "205",
-    "stage": "active",
-    "corporateAccount": "Crescent Partners",
-    "since": "2026-01-17T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Yousef Haddad",
+    "email": "yousef.haddad@example.com",
+    "unit": "105",
+    "since": "2026-02-21T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 1,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": [
       {
-        "at": "2026-07-14T07:01:29.155Z",
+        "at": "2026-07-14T20:33:13.218Z",
         "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
+        "text": "Prefers morning events. Two kids, ages 6 and 9."
       }
     ]
   },
   {
+    "id": "res-10",
+    "property": "narjis-gardens",
+    "name": "Aisha Qureshi",
+    "email": "aisha.qureshi@example.com",
+    "unit": "208",
+    "since": "2026-02-05T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 1,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
+    ],
+    "notes": []
+  },
+  {
     "id": "res-11",
     "property": "narjis-gardens",
-    "name": "Tariq Aldossary",
-    "email": "tariq.aldossary@example.com",
-    "unit": "206",
-    "stage": "active",
-    "corporateAccount": "Meridian Energy",
-    "since": "2025-12-31T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Tarek Aldabbagh",
+    "email": "tarek.aldabbagh@example.com",
+    "unit": "301",
+    "since": "2026-01-20T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 1,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-12",
     "property": "narjis-gardens",
-    "name": "Maha Alshehri",
-    "email": "maha.alshehri@example.com",
-    "unit": "207",
-    "stage": "active",
-    "corporateAccount": "Northstar Consulting",
-    "since": "2025-12-14T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Maha Shammari",
+    "email": "maha.shammari@example.com",
+    "unit": "404",
+    "since": "2026-01-04T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 2,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-13",
     "property": "narjis-gardens",
-    "name": "Sami Alghamdi",
-    "email": "sami.alghamdi@example.com",
-    "unit": "209",
-    "stage": "renewal",
-    "corporateAccount": "Crescent Partners",
-    "since": "2025-11-27T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": true
-      },
-      {
-        "item": "30-day check-in held",
-        "done": true
-      }
+    "name": "Sami Ghanem",
+    "email": "sami.ghanem@example.com",
+    "unit": "107",
+    "since": "2025-12-19T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 2,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ],
+      [
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": [
       {
-        "at": "2026-07-14T07:01:29.155Z",
+        "at": "2026-07-14T20:33:13.218Z",
         "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
+        "text": "Prefers morning events. Two kids, ages 6 and 9."
       }
     ]
   },
   {
     "id": "res-14",
     "property": "narjis-gardens",
-    "name": "Hala Alotaibi",
-    "email": "hala.alotaibi@example.com",
-    "unit": null,
-    "stage": "departed",
-    "corporateAccount": null,
-    "since": "2025-11-10T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": false
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Hala Otaibi",
+    "email": "hala.otaibi@example.com",
+    "unit": "210",
+    "since": "2025-12-03T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-20T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-26T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-15",
     "property": "narjis-gardens",
-    "name": "Ziad Almutairi",
-    "email": "ziad.almutairi@example.com",
-    "unit": null,
-    "stage": "prospect",
-    "corporateAccount": null,
-    "since": "2025-10-24T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": false
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Ziad Mutlaq",
+    "email": "ziad.mutlaq@example.com",
+    "unit": "303",
+    "since": "2025-11-17T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-05-14T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-20T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-26T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-13T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-07-13T20:33:13.218Z"
+        },
+        {
+          "done": false,
+          "score": null,
+          "at": null
+        }
+      ]
     ],
     "notes": []
   },
   {
     "id": "res-16",
     "property": "narjis-gardens",
-    "name": "Amal Alzahrani",
-    "email": "amal.alzahrani@example.com",
-    "unit": "303",
-    "stage": "onboarding",
-    "corporateAccount": "Deema Tech",
-    "since": "2025-10-07T07:01:29.155Z",
-    "milestones": [
-      {
-        "item": "Welcome call completed",
-        "done": true
-      },
-      {
-        "item": "Unit orientation done",
-        "done": true
-      },
-      {
-        "item": "Building app activated",
-        "done": true
-      },
-      {
-        "item": "Community intro shared",
-        "done": false
-      },
-      {
-        "item": "30-day check-in held",
-        "done": false
-      }
+    "name": "Amal Zahrani",
+    "email": "amal.zahrani@example.com",
+    "unit": "406",
+    "since": "2025-11-01T20:33:13.218Z",
+    "journeyId": "jr-resident",
+    "stageIndex": 3,
+    "touchpoints": [
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-05-08T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-05-14T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-05-20T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-05-26T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-06-07T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-13T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-19T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 5,
+          "at": "2026-06-25T20:33:13.218Z"
+        }
+      ],
+      [
+        {
+          "done": true,
+          "score": 3,
+          "at": "2026-07-01T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-07T20:33:13.218Z"
+        },
+        {
+          "done": true,
+          "score": 4,
+          "at": "2026-07-13T20:33:13.218Z"
+        }
+      ]
     ],
-    "notes": [
-      {
-        "at": "2026-07-14T07:01:29.155Z",
-        "by": "lina.fares@pulse.sa",
-        "text": "Prefers late housekeeping slot."
-      }
-    ]
+    "notes": []
   }
 ]

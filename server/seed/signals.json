@@ -2,59 +2,59 @@
   "mode": "stub",
   "slack": [
     {
-      "channel": "#narjis-gardens-ops",
-      "at": "2026-07-19T05:31:29.155Z",
+      "channel": "#narjis-gardens-events",
+      "at": "2026-07-19T19:03:13.218Z",
       "from": "Sara Nasser",
-      "text": "Reminder: fire-panel vendor on site 13:00-14:00, keep service lift free."
+      "text": "Reminder: fire-safety inspection of the pavilion 13:00-14:00 — keep the courtyard clear."
     },
     {
-      "channel": "#narjis-gardens-ops",
-      "at": "2026-07-19T04:01:29.155Z",
-      "from": "Maintenance",
-      "text": "204 AC part arrives today, fix expected by evening."
+      "channel": "#narjis-gardens-events",
+      "at": "2026-07-19T17:33:13.218Z",
+      "from": "Fadi Mansour",
+      "text": "Backup AV vendor confirmed for the Meridian dinner. Crisis averted."
     },
     {
       "channel": "#riyadh-portfolio",
-      "at": "2026-07-19T02:01:29.155Z",
+      "at": "2026-07-19T15:33:13.218Z",
       "from": "Amal Rashed",
-      "text": "Portfolio review moved to Thursday. Narjis Gardens to present occupancy trend."
+      "text": "Portfolio review moved to Thursday. Narjis Gardens to present event satisfaction trend."
     }
   ],
   "gmail": [
     {
-      "at": "2026-07-19T05:01:29.155Z",
-      "from": "coordinator@northstarconsulting.example",
-      "subject": "Site visit today 11:00 — 4 guests",
-      "snippet": "Our relocation team will arrive at 11:00 to view 2BR options."
+      "at": "2026-07-19T18:33:13.218Z",
+      "from": "coordinator@meridianenergy.example",
+      "subject": "Headcount update — leadership dinner",
+      "snippet": "We are now expecting 72 guests; three vegetarian, one gluten-free."
     },
     {
-      "at": "2026-07-19T00:01:29.155Z",
-      "from": "lina.alqahtani@example.com",
-      "subject": "Early check-in request",
-      "snippet": "Flight lands 09:40, could my unit be ready by 11:00?"
+      "at": "2026-07-19T13:33:13.218Z",
+      "from": "layla.qureshi@example.com",
+      "subject": "Run club — bringing a guest",
+      "snippet": "May I bring my sister who is visiting from Jeddah?"
     }
   ],
   "calendar": [
     {
-      "at": "2026-07-19T09:01:29.155Z",
+      "at": "2026-07-19T22:33:13.218Z",
       "durationMin": 60,
-      "title": "Northstar Consulting site visit",
-      "where": "Lobby"
+      "title": "Deema Tech proposal review",
+      "where": "Back office"
     },
     {
-      "at": "2026-07-19T11:01:29.155Z",
+      "at": "2026-07-20T00:33:13.218Z",
       "durationMin": 60,
-      "title": "Fire-panel vendor maintenance",
-      "where": "Service corridor"
+      "title": "Pavilion fire-safety inspection",
+      "where": "Courtyard pavilion"
     },
     {
-      "at": "2026-07-19T11:31:29.155Z",
+      "at": "2026-07-20T01:03:13.218Z",
       "durationMin": 45,
-      "title": "Move-out walkthrough 310",
-      "where": "Unit 310"
+      "title": "Meridian menu tasting",
+      "where": "Courtyard pavilion"
     },
     {
-      "at": "2026-07-19T14:01:29.155Z",
+      "at": "2026-07-20T03:33:13.218Z",
       "durationMin": 30,
       "title": "15:00 team stand-up",
       "where": "Back office"
