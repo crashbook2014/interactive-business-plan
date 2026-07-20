@@ -251,3 +251,30 @@ input::placeholder, textarea::placeholder { color: rgba(156,122,120,.75); }
 .jmeta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; }
 .jtp { margin: 7px 0 0; padding-left: 17px; font-size: .78rem; color: var(--rose); }
 .jtp li { margin: 2.5px 0; }
+
+/* ---- Alignment refinements ---- */
+/* Context bar: controls size to content, never full-bleed */
+.context-bar select { width: auto; min-width: 250px; max-width: 100%; }
+.context-bar input[type="date"] { width: auto; }
+/* Tables: action buttons and controls never clip or wrap */
+.table td:last-child { white-space: nowrap; }
+.table td .btn { white-space: nowrap; }
+.table td select { width: auto; min-width: 108px; }
+/* Checklist rows: label breathes, trailing score select stays put */
+.check .lbl { flex: 1; min-width: 0; }
+.check select { flex: none; }
+/* Header lockup: never wraps; subtitle yields on small phones */
+.header-brand .word, .header-brand .sub { white-space: nowrap; }
+.header-tools .pill { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
+@media (max-width: 520px) {
+  .header-brand { gap: 10px; padding: 11px 14px; }
+  .header-brand .sub { display: none; }
+  .header-brand .word { letter-spacing: .22em; font-size: 1.05rem; }
+  .ambient { gap: 9px; padding: 5px 14px; }
+}
+/* Event studio create row: datetime field matches siblings */
+input[type="datetime-local"] { width: auto; }
+/* Headerless tables (action plan, signals): text yields so the trailing
+   button column always stays fully visible — no horizontal scroll */
+.table:not(:has(thead)) td { overflow-wrap: anywhere; }
+.table:not(:has(thead)) td:last-child { overflow-wrap: normal; }
