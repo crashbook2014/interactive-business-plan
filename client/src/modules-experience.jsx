@@ -1,5 +1,6 @@
 // Journeys, Events studio, Clients — the experience layer.
 import React, { useState } from 'react';
+import qrcode from 'qrcode-generator';
 import { api, useData, Icon, Pill, SlaPill, DataModePill } from './ui.jsx';
 import { useApp } from './App.jsx';
 import { Loading, Err, alertErr } from './modules-core.jsx';
@@ -115,6 +116,11 @@ function EventDetail({ e, team, back, reload }) {
   const [task, setTask] = useState({ item: '', owner: '' });
   const [row, setRow] = useState({ time: '', item: '', owner: '' });
   const [survey, setSurvey] = useState({ csat: 5, comment: '' });
+  const [guest, setGuest] = useState('');
+  const [codeIn, setCodeIn] = useState('');
+  const [lastTicket, setLastTicket] = useState(null);
+  const [budget, setBudget] = useState({ label: '', planned: '' });
+  const { user } = useApp();
   const act = (p, body) => api(p + q(property), { method: 'POST', body }).then(reload).catch(alertErr);
   const patch = body => api(`/events/${e.id}${q(property)}`, { method: 'PATCH', body }).then(reload).catch(alertErr);
   const sc = e.scorecard;
@@ -133,7 +139,7 @@ function EventDetail({ e, team, back, reload }) {
           </div>
         </div>
         <div className="row mt">
-          {['report', 'checklist', 'run-of-show', 'guests', 'survey'].map(t => (
+          {['report', 'checklist', 'run-of-show', 'tickets', 'survey', ...(user.financials ? ['p&l'] : [])].map(t => (
             <button key={t} className={`btn small ${tab === t ? 'accent' : ''}`} onClick={() => setTab(t)}>{t}</button>
           ))}
         </div>
@@ -198,17 +204,79 @@ function EventDetail({ e, team, back, reload }) {
         </div>
       )}
 
-      {tab === 'guests' && (
-        <div className="card white">
-          <h2>Guests</h2>
-          <div className="grid g3 mt">
-            <div className="kpi"><div className="n">{e.rsvps}</div><div className="l">RSVPs</div></div>
-            <div className="kpi"><div className="n">{e.attended}</div><div className="l">Checked in</div></div>
-            <div className="kpi"><div className="n">{e.capacity}</div><div className="l">Capacity</div></div>
+      {tab === 'tickets' && (
+        <div className="grid g2">
+          <div className="card white">
+            <h2>Registration</h2>
+            <div className="grid g3 mt">
+              <div className="kpi"><div className="n">{e.rsvps}</div><div className="l">Registered</div></div>
+              <div className="kpi"><div className="n">{e.attended}</div><div className="l">Checked in</div></div>
+              <div className="kpi"><div className="n">{e.capacity}</div><div className="l">Capacity</div></div>
+            </div>
+            <div className="row mt">
+              <input type="text" placeholder="Guest name…" value={guest} onChange={x => setGuest(x.target.value)} style={{ flex: 2, minWidth: 150 }} />
+              <button className="btn small accent" disabled={!guest.trim()} onClick={() =>
+                api(`/events/${e.id}/tickets${q(property)}`, { method: 'POST', body: { name: guest } })
+                  .then(t => { setLastTicket(t); setGuest(''); reload(); }).catch(alertErr)
+              }><Icon name="plus" size={13} /> Issue ticket</button>
+            </div>
+            {lastTicket && <TicketCard ticket={lastTicket} event={e} />}
+            <h3 className="mt">Check-in by code</h3>
+            <div className="row">
+              <input type="text" placeholder="Ticket code, e.g. A1B2C3" value={codeIn} onChange={x => setCodeIn(x.target.value)} style={{ flex: 1, minWidth: 120 }} />
+              <button className="btn small" disabled={!codeIn.trim()} onClick={() =>
+                api(`/events/${e.id}/checkin${q(property)}`, { method: 'POST', body: { code: codeIn } })
+                  .then(r => { setCodeIn(''); reload(); window.alert(`Welcome, ${r.ticket.name}`); }).catch(alertErr)
+              }><Icon name="check" size={13} /> Check in</button>
+            </div>
           </div>
+          <div className="card white">
+            <h2>Ticket list</h2>
+            {(e.tickets || []).length === 0 && <p className="muted">No tickets issued yet.</p>}
+            {(e.tickets || []).map(t => (
+              <div key={t.id} className="row spread" style={{ padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
+                <span>{t.name} <span className="muted" style={{ fontSize: '.74rem' }}>· {t.code}</span></span>
+                {t.checkedInAt
+                  ? <Pill tone="good">in · {dt(t.checkedInAt, { day: undefined, month: undefined })}</Pill>
+                  : <button className="btn small" onClick={() =>
+                      api(`/events/${e.id}/checkin${q(property)}`, { method: 'POST', body: { ticketId: t.id, code: t.code } }).then(reload).catch(alertErr)
+                    }>Check in</button>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'p&l' && user.financials && (
+        <div className="card white">
+          <h2>Event P&L <Pill tone="sample">sample · GM+ only</Pill></h2>
+          <div className="table-wrap"><table className="table">
+            <thead><tr><th>Line</th><th>Planned</th><th>Actual</th><th>Variance</th></tr></thead>
+            <tbody>
+              {(e.budgetLines || []).map((l, i) => (
+                <tr key={i}>
+                  <td>{l.label}</td>
+                  <td>{fmtSAR(l.planned)}</td>
+                  <td><input type="text" defaultValue={l.actual} onBlur={x =>
+                    api(`/events/${e.id}/budget${q(property)}`, { method: 'POST', body: { line: i, actual: Number(x.target.value) || 0 } }).then(reload).catch(alertErr)
+                  } style={{ width: 90, padding: '3px 6px' }} /></td>
+                  <td style={{ color: l.actual > l.planned ? 'var(--wine)' : 'var(--brass)' }}>{fmtSAR(l.planned - l.actual)}</td>
+                </tr>
+              ))}
+              <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>{fmtSAR((e.budgetLines || []).reduce((s, l) => s + l.planned, 0))}</strong></td>
+                <td><strong>{fmtSAR((e.budgetLines || []).reduce((s, l) => s + l.actual, 0))}</strong></td>
+                <td><strong>{fmtSAR((e.budgetLines || []).reduce((s, l) => s + l.planned - l.actual, 0))}</strong></td>
+              </tr>
+            </tbody>
+          </table></div>
           <div className="row mt">
-            <button className="btn small" onClick={() => patch({ rsvps: e.rsvps + 1 })}><Icon name="plus" size={13} /> RSVP</button>
-            <button className="btn small accent" onClick={() => patch({ attended: e.attended + 1 })}><Icon name="check" size={13} /> Check in guest</button>
+            <input type="text" placeholder="New line…" value={budget.label} onChange={x => setBudget({ ...budget, label: x.target.value })} style={{ flex: 2, minWidth: 140 }} />
+            <input type="text" placeholder="Planned SAR" value={budget.planned} onChange={x => setBudget({ ...budget, planned: x.target.value })} style={{ width: 110 }} />
+            <button className="btn small" disabled={!budget.label.trim()} onClick={() => {
+              api(`/events/${e.id}/budget${q(property)}`, { method: 'POST', body: { add: budget.label, planned: Number(budget.planned) || 0 } }).then(() => { setBudget({ label: '', planned: '' }); reload(); }).catch(alertErr);
+            }}><Icon name="plus" size={13} /> Add line</button>
           </div>
         </div>
       )}
@@ -280,6 +348,100 @@ export function Clients() {
             <p className="muted mt" style={{ fontSize: '.8rem' }}><Icon name="shift" size={12} /> Next: {c.nextStep}</p>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function TicketCard({ ticket, event }) {
+  const qr = qrcode(0, 'M');
+  qr.addData(`PULSE:${event.id}:${ticket.code}`);
+  qr.make();
+  const svg = qr.createSvgTag({ cellSize: 3, margin: 2 });
+  return (
+    <div className="card mt" style={{ background: 'var(--wine)', color: 'var(--warm)', textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--font-head)', letterSpacing: '.3em', textTransform: 'uppercase', fontSize: '.9rem' }}>PULSE</div>
+      <div style={{ fontSize: '.82rem', margin: '4px 0' }}>{event.title}</div>
+      <div style={{ background: '#fff', display: 'inline-block', padding: 6, borderRadius: 8, marginTop: 6 }}
+        dangerouslySetInnerHTML={{ __html: svg }} />
+      <div style={{ fontFamily: 'var(--font-head)', fontSize: '1.2rem', letterSpacing: '.2em', marginTop: 6 }}>{ticket.code}</div>
+      <div style={{ fontSize: '.8rem', opacity: .85 }}>{ticket.name}</div>
+    </div>
+  );
+}
+
+/* ================= LIVE OPS ================= */
+export function LiveOps() {
+  const { property } = useApp();
+  const { data, error, reload } = useData(`/liveops${q(property)}`, { refreshMs: 15_000 });
+  const [inc, setInc] = useState({ title: '', severity: 'medium' });
+  if (error) return <Err e={error} />;
+  if (!data) return <Loading />;
+  const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Riyadh', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+  const sevTone = { low: 'muted', medium: 'warn', high: 'bad' };
+  return (
+    <div className="grid">
+      <div className="row spread"><h1>Live Ops</h1>
+        {data.alert
+          ? <Pill tone="bad">HIGH INCIDENT OPEN</Pill>
+          : <Pill tone="good">{data.onDuty.length} on duty · all clear</Pill>}
+      </div>
+
+      {data.events.length === 0 && <div className="card"><p className="muted">No events in ready, live, or wrap-up right now.</p></div>}
+      {data.events.map(e => (
+        <div key={e.id} className="card white">
+          <div className="row spread">
+            <h2>{e.title}</h2>
+            <div className="row">
+              <Pill tone="bad">{e.status}</Pill>
+              <Pill tone="ok">checklist {e.checklistDone}/{e.checklistTotal}</Pill>
+              <Pill tone="good">{e.attended} in · {e.rsvps} expected</Pill>
+            </div>
+          </div>
+          <p className="muted" style={{ fontSize: '.8rem' }}>{e.where}</p>
+          <div className="table-wrap mt"><table className="table">
+            <thead><tr><th>Time</th><th>Moment</th><th>Owner</th><th></th></tr></thead>
+            <tbody>
+              {e.runOfShow.map((r, i) => {
+                const past = r.time <= nowHM;
+                const isNow = past && (i === e.runOfShow.length - 1 || e.runOfShow[i + 1].time > nowHM);
+                return (
+                  <tr key={i} style={{ opacity: past && !isNow ? .55 : 1 }}>
+                    <td><strong>{r.time}</strong></td><td>{r.item}</td><td>{r.owner}</td>
+                    <td>{isNow && <Pill tone="bad">NOW</Pill>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table></div>
+        </div>
+      ))}
+
+      <div className="card white">
+        <h2>Incidents</h2>
+        <div className="row mt">
+          <input type="text" placeholder="Report an incident…" value={inc.title} onChange={x => setInc({ ...inc, title: x.target.value })} style={{ flex: 3, minWidth: 170 }} />
+          <select value={inc.severity} onChange={x => setInc({ ...inc, severity: x.target.value })} style={{ width: 100 }}>
+            {['low', 'medium', 'high'].map(sv => <option key={sv}>{sv}</option>)}
+          </select>
+          <button className="btn small accent" disabled={!inc.title.trim()} onClick={() =>
+            api(`/liveops/incidents${q(property)}`, { method: 'POST', body: inc }).then(() => { setInc({ title: '', severity: 'medium' }); reload(); }).catch(alertErr)
+          }><Icon name="plus" size={13} /> Report</button>
+        </div>
+        <div className="table-wrap mt"><table className="table">
+          <thead><tr><th>Incident</th><th>Severity</th><th>Status</th></tr></thead>
+          <tbody>
+            {data.incidents.map(i => (
+              <tr key={i.id}>
+                <td>{i.title}<div className="muted" style={{ fontSize: '.74rem' }}>{dt(i.at)} · {i.by.split('@')[0]}</div></td>
+                <td><Pill tone={sevTone[i.severity]}>{i.severity}</Pill></td>
+                <td><select value={i.status} onChange={x =>
+                  api(`/liveops/incidents/${i.id}${q(property)}`, { method: 'PATCH', body: { status: x.target.value } }).then(reload).catch(alertErr)
+                }>{['open', 'mitigating', 'resolved'].map(st => <option key={st}>{st}</option>)}</select></td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
       </div>
     </div>
   );

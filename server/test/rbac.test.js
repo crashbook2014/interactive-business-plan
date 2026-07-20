@@ -4,8 +4,8 @@ import { canAccess, redactFinancials, seesFinancials } from '../lib/rbac.js';
 import { MODULE_ACCESS, findUser, scopeProperties, PROPERTIES, DEFAULT_LANDING } from '../config.js';
 
 test('access matrix matches the spec', () => {
-  // Home + Events: everyone works events
-  for (const m of ['home', 'events']) {
+  // Home + Events + Live Ops: everyone works events
+  for (const m of ['home', 'events', 'liveops']) {
     for (const r of Object.keys(DEFAULT_LANDING)) assert.ok(canAccess(r, m), `${r} should access ${m}`);
   }
   // Shift, journeys, residents, feedback: RX and up only
@@ -37,7 +37,9 @@ test('redaction strips financial fields deeply', () => {
     board: [{ name: 'Narjis Gardens', revenue: 100, budget: 50, spend: 40, csat: 4.6, b2bAccounts: [{}], nested: { contractValue: 9 } }],
     rollup: { pipelineValue: 100, avgEventScore: 92 }
   };
+  data.board[0].budgetLines = [{ label: 'Catering', planned: 5, actual: 4 }];
   const out = redactFinancials(data, { role: 'senior_rx' });
+  assert.equal(out.board[0].budgetLines, undefined);
   assert.equal(out.board[0].revenue, undefined);
   assert.equal(out.board[0].budget, undefined);
   assert.equal(out.board[0].b2bAccounts, undefined);

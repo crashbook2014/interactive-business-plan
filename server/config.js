@@ -53,6 +53,7 @@ export const MODULE_ACCESS = {
   shift:      RX_UP,
   journeys:   RX_UP,
   events:     ALL,                                   // everyone works events
+  liveops:    ALL,                                   // event-day board
   clients:    MGMT,                                  // B2B pipeline
   residents:  RX_UP,
   feedback:   RX_UP,
@@ -70,7 +71,7 @@ export const DEFAULT_LANDING = {
 // Fields stripped server-side for anyone outside FINANCIAL_ROLES.
 export const FINANCIAL_FIELDS = [
   'revenue', 'cost', 'reserve', 'noi', 'budget', 'spend',
-  'contractValue', 'pipelineValue', 'b2bAccounts'
+  'contractValue', 'pipelineValue', 'b2bAccounts', 'budgetLines'
 ];
 
 // SLA windows in hours by priority (cases + event tasks).

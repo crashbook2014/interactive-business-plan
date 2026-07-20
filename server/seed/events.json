@@ -108,7 +108,30 @@
         "comment": "The PULSE team thought of everything."
       }
     ],
-    "reportSentAt": "2026-06-30T20:33:13.218Z"
+    "reportSentAt": "2026-06-30T20:33:13.218Z",
+    "budgetLines": [
+      {
+        "label": "Venue & setup",
+        "planned": 22000,
+        "actual": 21000
+      },
+      {
+        "label": "Catering",
+        "planned": 38000,
+        "actual": 36400
+      },
+      {
+        "label": "Kids zone & entertainment",
+        "planned": 15000,
+        "actual": 12800
+      },
+      {
+        "label": "Gifts & print",
+        "planned": 10000,
+        "actual": 8200
+      }
+    ],
+    "tickets": []
   },
   {
     "id": "ev-2",
@@ -205,7 +228,25 @@
         "comment": "My guests from abroad were amazed."
       }
     ],
-    "reportSentAt": "2026-07-14T20:33:13.218Z"
+    "reportSentAt": "2026-07-14T20:33:13.218Z",
+    "budgetLines": [
+      {
+        "label": "Setup & lanterns",
+        "planned": 1500,
+        "actual": 1400
+      },
+      {
+        "label": "Karak & dates",
+        "planned": 2500,
+        "actual": 2200
+      },
+      {
+        "label": "Oud performance",
+        "planned": 2000,
+        "actual": 1600
+      }
+    ],
+    "tickets": []
   },
   {
     "id": "ev-3",
@@ -289,7 +330,56 @@
     "rsvps": 26,
     "attended": 0,
     "surveys": [],
-    "reportSentAt": null
+    "reportSentAt": null,
+    "budgetLines": [
+      {
+        "label": "Hydration & breakfast",
+        "planned": 1200,
+        "actual": 900
+      },
+      {
+        "label": "Route marshals & kit",
+        "planned": 300,
+        "actual": 0
+      }
+    ],
+    "tickets": [
+      {
+        "id": "tk-ev-3-1",
+        "code": "RUN100",
+        "name": "Salman Haddad",
+        "issuedAt": "2026-07-19T08:19:37.797Z",
+        "checkedInAt": "2026-07-20T13:19:37.797Z"
+      },
+      {
+        "id": "tk-ev-3-2",
+        "code": "RUN101",
+        "name": "Layla Qureshi",
+        "issuedAt": "2026-07-19T09:19:37.797Z",
+        "checkedInAt": "2026-07-20T13:19:37.797Z"
+      },
+      {
+        "id": "tk-ev-3-3",
+        "code": "RUN102",
+        "name": "Omar Aldabbagh",
+        "issuedAt": "2026-07-19T10:19:37.797Z",
+        "checkedInAt": null
+      },
+      {
+        "id": "tk-ev-3-4",
+        "code": "RUN103",
+        "name": "Reem Shammari",
+        "issuedAt": "2026-07-19T11:19:37.797Z",
+        "checkedInAt": null
+      },
+      {
+        "id": "tk-ev-3-5",
+        "code": "RUN104",
+        "name": "Faisal Ghanem",
+        "issuedAt": "2026-07-19T12:19:37.797Z",
+        "checkedInAt": null
+      }
+    ]
   },
   {
     "id": "ev-4",
@@ -373,7 +463,30 @@
     "rsvps": 64,
     "attended": 0,
     "surveys": [],
-    "reportSentAt": null
+    "reportSentAt": null,
+    "budgetLines": [
+      {
+        "label": "Venue & pavilion",
+        "planned": 14000,
+        "actual": 6500
+      },
+      {
+        "label": "Catering & tasting",
+        "planned": 26000,
+        "actual": 6000
+      },
+      {
+        "label": "AV & staging",
+        "planned": 9000,
+        "actual": 0
+      },
+      {
+        "label": "Gifts",
+        "planned": 3000,
+        "actual": 0
+      }
+    ],
+    "tickets": []
   },
   {
     "id": "ev-5",
@@ -441,6 +554,14 @@
     "rsvps": 0,
     "attended": 0,
     "surveys": [],
-    "reportSentAt": null
+    "reportSentAt": null,
+    "budgetLines": [
+      {
+        "label": "Concept reserve",
+        "planned": 40000,
+        "actual": 0
+      }
+    ],
+    "tickets": []
   }
 ]

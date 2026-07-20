@@ -18,6 +18,7 @@ import seedShifts from '../../server/seed/shifts.json';
 import seedSignals from '../../server/seed/signals.json';
 import seedMetrics from '../../server/seed/metrics.json';
 import seedTrends from '../../server/seed/trends.json';
+import seedIncidents from '../../server/seed/incidents.json';
 
 // Shift every timestamp so the demo data is always "today", whenever opened.
 const SEED_EPOCH = Date.parse('2026-07-19T18:00:00Z');
@@ -34,7 +35,7 @@ const clone = v => shiftDates(JSON.parse(JSON.stringify(v)));
 const db = {
   journeys: clone(seedJourneys), residents: clone(seedResidents), clients: clone(seedClients),
   events: clone(seedEvents), feedback: clone(seedFeedback), cases: clone(seedCases),
-  shifts: clone(seedShifts), signals: clone(seedSignals), metrics: clone(seedMetrics), trends: clone(seedTrends)
+  shifts: clone(seedShifts), signals: clone(seedSignals), metrics: clone(seedMetrics), trends: clone(seedTrends), incidents: clone(seedIncidents)
 };
 
 const store = (() => { try { sessionStorage.setItem('__t', '1'); sessionStorage.removeItem('__t'); return sessionStorage; } catch { return null; } })();
@@ -230,14 +231,16 @@ function handle(path, opts) {
           ...e,
           clientName: clients.find(c => c.id === e.clientId)?.name || null,
           scorecard: eventScorecard(e),
-          openTasks: e.checklist.filter(c => !c.done).length
+          openTasks: e.checklist.filter(c => !c.done).length,
+          ticketsIssued: (e.tickets || []).length,
+          ticketsIn: (e.tickets || []).filter(t => t.checkedInAt).length
         })),
         team: ORG.filter(u => u.property === prop || !u.property).map(u => ({ email: u.email, name: u.name }))
       });
     }
     if (method === 'POST' && seg.length === 1) {
       if (!body.title || !body.when) err(400, 'Title and time required');
-      const e = { id: id('ev'), property: prop, title: String(body.title).slice(0, 140), kind: body.kind || 'resident', clientId: body.clientId || null, when: body.when, where: body.where || '', capacity: body.capacity || 50, status: 'concept', budget: null, spend: null, checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null };
+      const e = { id: id('ev'), property: prop, title: String(body.title).slice(0, 140), kind: body.kind || 'resident', clientId: body.clientId || null, when: body.when, where: body.where || '', capacity: body.capacity || 50, status: 'concept', budget: null, spend: null, checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null, tickets: [], budgetLines: [] };
       db.events.push(e); return e;
     }
     const e = db.events.find(x => x.id === seg[1] && x.property === prop);
@@ -246,6 +249,35 @@ function handle(path, opts) {
       if (body.add) e.checklist.push({ item: String(body.add).slice(0, 160), owner: body.owner || null, due: body.due || null, done: false });
       else if (body.toggle !== undefined) { const c = e.checklist[Number(body.toggle)]; if (c) c.done = !c.done; }
       return { ok: true };
+    }
+    if (seg[2] === 'tickets') {
+      const name = String(body.name || '').trim();
+      if (!name) err(400, 'Guest name required');
+      const t = { id: id('tk'), code: Math.random().toString(36).slice(2, 8).toUpperCase(), name: name.slice(0, 120), issuedAt: new Date().toISOString(), checkedInAt: null };
+      (e.tickets ||= []).push(t);
+      e.rsvps = (e.rsvps || 0) + 1;
+      return t;
+    }
+    if (seg[2] === 'checkin') {
+      const code = String(body.code || '').trim().toUpperCase();
+      const t = (e.tickets || []).find(x => x.code === code || x.id === body.ticketId);
+      if (!t) err(409, 'Ticket not found');
+      if (t.checkedInAt) err(409, 'Already checked in');
+      t.checkedInAt = new Date().toISOString();
+      e.attended = (e.attended || 0) + 1;
+      return { ok: true, ticket: t, attended: e.attended };
+    }
+    if (seg[2] === 'budget') {
+      if (!seesFin(user)) err(403, 'Financial access required');
+      e.budgetLines ||= [];
+      if (body.add) e.budgetLines.push({ label: String(body.add).slice(0, 120), planned: Number(body.planned) || 0, actual: 0 });
+      else if (body.line !== undefined) {
+        const l = e.budgetLines[Number(body.line)];
+        if (l) { if ('actual' in body) l.actual = Number(body.actual) || 0; if ('planned' in body) l.planned = Number(body.planned) || 0; }
+      }
+      e.budget = e.budgetLines.reduce((a, l) => a + l.planned, 0);
+      e.spend = e.budgetLines.reduce((a, l) => a + l.actual, 0);
+      return { ok: true, budgetLines: e.budgetLines, budget: e.budget, spend: e.spend };
     }
     if (seg[2] === 'runofshow') {
       if (!body.time || !body.item) err(400, 'Time and item required');
@@ -263,6 +295,40 @@ function handle(path, opts) {
       if (body.status) { e.status = body.status; if (body.status === 'reported' && !e.reportSentAt) e.reportSentAt = new Date().toISOString(); }
       for (const k of ['rsvps', 'attended']) if (k in body) e[k] = Math.max(0, Number(body[k]) || 0);
       return { ...e, scorecard: eventScorecard(e) };
+    }
+  }
+
+  /* ---- liveops ---- */
+  if (seg[0] === 'liveops') {
+    gate(user, 'liveops');
+    const prop = scopeProp(user, params);
+    if (p === '/liveops') {
+      const events = byProp('events', prop).filter(e => ['ready', 'live', 'wrap-up'].includes(e.status));
+      const incidents = byProp('incidents', prop);
+      const s2 = db.shifts[prop] || { duty: [] };
+      return R({
+        events: events.map(e => ({
+          id: e.id, title: e.title, when: e.when, where: e.where, status: e.status,
+          runOfShow: e.runOfShow, checklistDone: e.checklist.filter(c => c.done).length,
+          checklistTotal: e.checklist.length,
+          ticketsIssued: (e.tickets || []).length, ticketsIn: (e.tickets || []).filter(t => t.checkedInAt).length,
+          rsvps: e.rsvps, attended: e.attended
+        })),
+        incidents: [...incidents].sort((a, b) => new Date(b.at) - new Date(a.at)),
+        onDuty: s2.duty.filter(d => d.on),
+        alert: incidents.some(i => i.severity === 'high' && i.status !== 'resolved')
+      });
+    }
+    if (seg[1] === 'incidents' && method === 'POST') {
+      if (!body.title) err(400, 'Title required');
+      const inc = { id: id('inc'), property: prop, eventId: body.eventId || null, title: String(body.title).slice(0, 200), severity: body.severity || 'medium', status: 'open', at: new Date().toISOString(), by: user.email };
+      db.incidents.push(inc); return inc;
+    }
+    if (seg[1] === 'incidents') {
+      const i = db.incidents.find(x => x.id === seg[2] && x.property === prop);
+      if (!i) err(404, 'Incident not found');
+      if (['open', 'mitigating', 'resolved'].includes(body.status)) i.status = body.status;
+      return i;
     }
   }
 

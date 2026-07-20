@@ -163,7 +163,9 @@ router.get('/events', requireModule('events'), (req, res) => {
       ...e,
       clientName: clients.find(c => c.id === e.clientId)?.name || null,
       scorecard: eventScorecard(e),
-      openTasks: e.checklist.filter(c => !c.done).length
+      openTasks: e.checklist.filter(c => !c.done).length,
+      ticketsIssued: (e.tickets || []).length,
+      ticketsIn: (e.tickets || []).filter(t => t.checkedInAt).length
     })),
     team: ORG.filter(u => u.property === prop || !u.property).map(u => ({ email: u.email, name: u.name }))
   });
@@ -177,7 +179,7 @@ router.post('/events', requireModule('events'), async (req, res) => {
   const e = {
     id: id('ev'), property: prop, title: String(title).slice(0, 140), kind, clientId,
     when, where, capacity, status: 'concept', budget: null, spend: null,
-    checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null
+    checklist: [], runOfShow: [], rsvps: 0, attended: 0, surveys: [], reportSentAt: null, tickets: [], budgetLines: []
   };
   await update('events', list => { list.push(e); }, []);
   audit(req.user, 'events.create', { property: prop, id: e.id });
@@ -241,6 +243,114 @@ router.post('/events/:eid/survey', requireModule('events'), async (req, res) => 
   if (!out) return res.status(404).json({ error: 'Event not found' });
   audit(req.user, 'events.survey.add', { property: prop, event: req.params.eid, csat });
   send(req, res, { ok: true, scorecard: eventScorecard(out) });
+});
+
+
+/* ---------- Tickets & check-in ---------- */
+router.post('/events/:eid/tickets', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const name = String(req.body.name || '').slice(0, 120).trim();
+  if (!name) return res.status(400).json({ error: 'Guest name required' });
+  let ticket = null;
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (!e) return;
+    ticket = {
+      id: id('tk'), code: crypto.randomBytes(3).toString('hex').toUpperCase(),
+      name, issuedAt: new Date().toISOString(), checkedInAt: null
+    };
+    (e.tickets ||= []).push(ticket);
+    e.rsvps = (e.rsvps || 0) + 1;
+  }, []);
+  if (!ticket) return res.status(404).json({ error: 'Event not found' });
+  audit(req.user, 'tickets.issue', { property: prop, event: req.params.eid, ticket: ticket.id });
+  send(req, res, ticket);
+});
+
+router.post('/events/:eid/checkin', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const code = String(req.body.code || '').trim().toUpperCase();
+  let result = null;
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (!e) return;
+    const t = (e.tickets || []).find(x => x.code === code || x.id === req.body.ticketId);
+    if (!t) { result = { error: 'Ticket not found' }; return; }
+    if (t.checkedInAt) { result = { error: 'Already checked in', ticket: t }; return; }
+    t.checkedInAt = new Date().toISOString();
+    e.attended = (e.attended || 0) + 1;
+    result = { ok: true, ticket: t, attended: e.attended };
+  }, []);
+  if (!result) return res.status(404).json({ error: 'Event not found' });
+  if (result.error) return res.status(409).json(result);
+  audit(req.user, 'tickets.checkin', { property: prop, event: req.params.eid, code });
+  send(req, res, result);
+});
+
+/* ---------- Event P&L (budget lines — financial-gated) ---------- */
+router.post('/events/:eid/budget', requireModule('events'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  if (!seesFinancials(req.user)) return res.status(403).json({ error: 'Financial access required' });
+  let out = null;
+  await update('events', list => {
+    const e = list.find(x => x.id === req.params.eid && x.property === prop);
+    if (!e) return;
+    e.budgetLines ||= [];
+    if (req.body.add) e.budgetLines.push({ label: String(req.body.add).slice(0, 120), planned: Number(req.body.planned) || 0, actual: 0 });
+    else if (req.body.line !== undefined) {
+      const l = e.budgetLines[Number(req.body.line)];
+      if (l) { if ('actual' in req.body) l.actual = Number(req.body.actual) || 0; if ('planned' in req.body) l.planned = Number(req.body.planned) || 0; }
+    }
+    e.budget = e.budgetLines.reduce((s, l) => s + l.planned, 0);
+    e.spend = e.budgetLines.reduce((s, l) => s + l.actual, 0);
+    out = e;
+  }, []);
+  if (!out) return res.status(404).json({ error: 'Event not found' });
+  audit(req.user, 'events.budget', { property: prop, event: req.params.eid });
+  send(req, res, { ok: true, budgetLines: out.budgetLines, budget: out.budget, spend: out.spend });
+});
+
+/* ---------- Live Ops ---------- */
+router.get('/liveops', requireModule('liveops'), (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const events = byProp('events', prop).filter(e => ['ready', 'live', 'wrap-up'].includes(e.status));
+  const incidents = byProp('incidents', prop);
+  const shifts = read('shifts', {})[prop] || { duty: [] };
+  send(req, res, {
+    events: events.map(e => ({
+      id: e.id, title: e.title, when: e.when, where: e.where, status: e.status,
+      runOfShow: e.runOfShow, checklistDone: e.checklist.filter(c => c.done).length,
+      checklistTotal: e.checklist.length,
+      ticketsIssued: (e.tickets || []).length, ticketsIn: (e.tickets || []).filter(t => t.checkedInAt).length,
+      rsvps: e.rsvps, attended: e.attended
+    })),
+    incidents: incidents.sort((a, b) => new Date(b.at) - new Date(a.at)),
+    onDuty: shifts.duty.filter(d => d.on),
+    alert: incidents.some(i => i.severity === 'high' && i.status !== 'resolved')
+  });
+});
+
+router.post('/liveops/incidents', requireModule('liveops'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  const { title, severity = 'medium', eventId = null } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  if (!['low', 'medium', 'high'].includes(severity)) return res.status(400).json({ error: 'Bad severity' });
+  const inc = { id: id('inc'), property: prop, eventId, title: String(title).slice(0, 200), severity, status: 'open', at: new Date().toISOString(), by: req.user.email };
+  await update('incidents', list => { list.push(inc); }, []);
+  audit(req.user, 'liveops.incident.create', { property: prop, id: inc.id, severity });
+  send(req, res, inc);
+});
+
+router.patch('/liveops/incidents/:iid', requireModule('liveops'), async (req, res) => {
+  const prop = resolveProperty(req, res); if (!prop) return;
+  let out = null;
+  await update('incidents', list => {
+    const i = list.find(x => x.id === req.params.iid && x.property === prop);
+    if (i && ['open', 'mitigating', 'resolved'].includes(req.body.status)) { i.status = req.body.status; out = i; }
+  }, []);
+  if (!out) return res.status(404).json({ error: 'Incident not found' });
+  audit(req.user, 'liveops.incident.update', { property: prop, id: req.params.iid, status: req.body.status });
+  send(req, res, out);
 });
 
 /* ---------- Clients (B2B pipeline) ---------- */

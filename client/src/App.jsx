@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef, createContext, useContext } from 'react';
 import { api, Icon, riyadhClock, useNow } from './ui.jsx';
 import { Home, Shift } from './modules-core.jsx';
-import { Journeys, Events, Clients } from './modules-experience.jsx';
+import { Journeys, Events, Clients, LiveOps } from './modules-experience.jsx';
 import { Residents, Feedback, Cases, Experience, Oversight } from './modules-mgmt.jsx';
 
 export const AppCtx = createContext(null);
@@ -9,16 +9,16 @@ export const useApp = () => useContext(AppCtx);
 
 const GROUPS = [
   { label: 'Experience', items: ['home', 'shift', 'journeys'] },
-  { label: 'Events', items: ['events', 'clients'] },
+  { label: 'Events', items: ['events', 'liveops', 'clients'] },
   { label: 'Community', items: ['residents', 'feedback', 'cases'] },
   { label: 'Management', items: ['experience', 'oversight'] }
 ];
 const TITLES = {
-  home: 'Home', shift: 'Shift', journeys: 'Journeys', events: 'Events', clients: 'Clients',
+  home: 'Home', shift: 'Shift', journeys: 'Journeys', events: 'Events', liveops: 'Live Ops', clients: 'Clients',
   residents: 'Residents', feedback: 'Feedback', cases: 'Cases',
   experience: 'Experience', oversight: 'Oversight'
 };
-const VIEWS = { home: Home, shift: Shift, journeys: Journeys, events: Events, clients: Clients, residents: Residents, feedback: Feedback, cases: Cases, experience: Experience, oversight: Oversight };
+const VIEWS = { home: Home, shift: Shift, journeys: Journeys, events: Events, liveops: LiveOps, clients: Clients, residents: Residents, feedback: Feedback, cases: Cases, experience: Experience, oversight: Oversight };
 
 function useHashRoute() {
   const [hash, setHash] = useState(window.location.hash);

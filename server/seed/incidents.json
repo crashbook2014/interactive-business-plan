@@ -1,0 +1,22 @@
+[
+  {
+    "id": "inc-1",
+    "property": "narjis-gardens",
+    "eventId": "ev-3",
+    "title": "Water cooler leaking at hydration station",
+    "severity": "low",
+    "status": "resolved",
+    "at": "2026-07-20T12:19:37.797Z",
+    "by": "venue.narjisgardens@pulse.sa"
+  },
+  {
+    "id": "inc-2",
+    "property": "narjis-gardens",
+    "eventId": "ev-3",
+    "title": "Route marker missing at north gate turn",
+    "severity": "medium",
+    "status": "mitigating",
+    "at": "2026-07-20T13:39:37.797Z",
+    "by": "maha.suleiman@pulse.sa"
+  }
+]
