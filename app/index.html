@@ -106,6 +106,45 @@
   .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
   .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
 
+  /* negotiation letter upsell + paywall */
+  .letter-tease{display:flex;align-items:center;gap:12px;width:100%;background:var(--amber-bg);border:1px solid #EAD9B4;border-radius:16px;padding:13px 15px;margin-top:12px;text-align:start}
+  .letter-tease .lock{flex:none;width:38px;height:38px;border-radius:12px;background:var(--amber);display:flex;align-items:center;justify-content:center}
+  .letter-tease .lock svg{width:19px;height:19px}
+  .letter-tease b{display:block;font-size:14.5px;color:var(--ink)}
+  .letter-tease span{font-size:12.5px;color:var(--ink-2)}
+  .letter-tease .go{margin-inline-start:auto;color:#8A6114;font-size:18px}
+
+  .pw-note{text-align:center;font-size:12.5px;color:var(--green);font-weight:700;margin:2px 0 12px}
+  html[lang="ar"] .pw-note{font-weight:400;font-size:14px}
+  .preview{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;overflow:hidden}
+  .preview .ltr-head{font-size:13px;color:var(--ink-2);margin-bottom:10px}
+  .preview .body{font-size:14px;line-height:1.9;color:var(--ink)}
+  .preview .fog{filter:blur(5px);user-select:none;pointer-events:none}
+  .preview .veil{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 18%,var(--card) 82%)}
+  .preview .veil-lock{position:absolute;inset-inline:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink-2);font-size:13px}
+  .preview .veil-lock .lk{width:40px;height:40px;border-radius:999px;background:var(--teal);display:flex;align-items:center;justify-content:center}
+  .preview .veil-lock .lk svg{width:19px;height:19px}
+  .plans{display:grid;gap:10px;margin-top:14px}
+  .plan{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:13px 15px;text-align:start;transition:border-color .15s}
+  .plan.sel{border-color:var(--teal);background:#F4F8F6}
+  .plan .radio{flex:none;width:20px;height:20px;border-radius:99px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .plan.sel .radio{border-color:var(--teal)}
+  .plan.sel .radio::after{content:"";width:10px;height:10px;border-radius:99px;background:var(--teal)}
+  .plan b{display:block;font-size:14.5px;color:var(--ink)}
+  .plan span{font-size:12px;color:var(--ink-2);line-height:1.5;display:block}
+  .plan .price{margin-inline-start:auto;font-family:var(--en);font-weight:800;font-size:16px;color:var(--teal-ink);white-space:nowrap}
+  .plan .badge{display:inline-block;font-size:10.5px;font-weight:700;color:#8A6114;background:var(--amber-bg);border-radius:99px;padding:1px 8px;margin-inline-start:6px;vertical-align:middle}
+  .pay-methods{display:flex;justify-content:center;gap:8px;margin-top:10px;font-size:11.5px;color:var(--ink-2)}
+  .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
+  .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
+
+  /* unlocked letter */
+  .letter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px}
+  .letter .body{font-size:14.5px;line-height:2;color:var(--ink);white-space:pre-line}
+  .letter-actions{display:flex;gap:10px;margin-top:14px}
+  .letter-actions .primary{margin-top:0;flex:1}
+  .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:16px;padding:13px;font-weight:700;font-size:15px}
+
   /* feedback */
   .feedback{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin-top:14px;text-align:center}
   .fb-q{font-size:15.5px;color:var(--ink)}
@@ -231,8 +270,47 @@
       </div>
       <div class="flags" id="flags"></div>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
+      <button class="letter-tease" id="letterTease" onclick="openPaywall()">
+        <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+        <span><b data-t="lt_title"></b><span data-t="lt_sub"></span></span>
+        <span class="go">‹</span>
+      </button>
     </div>
     <div class="feedback" id="feedback"></div>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- PAYWALL -->
+  <section class="screen" id="screen-paywall">
+    <button class="back" onclick="show('result')"><span>‹</span><span data-t="back_score"></span></button>
+    <h2 class="section-title" data-t="pw_title"></h2>
+    <p class="pw-note" data-t="pw_free_note"></p>
+    <div class="preview">
+      <div class="ltr-head" id="pwPreviewHead"></div>
+      <div class="body" id="pwPreviewIntro"></div>
+      <div class="body fog" id="pwPreviewFog" aria-hidden="true"></div>
+      <div class="veil"></div>
+      <div class="veil-lock">
+        <span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="#F7F1E6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+        <span id="pwLockLine"></span>
+      </div>
+    </div>
+    <div class="plans" id="plans"></div>
+    <button class="primary" id="payBtn" onclick="pwPay()"></button>
+    <div class="pay-methods"><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i></div>
+    <p class="demo-tag" data-t="pw_demo"></p>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- UNLOCKED LETTER -->
+  <section class="screen" id="screen-letter">
+    <button class="back" onclick="show('result')"><span>‹</span><span data-t="back_score"></span></button>
+    <h2 class="section-title" data-t="lt_ready"></h2>
+    <div class="letter"><div class="body" id="letterBody"></div></div>
+    <div class="letter-actions">
+      <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
+      <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
+    </div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -275,6 +353,22 @@ const T = {
   doc_rent:{ar:"عقد إيجار",en:"Rental contract"},
   doc_free:{ar:"عقد عمل حر",en:"Freelance agreement"},
   doc_pasted:{ar:"عقدك",en:"Your contract"},
+  lt_title:{ar:"خطاب التفاوض جاهز",en:"Your negotiation letter is ready"},
+  lt_sub:{ar:"صيغة جاهزة ترسلها للطرف الآخر — بأسلوب مهذب وواثق",en:"Polite, confident wording you can send as is"},
+  lt_ready:{ar:"خطابك جاهز — انسخه وأرسله",en:"Ready to copy and send"},
+  pw_title:{ar:"خطاب التفاوض",en:"The negotiation letter"},
+  pw_free_note:{ar:"تقييمك والتنبيهات مجانية دائمًا — الخطاب إضافة اختيارية.",en:"Your score and flags are always free — the letter is an optional extra."},
+  pw_lock:{ar:"يفتح الخطاب كاملًا بعد الدفع",en:"Unlocks in full after payment"},
+  pw_pay:{ar:"ادفع",en:"Pay"},
+  pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
+  pw_demo:{ar:"نموذج تجريبي — لا يوجد دفع حقيقي.",en:"Prototype — no real payment happens."},
+  plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
+  plan_letter_d:{ar:"صيغة جاهزة لكل بند مُعلَّم — عربي وإنجليزي",en:"Ready wording for every flagged clause — Arabic & English"},
+  plan_lawyer:{ar:"خطاب + مراجعة محامٍ",en:"Letter + lawyer review"},
+  plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
+  plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
+  copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
+  copied:{ar:"نُسخ ✓",en:"Copied ✓"},
   fb_q:{ar:"هل أفادك التقييم؟",en:"Was this helpful?"},
   fb_up:{ar:"نعم، أفادني",en:"Yes, it helped"},
   fb_down:{ar:"لا، ما أفادني",en:"No, it didn't"},
@@ -547,7 +641,10 @@ function applyLang(){
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
   document.getElementById("pasteBox").placeholder = t("paste_ph");
   renderOnboard();
-  if (current){ renderResult(false); renderClauses(); renderFeedback(); }
+  if (current){
+    renderResult(false); renderClauses(); renderFeedback();
+    renderPaywall(); renderLetter();
+  }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
@@ -594,6 +691,7 @@ function analyze(kind){
     ? analyzePasted(document.getElementById("pasteBox").value)
     : SAMPLES[kind];
   fbState = "ask";
+  pwPaid = false; pwPlan = 0;
   show("loading");
   const steps = T.load_steps[lang]; let i = 0;
   const el = document.getElementById("loadStep");
@@ -621,6 +719,7 @@ function renderResult(reset){
   } else {
     setRing(current.score);
   }
+  document.getElementById("letterTease").style.display = negotiables().length ? "flex" : "none";
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
   current.clauses.forEach(c=>{
@@ -655,6 +754,88 @@ function animateRing(){
       if (k<1) requestAnimationFrame(tick);
     })(t0);
   }));
+}
+
+/* ------------------------------------- negotiation letter + paywall */
+let pwPlan = 0, pwPaid = false;
+const PLANS = [
+  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٢٩ ر.س",en:"29 SAR"}, pop:false },
+  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:true }
+];
+const LETTER_TO = {
+  doc_emp:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
+  doc_rent:{ar:"إلى: المؤجّر الكريم",en:"To: The landlord"},
+  doc_free:{ar:"إلى: العميل الكريم",en:"To: The client"},
+  doc_pasted:{ar:"إلى: الطرف الآخر",en:"To: The other party"}
+};
+const AR_NUM = ["١","٢","٣","٤","٥","٦","٧","٨","٩"];
+
+function negotiables(){ return current ? current.clauses.filter(c=>c.a) : []; }
+
+function buildLetter(){
+  const items = negotiables();
+  const list = items.map((c,i)=>{
+    const n = lang==="ar" ? AR_NUM[i] : String(i+1);
+    return `${n}. ${c.t[lang]}: ${c.a[lang]}`;
+  }).join("\n");
+  if (lang==="ar")
+    return `السلام عليكم ورحمة الله،\n\nاطلعت على ${t(current.doc)} المعروض، وأشكركم على الثقة. قبل التوقيع، أتمنى مناقشة النقاط التالية:\n\n${list}\n\nواثق أننا نصل لصيغة عادلة للطرفين، وحاضر لأي نقاش.\n\nمع خالص التحية،\n[اسمك]`;
+  return `Dear Sir or Madam,\n\nThank you for sending the ${t(current.doc).toLowerCase()}. Before signing, I would like to discuss the following points:\n\n${list}\n\nI'm confident we can reach wording that is fair to both sides, and I'm happy to talk any of this through.\n\nBest regards,\n[Your name]`;
+}
+
+function openPaywall(){
+  if (pwPaid){ renderLetter(); show("letter"); return; }
+  renderPaywall(); show("paywall");
+}
+
+function renderPaywall(){
+  if (!current || !negotiables().length) return;
+  const full = buildLetter();
+  const lines = full.split("\n");
+  document.getElementById("pwPreviewHead").textContent = LETTER_TO[current.doc][lang];
+  document.getElementById("pwPreviewIntro").textContent = lines.slice(0,3).join("\n");
+  document.getElementById("pwPreviewFog").textContent = lines.slice(3).join("\n");
+  document.getElementById("pwLockLine").textContent = t("pw_lock");
+  const wrap = document.getElementById("plans");
+  wrap.innerHTML = "";
+  PLANS.forEach((pl,i)=>{
+    const b = document.createElement("button");
+    b.className = "plan" + (i===pwPlan ? " sel" : "");
+    b.innerHTML =
+      `<span class="radio"></span>
+       <span style="flex:1"><b>${t(pl.name)}${pl.pop?`<span class="badge">${t("plan_pop")}</span>`:""}</b><span>${t(pl.desc)}</span></span>
+       <span class="price">${pl.price[lang]}</span>`;
+    b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
+    wrap.appendChild(b);
+  });
+  const pay = document.getElementById("payBtn");
+  pay.disabled = false;
+  pay.textContent = `${t("pw_pay")} ${PLANS[pwPlan].price[lang]}`;
+}
+
+function pwPay(){
+  const pay = document.getElementById("payBtn");
+  pay.disabled = true;
+  pay.textContent = t("pw_paying");
+  setTimeout(()=>{
+    pwPaid = true;
+    renderLetter();
+    show("letter");
+  }, 900);
+}
+
+function renderLetter(){
+  if (!current || !negotiables().length) return;
+  document.getElementById("letterBody").textContent =
+    LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
+  document.getElementById("copyBtn").textContent = t("copy_btn");
+}
+
+function copyLetter(){
+  const btn = document.getElementById("copyBtn");
+  const done = ()=>{ btn.textContent = t("copied"); setTimeout(()=>{ btn.textContent = t("copy_btn"); }, 1600); };
+  if (navigator.clipboard) navigator.clipboard.writeText(document.getElementById("letterBody").textContent).then(done, done);
+  else done();
 }
 
 /* ------------------------------------------------------------ feedback */
