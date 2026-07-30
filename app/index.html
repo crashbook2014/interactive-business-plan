@@ -112,7 +112,9 @@
     .app{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
   }
   button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
-  :focus-visible{outline:3px solid var(--teal);outline-offset:2px;border-radius:6px}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px}
+  ::selection{background:color-mix(in srgb, var(--teal) 22%, transparent);color:var(--ink)}
+  .app{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
       transition-duration:.01ms !important;scroll-behavior:auto !important}
@@ -158,7 +160,7 @@
   html[dir="rtl"] .go{transform:scaleX(-1)}
   .or{display:flex;align-items:center;gap:12px;color:var(--ink-2);font-size:13px;margin:20px 0 12px}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-  textarea{width:100%;min-height:120px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;font:inherit;font-size:14px;color:var(--ink);resize:vertical;line-height:1.8}
+  textarea{width:100%;min-height:120px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;font:inherit;font-size:14px;color:var(--ink);resize:vertical;line-height:1.8}
   textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}
   textarea::placeholder{color:var(--ink-2);opacity:.7}
   .paste-hint{font-size:12px;color:var(--ink-2);margin-top:7px;text-align:center}
@@ -174,20 +176,28 @@
   .ob-skip{align-self:flex-end;color:var(--ink-2);font-size:13.5px;font-weight:700;padding:8px 4px}
   html[lang="ar"] .ob-skip{font-size:15px;font-weight:400}
   .ob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 8px}
-  .ob-art{width:190px;height:190px;margin-bottom:26px}
+  .ob-art{width:190px;height:190px;margin-bottom:28px;position:relative;display:flex;align-items:center;justify-content:center}
+  .ob-art::before{content:"";position:absolute;inset:-14%;border-radius:50%;
+      background:radial-gradient(circle at 50% 45%, var(--teal-soft) 0%, transparent 68%);opacity:.75}
+  .ob-art svg{position:relative}
   .ob-title{font-size:24px;color:var(--teal-ink);line-height:1.5;max-width:320px}
   .ob-sub{font-size:15px;color:var(--ink-2);margin-top:10px;max-width:320px}
   .dots{display:flex;justify-content:center;gap:8px;margin:18px 0 16px}
   .dots button{width:8px;height:8px;border-radius:99px;background:var(--line);padding:0;transition:all .25s;
     box-sizing:content-box;border:18px solid transparent;background-clip:padding-box;margin:-18px}
-  .dots button.on{width:22px;background:var(--teal)}
+  /* background-color, not the shorthand — the shorthand would reset the
+     background-clip that keeps the 44px touch border invisible. */
+  .dots button.on{width:22px;background-color:var(--teal)}
 
   /* loading */
   #screen-loading{align-items:center;justify-content:center;text-align:center}
   .lens-anim{width:84px;height:84px;margin-bottom:22px;animation:sway 1.6s ease-in-out infinite}
   @keyframes sway{0%,100%{transform:translateX(-9px) rotate(-4deg)}50%{transform:translateX(9px) rotate(4deg)}}
   .load-step{font-size:17px;color:var(--teal-ink);min-height:1.8em}
-  .load-sub{font-size:13px;color:var(--ink-2);margin-top:6px}
+  .load-track{width:150px;height:2px;border-radius:2px;background:var(--line);margin:16px auto 0;overflow:hidden}
+  .load-track span{display:block;height:100%;width:0;border-radius:2px;background:var(--teal);
+      transition:width .62s cubic-bezier(.4,0,.2,1)}
+  .load-sub{font-size:13px;color:var(--ink-2);margin-top:12px}
 
   /* result */
   .back{display:flex;align-items:center;gap:6px;color:var(--teal);font-size:14px;font-weight:700;padding:8px 2px;align-self:flex-start}
@@ -224,7 +234,7 @@
   .flags{margin-top:16px;display:grid;gap:10px}
   /* One scannable line per clause; detail is one tap away (and always in full
      on the clause-by-clause screen), so the result reads at a glance. */
-  .flag{border-radius:16px;padding:0;text-align:start;overflow:hidden}
+  .flag{border-radius:var(--r-lg);padding:0;text-align:start;overflow:hidden}
   .flag>button{display:flex;gap:12px;align-items:center;width:100%;padding:13px 15px;text-align:start}
   .flag .dot{flex:none;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center}
   .flag .dot svg{width:13px;height:13px}
@@ -245,7 +255,7 @@
   .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
 
   /* negotiation letter upsell + paywall */
-  .letter-tease{display:flex;align-items:center;gap:12px;width:100%;background:var(--amber-bg);border:1px solid var(--amber);border-radius:16px;padding:14px 16px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
+  .letter-tease{display:flex;align-items:center;gap:12px;width:100%;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
   .letter-tease .lock{flex:none;width:38px;height:38px;border-radius:12px;background:var(--amber);display:flex;align-items:center;justify-content:center}
   .letter-tease .lock svg{width:19px;height:19px}
   .letter-tease b{display:block;font-size:14.5px;color:var(--ink)}
@@ -263,7 +273,7 @@
   .preview .veil-lock .lk{width:40px;height:40px;border-radius:999px;background:var(--teal);display:flex;align-items:center;justify-content:center}
   .preview .veil-lock .lk svg{width:19px;height:19px}
   .plans{display:grid;gap:10px;margin-top:14px}
-  .plan{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:13px 15px;text-align:start;transition:border-color .15s}
+  .plan{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);padding:13px 15px;text-align:start;transition:border-color .15s}
   .plan.sel{border-color:var(--teal);background:var(--teal-soft)}
   .plan .radio{flex:none;width:20px;height:20px;border-radius:99px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
   .plan.sel .radio{border-color:var(--teal)}
@@ -277,22 +287,32 @@
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
 
   /* unlocked letter */
-  .letter{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:24px 22px;box-shadow:var(--e2),var(--edge)}
-  .letter .body{font-size:14.5px;line-height:2;color:var(--ink);white-space:pre-line}
+  /* The letter is the artifact the user actually sends, so it is presented as
+     stationery: letterhead, hairline rules, generous margins. The letterhead
+     lives outside #letterBody so copying still yields clean text. */
+  .letter{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:26px 24px 22px;box-shadow:var(--e2),var(--edge)}
+  .letterhead{display:flex;align-items:center;justify-content:center;gap:8px;padding-bottom:16px;
+      margin-bottom:20px;border-bottom:1px solid var(--line)}
+  .letterhead svg{width:18px;height:18px}
+  .letterhead span{font-family:var(--en);font-size:10px;font-weight:800;letter-spacing:.24em;
+      text-transform:uppercase;color:var(--teal)}
+  .letter .body{font-size:14.5px;line-height:2.05;color:var(--ink);white-space:pre-line}
+  .letterfoot{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);
+      font-size:11px;color:var(--ink-2);text-align:center}
   .letter-actions{display:flex;gap:10px;margin-top:14px}
   .letter-actions .primary{margin-top:0;flex:1}
-  .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:16px;padding:13px;font-weight:700;font-size:15px}
+  .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:var(--r-lg);padding:13px;font-weight:700;font-size:15px}
 
   /* greeting + notices */
   .greet{font-size:14px;color:var(--teal);font-weight:700;margin:16px 2px -2px}
   html[lang="ar"] .greet{font-weight:400;font-size:15.5px}
   .notice[hidden]{display:none}
-  .notice{background:var(--amber-bg);border:1px solid var(--amber);border-radius:14px;
+  .notice{background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--r-md);
           padding:11px 14px;margin-top:12px;font-size:13.5px;color:var(--ink)}
 
   /* all-clear celebration — the reward for a contract that needed no fight */
   .all-clear[hidden]{display:none}
-  .all-clear{background:var(--green-bg);border-radius:18px;padding:20px 18px;margin-top:16px;text-align:center}
+  .all-clear{background:var(--green-bg);border-radius:var(--r-xl);padding:20px 18px;margin-top:16px;text-align:center}
   .all-clear .ac-tick{width:46px;height:46px;border-radius:999px;background:var(--green);
        display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
        animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
@@ -417,7 +437,7 @@
 
   /* AI legal assistant */
   .assist-entry{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);
-      border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
+      border:1px solid var(--line);border-radius:var(--r-lg);padding:13px 15px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
   .assist-entry .ic{flex:none;width:38px;height:38px;border-radius:var(--r-sm);background:var(--teal);box-shadow:var(--e1);
       display:flex;align-items:center;justify-content:center}
   .assist-entry .ic svg{width:20px;height:20px}
@@ -432,7 +452,7 @@
   .caps button:hover{border-color:var(--teal)}
 
   .chat{flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0 12px;min-height:220px}
-  .msg{max-width:86%;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.75;white-space:pre-line}
+  .msg{max-width:86%;border-radius:var(--r-lg);padding:12px 14px;font-size:14px;line-height:1.75;white-space:pre-line}
   .msg.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-start-start-radius:6px;color:var(--ink);box-shadow:var(--e1),var(--edge)}
   .msg.user{align-self:flex-end;background:var(--teal);color:var(--on-teal);border-start-end-radius:6px;box-shadow:var(--e1)}
   .msg .refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -454,10 +474,10 @@
   html[lang="ar"] .quota.gate button{font-weight:400;font-size:15px}
 
   .ask-bar{display:flex;gap:8px;align-items:center}
-  .ask-bar input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  .ask-bar input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
       padding:13px 15px;font:inherit;font-size:14px;color:var(--ink);min-width:0}
   .ask-bar input:focus{outline:2px solid var(--teal);border-color:transparent}
-  .ask-send{flex:none;width:46px;height:46px;border-radius:14px;background:var(--teal);
+  .ask-send{flex:none;width:46px;height:46px;border-radius:var(--r-md);background:var(--teal);
       display:flex;align-items:center;justify-content:center}
   .ask-send svg{width:20px;height:20px}
   html[dir="rtl"] .ask-send svg{transform:scaleX(-1)}
@@ -466,7 +486,7 @@
   /* reminder timeline */
   /* Reminders are a quiet utility, not a second offer — flatter than the
      paid letter card so the two never compete for the same attention. */
-  .track-tease{display:flex;align-items:center;gap:11px;width:100%;background:none;border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-top:8px;text-align:start}
+  .track-tease{display:flex;align-items:center;gap:11px;width:100%;background:none;border:1px solid var(--line);border-radius:var(--r-md);padding:11px 14px;margin-top:8px;text-align:start}
   .track-tease .bell{flex:none;width:30px;height:30px;border-radius:9px;background:var(--teal-soft);display:flex;align-items:center;justify-content:center}
   .track-tease .bell svg{width:16px;height:16px;stroke:var(--teal)}
   .track-tease b{display:block;font-size:13.5px;color:var(--ink)}
@@ -634,6 +654,7 @@
   <section class="screen" id="screen-loading">
     <svg class="lens-anim" viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg>
     <div class="load-step" id="loadStep"></div>
+    <div class="load-track"><span id="loadFill"></span></div>
     <div class="load-sub" data-t="load_sub"></div>
   </section>
 
@@ -711,7 +732,11 @@
   <section class="screen" id="screen-letter">
     <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="lt_ready"></h2>
-    <div class="letter"><div class="body" id="letterBody"></div></div>
+    <div class="letter">
+      <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
+      <div class="body" id="letterBody"></div>
+      <div class="letterfoot" id="letterFoot"></div>
+    </div>
     <div class="letter-actions">
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
@@ -879,6 +904,7 @@ const T = {
   plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
   plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
   copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
+  lt_foot:{ar:"أُعدّ بمساعدة وضوح",en:"Prepared with Wodouh"},
   copied:{ar:"نُسخ ✓",en:"Copied ✓"},
   tr_title:{ar:"ذكّرني بمواعيد هذا العقد",en:"Track this contract's deadlines"},
   tr_sub:{ar:"فترة التجربة، نافذة الإشعار، والتجديد — ننبهك قبلها بوقت كافٍ",en:"Probation, notice windows, renewals — we'll nudge you well before each one"},
@@ -1370,10 +1396,13 @@ function runLoading(done){
   const steps = T.load_steps[lang].slice();
   if (current) steps.splice(1, 0, t("load_" + current.doc.replace("doc_","")));
   let i = 0;
-  const el = document.getElementById("loadStep");
+  const el = document.getElementById("loadStep"), fill = document.getElementById("loadFill");
   el.textContent = steps[0];
+  fill.style.width = "0%";
+  requestAnimationFrame(()=>{ fill.style.width = (100/steps.length) + "%"; });
   const iv = setInterval(()=>{
     i++;
+    fill.style.width = Math.min(100, ((i+1)/steps.length)*100) + "%";
     if (i < steps.length) el.textContent = steps[i];
     else { clearInterval(iv); done(); }
   }, 650);
@@ -2104,6 +2133,7 @@ function renderLetter(){
   document.getElementById("letterBody").textContent =
     LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
   document.getElementById("copyBtn").textContent = t("copy_btn");
+  document.getElementById("letterFoot").textContent = t("lt_foot");
 }
 
 function copyLetter(){
