@@ -143,7 +143,8 @@
   .ob-title{font-size:24px;color:var(--teal-ink);line-height:1.5;max-width:320px}
   .ob-sub{font-size:15px;color:var(--ink-2);margin-top:10px;max-width:320px}
   .dots{display:flex;justify-content:center;gap:8px;margin:18px 0 16px}
-  .dots button{width:8px;height:8px;border-radius:99px;background:var(--line);padding:0;transition:all .25s}
+  .dots button{width:8px;height:8px;border-radius:99px;background:var(--line);padding:0;transition:all .25s;
+    box-sizing:content-box;border:18px solid transparent;background-clip:padding-box;margin:-18px}
   .dots button.on{width:22px;background:var(--teal)}
 
   /* loading */
@@ -239,6 +240,47 @@
   .letter-actions .primary{margin-top:0;flex:1}
   .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:16px;padding:13px;font-weight:700;font-size:15px}
 
+  /* greeting + notices */
+  .greet{font-size:14px;color:var(--teal);font-weight:700;margin:16px 2px -2px}
+  html[lang="ar"] .greet{font-weight:400;font-size:15.5px}
+  .notice{background:var(--amber-bg);border:1px solid var(--amber);border-radius:14px;
+          padding:11px 14px;margin-top:12px;font-size:13.5px;color:var(--ink)}
+
+  /* all-clear celebration — the reward for a contract that needed no fight */
+  .all-clear{background:var(--green-bg);border-radius:18px;padding:20px 18px;margin-top:16px;text-align:center}
+  .all-clear .ac-tick{width:46px;height:46px;border-radius:999px;background:var(--green);
+       display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+       animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+  .all-clear .ac-tick svg{width:24px;height:24px}
+  .all-clear b{display:block;font-size:17px;color:var(--ink)}
+  .all-clear span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:5px;line-height:1.7}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* could-not-read state — no score, by design */
+  #screen-noread{justify-content:center;text-align:center}
+  .nr-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 6px}
+  .nr-mark{width:64px;height:64px;opacity:.5;margin-bottom:18px}
+  #screen-noread h2{font-size:22px;color:var(--teal-ink);line-height:1.5}
+  #screen-noread p{font-size:15px;color:var(--ink-2);margin-top:8px;max-width:320px}
+  .nr-tips{list-style:none;margin-top:20px;display:grid;gap:8px;text-align:start;width:100%;max-width:330px}
+  .nr-tips li{background:var(--card);border:1px solid var(--line);border-radius:14px;
+              padding:10px 14px;font-size:13.5px;color:var(--ink);display:flex;gap:9px;align-items:flex-start}
+  .nr-tips li::before{content:"";flex:none;width:6px;height:6px;border-radius:99px;background:var(--teal);margin-top:9px}
+  .ghost.wide{width:100%;margin-top:10px;flex:none}
+
+  /* motion: screens enter along the reading direction */
+  .screen.active{animation:screen-in .3s cubic-bezier(.22,.7,.3,1) both}
+  @keyframes screen-in{from{opacity:0;transform:translateX(calc(var(--dir,1) * 14px))}
+                       to{opacity:1;transform:none}}
+  .screen.active.back{animation-name:screen-back}
+  @keyframes screen-back{from{opacity:0;transform:translateX(calc(var(--dir,1) * -14px))}
+                         to{opacity:1;transform:none}}
+  .flag,.tl-item{animation:settle .32s ease both;animation-delay:var(--d,0ms)}
+  @keyframes settle{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .primary:active,.sample:active,.plan:active,.letter-tease:active,.track-tease:active,
+  .ghost:active,.fb-btns button:active{transform:scale(.978)}
+  .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform .12s ease}
+
   /* reminder timeline */
   /* Reminders are a quiet utility, not a second offer — flatter than the
      paid letter card so the two never compete for the same attention. */
@@ -248,6 +290,10 @@
   .track-tease b{display:block;font-size:13.5px;color:var(--ink)}
   .track-tease span{font-size:11.5px;color:var(--ink-2)}
   .track-tease .go{margin-inline-start:auto;color:var(--teal);display:flex}
+  .track-tease.solo{background:var(--teal-soft);border-color:var(--teal);padding:14px 16px;box-shadow:var(--shadow)}
+  .track-tease.solo b{font-size:14.5px}
+  .track-tease.solo .bell{background:var(--teal);width:36px;height:36px}
+  .track-tease.solo .bell svg{stroke:var(--on-teal)}
   .home-reminders{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;width:100%;color:var(--teal);font-size:14px;font-weight:700;background:var(--teal-soft);border-radius:14px;padding:11px}
   html[lang="ar"] .home-reminders{font-weight:400;font-size:15px}
 
@@ -274,7 +320,7 @@
   .feedback{background:none;border-top:1px solid var(--line);border-radius:0;padding:16px 10px 4px;margin-top:18px;text-align:center}
   .fb-q{font-size:13.5px;color:var(--ink-2)}
   .fb-btns{display:flex;justify-content:center;gap:14px;margin-top:12px}
-  .fb-btns button{width:42px;height:42px;border-radius:999px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
+  .fb-btns button{width:46px;height:46px;border-radius:999px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
   .fb-btns button:hover{border-color:var(--teal)}
   .fb-btns svg{width:22px;height:22px}
   .fb-comment{margin-top:14px}
@@ -349,7 +395,9 @@
 
   <!-- HOME -->
   <section class="screen" id="screen-home">
+    <p class="greet" id="greet"></p>
     <h1 class="hello" data-t="hello"></h1>
+    <div class="notice" id="offlineNotice" hidden></div>
     <p class="sub" data-t="sub"></p>
     <div class="samples">
       <button class="sample" onclick="analyze('employment')">
@@ -362,6 +410,11 @@
         <span><b data-t="s_rent"></b><span data-t="s_rent_d"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
+      <button class="sample" onclick="analyze('clean')">
+        <span class="ic"><svg viewBox="0 0 64 64" fill="none" stroke="var(--teal)"><path d="M14 32l12 12 24-26" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><b data-t="s_clean"></b><span data-t="s_clean_d"></span></span>
+        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+      </button>
       <button class="sample" onclick="analyze('freelance')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-pen"/></svg></span>
         <span><b data-t="s_free"></b><span data-t="s_free_d"></span></span>
@@ -372,7 +425,7 @@
     <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
     <p class="paste-hint" data-t="paste_hint"></p>
     <button class="primary" id="analyzeBtn" disabled onclick="analyze('pasted')" data-t="analyze"></button>
-    <button class="home-reminders" id="homeReminders" style="display:none" onclick="openTimeline('home')">
+    <button class="home-reminders" id="homeReminders" onclick="openTimeline('home')">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
       <span id="homeRemindersLabel"></span>
     </button>
@@ -388,7 +441,7 @@
 
   <!-- RESULT -->
   <section class="screen" id="screen-result">
-    <button class="back" onclick="show('home')"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
     <div class="score-card">
       <div class="share-mark"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
       <div class="ring">
@@ -405,6 +458,11 @@
         <span><i style="background:var(--red)"></i><span data-t="lg_red"></span></span>
         <span><i style="background:var(--amber)"></i><span data-t="lg_amber"></span></span>
         <span><i style="background:var(--green)"></i><span data-t="lg_green"></span></span>
+      </div>
+      <div class="all-clear" id="allClear" hidden>
+        <span class="ac-tick"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <b id="acTitle"></b>
+        <span id="acBody"></span>
       </div>
       <div class="flags" id="flags"></div>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
@@ -425,7 +483,7 @@
 
   <!-- PAYWALL -->
   <section class="screen" id="screen-paywall">
-    <button class="back" onclick="show('result')"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="pw_title"></h2>
     <p class="pw-note" data-t="pw_free_note"></p>
     <div class="preview">
@@ -447,13 +505,26 @@
 
   <!-- UNLOCKED LETTER -->
   <section class="screen" id="screen-letter">
-    <button class="back" onclick="show('result')"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="lt_ready"></h2>
     <div class="letter"><div class="body" id="letterBody"></div></div>
     <div class="letter-actions">
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- COULD NOT READ -->
+  <section class="screen" id="screen-noread">
+    <div class="nr-body">
+      <svg class="nr-mark" viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg>
+      <h2 id="nrTitle"></h2>
+      <p id="nrBody"></p>
+      <ul class="nr-tips" id="nrTips"></ul>
+    </div>
+    <button class="primary" id="nrRetry" onclick="retryPaste()"></button>
+    <button class="ghost wide" id="nrSample" onclick="show('home')"></button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -468,7 +539,7 @@
 
   <!-- CLAUSES -->
   <section class="screen" id="screen-clauses">
-    <button class="back" onclick="show('result')"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="clauses_title"></h2>
     <div id="clauseList"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
@@ -481,7 +552,25 @@ const T = {
   ob_skip:{ar:"تخطّي",en:"Skip"},
   ob_next:{ar:"التالي",en:"Next"},
   ob_start:{ar:"ابدأ",en:"Get started"},
+  greet_m:{ar:"صباح الخير",en:"Good morning"},
+  greet_a:{ar:"مساء الخير",en:"Good afternoon"},
+  greet_e:{ar:"مساء الخير",en:"Good evening"},
   hello:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
+  s_clean:{ar:"عرض وظيفي واضح",en:"A clean job offer"}, s_clean_d:{ar:"عقد بلا مفاجآت — نموذج تجريبي",en:"No surprises — sample"},
+  doc_clean:{ar:"عرض وظيفي",en:"Job offer"},
+  load_clean:{ar:"نراجع الشروط بندًا بندًا…",en:"Checking the terms clause by clause…"},
+  ac_title:{ar:"ما لقينا شي يقلق",en:"Nothing here worries us"},
+  ac_body:{ar:"راجعنا كل بند، وكلها ضمن المعتاد. تقدر توقّع وأنت مرتاح.",
+           en:"We read every clause and they all sit within the norm. You can sign with confidence."},
+  nr_title:{ar:"ما قدرنا نقرأ هذا النص",en:"We couldn't read this one"},
+  nr_body:{ar:"ما ودّنا نعطيك تقييمًا لعقد ما قرأناه صح — الأمانة أهم.",
+           en:"We'd rather not score a contract we couldn't properly read. Honesty first."},
+  nr_tips:{ar:["الصق العقد كاملًا بما فيه العناوين","تأكد أن النص عربي أو إنجليزي","جرّب عقدًا تجريبيًا لتشوف كيف يشتغل وضوح"],
+           en:["Paste the full contract, headings included","Check the text is Arabic or English","Try a sample to see how Wodouh works"]},
+  nr_retry:{ar:"ألصق نصًا آخر",en:"Paste another text"},
+  nr_sample:{ar:"جرّب نموذجًا",en:"Try a sample"},
+  offline:{ar:"يبدو أنك غير متصل — تحقق من الاتصال وحاول مرة ثانية.",
+           en:"You appear to be offline — check your connection and try again."},
   sub:{ar:"اختر عقدًا تجريبيًا أو الصق نص عقدك، ونشرح لك كل بند بلغة واضحة.",en:"Pick a sample contract or paste your own, and we'll explain every clause in plain language."},
   s_emp:{ar:"عقد عمل",en:"Employment contract"}, s_emp_d:{ar:"وظيفة بدوام كامل — نموذج تجريبي",en:"Full-time job offer — sample"},
   s_rent:{ar:"عقد إيجار",en:"Rental contract"}, s_rent_d:{ar:"شقة سكنية سنوية — نموذج تجريبي",en:"Annual apartment lease — sample"},
@@ -634,6 +723,40 @@ const SAMPLES = {
         p:{ar:"٩٠ يومًا فترة تجربة معتادة وموثّقة بوضوح.",en:"Ninety days is a normal, clearly documented probation period."},
         a:null }
     ]},
+  clean: { score:92, doc:"doc_clean",
+    verdict:{ar:"عقد واضح وعادل — ما فيه شي يحتاج تفاوض.",en:"Clear and fair — nothing here needs negotiating."},
+    clauses:[
+      { s:"green",
+        t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
+        q:{ar:"راتب أساسي شهري مع بدل سكن ٢٥٪ وبدل نقل ١٠٪ يُدفع في اليوم الخامس والعشرين من كل شهر.",
+           en:"A monthly base salary plus 25% housing and 10% transport allowance, paid on the 25th of each month."},
+        p:{ar:"المبلغ والبدلات وموعد الدفع كلها مكتوبة بوضوح — ما فيه غموض.",
+           en:"Amount, allowances, and payment date are all written plainly — nothing vague."}, a:null },
+      { s:"green",
+        t:{ar:"مدة الإشعار",en:"Notice period"},
+        q:{ar:"يلتزم الطرفان بإشعار كتابي مدته ثلاثون يومًا عند الرغبة في إنهاء العقد.",
+           en:"Both parties shall give thirty days' written notice to terminate."},
+        p:{ar:"٣٠ يومًا للطرفين — متبادلة وعادلة، وهذا اللي نحب نشوفه.",
+           en:"Thirty days for both sides — mutual and fair, exactly what we like to see."}, a:null },
+      { s:"green",
+        t:{ar:"الإجازة السنوية",en:"Annual leave"},
+        q:{ar:"يستحق الموظف إجازة سنوية مدفوعة مدتها ثلاثون يومًا، مع تذكرة سفر سنوية.",
+           en:"Thirty days of paid annual leave, plus an annual flight ticket."},
+        p:{ar:"٣٠ يومًا مدفوعة وتذكرة سنوية — أعلى من الحد المعتاد.",
+           en:"Thirty paid days and a yearly ticket — above the usual baseline."}, a:null },
+      { s:"green",
+        t:{ar:"العمل الإضافي",en:"Overtime"},
+        q:{ar:"يُحتسب أجر العمل الإضافي بواقع ١٥٠٪ من أجر الساعة ويُدفع مع راتب الشهر ذاته.",
+           en:"Overtime is paid at 150% of the hourly rate, with the same month's salary."},
+        p:{ar:"النسبة وموعد الدفع مكتوبان صراحة — ما ترك شيء للتفسير.",
+           en:"Rate and payment timing are both explicit — nothing left to interpretation."}, a:null },
+      { s:"green",
+        t:{ar:"فترة التجربة",en:"Probation period"},
+        q:{ar:"فترة تجربة مدتها تسعون يومًا، وتُحتسب ضمن مدة الخدمة عند التثبيت.",
+           en:"A ninety-day probation, counted toward length of service on confirmation."},
+        p:{ar:"٩٠ يومًا معتادة، واحتسابها ضمن الخدمة في صالحك.",
+           en:"A normal ninety days, and counting it toward service works in your favor."}, a:null }
+    ]},
   rental: { score:74, doc:"doc_rent",
     verdict:{ar:"عقد جيد — بس بند الإخلاء يحتاج وقفة.",en:"A decent lease — but the eviction clause needs a closer look."},
     clauses:[
@@ -776,13 +899,9 @@ const RULES = [
 function analyzePasted(text){
   const clauses = [];
   for (const r of RULES) if (r.re.test(text)) clauses.push({ s:r.s, t:r.t, p:r.p, a:r.a, q:null });
-  if (!clauses.length){
-    clauses.push({ s:"amber", q:null,
-      t:{ar:"ما قدرنا نتعرف على بنود مألوفة",en:"We couldn't recognize familiar clauses"},
-      p:{ar:"النص قصير أو صيغته غير معتادة. جرّب لصق العقد كاملًا، أو ابدأ بعقد تجريبي لتشوف كيف يشتغل وضوح.",
-         en:"The text is short or unusual in form. Try pasting the full contract, or start with a sample to see how Wodouh works."},
-      a:{ar:"الصق نص العقد كاملًا بما فيه العناوين.",en:"Paste the full contract text, headings included."} });
-  }
+  /* Nothing recognised means we cannot honestly score this text. Returning null
+     routes to the "couldn't read" screen instead of inventing a verdict. */
+  if (!clauses.length) return null;
   clauses.sort((x,y)=>({red:0,amber:1,green:2}[x.s]-{red:0,amber:1,green:2}[y.s]));
   let score = 100;
   for (const c of clauses) score -= c.s==="red" ? 16 : c.s==="amber" ? 8 : 0;
@@ -810,6 +929,17 @@ function applyLang(){
   document.getElementById("langToggle").textContent = lang==="ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
   document.getElementById("pasteBox").placeholder = t("paste_ph");
+  const h = new Date().getHours();
+  document.getElementById("greet").textContent =
+    t(h < 12 ? "greet_m" : h < 17 ? "greet_a" : "greet_e");
+  document.documentElement.style.setProperty("--dir", lang==="ar" ? "-1" : "1");
+  document.getElementById("nrTitle").textContent = t("nr_title");
+  document.getElementById("nrBody").textContent = t("nr_body");
+  document.getElementById("nrRetry").textContent = t("nr_retry");
+  document.getElementById("nrSample").textContent = t("nr_sample");
+  document.getElementById("nrTips").innerHTML =
+    T.nr_tips[lang].map(x=>`<li>${x}</li>`).join("");
+  document.getElementById("offlineNotice").textContent = t("offline");
   document.getElementById("deskTitle").textContent = t("desk_title");
   document.getElementById("deskSub").textContent = t("desk_sub");
   document.getElementById("deskMeta").textContent = t("desk_meta");
@@ -822,12 +952,17 @@ function applyLang(){
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
-function show(name){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById("screen-"+name).classList.add("active");
+function show(name, back){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back"));
+  const el = document.getElementById("screen-"+name);
+  el.classList.add("active");
+  if (back) el.classList.add("back");
   window.scrollTo(0,0);
   if (name==="result") animateRing();
 }
+
+/* Haptics where a real device would buzz: a decision landed, not every tap. */
+function buzz(ms){ if (navigator.vibrate) try { navigator.vibrate(ms); } catch(e){} }
 
 /* ---------------------------------------------------------- onboarding */
 let obIndex = 0;
@@ -861,22 +996,45 @@ function pasteChanged(){
 
 /* ------------------------------------------------------------- analyze */
 function analyze(kind){
-  current = kind==="pasted"
+  const notice = document.getElementById("offlineNotice");
+  if (navigator.onLine === false){ notice.hidden = false; return; }
+  notice.hidden = true;
+  const result = kind==="pasted"
     ? analyzePasted(document.getElementById("pasteBox").value)
     : SAMPLES[kind];
+  if (!result){                      /* nothing recognised — never fake a score */
+    current = null;
+    runLoading(()=>{ buzz(12); show("noread"); });
+    return;
+  }
+  current = result;
   fbState = "ask";
   pwPaid = false; pwPlan = 0;
+  runLoading(()=>{
+    renderResult(true); renderClauses(); renderFeedback();
+    buzz(negotiables().length ? 12 : [10,60,18]);   /* lighter double-tap when all clear */
+    show("result");
+  });
+}
+
+function runLoading(done){
   show("loading");
   const steps = T.load_steps[lang].slice();
-  steps.splice(1, 0, t("load_" + current.doc.replace("doc_","")));
+  if (current) steps.splice(1, 0, t("load_" + current.doc.replace("doc_","")));
   let i = 0;
   const el = document.getElementById("loadStep");
   el.textContent = steps[0];
   const iv = setInterval(()=>{
     i++;
     if (i < steps.length) el.textContent = steps[i];
-    else { clearInterval(iv); renderResult(true); renderClauses(); renderFeedback(); show("result"); }
+    else { clearInterval(iv); done(); }
   }, 650);
+}
+
+function retryPaste(){
+  show("home", 1);
+  const box = document.getElementById("pasteBox");
+  box.value = ""; pasteChanged(); box.focus();
 }
 
 /* -------------------------------------------------------------- render */
@@ -898,11 +1056,20 @@ function renderResult(reset){
   } else {
     setRing(current.score);
   }
-  document.getElementById("letterTease").style.display = negotiables().length ? "flex" : "none";
+  const clear = negotiables().length === 0;
+  document.getElementById("letterTease").style.display = clear ? "none" : "flex";
+  const ac = document.getElementById("allClear");
+  ac.hidden = !clear;
+  if (clear){
+    document.getElementById("acTitle").textContent = t("ac_title");
+    document.getElementById("acBody").textContent = t("ac_body");
+  }
+  /* With nothing to negotiate, reminders become the one clear next step. */
+  document.getElementById("trackTease").classList.toggle("solo", clear);
   renderTrackTease();
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
-  current.clauses.forEach(c=>{
+  current.clauses.forEach((c,idx)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s;
     const tip = c.a ? `<div class="tip"><b>${t("what_to_do")}:</b> ${c.a[lang]}</div>` : "";
@@ -916,6 +1083,7 @@ function renderResult(reset){
          </span>
        </button>
        <div class="advice"><p>${c.p[lang]}</p>${tip}</div>`;
+    div.style.setProperty("--d", Math.min(idx,6)*40 + "ms");
     wrap.appendChild(div);
   });
   /* Red flags are the reason the user opened the app — they stay open by
@@ -982,6 +1150,12 @@ const EVENTS = {
     { d:105, k:"deadline", t:{ar:"استحقاق الدفعة",en:"Payment due"},
       n:{ar:"نهاية مدة الستين يومًا بعد الفاتورة — طالب بها يومها.",en:"End of the 60-day invoice window — chase it that day."} }
   ],
+  doc_clean:[
+    { d:90, k:"info", t:{ar:"نهاية فترة التجربة",en:"Probation period ends"},
+      n:{ar:"تُحتسب ضمن مدة خدمتك — احتفظ بنسخة من خطاب التثبيت.",en:"It counts toward your service — keep a copy of the confirmation letter."} },
+    { d:365, k:"info", t:{ar:"استحقاق الإجازة والتذكرة",en:"Leave and ticket accrue"},
+      n:{ar:"أكملت سنة — إجازتك وتذكرتك السنوية مستحقة.",en:"A full year in — your annual leave and flight ticket are due."} }
+  ],
   doc_pasted:[
     { d:7, k:"action", t:{ar:"متابعة ردّ الطرف الآخر",en:"Follow up on your asks"},
       n:{ar:"مرت أسبوع على ملاحظاتك؟ ذكّرهم قبل التوقيع.",en:"A week after sending your notes — nudge them before signing."} },
@@ -998,6 +1172,7 @@ function isTracked(){ return current && TRACKED.some(x=>x.doc===current.doc); }
 function trackOrView(){
   if (!current) return;
   if (!isTracked()){
+    buzz(10);
     const base = Date.now();
     TRACKED.push({ doc: current.doc,
       events: EVENTS[current.doc].map(e=>({ ...e, when: base + e.d*86400000 })) });
@@ -1012,7 +1187,7 @@ function openTimeline(origin){
   renderTimeline();
   show("timeline");
 }
-function tlBack(){ show(tlOrigin === "home" ? "home" : "result"); }
+function tlBack(){ show(tlOrigin === "home" ? "home" : "result", 1); }
 
 function fmtDate(ts){
   return new Intl.DateTimeFormat(lang==="ar" ? "ar-SA-u-ca-gregory" : "en-GB",
@@ -1025,10 +1200,11 @@ function renderTrackTease(){
   document.getElementById("trackSub").textContent = t(isTracked() ? "tr_on_sub" : "tr_sub");
 }
 function renderHomeReminders(){
-  const el = document.getElementById("homeReminders");
-  el.style.display = TRACKED.length ? "flex" : "none";
+  /* Always present, so the feature (and its empty state) is discoverable
+     before the first contract is ever tracked. */
+  document.getElementById("homeReminders").style.display = "flex";
   document.getElementById("homeRemindersLabel").textContent =
-    `${t("tl_reminders")} (${fmtNum(TRACKED.length)})`;
+    TRACKED.length ? `${t("tl_reminders")} (${fmtNum(TRACKED.length)})` : t("tl_reminders");
 }
 
 function renderTimeline(){
@@ -1041,10 +1217,11 @@ function renderTimeline(){
     wrap.innerHTML = `<div class="tl-empty">${t("tl_empty")}</div>`;
     return;
   }
-  all.forEach(e=>{
+  all.forEach((e,i)=>{
     const days = Math.max(0, Math.round((e.when - Date.now())/86400000));
     const item = document.createElement("div");
     item.className = "tl-item " + e.k;
+    item.style.setProperty("--d", Math.min(i,6)*40 + "ms");
     item.innerHTML =
       `<span class="node"></span>
        <div class="tl-card">
@@ -1125,6 +1302,7 @@ function pwPay(){
   pay.textContent = t("pw_paying");
   setTimeout(()=>{
     pwPaid = true;
+    buzz([12,50,20]);
     renderLetter();
     show("letter");
   }, 900);
@@ -1184,6 +1362,7 @@ function fbRecord(vote, comment){
 }
 
 function fbVote(up){
+  buzz(8);
   if (up){ fbRecord("up"); fbState = "done"; }
   else fbState = "comment";
   renderFeedback();
