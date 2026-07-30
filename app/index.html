@@ -281,6 +281,54 @@
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
   .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform .12s ease}
 
+  /* AI legal assistant */
+  .assist-entry{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);
+      border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
+  .assist-entry .ic{flex:none;width:38px;height:38px;border-radius:12px;background:var(--teal);
+      display:flex;align-items:center;justify-content:center}
+  .assist-entry .ic svg{width:20px;height:20px}
+  .assist-entry b{display:block;font-size:14.5px;color:var(--ink)}
+  .assist-entry span span{font-size:12.5px;color:var(--ink-2)}
+  .assist-entry .go{margin-inline-start:auto;color:var(--teal);display:flex}
+
+  .caps{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+  .caps::-webkit-scrollbar{display:none}
+  .caps button{flex:none;font-size:12.5px;color:var(--teal);background:var(--teal-soft);
+      border:1px solid transparent;border-radius:999px;padding:7px 13px;white-space:nowrap}
+  .caps button:hover{border-color:var(--teal)}
+
+  .chat{flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0 12px;min-height:220px}
+  .msg{max-width:86%;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.75;white-space:pre-line}
+  .msg.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-start-start-radius:6px;color:var(--ink)}
+  .msg.user{align-self:flex-end;background:var(--teal);color:var(--on-teal);border-start-end-radius:6px}
+  .msg .refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .msg .ref{font-size:11px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:3px 10px}
+  .msg .inline-cta{margin-top:11px;width:100%;background:var(--teal);color:var(--on-teal);
+      border-radius:12px;padding:10px;font-size:13.5px;font-weight:700}
+  html[lang="ar"] .msg .inline-cta{font-weight:400;font-size:14.5px}
+  .typing{display:flex;gap:4px;align-items:center}
+  .typing i{width:6px;height:6px;border-radius:99px;background:var(--ink-2);animation:blink 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s} .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+  .quota{font-size:11.5px;color:var(--ink-2);text-align:center;padding:2px 0 8px}
+  .quota.gate{background:var(--amber-bg);border:1px solid var(--amber);border-radius:14px;
+      padding:14px;color:var(--ink);font-size:13.5px;text-align:center}
+  .quota.gate b{display:block;font-size:15px;margin-bottom:4px}
+  .quota.gate button{margin-top:10px;width:100%;background:var(--teal);color:var(--on-teal);
+      border-radius:12px;padding:11px;font-weight:700;font-size:14px}
+  html[lang="ar"] .quota.gate button{font-weight:400;font-size:15px}
+
+  .ask-bar{display:flex;gap:8px;align-items:center}
+  .ask-bar input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;
+      padding:13px 15px;font:inherit;font-size:14px;color:var(--ink);min-width:0}
+  .ask-bar input:focus{outline:2px solid var(--teal);border-color:transparent}
+  .ask-send{flex:none;width:46px;height:46px;border-radius:14px;background:var(--teal);
+      display:flex;align-items:center;justify-content:center}
+  .ask-send svg{width:20px;height:20px}
+  html[dir="rtl"] .ask-send svg{transform:scaleX(-1)}
+  .ask-bar input:disabled,.ask-send:disabled{opacity:.45}
+
   /* reminder timeline */
   /* Reminders are a quiet utility, not a second offer — flatter than the
      paid letter card so the two never compete for the same attention. */
@@ -425,6 +473,11 @@
     <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
     <p class="paste-hint" data-t="paste_hint"></p>
     <button class="primary" id="analyzeBtn" disabled onclick="analyze('pasted')" data-t="analyze"></button>
+    <button class="assist-entry" onclick="openAssist('home')">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
+      <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
     <button class="home-reminders" id="homeReminders" onclick="openTimeline('home')">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
       <span id="homeRemindersLabel"></span>
@@ -476,6 +529,11 @@
         <span><b id="trackTitle"></b><span id="trackSub"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
+      <button class="track-tease" id="assistTease" onclick="openAssist('result')">
+        <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
+        <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
+        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+      </button>
     </div>
     <div class="feedback" id="feedback"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
@@ -513,6 +571,22 @@
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
     <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- AI LEGAL ASSISTANT -->
+  <section class="screen" id="screen-assist">
+    <button class="back" onclick="assistBack()"><span class="bk" aria-hidden="true">‹</span><span id="asBackLabel"></span></button>
+    <h2 class="section-title" data-t="as_title"></h2>
+    <div class="caps" id="caps"></div>
+    <div class="chat" id="chat"></div>
+    <div class="quota" id="quota"></div>
+    <form class="ask-bar" id="askBar" onsubmit="submitAsk(event)">
+      <input id="askInput" autocomplete="off" />
+      <button class="ask-send" id="askSend" type="submit" aria-label="send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+    <p class="disclaimer" data-t="as_verify"></p>
   </section>
 
   <!-- COULD NOT READ -->
@@ -628,6 +702,34 @@ const T = {
             en:"Wodouh explains employment, rental, and freelance contracts in plain language, flags the risks, and gives you a clear verdict."},
   desk_meta:{ar:"نموذج تفاعلي — جرّبه بنفسك",en:"Interactive prototype — try it yourself"},
   paste_hint:{ar:"الصق نص العقد كاملًا — ٤٠ حرفًا على الأقل.",en:"Paste the full contract text — 40 characters minimum."},
+  as_open:{ar:"اسأل وضوح",en:"Ask Wodouh"},
+  as_open_sub:{ar:"سؤال قانوني؟ اسأل بلغتك العادية",en:"A legal question? Ask in your own words"},
+  as_title:{ar:"اسأل وضوح",en:"Ask Wodouh"},
+  as_intro:{ar:"اسألني عن أي بند أو نظام — أشرح لك بلغة بسيطة، وأقول لك متى تحتاج محاميًا فعلًا.",
+            en:"Ask me about any clause or law — I'll explain it plainly, and tell you when you genuinely need a lawyer."},
+  as_ph:{ar:"اكتب سؤالك هنا…",en:"Type your question…"},
+  as_send:{ar:"أرسل",en:"Send"},
+  as_thinking:{ar:"أفكر…",en:"Thinking…"},
+  as_refs:{ar:"مرجع",en:"Reference"},
+  as_left:{ar:"باقي لك {n} أسئلة مجانية",en:"{n} free questions left"},
+  as_left1:{ar:"باقي لك سؤال مجاني واحد",en:"1 free question left"},
+  as_quota_t:{ar:"خلصت أسئلتك المجانية",en:"You've used your free questions"},
+  as_quota_b:{ar:"اشترك في وضوح+ لأسئلة بلا حدود، وملخصات، وصياغة المستندات.",
+              en:"Subscribe to Wodouh+ for unlimited questions, summaries, and document drafting."},
+  as_quota_cta:{ar:"اشترك — ٣٩ ر.س/شهر",en:"Subscribe — 39 SAR/month"},
+  as_not_lawyer:{ar:"أنا لست محاميًا — أشرح لك النظام وأساعدك تفهم. للقضايا المعقدة، وصّلك بمحامٍ مرخّص.",
+                 en:"I'm not a lawyer — I explain the law and help you understand. For complex matters, I'll connect you with a licensed one."},
+  cap_ask:{ar:"سؤال قانوني",en:"Legal question"},
+  cap_law:{ar:"اشرح نظامًا",en:"Explain a law"},
+  cap_sum:{ar:"لخّص عقدي",en:"Summarize my contract"},
+  cap_risk:{ar:"المخاطر القانونية",en:"Legal risks"},
+  cap_draft:{ar:"اكتب مستندًا",en:"Draft a document"},
+  cap_refs:{ar:"الأنظمة ذات العلاقة",en:"Relevant laws"},
+  as_nocontract:{ar:"ما عندي عقد محلّل الحين — حلّل عقدًا أول، وبعدها ألخّصه لك أو أطلّع مخاطره.",
+                 en:"I don't have a contract loaded yet — analyze one first and I'll summarize it or pull out its risks."},
+  as_draft_cta:{ar:"جهّز لي خطاب التفاوض",en:"Draft my negotiation letter"},
+  as_verify:{ar:"المراجع في هذا النموذج توضيحية — تحقق من النص الرسمي قبل الاعتماد عليها.",
+             en:"References in this prototype are illustrative — check the official text before relying on them."},
   fb_q:{ar:"هل أفادك التقييم؟",en:"Was this helpful?"},
   fb_up:{ar:"نعم، أفادني",en:"Yes, it helped"},
   fb_down:{ar:"لا، ما أفادني",en:"No, it didn't"},
@@ -945,6 +1047,7 @@ function applyLang(){
   document.getElementById("deskMeta").textContent = t("desk_meta");
   renderOnboard();
   renderHomeReminders();
+  if (chat.length) renderAssist();
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
@@ -1121,6 +1224,254 @@ function animateRing(){
       if (k<1) requestAnimationFrame(tick);
     })(t0);
   }));
+}
+
+/* ---------------------------------------------- assistant: UI + state */
+let asOrigin = "home";
+
+function openAssist(origin){
+  asOrigin = origin;
+  if (!chat.length){
+    chat.push({ who:"bot", text:t("as_intro") });
+    chat.push({ who:"bot", text:t("as_not_lawyer") });
+  }
+  renderAssist();
+  show("assist");
+  setTimeout(()=>document.getElementById("askInput").focus(), 120);
+}
+function assistBack(){ show(asOrigin === "result" ? "result" : "home", 1); }
+
+function renderCaps(){
+  const wrap = document.getElementById("caps");
+  wrap.innerHTML = "";
+  CAPS.forEach(c=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = t(c.label);
+    b.onclick = ()=>ask(CAP_Q[c.id][lang]);
+    wrap.appendChild(b);
+  });
+}
+
+function renderAssist(){
+  document.getElementById("asBackLabel").textContent = t(asOrigin==="result" ? "back_score" : "back_home");
+  document.getElementById("askInput").placeholder = t("as_ph");
+  renderCaps();
+  const box = document.getElementById("chat");
+  box.innerHTML = "";
+  chat.forEach(m=>box.appendChild(msgEl(m)));
+  renderQuota();
+  box.scrollTop = box.scrollHeight;
+}
+
+function msgEl(m){
+  const d = document.createElement("div");
+  d.className = "msg " + m.who;
+  if (m.typing){ d.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>'; return d; }
+  d.textContent = m.text;
+  if (m.extra){ d.textContent += "\n\n" + m.extra; }
+  if (m.refs && m.refs.length){
+    const r = document.createElement("div");
+    r.className = "refs";
+    m.refs.forEach(x=>{
+      const c = document.createElement("span");
+      c.className = "ref";
+      c.textContent = t("as_refs") + ": " + x[lang];
+      r.appendChild(c);
+    });
+    d.appendChild(r);
+  }
+  if (m.draft){
+    const b = document.createElement("button");
+    b.className = "inline-cta";
+    b.textContent = t("as_draft_cta");
+    b.onclick = ()=>{ if (current && negotiables().length) openPaywall(); else show("home",1); };
+    d.appendChild(b);
+  }
+  return d;
+}
+
+function renderQuota(){
+  const q = document.getElementById("quota");
+  const bar = document.getElementById("askBar");
+  const left = FREE_QUESTIONS - asked;
+  if (left > 0){
+    q.className = "quota";
+    q.textContent = left === 1 ? t("as_left1") : t("as_left").replace("{n}", fmtNum(left));
+    document.getElementById("askInput").disabled = false;
+    document.getElementById("askSend").disabled = false;
+    bar.style.display = "flex";
+    return;
+  }
+  /* The gate is the product's first honest paywall moment: the score and the
+     flags stay free, but open-ended legal Q&A is metered. */
+  q.className = "quota gate";
+  q.innerHTML = "";
+  const b = document.createElement("b"); b.textContent = t("as_quota_t");
+  const p = document.createElement("span"); p.textContent = t("as_quota_b");
+  const cta = document.createElement("button");
+  cta.textContent = t("as_quota_cta");
+  cta.onclick = ()=>{ buzz(10); openPaywall(); };
+  q.append(b, p, cta);
+  bar.style.display = "none";
+}
+
+function submitAsk(e){
+  e.preventDefault();
+  const el = document.getElementById("askInput");
+  const v = el.value.trim();
+  if (!v) return;
+  el.value = "";
+  ask(v);
+}
+
+function ask(text){
+  if (asked >= FREE_QUESTIONS) return;
+  asked++;
+  chat.push({ who:"user", text });
+  const box = document.getElementById("chat");
+  box.appendChild(msgEl({ who:"user", text }));
+  const typing = msgEl({ who:"bot", typing:true });
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+  document.getElementById("askInput").disabled = true;
+  setTimeout(()=>{
+    const a = answer(text);
+    typing.remove();
+    const m = { who:"bot", ...a };
+    chat.push(m);
+    box.appendChild(msgEl(m));
+    buzz(6);
+    document.getElementById("askInput").disabled = false;
+    renderQuota();
+    box.scrollTop = box.scrollHeight;
+  }, 700);
+}
+
+/* --------------------------------------------------- AI legal assistant */
+/* Prototype engine: keyword matching over a small, hand-written Saudi-law
+   knowledge base. A production build swaps answer() for a model call with
+   retrieval over verified statute text — the UI contract stays identical.
+   Every reference below is illustrative and must be checked against the
+   current official text before shipping. */
+const KB = [
+  { k:/(نهاية الخدمة|مكافأة|end of service|eosb|gratuity)/i,
+    a:{ar:"مكافأة نهاية الخدمة تُحسب عادة نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر. طريقة إنهاء العقد (استقالة أو إنهاء من صاحب العمل) تغيّر المستحق.",
+       en:"End-of-service pay is generally half a month for each of the first five years, then a full month per year after that, based on your final wage. How the contract ends — resignation or employer termination — changes what you're owed."},
+    r:{ar:"نظام العمل السعودي — أحكام مكافأة نهاية الخدمة",en:"Saudi Labor Law — end-of-service provisions"} },
+  { k:/(عدم المنافسة|منافسة|non.?compete)/i,
+    a:{ar:"شرط عدم المنافسة لا يصح إلا إذا كان محددًا في المدة والمكان ونوع العمل، والحد الأعلى المتعارف عليه سنتان. الشروط المفتوحة (كل المملكة، كل المجالات) غالبًا أوسع مما يلزم وقابلة للتفاوض.",
+       en:"A non-compete is only valid if it's limited in duration, geography, and type of work — two years is the usual ceiling. Open-ended ones (the whole Kingdom, every field) are typically broader than necessary and negotiable."},
+    r:{ar:"نظام العمل السعودي — شرط عدم المنافسة",en:"Saudi Labor Law — non-compete clause"} },
+  { k:/(فترة التجربة|تجربة|probation)/i,
+    a:{ar:"فترة التجربة لا تتجاوز ٩٠ يومًا، ويمكن تمديدها باتفاق مكتوب إلى ١٨٠ يومًا. يجب النص عليها صراحة في العقد، ولا تُحتسب إجازة العيد والمرضية ضمنها.",
+       en:"Probation cannot exceed 90 days, extendable to 180 by written agreement. It must be stated explicitly in the contract, and Eid and sick leave don't count toward it."},
+    r:{ar:"نظام العمل السعودي — فترة التجربة",en:"Saudi Labor Law — probation period"} },
+  { k:/(الإشعار|إشعار|notice period|notice)/i,
+    a:{ar:"في العقود غير محددة المدة، مدة الإشعار ٦٠ يومًا لمن يتقاضى أجرًا شهريًا، و٣٠ يومًا لغيرهم. يجوز الاتفاق على مدة أطول، لكن لا تقل عن الحد النظامي.",
+       en:"For indefinite contracts, notice is 60 days if you're paid monthly and 30 days otherwise. You can agree to longer, but not shorter than the statutory minimum."},
+    r:{ar:"نظام العمل السعودي — إنهاء العقد والإشعار",en:"Saudi Labor Law — termination and notice"} },
+  { k:/(إجازة|اجازه|annual leave|vacation|leave)/i,
+    a:{ar:"الإجازة السنوية لا تقل عن ٢١ يومًا مدفوعة، وترتفع إلى ٣٠ يومًا بعد خمس سنوات متصلة لدى نفس صاحب العمل. لا يجوز التنازل عنها مقابل بدل أثناء سريان العقد.",
+       en:"Annual leave is at least 21 paid days, rising to 30 after five continuous years with the same employer. You can't waive it for cash while the contract is running."},
+    r:{ar:"نظام العمل السعودي — الإجازات",en:"Saudi Labor Law — leave entitlements"} },
+  { k:/(عمل إضافي|إضافي|overtime)/i,
+    a:{ar:"أجر ساعة العمل الإضافي يساوي أجر الساعة زائد ٥٠٪ من الأجر الأساسي. أي بند يطلب عملًا إضافيًا دون تحديد طريقة احتسابه بند ناقص، واطلب توضيحه كتابيًا.",
+       en:"Overtime is the hourly wage plus 50% of the basic wage. Any clause requiring extra hours without saying how they're paid is incomplete — ask for it in writing."},
+    r:{ar:"نظام العمل السعودي — ساعات العمل والأجر الإضافي",en:"Saudi Labor Law — working hours and overtime"} },
+  { k:/(إيجار|ايجار|المؤجر|المستأجر|rent|lease|landlord|tenant|ejar)/i,
+    a:{ar:"عقود الإيجار السكني تُسجَّل في شبكة إيجار، والتسجيل يحفظ حقوق الطرفين ويجعل الدفعات موثّقة. الإخلاء لا يكون بإرادة المؤجر وحده دون سبب نظامي وإشعار معقول.",
+       en:"Residential leases are registered on the Ejar network, which documents payments and protects both sides. Eviction isn't the landlord's unilateral call without a lawful reason and reasonable notice."},
+    r:{ar:"شبكة إيجار — التسجيل والعلاقة الإيجارية",en:"Ejar network — registration and tenancy"} },
+  { k:/(عمل حر|مستقل|فريلانس|freelance|freelancer|self.?employ)/i,
+    a:{ar:"العمل الحر لا يخضع لنظام العمل مثل الموظف، فحقوقك تأتي من العقد نفسه. لذلك احرص على تحديد النطاق، وعدد جولات التعديل، وموعد السداد، وملكية المخرجات — لأن ما يُكتب هو ما يُطبَّق.",
+       en:"Freelance work isn't covered by the Labor Law the way employment is — your rights come from the contract itself. So pin down scope, revision rounds, payment timing, and ownership of deliverables, because what's written is what applies."},
+    r:{ar:"وثيقة العمل الحر — طبيعة العلاقة التعاقدية",en:"Freelance documentation — nature of the engagement"} },
+  { k:/(شرط جزائي|غرامة|penalty|liquidated)/i,
+    a:{ar:"الشرط الجزائي جائز، لكن القاضي يملك تخفيضه إذا كان مبالغًا فيه أو لم يقع ضرر فعلي بقدره. الأفضل أن يكون متبادلًا وبسقف واضح.",
+       en:"Penalty clauses are permitted, but a judge can reduce one that's excessive or exceeds the actual harm. Best practice is mutual and capped."},
+    r:{ar:"الأنظمة العامة — الشرط الجزائي وتقديره",en:"General provisions — penalty clauses and assessment"} },
+  { k:/(محامي|محام|أقاضي|محكمة|lawyer|court|sue|litigat)/i,
+    a:{ar:"إذا وصل الأمر لنزاع فعلي أو مبالغ كبيرة، تحتاج محاميًا مرخّصًا — أقدر أجهّز لك الملخص والأسئلة والمستندات قبل الجلسة، وهذا يوفّر عليك وقتًا وأتعابًا.",
+       en:"If this has become a real dispute or involves large sums, you need a licensed lawyer — I can prepare your summary, questions, and documents beforehand, which saves you time and fees."},
+    r:null }
+];
+
+const CAPS = [
+  { id:"ask",   label:"cap_ask" },
+  { id:"law",   label:"cap_law" },
+  { id:"sum",   label:"cap_sum" },
+  { id:"risk",  label:"cap_risk" },
+  { id:"draft", label:"cap_draft" },
+  { id:"refs",  label:"cap_refs" }
+];
+
+const CAP_Q = {
+  ask:{ar:"عندي سؤال عن عقدي",en:"I have a question about my contract"},
+  law:{ar:"اشرح لي فترة التجربة في نظام العمل",en:"Explain probation under the Labor Law"},
+  sum:{ar:"لخّص لي العقد",en:"Summarize my contract"},
+  risk:{ar:"وش المخاطر القانونية في عقدي؟",en:"What are the legal risks in my contract?"},
+  draft:{ar:"اكتب لي مستندًا",en:"Draft a document for me"},
+  refs:{ar:"أي أنظمة تنطبق على عقدي؟",en:"Which laws apply to my contract?"}
+};
+
+const FREE_QUESTIONS = 3;
+let asked = 0, chat = [];
+
+/* Contract-aware answers: summarize, risks, and applicable laws all read the
+   analysis already in `current` rather than inventing new content. */
+function answerSummary(){
+  if (!current) return { text:t("as_nocontract") };
+  const red = current.clauses.filter(c=>c.s==="red").length;
+  const amb = current.clauses.filter(c=>c.s==="amber").length;
+  const grn = current.clauses.filter(c=>c.s==="green").length;
+  const head = lang==="ar"
+    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من ١٠٠.\n${current.verdict.ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
+    : `${t(current.doc)} — scored ${current.score} out of 100.\n${current.verdict.en}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
+  const lines = current.clauses.map(c=>`• ${c.t[lang]} — ${c.p[lang]}`).join("\n");
+  return { text: head + "\n\n" + lines };
+}
+
+function answerRisks(){
+  if (!current) return { text:t("as_nocontract") };
+  const risky = current.clauses.filter(c=>c.s!=="green");
+  if (!risky.length)
+    return { text: lang==="ar"
+      ? "ما لقيت مخاطر تستدعي القلق في هذا العقد — كل البنود ضمن المعتاد."
+      : "I found no risks worth worrying about in this one — every clause sits within the norm." };
+  const body = risky.map((c,i)=>{
+    const n = lang==="ar" ? AR_NUM[i] : String(i+1);
+    const tag = c.s==="red" ? t("act_red") : t("act_amber");
+    return `${n}. ${c.t[lang]} (${tag})\n   ${c.p[lang]}\n   ${c.a ? c.a[lang] : ""}`;
+  }).join("\n\n");
+  return { text: body, draft: true };
+}
+
+function answerLaws(){
+  if (!current) return { text:t("as_nocontract") };
+  const map = { doc_emp:["فترة التجربة","الإشعار","عدم المنافسة"], doc_clean:["فترة التجربة","الإجازة","عمل إضافي"],
+                doc_rent:["إيجار"], doc_free:["عمل حر","شرط جزائي"], doc_pasted:["الإشعار"] };
+  const keys = map[current.doc] || [];
+  const hits = KB.filter(e=>keys.some(k=>e.k.test(k)));
+  const text = lang==="ar"
+    ? `بالنسبة لـ${t(current.doc)}، الأنظمة التي تهمك:` : `For your ${t(current.doc).toLowerCase()}, the provisions that matter:`;
+  return { text, refs: hits.map(h=>h.r).filter(Boolean), extra: hits.map(h=>"• "+h.a[lang]).join("\n\n") };
+}
+
+function answer(q){
+  const low = q.toLowerCase();
+  if (/(لخّص|لخص|ملخص|summar)/i.test(low)) return answerSummary();
+  if (/(مخاطر|خطر|risk)/i.test(low))       return answerRisks();
+  if (/(أنظمة|نظام ينطبق|which law|relevant law|applicable)/i.test(low)) return answerLaws();
+  if (/(اكتب|صياغة|مستند|خطاب|draft|write|letter)/i.test(low))
+    return { text: lang==="ar"
+      ? "أقدر أصيغ لك خطاب تفاوض مبني على بنود عقدك، أو خطاب استقالة، أو إشعار عدم تجديد. الأشهر هو خطاب التفاوض:"
+      : "I can draft a negotiation letter built from your contract's clauses, a resignation letter, or a non-renewal notice. The negotiation letter is the common one:", draft:true };
+  const hit = KB.find(e=>e.k.test(q));
+  if (hit) return { text: hit.a[lang], refs: hit.r ? [hit.r] : [] };
+  return { text: lang==="ar"
+    ? "ما فهمت السؤال تمامًا. جرّب تسأل عن بند معيّن — مثل «فترة التجربة» أو «مدة الإشعار» أو «مكافأة نهاية الخدمة» — أو اطلب مني ألخّص عقدك."
+    : "I didn't quite catch that. Try asking about a specific topic — probation, notice period, end-of-service pay — or ask me to summarize your contract." };
 }
 
 /* ------------------------------------------------- reminder timeline */
