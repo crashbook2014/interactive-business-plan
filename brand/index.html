@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1E6E64"/>
+<title>Wodouh — Brand Identity</title>
+<style>
+  :root{
+    --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
+    --sand:#F7F1E6; --card:#FDFAF3;
+    --amber:#C9922E; --amber-bg:#F6EAD2;
+    --red:#B4544A; --red-bg:#F3DFDC;
+    --green:#4E8F5B; --green-bg:#E2EEE2;
+    --ink:#2B3230; --ink-2:#6B7370;
+    --line:#E8DFCE;
+    --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,'Trebuchet MS',sans-serif;
+    --ar:'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--sand);color:var(--ink);font-family:var(--en);line-height:1.6;-webkit-font-smoothing:antialiased}
+  [lang="ar"]{font-family:var(--ar);direction:rtl}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  section{padding:56px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:26px;font-weight:700;color:var(--teal-ink);margin-bottom:6px}
+  .kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+  .lede{color:var(--ink-2);max-width:640px;margin-bottom:28px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 1px 3px rgba(43,50,48,.05)}
+  .grid{display:grid;gap:20px}
+
+  /* hero */
+  .hero{padding:72px 0 56px;text-align:center;border-bottom:1px solid var(--line)}
+  .hero .mark{width:88px;height:88px;margin:0 auto 20px}
+  .hero .ar-name{font-family:var(--ar);font-size:56px;color:var(--teal-ink);line-height:1.2}
+  .hero .en-name{font-size:30px;font-weight:700;letter-spacing:.06em;color:var(--teal);margin-top:2px}
+  .hero .promise{margin-top:18px;color:var(--ink-2);font-size:17px}
+  .hero .promise [lang="ar"]{display:block;font-size:20px;color:var(--ink);margin-bottom:4px}
+
+  /* voice */
+  .voice{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .voice h3{font-size:16px;color:var(--teal-ink);margin-bottom:8px}
+  .voice p{font-size:14.5px;color:var(--ink-2)}
+  .voice .say{color:var(--ink);font-style:italic;margin-top:10px;font-size:14.5px}
+
+  /* logos */
+  .logos{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .logo-card{text-align:center}
+  .logo-stage{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 20px;display:flex;align-items:center;justify-content:center;min-height:170px}
+  .logo-card h3{font-size:15.5px;color:var(--teal-ink);margin:14px 0 4px}
+  .logo-card p{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .small-test{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:26px}
+  .small-test .chip{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:16px;padding:12px 18px;background:var(--card)}
+  .chip.on-teal{background:var(--teal);border-color:var(--teal)}
+  .small-test svg{width:48px;height:48px;display:block}
+  .small-test span{font-size:12.5px;color:var(--ink-2)}
+  .chip.on-teal span{color:#EAF2EF}
+
+  /* palette */
+  .swatches{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .swatch{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+  .swatch .color{height:84px}
+  .swatch .meta{padding:12px 14px}
+  .swatch .name{font-size:13.5px;font-weight:700;color:var(--ink)}
+  .swatch .hex{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .swatch .use{font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+  /* type */
+  .type-grid{grid-template-columns:1fr 1fr}
+  @media(max-width:720px){.type-grid{grid-template-columns:1fr}}
+  .specimen .face{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+  .specimen .big-ar{font-family:var(--ar);font-size:34px;color:var(--ink);line-height:1.8}
+  .specimen .big-en{font-size:28px;font-weight:700;color:var(--ink)}
+  .specimen .body-ar{font-family:var(--ar);font-size:18px;color:var(--ink-2);line-height:2;margin-top:10px}
+  .specimen .body-en{font-size:15.5px;color:var(--ink-2);margin-top:10px}
+
+  /* icon sizes */
+  .icon-row{display:flex;align-items:flex-end;gap:36px;flex-wrap:wrap}
+  .icon-row figure{text-align:center}
+  .icon-row figcaption{font-size:12.5px;color:var(--ink-2);margin-top:10px}
+  .icon-row svg{display:block;margin:0 auto}
+
+  /* phone mockup */
+  .mock-wrap{display:flex;justify-content:center}
+  .phone{width:min(390px,100%);background:var(--sand);border:1px solid var(--line);border-radius:32px;padding:22px 18px 26px;box-shadow:0 8px 28px rgba(43,50,48,.08)}
+  .phone .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .phone .top .t-en{font-size:15px;font-weight:700;color:var(--teal-ink)}
+  .phone .top .t-ar{font-family:var(--ar);font-size:17px;color:var(--teal-ink)}
+  .score-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;text-align:center}
+  .ring{width:118px;height:118px;margin:0 auto 12px;position:relative}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .num b{font-size:30px;color:var(--teal-ink);line-height:1}
+  .ring .num i{font-style:normal;font-size:11.5px;color:var(--ink-2)}
+  .verdict-ar{font-family:var(--ar);font-size:18px;color:var(--ink);line-height:1.9}
+  .verdict-en{font-size:14px;color:var(--ink-2);margin-top:4px}
+  .doc-label{display:inline-block;margin-top:12px;font-size:12px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 12px;font-weight:700}
+  .flags{margin-top:16px;display:grid;gap:10px}
+  .flag{display:flex;gap:12px;align-items:flex-start;border-radius:16px;padding:12px 14px;text-align:start}
+  .flag .dot{flex:none;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .flag .dot svg{width:14px;height:14px}
+  .flag h4{font-size:13.5px;color:var(--ink)}
+  .flag h4 span[lang="ar"]{font-size:14.5px}
+  .flag p{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:2px}
+  .flag.red{background:var(--red-bg)} .flag.red .dot{background:var(--red)}
+  .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
+  .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
+  .cta{margin-top:18px;width:100%;border:0;cursor:pointer;background:var(--teal);color:#F7F1E6;font-family:var(--en);font-size:15px;font-weight:700;border-radius:16px;padding:14px}
+  .cta{display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap}
+  .cta span[lang="ar"]{font-family:var(--ar);font-weight:400;font-size:16px}
+
+  /* donts */
+  .donts{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .dont{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:var(--card);font-size:14px;color:var(--ink-2)}
+  .dont b{color:var(--red);display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+
+  footer{padding:40px 0 64px;color:var(--ink-2);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="mark-lens">
+      <circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5" fill="none"/>
+      <path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    </g>
+    <g id="mark-doc">
+      <rect x="14" y="6" width="36" height="52" rx="8" stroke-width="5" fill="none"/>
+      <path d="M24 18h16" stroke-width="4" stroke-linecap="round" opacity="0.35" fill="none"/>
+      <path d="M24 27h16" stroke-width="4" stroke-linecap="round" opacity="0.35" fill="none"/>
+    </g>
+    <g id="mark-book">
+      <path d="M32 10c-6-3.5-14-4.5-21-3v33c0 8 9 14.5 21 18 12-3.5 21-10 21-18V7c-7-1.5-15-.5-21 3z" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M32 10v22" stroke-width="4.5" stroke-linecap="round" opacity="0.45" fill="none"/>
+    </g>
+    <g id="icon-tile">
+      <rect width="64" height="64" rx="14.5" fill="#1E6E64"/>
+      <g transform="translate(6.5 6.5) scale(0.797)" stroke="#F7F1E6">
+        <circle cx="27.5" cy="27.5" r="17.5" stroke-width="6" fill="none"/>
+        <path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round" fill="none"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="wrap">
+    <svg class="mark" viewBox="0 0 64 64" stroke="#134B44"><use href="#mark-lens"/></svg>
+    <div class="ar-name" lang="ar">وضوح</div>
+    <div class="en-name">Wodouh</div>
+    <p class="promise">
+      <span lang="ar">اقرأ عقدك بوضوح… قبل ما توقّع.</span>
+      Understand any contract clearly — before you sign.
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <p class="kicker">Brand personality</p>
+  <h2>A knowledgeable friend, not a law firm</h2>
+  <p class="lede">Wodouh reads employment, rental, and freelance contracts and explains them like a trusted friend who happens to know contracts well: calm, warm, and on your side. Never intimidating, never bureaucratic, never cold.</p>
+  <div class="grid voice">
+    <div class="card">
+      <h3>Calm authority</h3>
+      <p>Confident and precise without jargon. Short sentences. Verdicts, not lectures.</p>
+      <p class="say">“This clause is common — nothing to worry about.”</p>
+    </div>
+    <div class="card">
+      <h3>Warmth</h3>
+      <p>Speaks Saudi-everyday Arabic and friendly English. Addresses you directly, before a decision that matters.</p>
+      <p class="say" lang="ar">«خذ راحتك، بس انتبه للبند الرابع قبل التوقيع.»</p>
+    </div>
+    <div class="card">
+      <h3>On your side</h3>
+      <p>Every flag comes with what it means for you and what to do next — negotiate, ask, or relax.</p>
+      <p class="say">“Worth negotiating: ask for 30 days’ notice instead of 60.”</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Logo</p>
+  <h2>Four concept variations</h2>
+  <p class="lede">All marks say “seeing clearly through something important.” Rounded stroke caps, generous negative space. No gavels, no scales, no briefcases.</p>
+  <div class="grid logos">
+    <div class="logo-card">
+      <div class="logo-stage"><svg width="96" height="96" viewBox="0 0 64 64" stroke="#134B44"><use href="#mark-lens"/></svg></div>
+      <h3>1 · Lens-Check <em style="color:var(--teal);font-style:normal">(primary)</em></h3>
+      <p>A magnifying glass whose lens resolves into a checkmark: look closely, then feel sure.</p>
+    </div>
+    <div class="logo-card">
+      <div class="logo-stage">
+        <svg width="96" height="96" viewBox="0 0 64 64" stroke="#134B44"><use href="#mark-doc"/><path d="M22 41l7 7 13-15" stroke="#1E6E64" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+      <h3>2 · Clear-Line Document</h3>
+      <p>A soft document with one confident teal check sweeping through the fine print.</p>
+    </div>
+    <div class="logo-card">
+      <div class="logo-stage"><svg width="96" height="96" viewBox="0 0 64 64" stroke="#134B44"><use href="#mark-book"/></svg></div>
+      <h3>3 · Open Book · Shield</h3>
+      <p>Pages that open into a protective shape — knowledge as protection, softly drawn.</p>
+    </div>
+    <div class="logo-card">
+      <div class="logo-stage">
+        <svg width="200" height="96" viewBox="0 0 240 96">
+          <g transform="translate(16 16)" stroke="#134B44"><use href="#mark-lens"/></g>
+          <text x="100" y="46" font-family="'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif" font-size="34" fill="#134B44">وضوح</text>
+          <text x="100" y="76" font-family="'Nunito','Avenir Next Rounded','Segoe UI',sans-serif" font-size="22" font-weight="600" letter-spacing="1" fill="#1E6E64">Wodouh</text>
+        </svg>
+      </div>
+      <h3>4 · Bilingual lockup</h3>
+      <p>Mark plus naskh «وضوح» and the Latin wordmark, balanced for RTL and LTR use.</p>
+    </div>
+  </div>
+  <div class="small-test">
+    <div class="chip"><svg viewBox="0 0 64 64" stroke="#134B44"><use href="#mark-lens"/></svg><span>48 × 48 px on sand</span></div>
+    <div class="chip on-teal"><svg viewBox="0 0 64 64" stroke="#F7F1E6"><use href="#mark-lens"/></svg><span>48 × 48 px on teal</span></div>
+    <div class="chip"><svg viewBox="0 0 64 64"><use href="#icon-tile"/></svg><span>App icon at 48 px</span></div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Color</p>
+  <h2>Palette</h2>
+  <p class="lede">Warm teal for trust and “go,” sand for paper-like calm. Amber, red, and green are functional only — they mean something in a verdict, and are never used as decoration.</p>
+  <div class="grid swatches">
+    <div class="swatch"><div class="color" style="background:#1E6E64"></div><div class="meta"><div class="name">Wodouh Teal</div><div class="hex">#1E6E64</div><div class="use">Primary — buttons, links, brand moments</div></div></div>
+    <div class="swatch"><div class="color" style="background:#134B44"></div><div class="meta"><div class="name">Teal Ink</div><div class="hex">#134B44</div><div class="use">Logo, headings on light surfaces</div></div></div>
+    <div class="swatch"><div class="color" style="background:#F7F1E6"></div><div class="meta"><div class="name">Sand</div><div class="hex">#F7F1E6</div><div class="use">App background — warm, paper-like</div></div></div>
+    <div class="swatch"><div class="color" style="background:#FDFAF3"></div><div class="meta"><div class="name">Cream Card</div><div class="hex">#FDFAF3</div><div class="use">Cards and raised surfaces</div></div></div>
+    <div class="swatch"><div class="color" style="background:#C9922E"></div><div class="meta"><div class="name">Negotiation Amber</div><div class="hex">#C9922E</div><div class="use">Functional: “worth negotiating” flags only</div></div></div>
+    <div class="swatch"><div class="color" style="background:#B4544A"></div><div class="meta"><div class="name">Muted Red</div><div class="hex">#B4544A</div><div class="use">Functional: “red flag” items only — never alarm-red</div></div></div>
+    <div class="swatch"><div class="color" style="background:#4E8F5B"></div><div class="meta"><div class="name">Clear Green</div><div class="hex">#4E8F5B</div><div class="use">Functional: “all clear” items only</div></div></div>
+    <div class="swatch"><div class="color" style="background:#2B3230"></div><div class="meta"><div class="name">Warm Ink</div><div class="hex">#2B3230</div><div class="use">Body text (secondary: #6B7370)</div></div></div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Typography</p>
+  <h2>Soft naskh · humanist sans</h2>
+  <p class="lede">Arabic leads in Noto Naskh Arabic — rounded, human curves, never geometric Kufi. English pairs with Nunito, a humanist sans with rounded terminals. Fallback stacks keep the page self-contained.</p>
+  <div class="grid type-grid">
+    <div class="card specimen" lang="ar">
+      <div class="face" lang="en" style="direction:ltr;text-align:left">Arabic — Noto Naskh Arabic</div>
+      <div class="big-ar">وضوح — اقرأ عقدك بثقة</div>
+      <div class="body-ar">نقرأ العقد كاملًا، نشرح كل بند بلغة بسيطة، وننبّهك للمخاطر قبل التوقيع. مدة الإشعار، الشرط الجزائي، وبند عدم المنافسة — كلها بوضوح.</div>
+    </div>
+    <div class="card specimen">
+      <div class="face">English — Nunito</div>
+      <div class="big-en">Read your contract with confidence</div>
+      <div class="body-en">We read the whole contract, explain every clause in plain language, and flag the risks before you sign. Notice periods, penalties, non-compete clauses — all made clear.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">App icon</p>
+  <h2>Legible from 48 px up</h2>
+  <p class="lede">The Lens-Check mark in cream on Wodouh Teal, on a soft rounded tile. One idea, thick strokes — it stays readable at home-screen size.</p>
+  <div class="icon-row">
+    <figure><svg width="48" height="48" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>48 px</figcaption></figure>
+    <figure><svg width="64" height="64" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>64 px</figcaption></figure>
+    <figure><svg width="128" height="128" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>128 px</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">UI mockup</p>
+  <h2>The “Contract Score” result card</h2>
+  <p class="lede">The moment of truth in the app: a calm verdict, then flags ordered by what deserves attention — explained like a friend would.</p>
+  <div class="mock-wrap">
+    <div class="phone">
+      <div class="top">
+        <span class="t-ar" lang="ar">تقييم العقد</span>
+        <span class="t-en">Contract Score</span>
+      </div>
+      <div class="score-card">
+        <div class="ring">
+          <svg width="118" height="118" viewBox="0 0 118 118">
+            <circle cx="59" cy="59" r="51" stroke="#E8DFCE" stroke-width="9" fill="none"/>
+            <circle cx="59" cy="59" r="51" stroke="#1E6E64" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="102.5"/>
+          </svg>
+          <div class="num"><b>68</b><i>/ 100</i></div>
+        </div>
+        <div class="verdict-ar" lang="ar">عقد عادل بشكل عام — فاوض على بندين قبل التوقيع</div>
+        <div class="verdict-en">Mostly fair — negotiate two clauses before you sign.</div>
+        <span class="doc-label">Employment contract · <span lang="ar">عقد عمل</span></span>
+        <div class="flags">
+          <div class="flag red">
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v5M7 10.6v.4" stroke="#F7F1E6" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Non-compete clause · <span lang="ar">بند عدم المنافسة</span></h4>
+              <p>Blocks you from similar work for 2 years across all of Saudi Arabia. That’s unusually broad — ask to narrow it before signing.</p>
+            </div>
+          </div>
+          <div class="flag amber">
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Notice period · <span lang="ar">مدة الإشعار</span></h4>
+              <p>60 days is on the long side. 30 days is common — worth asking.</p>
+            </div>
+          </div>
+          <div class="flag amber">
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Overtime pay · <span lang="ar">أجر العمل الإضافي</span></h4>
+              <p>The contract doesn’t say how overtime is paid. Ask for it in writing.</p>
+            </div>
+          </div>
+          <div class="flag green">
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div>
+              <h4>Salary &amp; benefits · <span lang="ar">الراتب والبدلات</span></h4>
+              <p>Clearly stated, paid monthly, with housing and transport allowances. All clear.</p>
+            </div>
+          </div>
+          <div class="flag green">
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div>
+              <h4>Annual leave · <span lang="ar">الإجازة السنوية</span></h4>
+              <p>30 days paid leave — matches the standard. All clear.</p>
+            </div>
+          </div>
+        </div>
+        <button class="cta"><span>Explain each clause</span><span aria-hidden="true">·</span><span lang="ar">اشرح لي البنود</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Guardrails</p>
+  <h2>What Wodouh never looks like</h2>
+  <div class="grid donts">
+    <div class="dont"><b>No law-firm signals</b>Gavels, scales of justice, briefcases, columns, navy &amp; gold.</div>
+    <div class="dont"><b>No cold fintech</b>Sterile white, harsh gradients, sharp corners, geometric Kufi Arabic.</div>
+    <div class="dont"><b>No alarm</b>Bright alarm-red, warning sirens, ALL-CAPS threats. Risks are explained calmly.</div>
+    <div class="dont"><b>No decoration with meaning-colors</b>Amber, red, and green appear only inside verdicts and flags.</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span lang="ar">وضوح</span> · Wodouh — brand identity v1
+</footer>
+
+</body>
+</html>
