@@ -145,6 +145,35 @@
   .letter-actions .primary{margin-top:0;flex:1}
   .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:16px;padding:13px;font-weight:700;font-size:15px}
 
+  /* reminder timeline */
+  .track-tease{display:flex;align-items:center;gap:12px;width:100%;background:var(--teal-soft);border:1px solid #C8DAD5;border-radius:16px;padding:13px 15px;margin-top:10px;text-align:start}
+  .track-tease .bell{flex:none;width:38px;height:38px;border-radius:12px;background:var(--teal);display:flex;align-items:center;justify-content:center}
+  .track-tease .bell svg{width:19px;height:19px}
+  .track-tease b{display:block;font-size:14.5px;color:var(--ink)}
+  .track-tease span{font-size:12.5px;color:var(--ink-2)}
+  .track-tease .go{margin-inline-start:auto;color:var(--teal);font-size:18px}
+  .home-reminders{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;width:100%;color:var(--teal);font-size:14px;font-weight:700;background:var(--teal-soft);border-radius:14px;padding:11px}
+  html[lang="ar"] .home-reminders{font-weight:400;font-size:15px}
+
+  .timeline{position:relative;margin:6px 0 20px;padding-inline-start:26px}
+  .timeline::before{content:"";position:absolute;inset-block:10px;inset-inline-start:8px;width:2px;background:var(--line);border-radius:2px}
+  .tl-item{position:relative;margin-bottom:14px}
+  .tl-item .node{position:absolute;inset-inline-start:-26px;top:14px;width:18px;height:18px;border-radius:99px;border:3px solid var(--sand);display:flex;align-items:center;justify-content:center}
+  .tl-item.info .node{background:var(--teal)} .tl-item.action .node{background:var(--amber)} .tl-item.deadline .node{background:var(--red)}
+  .tl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 16px}
+  .tl-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tl-date{font-size:12.5px;font-weight:700;color:var(--teal-ink);background:var(--sand);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+  html[lang="ar"] .tl-date{font-weight:400}
+  .tl-rel{font-size:11.5px;color:var(--ink-2)}
+  .tl-doc{margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  html[lang="ar"] .tl-doc{font-weight:400;font-size:12px}
+  .tl-card h4{font-size:14.5px;color:var(--ink);margin-top:6px}
+  .tl-card p{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-top:2px}
+  .tl-empty{text-align:center;color:var(--ink-2);font-size:14px;padding:34px 12px;background:var(--card);border:1px dashed var(--line);border-radius:18px}
+  .tl-note{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--ink-2);margin-bottom:16px}
+  .tl-note .dot-on{width:30px;height:18px;border-radius:99px;background:var(--teal);position:relative}
+  .tl-note .dot-on::after{content:"";position:absolute;top:2.5px;inset-inline-end:2.5px;width:13px;height:13px;border-radius:99px;background:#F7F1E6}
+
   /* feedback */
   .feedback{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin-top:14px;text-align:center}
   .fb-q{font-size:15.5px;color:var(--ink)}
@@ -239,6 +268,10 @@
     <div class="or" data-t="or"></div>
     <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
     <button class="primary" id="analyzeBtn" disabled onclick="analyze('pasted')" data-t="analyze"></button>
+    <button class="home-reminders" id="homeReminders" style="display:none" onclick="openTimeline('home')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
+      <span id="homeRemindersLabel"></span>
+    </button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -273,6 +306,11 @@
       <button class="letter-tease" id="letterTease" onclick="openPaywall()">
         <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
         <span><b data-t="lt_title"></b><span data-t="lt_sub"></span></span>
+        <span class="go">‹</span>
+      </button>
+      <button class="track-tease" id="trackTease" onclick="trackOrView()">
+        <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="#F7F1E6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg></span>
+        <span><b id="trackTitle"></b><span id="trackSub"></span></span>
         <span class="go">‹</span>
       </button>
     </div>
@@ -311,6 +349,15 @@
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- REMINDER TIMELINE -->
+  <section class="screen" id="screen-timeline">
+    <button class="back" onclick="tlBack()"><span>‹</span><span id="tlBackLabel"></span></button>
+    <h2 class="section-title" data-t="tl_title"></h2>
+    <div class="tl-note"><span class="dot-on"></span><span data-t="tl_note"></span></div>
+    <div class="timeline" id="tlList"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -369,6 +416,15 @@ const T = {
   plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
   copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
   copied:{ar:"نُسخ ✓",en:"Copied ✓"},
+  tr_title:{ar:"ذكّرني بمواعيد هذا العقد",en:"Track this contract's deadlines"},
+  tr_sub:{ar:"فترة التجربة، نافذة الإشعار، والتجديد — ننبهك قبلها بوقت كافٍ",en:"Probation, notice windows, renewals — we'll nudge you well before each one"},
+  tr_on_title:{ar:"التذكيرات مفعّلة ✓",en:"Reminders on ✓"},
+  tr_on_sub:{ar:"اعرض المواعيد القادمة",en:"View the upcoming dates"},
+  tl_title:{ar:"مواعيدك القادمة",en:"Your upcoming dates"},
+  tl_note:{ar:"سننبهك قبل كل موعد بأسبوعين وقبله بيوم",en:"We'll remind you two weeks and one day before each date"},
+  tl_empty:{ar:"لا توجد عقود متابَعة بعد — حلّل عقدًا وفعّل التذكيرات.",en:"No tracked contracts yet — analyze one and turn reminders on."},
+  tl_in:{ar:"بعد {n} يوم",en:"in {n} days"},
+  tl_reminders:{ar:"تذكيراتك",en:"Your reminders"},
   fb_q:{ar:"هل أفادك التقييم؟",en:"Was this helpful?"},
   fb_up:{ar:"نعم، أفادني",en:"Yes, it helped"},
   fb_down:{ar:"لا، ما أفادني",en:"No, it didn't"},
@@ -641,9 +697,10 @@ function applyLang(){
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
   document.getElementById("pasteBox").placeholder = t("paste_ph");
   renderOnboard();
+  renderHomeReminders();
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
-    renderPaywall(); renderLetter();
+    renderPaywall(); renderLetter(); renderTimeline();
   }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
@@ -720,6 +777,7 @@ function renderResult(reset){
     setRing(current.score);
   }
   document.getElementById("letterTease").style.display = negotiables().length ? "flex" : "none";
+  renderTrackTease();
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
   current.clauses.forEach(c=>{
@@ -754,6 +812,110 @@ function animateRing(){
       if (k<1) requestAnimationFrame(tick);
     })(t0);
   }));
+}
+
+/* ------------------------------------------------- reminder timeline */
+/* d = days from signing (today, in the prototype); k = info | action | deadline */
+const EVENTS = {
+  doc_emp:[
+    { d:90, k:"info", t:{ar:"نهاية فترة التجربة",en:"Probation period ends"},
+      n:{ar:"بعد هذا اليوم يقوى مركزك — إنهاء العقد يصير أصعب وبالتعويضات.",en:"Your position strengthens after this — termination gets harder and costs them."} },
+    { d:305, k:"action", t:{ar:"نافذة الإشعار تفتح",en:"Notice window opens"},
+      n:{ar:"آخر فرصة لتقديم إشعار الستين يومًا قبل تجديد السنة — قرر قبلها.",en:"Last chance to give the 60-day notice before the yearly renewal — decide before this."} },
+    { d:365, k:"deadline", t:{ar:"تجديد العقد",en:"Contract renews"},
+      n:{ar:"يتجدد تلقائيًا لسنة إذا ما قدمت إشعارًا.",en:"Auto-renews for a year if no notice was given."} }
+  ],
+  doc_rent:[
+    { d:91, k:"action", t:{ar:"الدفعة الثانية عبر إيجار",en:"Second rent installment via Ejar"},
+      n:{ar:"الدفعة الربع سنوية الثانية تستحق عبر المنصة.",en:"The second quarterly payment is due through the platform."} },
+    { d:305, k:"action", t:{ar:"نافذة عدم التجديد",en:"Non-renewal window"},
+      n:{ar:"إذا ما تبي التجديد بزيادة الـ١٠٪، أشعر المؤجر قبل هذا التاريخ.",en:"If you don't want the renewal with its 10% increase, notify the landlord before this date."} },
+    { d:365, k:"deadline", t:{ar:"تجديد الإيجار (+١٠٪)",en:"Lease renews (+10%)"},
+      n:{ar:"يتجدد بالزيادة السنوية المنصوص عليها — راجع البند قبلها.",en:"Renews with the contractual increase — revisit the clause before then."} }
+  ],
+  doc_free:[
+    { d:14, k:"info", t:{ar:"تسليم المرحلة الأولى",en:"Milestone 1 delivery"},
+      n:{ar:"أول تسليم متفق عليه — ثبّت الاستلام كتابيًا.",en:"First agreed delivery — get acceptance in writing."} },
+    { d:45, k:"info", t:{ar:"التسليم النهائي",en:"Final delivery"},
+      n:{ar:"اطلب محضر قبول نهائي يقفل نطاق العمل.",en:"Ask for final acceptance that closes the scope."} },
+    { d:105, k:"deadline", t:{ar:"استحقاق الدفعة",en:"Payment due"},
+      n:{ar:"نهاية مدة الستين يومًا بعد الفاتورة — طالب بها يومها.",en:"End of the 60-day invoice window — chase it that day."} }
+  ],
+  doc_pasted:[
+    { d:7, k:"action", t:{ar:"متابعة ردّ الطرف الآخر",en:"Follow up on your asks"},
+      n:{ar:"مرت أسبوع على ملاحظاتك؟ ذكّرهم قبل التوقيع.",en:"A week after sending your notes — nudge them before signing."} },
+    { d:180, k:"info", t:{ar:"مراجعة منتصف المدة",en:"Mid-term check-in"},
+      n:{ar:"راجع هل الالتزامات ماشية مثل المكتوب.",en:"Check the obligations are playing out as written."} }
+  ]
+};
+
+const TRACKED = [];
+let tlOrigin = "result";
+
+function isTracked(){ return current && TRACKED.some(x=>x.doc===current.doc); }
+
+function trackOrView(){
+  if (!current) return;
+  if (!isTracked()){
+    const base = Date.now();
+    TRACKED.push({ doc: current.doc,
+      events: EVENTS[current.doc].map(e=>({ ...e, when: base + e.d*86400000 })) });
+    TRACKED.sortStamp = Date.now();
+  }
+  renderTrackTease(); renderHomeReminders();
+  openTimeline("result");
+}
+
+function openTimeline(origin){
+  tlOrigin = origin;
+  renderTimeline();
+  show("timeline");
+}
+function tlBack(){ show(tlOrigin === "home" ? "home" : "result"); }
+
+function fmtDate(ts){
+  return new Intl.DateTimeFormat(lang==="ar" ? "ar-SA-u-ca-gregory" : "en-GB",
+    { day:"numeric", month:"long", year:"numeric" }).format(ts);
+}
+function fmtNum(n){ return new Intl.NumberFormat(lang==="ar" ? "ar-SA" : "en").format(n); }
+
+function renderTrackTease(){
+  document.getElementById("trackTitle").textContent = t(isTracked() ? "tr_on_title" : "tr_title");
+  document.getElementById("trackSub").textContent = t(isTracked() ? "tr_on_sub" : "tr_sub");
+}
+function renderHomeReminders(){
+  const el = document.getElementById("homeReminders");
+  el.style.display = TRACKED.length ? "flex" : "none";
+  document.getElementById("homeRemindersLabel").textContent =
+    `${t("tl_reminders")} (${fmtNum(TRACKED.length)})`;
+}
+
+function renderTimeline(){
+  document.getElementById("tlBackLabel").textContent = t(tlOrigin==="home" ? "back_home" : "back_score");
+  const wrap = document.getElementById("tlList");
+  wrap.innerHTML = "";
+  const all = TRACKED.flatMap(c => c.events.map(e => ({ ...e, doc: c.doc })))
+                     .sort((a,b) => a.when - b.when);
+  if (!all.length){
+    wrap.innerHTML = `<div class="tl-empty">${t("tl_empty")}</div>`;
+    return;
+  }
+  all.forEach(e=>{
+    const days = Math.max(0, Math.round((e.when - Date.now())/86400000));
+    const item = document.createElement("div");
+    item.className = "tl-item " + e.k;
+    item.innerHTML =
+      `<span class="node"></span>
+       <div class="tl-card">
+         <div class="tl-top">
+           <span class="tl-date">${fmtDate(e.when)}</span>
+           <span class="tl-rel">${t("tl_in").replace("{n}", fmtNum(days))}</span>
+           <span class="tl-doc">${t(e.doc)}</span>
+         </div>
+         <h4>${e.t[lang]}</h4><p>${e.n[lang]}</p>
+       </div>`;
+    wrap.appendChild(item);
+  });
 }
 
 /* ------------------------------------- negotiation letter + paywall */
