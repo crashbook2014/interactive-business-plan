@@ -106,6 +106,20 @@
   .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
   .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
 
+  /* feedback */
+  .feedback{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin-top:14px;text-align:center}
+  .fb-q{font-size:15.5px;color:var(--ink)}
+  .fb-btns{display:flex;justify-content:center;gap:14px;margin-top:12px}
+  .fb-btns button{width:46px;height:46px;border-radius:999px;background:var(--sand);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
+  .fb-btns button:hover{border-color:var(--teal)}
+  .fb-btns svg{width:22px;height:22px}
+  .fb-comment{margin-top:14px}
+  .fb-comment textarea{min-height:72px;font-size:13.5px}
+  .fb-comment .primary{margin-top:10px;padding:12px;font-size:14.5px}
+  .fb-thanks{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--ink);font-size:15px;padding:6px 0}
+  .fb-thanks .tick{flex:none;width:28px;height:28px;border-radius:999px;background:var(--green);display:flex;align-items:center;justify-content:center}
+  .fb-thanks .tick svg{width:14px;height:14px}
+
   /* clauses */
   .clause{background:var(--card);border:1px solid var(--line);border-radius:18px;margin-bottom:12px;overflow:hidden}
   .clause .head{display:flex;align-items:center;gap:10px;padding:13px 16px}
@@ -218,6 +232,7 @@
       <div class="flags" id="flags"></div>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <div class="feedback" id="feedback"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -260,6 +275,12 @@ const T = {
   doc_rent:{ar:"عقد إيجار",en:"Rental contract"},
   doc_free:{ar:"عقد عمل حر",en:"Freelance agreement"},
   doc_pasted:{ar:"عقدك",en:"Your contract"},
+  fb_q:{ar:"هل أفادك التقييم؟",en:"Was this helpful?"},
+  fb_up:{ar:"نعم، أفادني",en:"Yes, it helped"},
+  fb_down:{ar:"لا، ما أفادني",en:"No, it didn't"},
+  fb_comment_ph:{ar:"قل لنا وش نحسّن…",en:"Tell us what to improve…"},
+  fb_send:{ar:"أرسل",en:"Send"},
+  fb_thanks:{ar:"شكرًا لك — رأيك يخلي وضوح أوضح.",en:"Thanks — your feedback makes Wodouh clearer."},
   disclaimer:{ar:"وضوح يشرح لك ويساعدك تفهم — وما يغني عن الاستشارة القانونية عند الحاجة.",
               en:"Wodouh explains and helps you understand — it doesn't replace legal advice when you need it."}
 };
@@ -526,7 +547,7 @@ function applyLang(){
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
   document.getElementById("pasteBox").placeholder = t("paste_ph");
   renderOnboard();
-  if (current){ renderResult(false); renderClauses(); }
+  if (current){ renderResult(false); renderClauses(); renderFeedback(); }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
@@ -572,6 +593,7 @@ function analyze(kind){
   current = kind==="pasted"
     ? analyzePasted(document.getElementById("pasteBox").value)
     : SAMPLES[kind];
+  fbState = "ask";
   show("loading");
   const steps = T.load_steps[lang]; let i = 0;
   const el = document.getElementById("loadStep");
@@ -579,7 +601,7 @@ function analyze(kind){
   const iv = setInterval(()=>{
     i++;
     if (i < steps.length) el.textContent = steps[i];
-    else { clearInterval(iv); renderResult(true); renderClauses(); show("result"); }
+    else { clearInterval(iv); renderResult(true); renderClauses(); renderFeedback(); show("result"); }
   }, 650);
 }
 
@@ -633,6 +655,57 @@ function animateRing(){
       if (k<1) requestAnimationFrame(tick);
     })(t0);
   }));
+}
+
+/* ------------------------------------------------------------ feedback */
+let fbState = "ask";           /* ask | comment | done */
+const FEEDBACK = [];
+
+function renderFeedback(){
+  const el = document.getElementById("feedback");
+  const prevText = document.getElementById("fbText") ? document.getElementById("fbText").value : "";
+  if (fbState === "done"){
+    el.innerHTML =
+      `<div class="fb-thanks">
+         <span class="tick"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+         <span>${t("fb_thanks")}</span>
+       </div>`;
+    return;
+  }
+  const comment = fbState === "comment"
+    ? `<div class="fb-comment">
+         <textarea id="fbText" placeholder="${t("fb_comment_ph")}"></textarea>
+         <button class="primary" onclick="fbSend()">${t("fb_send")}</button>
+       </div>`
+    : "";
+  el.innerHTML =
+    `<div class="fb-q">${t("fb_q")}</div>
+     <div class="fb-btns">
+       <button aria-label="${t("fb_up")}" title="${t("fb_up")}" onclick="fbVote(true)">
+         <svg viewBox="0 0 24 24" fill="none" stroke="#1E6E64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11v9M7 11l4-7c1.4 0 2.5 1.1 2.5 2.5V9H19a1.8 1.8 0 0 1 1.8 2.1l-1.2 7A1.8 1.8 0 0 1 17.8 20H7"/></svg>
+       </button>
+       <button aria-label="${t("fb_down")}" title="${t("fb_down")}" onclick="fbVote(false)">
+         <svg viewBox="0 0 24 24" fill="none" stroke="#B4544A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 13V4M17 13l-4 7c-1.4 0-2.5-1.1-2.5-2.5V15H5a1.8 1.8 0 0 1-1.8-2.1l1.2-7A1.8 1.8 0 0 1 6.2 4H17"/></svg>
+       </button>
+     </div>${comment}`;
+  if (fbState === "comment" && prevText) document.getElementById("fbText").value = prevText;
+}
+
+function fbRecord(vote, comment){
+  FEEDBACK.push({ doc: current ? current.doc : null, score: current ? current.score : null, vote, comment: comment || "" });
+  console.log("wodouh feedback:", FEEDBACK[FEEDBACK.length-1]);
+}
+
+function fbVote(up){
+  if (up){ fbRecord("up"); fbState = "done"; }
+  else fbState = "comment";
+  renderFeedback();
+}
+
+function fbSend(){
+  fbRecord("down", document.getElementById("fbText").value.trim());
+  fbState = "done";
+  renderFeedback();
 }
 
 function renderClauses(){
