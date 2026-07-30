@@ -281,6 +281,68 @@
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
   .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform .12s ease}
 
+  /* plans */
+  .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
+  .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
+  html[lang="ar"] .seg button{font-weight:400;font-size:15px}
+  .seg button.on{background:var(--teal);color:var(--on-teal)}
+  .seg .save{font-size:10.5px;background:var(--amber-bg);color:var(--amber-ink);border-radius:999px;padding:1px 7px;margin-inline-start:6px}
+  .plan-cards{display:grid;gap:12px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 18px 16px;position:relative}
+  .pcard.hi{border-color:var(--teal);box-shadow:var(--shadow)}
+  .pcard.biz{border-color:var(--amber)}
+  .pcard .tag{position:absolute;top:-9px;inset-inline-start:18px;font-size:10.5px;font-weight:700;
+      background:var(--teal);color:var(--on-teal);border-radius:999px;padding:2px 10px}
+  html[lang="ar"] .pcard .tag{font-weight:400;font-size:11.5px}
+  .pcard.biz .tag{background:var(--amber);color:var(--on-teal)}
+  .pcard h3{font-size:17px;color:var(--teal-ink)}
+  .pcard .d{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .pcard .price{margin-top:12px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+  .pcard .price b{font-family:var(--en);font-size:27px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .pcard .price i{font-style:normal;font-size:12.5px;color:var(--ink-2)}
+  .pcard ul{list-style:none;margin-top:14px;display:grid;gap:7px}
+  .pcard li{font-size:13px;color:var(--ink);display:flex;gap:9px;align-items:flex-start;line-height:1.55}
+  .pcard li svg{flex:none;width:15px;height:15px;margin-top:3px;color:var(--green)}
+  .pcard li.off{color:var(--ink-2);opacity:.65}
+  .pcard li.off svg{color:var(--ink-2)}
+  .pcard .cta{margin-top:15px;width:100%;border-radius:14px;padding:12px;font-weight:700;font-size:14.5px;
+      background:var(--teal);color:var(--on-teal)}
+  html[lang="ar"] .pcard .cta{font-weight:400;font-size:15.5px}
+  .pcard.biz .cta{background:var(--amber)}
+  .pcard .cta.owned{background:var(--teal-soft);color:var(--teal)}
+
+  /* business workspace */
+  .biz-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  .trial-chip{display:inline-block;margin-top:5px;font-size:11.5px;color:var(--amber-ink);
+      background:var(--amber-bg);border-radius:999px;padding:2px 10px}
+  .biz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:20px}
+  .biz-stats .st{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 8px;text-align:center}
+  .biz-stats .st b{display:block;font-family:var(--en);font-size:22px;color:var(--teal-ink);font-variant-numeric:tabular-nums}
+  .biz-stats .st.warn b{color:var(--amber)}
+  .biz-stats .st span{font-size:11px;color:var(--ink-2);line-height:1.4;display:block;margin-top:2px}
+  .biz-h{font-size:15.5px;color:var(--teal-ink);margin:4px 2px 9px}
+  .biz-note{font-size:12.5px;color:var(--ink-2);margin:-4px 2px 10px;line-height:1.6}
+  .biz-list{display:grid;gap:9px;margin-bottom:20px}
+  .brow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+      border-radius:16px;padding:12px 14px;text-align:start;width:100%}
+  .brow .sc{flex:none;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      font-family:var(--en);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+  .brow .sc.great{background:var(--green-bg);color:var(--green)}
+  .brow .sc.good{background:var(--teal-soft);color:var(--teal)}
+  .brow .sc.fair{background:var(--amber-bg);color:var(--amber-ink)}
+  .brow .sc.poor{background:var(--red-bg);color:var(--red)}
+  .brow .tx{flex:1;min-width:0}
+  .brow b{display:block;font-size:14px;color:var(--ink)}
+  .brow span{font-size:11.5px;color:var(--ink-2)}
+  .brow .status{font-size:10.5px;border-radius:999px;padding:2px 9px;white-space:nowrap;
+      background:var(--teal-soft);color:var(--teal)}
+  .brow .status.redline{background:var(--amber-bg);color:var(--amber-ink)}
+  .seats{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+  .seat{width:38px;height:38px;border-radius:999px;background:var(--teal-soft);color:var(--teal);
+      display:flex;align-items:center;justify-content:center;font-family:var(--en);font-weight:800;font-size:13px}
+  .seat.add{background:none;border:1px dashed var(--line);color:var(--ink-2);font-weight:400;font-size:18px}
+  .seats .n{font-size:12.5px;color:var(--ink-2);margin-inline-start:auto}
+
   /* AI legal assistant */
   .assist-entry{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);
       border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:14px;text-align:start;box-shadow:var(--shadow)}
@@ -342,6 +404,9 @@
   .track-tease.solo b{font-size:14.5px}
   .track-tease.solo .bell{background:var(--teal);width:36px;height:36px}
   .track-tease.solo .bell svg{stroke:var(--on-teal)}
+  .home-plans{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;
+      color:var(--ink-2);font-size:13px;padding:10px;border-radius:12px}
+  .home-plans:hover{color:var(--teal)}
   .home-reminders{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;width:100%;color:var(--teal);font-size:14px;font-weight:700;background:var(--teal-soft);border-radius:14px;padding:11px}
   html[lang="ar"] .home-reminders{font-weight:400;font-size:15px}
 
@@ -478,6 +543,10 @@
       <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
     </button>
+    <button class="home-plans" onclick="openPlans('home')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h9"/></svg>
+      <span data-t="pl_title"></span>
+    </button>
     <button class="home-reminders" id="homeReminders" onclick="openTimeline('home')">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
       <span id="homeRemindersLabel"></span>
@@ -571,6 +640,37 @@
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
     <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- PLANS -->
+  <section class="screen" id="screen-plans">
+    <button class="back" onclick="show(planBack,1)"><span class="bk" aria-hidden="true">‹</span><span id="plBackLabel"></span></button>
+    <h2 class="section-title" data-t="pl_title"></h2>
+    <p class="pw-note" data-t="pl_sub"></p>
+    <div class="seg" id="billSeg"></div>
+    <div class="plan-cards" id="planCards"></div>
+    <p class="demo-tag" data-t="pl_enterprise"></p>
+    <p class="disclaimer" data-t="pw_demo"></p>
+  </section>
+
+  <!-- BUSINESS WORKSPACE -->
+  <section class="screen" id="screen-biz">
+    <button class="back" onclick="show('plans',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="pl_title"></span></button>
+    <div class="biz-head">
+      <div>
+        <h2 class="section-title" style="margin:0" id="bizName"></h2>
+        <span class="trial-chip" data-t="biz_trial"></span>
+      </div>
+    </div>
+    <div class="biz-stats" id="bizStats"></div>
+    <h3 class="biz-h" data-t="biz_contracts"></h3>
+    <div class="biz-list" id="bizContracts"></div>
+    <h3 class="biz-h" data-t="biz_templates"></h3>
+    <p class="biz-note" data-t="biz_tmpl_note"></p>
+    <div class="biz-list" id="bizTemplates"></div>
+    <h3 class="biz-h" data-t="biz_seats"></h3>
+    <div class="seats" id="bizSeats"></div>
+    <p class="disclaimer" data-t="pw_demo"></p>
   </section>
 
   <!-- AI LEGAL ASSISTANT -->
@@ -702,6 +802,55 @@ const T = {
             en:"Wodouh explains employment, rental, and freelance contracts in plain language, flags the risks, and gives you a clear verdict."},
   desk_meta:{ar:"نموذج تفاعلي — جرّبه بنفسك",en:"Interactive prototype — try it yourself"},
   paste_hint:{ar:"الصق نص العقد كاملًا — ٤٠ حرفًا على الأقل.",en:"Paste the full contract text — 40 characters minimum."},
+  pl_title:{ar:"الخطط والأسعار",en:"Plans & pricing"},
+  pl_sub:{ar:"التقييم والتنبيهات مجانية دائمًا. ادفع فقط لما تحتاج مخرجات أو فريقًا.",
+          en:"Scores and flags are always free. Pay only when you need outputs or a team."},
+  pl_month:{ar:"شهري",en:"Monthly"}, pl_year:{ar:"سنوي",en:"Annual"},
+  pl_save:{ar:"شهران مجانًا",en:"2 months free"},
+  pl_current:{ar:"خطتك الحالية",en:"Your plan"},
+  pl_popular:{ar:"الأنسب للأفراد",en:"Best for individuals"},
+  pl_teams:{ar:"الأنسب للفرق",en:"Best for teams"},
+  pl_basic:{ar:"وضوح الأساسي",en:"Wodouh Basic"},
+  pl_free:{ar:"مجاني",en:"Free"},
+  pl_free_d:{ar:"لأي شخص قبل ما يوقّع",en:"For anyone about to sign"},
+  pl_plus:{ar:"وضوح+",en:"Wodouh+"},
+  pl_plus_d:{ar:"للي يوقّع عقودًا بانتظام",en:"For people signing regularly"},
+  pl_biz:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
+  pl_biz_d:{ar:"للشركات والمنشآت التي تُصدر العقود",en:"For companies that issue contracts"},
+  pl_permo:{ar:"/شهر",en:"/mo"}, pl_peryr:{ar:"/سنة",en:"/yr"},
+  pl_seat:{ar:"لكل ٥ مقاعد",en:"for 5 seats"},
+  pl_cta_free:{ar:"أنت عليها",en:"You're on it"},
+  pl_cta_plus:{ar:"اشترك",en:"Subscribe"},
+  pl_cta_biz:{ar:"جرّب ١٤ يومًا مجانًا",en:"Start 14-day trial"},
+  pl_enterprise:{ar:"فريق أكبر من ٢٠؟ تواصل معنا لتسعير المنشآت.",en:"Team over 20? Talk to us about enterprise pricing."},
+  f_score:{ar:"تقييم العقد والتنبيهات",en:"Contract score and flags"},
+  f_clauses:{ar:"شرح البنود بلغة بسيطة",en:"Plain-language clause explanations"},
+  f_q3:{ar:"٣ أسئلة مجانية لكل عقد",en:"3 free assistant questions per contract"},
+  f_qmax:{ar:"أسئلة بلا حدود للمساعد",en:"Unlimited assistant questions"},
+  f_draft:{ar:"صياغة الخطابات والمستندات",en:"Letter and document drafting"},
+  f_remind:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
+  f_seats:{ar:"مقاعد للفريق وصلاحيات",en:"Team seats and roles"},
+  f_tmpl:{ar:"تقييم قوالبكم الصادرة",en:"Scoring for your outgoing templates"},
+  f_redline:{ar:"مراجعة التعديلات الواردة",en:"Incoming redline review"},
+  f_api:{ar:"ربط API وتصدير",en:"API access and export"},
+  f_lawyer:{ar:"مراجعة محامٍ بسعر مخفّض",en:"Discounted lawyer review"},
+
+  biz_title:{ar:"مساحة عملكم",en:"Your workspace"},
+  biz_trial:{ar:"تجربة — باقي ١٤ يومًا",en:"Trial — 14 days left"},
+  biz_stat_c:{ar:"عقد",en:"contracts"},
+  biz_stat_avg:{ar:"متوسط التقييم",en:"avg score"},
+  biz_stat_need:{ar:"يحتاج انتباه",en:"need attention"},
+  biz_contracts:{ar:"العقود",en:"Contracts"},
+  biz_templates:{ar:"قوالبكم الصادرة",en:"Your outgoing templates"},
+  biz_tmpl_note:{ar:"نقيّم عقودكم من وجهة نظر الطرف الآخر — عشان تعرفون ليش بعضهم يتردد.",
+                 en:"We score your contracts from the other side's view — so you know why some people hesitate."},
+  biz_seats:{ar:"الفريق",en:"Team"},
+  biz_seats_n:{ar:"{a} من {b} مقاعد",en:"{a} of {b} seats"},
+  biz_invite:{ar:"أضف عضوًا",en:"Invite member"},
+  st_review:{ar:"قيد المراجعة",en:"In review"},
+  st_sent:{ar:"مُرسل",en:"Sent"},
+  st_signed:{ar:"موقّع",en:"Signed"},
+  st_redline:{ar:"تعديلات واردة",en:"Redlines in"},
   as_open:{ar:"اسأل وضوح",en:"Ask Wodouh"},
   as_open_sub:{ar:"سؤال قانوني؟ اسأل بلغتك العادية",en:"A legal question? Ask in your own words"},
   as_title:{ar:"اسأل وضوح",en:"Ask Wodouh"},
@@ -1048,6 +1197,7 @@ function applyLang(){
   renderOnboard();
   renderHomeReminders();
   if (chat.length) renderAssist();
+  renderPlans(); renderBiz();
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
@@ -1226,6 +1376,116 @@ function animateRing(){
   }));
 }
 
+/* ------------------------------------------------ plans & business tier */
+let billing = "month", planBack = "home", plan = "free";
+
+const PLANS_T = [
+  { id:"free", name:"pl_basic", desc:"pl_free_d", m:0, y:0,
+    on:["f_score","f_clauses","f_q3"], off:["f_qmax","f_draft","f_remind"] },
+  { id:"plus", name:"pl_plus", desc:"pl_plus_d", m:39, y:390, hi:true, tag:"pl_popular",
+    on:["f_score","f_clauses","f_qmax","f_draft","f_remind"], off:["f_seats","f_tmpl"] },
+  { id:"biz",  name:"pl_biz",  desc:"pl_biz_d",  m:299, y:2990, biz:true, seat:true, tag:"pl_teams",
+    on:["f_qmax","f_draft","f_seats","f_tmpl","f_redline","f_api","f_lawyer"], off:[] }
+];
+
+const TICK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>';
+const DASH = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h8"/></svg>';
+
+function openPlans(from){ planBack = from || "home"; renderPlans(); show("plans"); }
+
+function renderPlans(){
+  document.getElementById("plBackLabel").textContent = t(planBack==="assist" ? "as_title" : "back_home");
+  const seg = document.getElementById("billSeg");
+  seg.innerHTML = "";
+  [["month","pl_month"],["year","pl_year"]].forEach(([k,lbl])=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = billing===k ? "on" : "";
+    b.innerHTML = t(lbl) + (k==="year" ? `<span class="save">${t("pl_save")}</span>` : "");
+    b.onclick = ()=>{ billing = k; renderPlans(); };
+    seg.appendChild(b);
+  });
+  const wrap = document.getElementById("planCards");
+  wrap.innerHTML = "";
+  PLANS_T.forEach(pl=>{
+    const card = document.createElement("div");
+    card.className = "pcard" + (pl.hi?" hi":"") + (pl.biz?" biz":"");
+    const amount = billing==="month" ? pl.m : pl.y;
+    const unit = billing==="month" ? t("pl_permo") : t("pl_peryr");
+    const price = amount === 0
+      ? `<b>${t("pl_free")}</b>`
+      : `<b>${fmtNum(amount)}</b><i>${lang==="ar"?"ر.س":"SAR"}${unit}</i>` +
+        (pl.seat ? `<i>· ${t("pl_seat")}</i>` : "");
+    const feats = pl.on.map(f=>`<li>${TICK}<span>${t(f)}</span></li>`).join("") +
+                  pl.off.map(f=>`<li class="off">${DASH}<span>${t(f)}</span></li>`).join("");
+    const owned = plan === pl.id;
+    const cta = pl.id==="free" ? t("pl_cta_free") : pl.id==="plus" ? t("pl_cta_plus") : t("pl_cta_biz");
+    card.innerHTML =
+      (pl.tag ? `<span class="tag">${t(pl.tag)}</span>` : "") +
+      `<h3>${t(pl.name)}</h3><div class="d">${t(pl.desc)}</div>
+       <div class="price">${price}</div>
+       <ul>${feats}</ul>
+       <button class="cta${owned?" owned":""}">${owned ? t("pl_cta_free") : cta}</button>`;
+    card.querySelector(".cta").onclick = ()=>choosePlan(pl.id);
+    wrap.appendChild(card);
+  });
+}
+
+function choosePlan(id){
+  if (id === "free") return;
+  buzz(10);
+  plan = id;
+  if (id === "biz"){ renderBiz(); show("biz"); return; }
+  renderPlans();
+}
+
+/* ---- business workspace: the thing the tier actually buys ---- */
+const BIZ = {
+  name:{ar:"شركة أفق للتقنية",en:"Ufuq Technology Co."},
+  seats:{ used:4, total:5, who:[{ar:"ن",en:"N"},{ar:"م",en:"M"},{ar:"س",en:"S"},{ar:"ع",en:"A"}] },
+  contracts:[
+    { s:"redline", score:58, t:{ar:"عقد مورّد — سحابة",en:"Vendor agreement — cloud"},
+      w:{ar:"رجع معدّلًا من المورّد",en:"Returned with vendor edits"} },
+    { s:"review",  score:71, t:{ar:"عقد عمل — مهندس أول",en:"Employment — senior engineer"},
+      w:{ar:"بانتظار مراجعة الموارد البشرية",en:"Awaiting HR review"} },
+    { s:"sent",    score:88, t:{ar:"اتفاقية عدم إفصاح",en:"Mutual NDA"},
+      w:{ar:"أُرسل قبل يومين",en:"Sent 2 days ago"} },
+    { s:"signed",  score:92, t:{ar:"عقد إيجار مكتب",en:"Office lease"},
+      w:{ar:"موقّع ومسجّل في إيجار",en:"Signed and registered on Ejar"} }
+  ],
+  templates:[
+    { score:61, t:{ar:"قالبكم للعمل الحر",en:"Your freelance template"},
+      w:{ar:"٣ بنود تجعل المستقلين يترددون",en:"3 clauses make freelancers hesitate"} },
+    { score:84, t:{ar:"قالب عقد العمل",en:"Your employment template"},
+      w:{ar:"بند الإشعار غير متبادل",en:"Notice period isn't mutual"} }
+  ]
+};
+
+function renderBiz(){
+  document.getElementById("bizName").textContent = BIZ.name[lang];
+  const all = BIZ.contracts;
+  const avg = Math.round(all.reduce((a,c)=>a+c.score,0)/all.length);
+  const need = all.filter(c=>c.score<70).length;
+  document.getElementById("bizStats").innerHTML =
+    `<div class="st"><b>${fmtNum(all.length)}</b><span>${t("biz_stat_c")}</span></div>
+     <div class="st"><b>${fmtNum(avg)}</b><span>${t("biz_stat_avg")}</span></div>
+     <div class="st warn"><b>${fmtNum(need)}</b><span>${t("biz_stat_need")}</span></div>`;
+
+  const row = (c, status) =>
+    `<div class="brow">
+       <span class="sc ${scoreBand(c.score)}">${fmtNum(c.score)}</span>
+       <span class="tx"><b>${c.t[lang]}</b><span>${c.w[lang]}</span></span>
+       ${status ? `<span class="status${c.s==="redline"?" redline":""}">${t("st_"+c.s)}</span>` : ""}
+     </div>`;
+  document.getElementById("bizContracts").innerHTML = BIZ.contracts.map(c=>row(c,true)).join("");
+  document.getElementById("bizTemplates").innerHTML = BIZ.templates.map(c=>row(c,false)).join("");
+
+  document.getElementById("bizSeats").innerHTML =
+    BIZ.seats.who.map(w=>`<span class="seat">${w[lang]}</span>`).join("") +
+    `<span class="seat add">+</span>
+     <span class="n">${t("biz_seats_n").replace("{a}",fmtNum(BIZ.seats.used)).replace("{b}",fmtNum(BIZ.seats.total))}</span>`;
+}
+
 /* ---------------------------------------------- assistant: UI + state */
 let asOrigin = "home";
 
@@ -1311,7 +1571,7 @@ function renderQuota(){
   const p = document.createElement("span"); p.textContent = t("as_quota_b");
   const cta = document.createElement("button");
   cta.textContent = t("as_quota_cta");
-  cta.onclick = ()=>{ buzz(10); openPaywall(); };
+  cta.onclick = ()=>{ buzz(10); openPlans("assist"); };
   q.append(b, p, cta);
   bar.style.display = "none";
 }
