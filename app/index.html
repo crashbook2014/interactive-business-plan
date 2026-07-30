@@ -243,10 +243,12 @@
   /* greeting + notices */
   .greet{font-size:14px;color:var(--teal);font-weight:700;margin:16px 2px -2px}
   html[lang="ar"] .greet{font-weight:400;font-size:15.5px}
+  .notice[hidden]{display:none}
   .notice{background:var(--amber-bg);border:1px solid var(--amber);border-radius:14px;
           padding:11px 14px;margin-top:12px;font-size:13.5px;color:var(--ink)}
 
   /* all-clear celebration — the reward for a contract that needed no fight */
+  .all-clear[hidden]{display:none}
   .all-clear{background:var(--green-bg);border-radius:18px;padding:20px 18px;margin-top:16px;text-align:center}
   .all-clear .ac-tick{width:46px;height:46px;border-radius:999px;background:var(--green);
        display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
@@ -280,6 +282,33 @@
   .primary:active,.sample:active,.plan:active,.letter-tease:active,.track-tease:active,
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
   .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform .12s ease}
+
+  /* letter builder — reading the contract is how the letter gets written */
+  .add-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--teal);
+      color:var(--teal);background:none;border-radius:999px;padding:7px 13px;font-size:12.5px;
+      font-weight:700;transition:background .15s,color .15s,border-color .15s}
+  html[lang="ar"] .add-btn{font-weight:400;font-size:14px}
+  .add-btn svg{width:13px;height:13px}
+  .add-btn.on{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+  .clause .add-btn{margin:2px 16px 14px}
+  .advice .add-btn{margin-top:10px}
+
+  .builder[hidden]{display:none}
+  .builder{position:sticky;bottom:14px;z-index:5;display:flex;align-items:center;gap:12px;
+      background:var(--teal);color:var(--on-teal);border-radius:18px;padding:12px 14px;
+      margin-top:14px;box-shadow:0 8px 24px rgba(20,27,25,.22);animation:rise .3s cubic-bezier(.2,1.2,.4,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .builder .bcount{flex:1;font-size:14px;font-weight:700}
+  html[lang="ar"] .builder .bcount{font-weight:400;font-size:15.5px}
+  .builder .bview{background:var(--on-teal);color:var(--teal);border-radius:12px;
+      padding:9px 15px;font-size:13.5px;font-weight:700;white-space:nowrap}
+  html[lang="ar"] .builder .bview{font-weight:400;font-size:15px}
+  .builder.bump{animation:bump .32s ease}
+  @keyframes bump{0%{transform:none}35%{transform:scale(1.035)}100%{transform:none}}
+
+  .letter-tease.building .lock{background:var(--teal)}
+  .letter-tease.building{background:var(--teal-soft);border-color:var(--teal)}
+  .letter-tease.building .go{color:var(--teal)}
 
   /* plans */
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
@@ -588,7 +617,7 @@
       </div>
       <div class="flags" id="flags"></div>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
-      <button class="letter-tease" id="letterTease" onclick="openPaywall()">
+      <button class="letter-tease" id="letterTease" onclick="openLetterFlow()">
         <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
         <span><b data-t="lt_title"></b><span data-t="lt_sub"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
@@ -718,6 +747,10 @@
     <div id="clauseList"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
+  <div class="builder" id="builder" hidden>
+    <span class="bcount" id="bCount"></span>
+    <button class="bview" id="bView" onclick="openLetterFlow()"></button>
+  </div>
 </div>
 
 <script>
@@ -772,6 +805,17 @@ const T = {
   doc_rent:{ar:"عقد إيجار",en:"Rental contract"},
   doc_free:{ar:"عقد عمل حر",en:"Freelance agreement"},
   doc_pasted:{ar:"عقدك",en:"Your contract"},
+  lb_add:{ar:"أضفه لخطابي",en:"Add to my letter"},
+  lb_added:{ar:"في خطابك",en:"In your letter"},
+  lb_count:{ar:"{n} بنود في خطابك",en:"{n} points in your letter"},
+  lb_count1:{ar:"بند واحد في خطابك",en:"1 point in your letter"},
+  lb_view:{ar:"اعرض خطابي",en:"View my letter"},
+  lb_build:{ar:"ابنِ خطاب التفاوض",en:"Build your negotiation letter"},
+  lb_build_sub:{ar:"أضف البنود وأنت تقرأ — ونجمعها لك خطابًا جاهزًا",
+                en:"Add points as you read — we'll assemble them into a letter"},
+  lb_ready:{ar:"خطابك: {n} بنود جاهزة",en:"Your letter: {n} points ready"},
+  lb_ready1:{ar:"خطابك: بند واحد جاهز",en:"Your letter: 1 point ready"},
+  lb_addall:{ar:"أضف كل البنود القابلة للتفاوض",en:"Add every negotiable point"},
   lt_title:{ar:"خطاب التفاوض جاهز",en:"Your negotiation letter is ready"},
   lt_sub:{ar:"صيغة جاهزة ترسلها للطرف الآخر — بأسلوب مهذب وواثق",en:"Polite, confident wording you can send as is"},
   lt_ready:{ar:"خطابك جاهز — انسخه وأرسله",en:"Ready to copy and send"},
@@ -1201,6 +1245,7 @@ function applyLang(){
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
+    syncAddButtons(); renderBuilder();
   }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
@@ -1212,6 +1257,7 @@ function show(name, back){
   if (back) el.classList.add("back");
   window.scrollTo(0,0);
   if (name==="result") animateRing();
+  if (typeof renderBuilder === "function") renderBuilder();
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */
@@ -1263,6 +1309,7 @@ function analyze(kind){
   current = result;
   fbState = "ask";
   pwPaid = false; pwPlan = 0;
+  letterSet = new Set();
   runLoading(()=>{
     renderResult(true); renderClauses(); renderFeedback();
     buzz(negotiables().length ? 12 : [10,60,18]);   /* lighter double-tap when all clear */
@@ -1320,12 +1367,15 @@ function renderResult(reset){
   /* With nothing to negotiate, reminders become the one clear next step. */
   document.getElementById("trackTease").classList.toggle("solo", clear);
   renderTrackTease();
+  if (!clear) renderTease();
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
   current.clauses.forEach((c,idx)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s;
-    const tip = c.a ? `<div class="tip"><b>${t("what_to_do")}:</b> ${c.a[lang]}</div>` : "";
+    const tip = c.a
+      ? `<div class="tip"><b>${t("what_to_do")}:</b> ${c.a[lang]}</div>${addBtnHtml(idx)}`
+      : "";
     div.innerHTML =
       `<button aria-expanded="false" onclick="toggleFlag(this)">
          <span class="dot">${ICONS[c.s]}</span>
@@ -1348,6 +1398,11 @@ function renderResult(reset){
     panel.style.maxHeight = "none";
   });
 }
+
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-add]");
+  if (b) toggleLetterItem(+b.dataset.add);
+});
 
 function toggleFlag(btn){
   const item = btn.parentNode, open = item.classList.toggle("open");
@@ -1545,7 +1600,7 @@ function msgEl(m){
     const b = document.createElement("button");
     b.className = "inline-cta";
     b.textContent = t("as_draft_cta");
-    b.onclick = ()=>{ if (current && negotiables().length) openPaywall(); else show("home",1); };
+    b.onclick = ()=>{ if (current && negotiables().length) openLetterFlow(); else show("home",1); };
     d.appendChild(b);
   }
   return d;
@@ -1847,6 +1902,83 @@ function renderTimeline(){
   });
 }
 
+/* -------------------------------------------------- letter builder ----
+   Wodouh's signature: the negotiation letter is assembled while you read,
+   not generated after the fact. Each negotiable clause can be added as you
+   go, and the letter contains exactly what you chose — in contract order. */
+let letterSet = new Set();
+
+function selected(){
+  if (!current) return [];
+  return current.clauses.filter((c,i)=>c.a && letterSet.has(i));
+}
+
+function toggleLetterItem(i, el){
+  if (letterSet.has(i)) letterSet.delete(i);
+  else { letterSet.add(i); buzz(8); }
+  syncAddButtons();
+  renderBuilder(true);
+  renderTease();
+}
+
+function addAllPoints(){
+  current.clauses.forEach((c,i)=>{ if (c.a) letterSet.add(i); });
+  buzz(10);
+  syncAddButtons(); renderBuilder(true); renderTease();
+}
+
+function addBtnHtml(i){
+  const on = letterSet.has(i);
+  const icon = on
+    ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>'
+    : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>';
+  return `<button class="add-btn${on?" on":""}" data-add="${i}" aria-pressed="${on}">${icon}<span>${t(on?"lb_added":"lb_add")}</span></button>`;
+}
+
+/* Both the result flags and the clause screen show the same control, so
+   whichever screen the user reads on, the letter grows the same way. */
+function syncAddButtons(){
+  document.querySelectorAll("[data-add]").forEach(b=>{
+    const i = +b.dataset.add, on = letterSet.has(i);
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.querySelector("span").textContent = t(on ? "lb_added" : "lb_add");
+  });
+}
+
+function renderBuilder(bump){
+  const bar = document.getElementById("builder");
+  const n = selected().length;
+  const onScreen = document.querySelector("#screen-result.active, #screen-clauses.active");
+  bar.hidden = !(n && onScreen);
+  if (bar.hidden) return;
+  document.getElementById("bCount").textContent =
+    n === 1 ? t("lb_count1") : t("lb_count").replace("{n}", fmtNum(n));
+  document.getElementById("bView").textContent = t("lb_view");
+  if (bump){ bar.classList.remove("bump"); void bar.offsetWidth; bar.classList.add("bump"); }
+}
+
+/* The teaser reflects the build: an invitation when empty, a receipt once
+   points are in — and when empty it sends you to the clauses to build. */
+function renderTease(){
+  const tease = document.getElementById("letterTease");
+  const n = selected().length;
+  const title = tease.querySelector("b"), sub = title.nextElementSibling;
+  tease.classList.toggle("building", n > 0);
+  if (n === 0){
+    title.textContent = t("lb_build");
+    sub.textContent = t("lb_build_sub");
+  } else {
+    title.textContent = n === 1 ? t("lb_ready1") : t("lb_ready").replace("{n}", fmtNum(n));
+    sub.textContent = t("lt_sub");
+  }
+}
+
+function openLetterFlow(){
+  if (!selected().length) { show("clauses"); renderBuilder(); return; }
+  openPaywall();
+}
+
 /* ------------------------------------- negotiation letter + paywall */
 let pwPlan = 0, pwPaid = false;
 const PLANS = [
@@ -1864,7 +1996,7 @@ const AR_NUM = ["١","٢","٣","٤","٥","٦","٧","٨","٩"];
 function negotiables(){ return current ? current.clauses.filter(c=>c.a) : []; }
 
 function buildLetter(){
-  const items = negotiables();
+  const items = selected();
   const list = items.map((c,i)=>{
     const n = lang==="ar" ? AR_NUM[i] : String(i+1);
     return `${n}. ${c.t[lang]}: ${c.a[lang]}`;
@@ -1883,7 +2015,7 @@ function renderPaywall(){
   /* Prototype only: the locked copy is real text behind a CSS blur, which is
      readable via devtools. A production build must render placeholder lines
      and fetch the letter after payment. */
-  if (!current || !negotiables().length) return;
+  if (!current || !selected().length) return;
   const full = buildLetter();
   const lines = full.split("\n");
   document.getElementById("pwPreviewHead").textContent = LETTER_TO[current.doc][lang];
@@ -1920,7 +2052,7 @@ function pwPay(){
 }
 
 function renderLetter(){
-  if (!current || !negotiables().length) return;
+  if (!current || !selected().length) return;
   document.getElementById("letterBody").textContent =
     LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
   document.getElementById("copyBtn").textContent = t("copy_btn");
@@ -1988,7 +2120,7 @@ function fbSend(){
 function renderClauses(){
   const wrap = document.getElementById("clauseList");
   wrap.innerHTML = "";
-  current.clauses.forEach(c=>{
+  current.clauses.forEach((c,i)=>{
     const div = document.createElement("div");
     div.className = "clause " + c.s;
     const q = lang==="ar" ? ["«","»"] : ["\u201C","\u201D"];
@@ -1999,7 +2131,8 @@ function renderClauses(){
       `<div class="head"><span class="stripe"></span><h4>${c.t[lang]}</h4></div>
        ${quote}
        <div class="plain">${c.p[lang]}${advice}</div>
-       <span class="act">${act}</span>`;
+       <span class="act">${act}</span>
+       ${c.a ? addBtnHtml(i) : ""}`;
     wrap.appendChild(div);
   });
 }
