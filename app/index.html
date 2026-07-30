@@ -56,6 +56,18 @@
   .primary:disabled{opacity:.45;cursor:default}
   .disclaimer{margin-top:auto;padding-top:26px;text-align:center;font-size:12px;color:var(--ink-2)}
 
+  /* onboarding */
+  #screen-onboard{justify-content:flex-end;min-height:calc(100vh - 90px)}
+  .ob-skip{align-self:flex-end;color:var(--ink-2);font-size:13.5px;font-weight:700;padding:8px 4px}
+  html[lang="ar"] .ob-skip{font-size:15px;font-weight:400}
+  .ob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 8px}
+  .ob-art{width:190px;height:190px;margin-bottom:26px}
+  .ob-title{font-size:24px;color:var(--teal-ink);line-height:1.5;max-width:320px}
+  .ob-sub{font-size:15px;color:var(--ink-2);margin-top:10px;max-width:320px}
+  .dots{display:flex;justify-content:center;gap:8px;margin:18px 0 16px}
+  .dots button{width:8px;height:8px;border-radius:99px;background:var(--line);padding:0;transition:all .25s}
+  .dots button.on{width:22px;background:var(--teal)}
+
   /* loading */
   #screen-loading{align-items:center;justify-content:center;text-align:center}
   .lens-anim{width:84px;height:84px;margin-bottom:22px;animation:sway 1.6s ease-in-out infinite}
@@ -138,8 +150,20 @@
     <button class="lang-toggle" id="langToggle" onclick="toggleLang()">English</button>
   </header>
 
+  <!-- ONBOARDING -->
+  <section class="screen active" id="screen-onboard">
+    <button class="ob-skip" id="obSkip" onclick="show('home')"></button>
+    <div class="ob-body">
+      <div class="ob-art" id="obArt"></div>
+      <div class="ob-title" id="obTitle"></div>
+      <div class="ob-sub" id="obSub"></div>
+    </div>
+    <div class="dots" id="obDots"></div>
+    <button class="primary" id="obNext" onclick="obNext()" style="margin-top:0"></button>
+  </section>
+
   <!-- HOME -->
-  <section class="screen active" id="screen-home">
+  <section class="screen" id="screen-home">
     <h1 class="hello" data-t="hello"></h1>
     <p class="sub" data-t="sub"></p>
     <div class="samples">
@@ -209,6 +233,9 @@
 <script>
 /* ------------------------------------------------------------------ i18n */
 const T = {
+  ob_skip:{ar:"تخطّي",en:"Skip"},
+  ob_next:{ar:"التالي",en:"Next"},
+  ob_start:{ar:"ابدأ",en:"Get started"},
   hello:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
   sub:{ar:"اختر عقدًا تجريبيًا أو الصق نص عقدك، ونشرح لك كل بند بلغة واضحة.",en:"Pick a sample contract or paste your own, and we'll explain every clause in plain language."},
   s_emp:{ar:"عقد عمل",en:"Employment contract"}, s_emp_d:{ar:"وظيفة بدوام كامل — نموذج تجريبي",en:"Full-time job offer — sample"},
@@ -236,6 +263,42 @@ const T = {
   disclaimer:{ar:"وضوح يشرح لك ويساعدك تفهم — وما يغني عن الاستشارة القانونية عند الحاجة.",
               en:"Wodouh explains and helps you understand — it doesn't replace legal advice when you need it."}
 };
+
+/* ---------------------------------------------------------- onboarding */
+const OB = [
+  { title:{ar:"نقرأ عقدك كاملًا",en:"We read your whole contract"},
+    sub:{ar:"عقد عمل، إيجار، أو عمل حر — الصقه ونشرحه لك بندًا بندًا بلغة تفهمها.",
+         en:"Employment, rental, or freelance — paste it and we'll walk you through it, clause by clause, in language you understand."},
+    art:`<svg viewBox="0 0 120 120" fill="none">
+      <rect x="26" y="12" width="56" height="80" rx="12" stroke="#134B44" stroke-width="6"/>
+      <path d="M42 32h24M42 46h24M42 60h14" stroke="#134B44" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <circle cx="76" cy="76" r="21" stroke="#1E6E64" stroke-width="6.5" fill="#F7F1E6"/>
+      <path d="M67 77l6.5 6.5 12-13.5" stroke="#1E6E64" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M92 92l13 13" stroke="#1E6E64" stroke-width="7.5" stroke-linecap="round"/>
+    </svg>` },
+  { title:{ar:"ننبّهك قبل ما تتفاجأ",en:"We flag what matters"},
+    sub:{ar:"أحمر يعني انتبه، أصفر يعني فاوض، وأخضر يعني مطمئن — كل تنبيه معه «وش تسوي؟».",
+         en:"Red means pause, amber means negotiate, green means relax — and every flag comes with a 'what to do' tip."},
+    art:`<svg viewBox="0 0 120 120" fill="none">
+      <rect x="14" y="14" width="92" height="26" rx="13" fill="#F3DFDC"/>
+      <circle cx="30" cy="27" r="8.5" fill="#B4544A"/><path d="M30 23.5v4.5M30 30.6v.4" stroke="#F7F1E6" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 27h44" stroke="#B4544A" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <rect x="14" y="47" width="92" height="26" rx="13" fill="#F6EAD2"/>
+      <circle cx="30" cy="60" r="8.5" fill="#C9922E"/><path d="M30 56.5v4M30 63.6v.4" stroke="#FDFAF3" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 60h34" stroke="#C9922E" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
+      <rect x="14" y="80" width="92" height="26" rx="13" fill="#E2EEE2"/>
+      <circle cx="30" cy="93" r="8.5" fill="#4E8F5B"/><path d="M26.5 93.5l2.4 2.4 4.6-5.2" stroke="#FDFAF3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M48 93h40" stroke="#4E8F5B" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
+    </svg>` },
+  { title:{ar:"خلاصة واضحة قبل التوقيع",en:"A clear verdict before you sign"},
+    sub:{ar:"تقييم من ١٠٠ ونصيحة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة.",
+         en:"A score out of 100 and honest advice — we help you understand and decide. We don't replace legal advice when you need it."},
+    art:`<svg viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="44" stroke="#E8DFCE" stroke-width="9"/>
+      <path d="M60 16a44 44 0 1 1-31.1 12.9" stroke="#1E6E64" stroke-width="9" stroke-linecap="round"/>
+      <path d="M42 61l12 12 24-27" stroke="#1E6E64" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>` }
+];
 
 /* --------------------------------------------------------- sample data */
 /* Each clause: t (title), q (contract quote), p (plain explanation), a (advice), s (status) */
@@ -462,6 +525,7 @@ function applyLang(){
   document.getElementById("langToggle").textContent = lang==="ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
   document.getElementById("pasteBox").placeholder = t("paste_ph");
+  renderOnboard();
   if (current){ renderResult(false); renderClauses(); }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
@@ -471,6 +535,31 @@ function show(name){
   document.getElementById("screen-"+name).classList.add("active");
   window.scrollTo(0,0);
   if (name==="result") animateRing();
+}
+
+/* ---------------------------------------------------------- onboarding */
+let obIndex = 0;
+function renderOnboard(){
+  const s = OB[obIndex];
+  document.getElementById("obArt").innerHTML = s.art;
+  document.getElementById("obTitle").textContent = s.title[lang];
+  document.getElementById("obSub").textContent = s.sub[lang];
+  document.getElementById("obSkip").textContent = t("ob_skip");
+  document.getElementById("obNext").textContent = obIndex === OB.length-1 ? t("ob_start") : t("ob_next");
+  document.getElementById("obSkip").style.visibility = obIndex === OB.length-1 ? "hidden" : "visible";
+  const dots = document.getElementById("obDots");
+  dots.innerHTML = "";
+  OB.forEach((_,i)=>{
+    const d = document.createElement("button");
+    if (i===obIndex) d.className = "on";
+    d.setAttribute("aria-label", (i+1)+" / "+OB.length);
+    d.onclick = ()=>{ obIndex = i; renderOnboard(); };
+    dots.appendChild(d);
+  });
+}
+function obNext(){
+  if (obIndex < OB.length-1){ obIndex++; renderOnboard(); }
+  else show("home");
 }
 
 function pasteChanged(){
