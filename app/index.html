@@ -1997,7 +1997,15 @@ function analyzePasted(text){
 let lang = "ar";
 let current = null;
 
-function t(k){ return T[k][lang]; }
+/* An unknown key used to throw, which took a whole screen down with it.
+   Fail visibly but harmlessly instead. */
+function t(k){ const e = T[k]; return e ? e[lang] : ""; }
+
+/* For the few places where a dynamic value is interpolated into markup. */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
 
 function applyLang(){
   document.documentElement.lang = lang;
@@ -2035,13 +2043,10 @@ function applyLang(){
     syncAddButtons(); renderBuilder();
   }
 }
-function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; loadState();
-applyLang();
-initIntake();
-initGestures();
-window.addEventListener("scroll", onScroll, { passive:true });
-window.addEventListener("resize", moveTabIndicator, { passive:true });
-requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); }); }
+/* Language is a pure re-render. It must never re-run boot: doing so re-read
+   localStorage into TRACKED and re-bound the scroll, drag-drop and pointer
+   listeners once per toggle. */
+function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
 function show(name, back){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling"));
@@ -3028,7 +3033,9 @@ async function handleFile(file){
   analyze("pasted");
 }
 
+let intakeBound = false, gesturesBound = false;
 function initIntake(){
+  if (intakeBound) return; intakeBound = true;
   const input = document.getElementById("fileInput");
   input.onchange = e => { handleFile(e.target.files[0]); input.value = ""; };
   const app = document.querySelector(".app");
@@ -3135,6 +3142,7 @@ const BACK_OF = {
   photo:()=>show("home",1), timeline:()=>tlBack()
 };
 function initGestures(){
+  if (gesturesBound) return; gesturesBound = true;
   if (!COARSE.matches) return;
   const app = document.querySelector(".app");
   let sx=0, sy=0, dragging=false, cur=null, rtl=false, id=null;
@@ -3283,14 +3291,35 @@ function saveState(){
     }));
   } catch(e){}
 }
+/* Anything read back from localStorage is untrusted: it survives across
+   versions and can be edited by hand. Validate rather than assume shape, and
+   replace TRACKED in place instead of appending so a second call is a no-op. */
 function loadState(){
   try {
     const raw = localStorage.getItem(STORE);
     if (!raw) return;
     const d = JSON.parse(raw);
-    myContracts = d.contracts || [];
-    (d.tracked || []).forEach(x=>TRACKED.push(x));
-  } catch(e){}
+
+    myContracts = (Array.isArray(d.contracts) ? d.contracts : [])
+      .filter(c => c && typeof c === "object"
+                && Object.prototype.hasOwnProperty.call(T, c.doc)
+                && Number.isFinite(+c.score) && Number.isFinite(+c.at))
+      .map(c => ({ doc:c.doc, score:Math.max(0, Math.min(100, +c.score)),
+                   at:+c.at, signed:!!c.signed }))
+      .slice(0, 8);
+
+    const tracked = (Array.isArray(d.tracked) ? d.tracked : [])
+      .filter(x => x && typeof x === "object"
+                && Object.prototype.hasOwnProperty.call(T, x.doc)
+                && Array.isArray(x.events))
+      .map(x => ({ doc:x.doc, events:x.events.filter(e => e && typeof e === "object")
+                                             .map(e => ({ ...e })) }));
+    TRACKED.length = 0;
+    tracked.forEach(x => TRACKED.push(x));
+  } catch(e){
+    /* Corrupt or foreign payload: start clean rather than render partial state. */
+    myContracts = []; TRACKED.length = 0;
+  }
 }
 function recordContract(){
   if (!current) return;
