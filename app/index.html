@@ -463,6 +463,14 @@
       padding:9px 15px;font-size:13.5px;font-weight:700}
   html[lang="ar"] .esc-cta{font-weight:400;font-size:15px}
   .src-line{font-size:11.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+  /* A citation and an opinion must not look alike. Law carries the teal mark
+     of an official source; methodology is visibly quieter and unmarked. */
+  .src-line.law{color:var(--teal-ink)}
+  .src-line.law::before{content:"§";margin-inline-end:5px;font-weight:700;opacity:.75}
+  .src-line.method{font-style:italic;opacity:.8}
+  .src-line[hidden]{display:none}
+  .score-src{border-top:0;padding-top:0;margin-top:10px;text-align:center}
+  #eosSrc{text-align:center}
   .cost-line{font-size:12.5px;color:var(--ink);background:var(--card);border-radius:var(--r-sm);
       padding:9px 12px;margin-top:9px;line-height:1.6}
   .clause .src-line{margin:0 16px 12px;padding-top:9px}
@@ -1056,6 +1064,7 @@
       </div>
       <div class="verdict" id="verdict" aria-live="polite"></div>
       <span class="doc-label" id="docLabel"></span>
+      <p class="src-line method score-src" data-t="src_score"></p>
       <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
       <p class="currency" data-t="src_stamp"></p>
       <div class="legend">
@@ -1218,6 +1227,7 @@
     </div>
     <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
     <div id="eosOut" aria-live="polite"></div>
+    <p class="src-line law" id="eosSrc" data-t="src_eos" hidden></p>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
@@ -1316,6 +1326,7 @@
     <button class="back" id="tlBack" onclick="tlBack()"><span class="bk" aria-hidden="true">‹</span><span id="tlBackLabel"></span></button>
     <h2 class="section-title" data-t="tl_title"></h2>
     <div class="tl-note"><span class="dot-on"></span><span data-t="tl_note"></span></div>
+    <p class="src-line method" data-t="src_tl"></p>
     <div class="timeline" id="tlList"></div>
     <div class="tl-export" id="tlExport" hidden>
       <p class="tl-export-h" data-t="cal_head"></p>
@@ -1420,6 +1431,18 @@ const T = {
   src_caveat:{ar:"نذكر رقم المادة فقط حين نكون تحققنا منها. وإلا نذكر النظام باسمه دون رقم — لأن الدقة المصطنعة أسوأ من عدمها.",
               en:"We name an article number only where we've verified it. Otherwise we name the law without one — invented precision is worse than none."},
   govern_by:{ar:"ما ينظّم هذا البند",en:"What governs this"},
+
+  /* Two kinds of origin, never blurred. A citation means a verified article;
+     the methodology label means this is our own reading, and says so. */
+  src_method:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"},
+  src_score:{ar:"التقييم من منهجية وضوح، لا من نص نظامي.",
+             en:"The score comes from Wodouh's methodology, not from any statute."},
+  src_eos:{ar:"الحساب وفق نظام العمل السعودي — المادتان ٨٤ و٨٥",
+           en:"Calculated under Saudi Labor Law — Articles 84 and 85"},
+  src_tl:{ar:"المواعيد محسوبة من تاريخ التوقيع وفق بنود عقدك — تقدير وضوح، راجعها مع عقدك.",
+          en:"Dates are counted from signing using your contract's own terms — Wodouh's estimate, check them against your contract."},
+  info_not_advice:{ar:"هذي معلومة نظامية عامة، مو استشارة قانونية لحالتك.",
+                   en:"This is general legal information, not legal advice on your situation."},
   esc_head:{ar:"هذا يستحق محاميًا",en:"This deserves a lawyer"},
   esc_body:{ar:"فيه بند أو أكثر قد يتحول لنزاع فعلي. وضوح يشرح ويجهّز، لكن القرار في نزاع حقيقي يحتاج محاميًا سعوديًا مرخّصًا — ونقدر نجهّز لك ملفك قبل ما تروح له.",
             en:"One or more clauses here could become a real dispute. Wodouh explains and prepares, but a genuine dispute needs a licensed Saudi lawyer — and we can have your file ready before you go."},
@@ -1752,8 +1775,11 @@ const T = {
   fb_comment_ph:{ar:"قل لنا وش نحسّن…",en:"Tell us what to improve…"},
   fb_send:{ar:"أرسل",en:"Send"},
   fb_thanks:{ar:"شكرًا لك — رأيك يخلي وضوح أوضح.",en:"Thanks — your feedback makes Wodouh clearer."},
-  disclaimer:{ar:"وضوح يشرح لك ويساعدك تفهم — وما يغني عن الاستشارة القانونية عند الحاجة.",
-              en:"Wodouh explains and helps you understand — it doesn't replace legal advice when you need it."}
+  /* The distinction the product depends on: we give legal information, which
+     is general and sourced. Advice is about your specific situation, and only
+     a lawyer gives that. Stated plainly rather than buried. */
+  disclaimer:{ar:"وضوح يعطيك معلومة نظامية عامة ومصدرها — مو استشارة قانونية لحالتك. للنزاعات المعقّدة، راجع محاميًا.",
+              en:"Wodouh gives you general legal information and its source — not legal advice on your situation. For complex disputes, see a lawyer."}
 };
 
 /* ---------------------------------------------------------- onboarding */
@@ -2017,6 +2043,7 @@ const RULES = [
        en:"Abrupt termination with no reason or notice is contestable — record the date and manner you were told."} },
   { re:/(overtime|ساعات\s*إضافية|عمل\s*إضافي)/i, s:"amber",
     t:{ar:"العمل الإضافي",en:"Overtime"},
+    src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
     p:{ar:"العقد يذكر عملًا إضافيًا. تأكد أن أجره وطريقة حسابه مكتوبة صراحة.",
        en:"The contract mentions overtime. Make sure its rate and calculation are stated explicitly."},
     a:{ar:"اطلب كتابة أجر الساعة الإضافية بوضوح.",en:"Ask for the overtime rate in writing."},
@@ -2024,6 +2051,7 @@ const RULES = [
        en:"Overtime is owed by law even if the contract is silent — keep your hours log."} },
   { re:/(notice\s*period|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day))/i, s:"amber",
     t:{ar:"مدة الإشعار",en:"Notice period"},
+    src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
     p:{ar:"انتبه لمدة الإشعار المطلوبة قبل إنهاء العقد — المدد الطويلة تقيّد حركتك.",
        en:"Watch the required notice period — long ones limit your flexibility."},
     a:{ar:"الشائع ٣٠ يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."},
@@ -2046,10 +2074,12 @@ const RULES = [
        en:"Ask for an addendum limiting the transfer to this agreement's deliverables, excluding your prior work."} },
   { re:/(probation|فترة\s*التجربة)/i, s:"green",
     t:{ar:"فترة التجربة",en:"Probation period"},
+    src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
     p:{ar:"فترة تجربة موثقة — أمر طبيعي. تأكد فقط ألا تتجاوز المدد المعتادة.",
        en:"A documented probation period — normal. Just check it doesn't exceed the usual limits."}, a:null },
   { re:/(annual\s*leave|إجازة\s*سنوية)/i, s:"green",
     t:{ar:"الإجازة السنوية",en:"Annual leave"},
+    src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
     p:{ar:"العقد ينص على إجازة سنوية — تأكد من عدد الأيام وأنها مدفوعة.",
        en:"The contract covers annual leave — check the day count and that it's paid."}, a:null },
   { re:/(salary|راتب|أجر\s*شهري)/i, s:"green",
@@ -2060,7 +2090,14 @@ const RULES = [
 
 function analyzePasted(text){
   const clauses = [];
-  for (const r of RULES) if (r.re.test(text)) clauses.push({ s:r.s, t:r.t, p:r.p, a:r.a, q:null });
+  /* Carry the whole rule through, minus its matcher. Copying a hand-picked
+     subset silently dropped `src` (so pasted contracts cited nothing) and
+     `r` (so signed-mode readers got negotiation advice instead of their
+     rights). A rule gaining a field should not need an edit here. */
+  for (const rule of RULES) if (rule.re.test(text)){
+    const { re, ...rest } = rule;
+    clauses.push({ ...rest, q:null });
+  }
   /* Nothing recognised means we cannot honestly score this text. Returning null
      routes to the "couldn't read" screen instead of inventing a verdict. */
   if (!clauses.length) return null;
@@ -2272,6 +2309,17 @@ function renderEscalate(target){
      </div>`;
 }
 
+/* Nothing is shown without saying where it came from. Two kinds, and the
+   difference is deliberate and visible: a legal claim cites the article, and
+   only articles verified in docs/legal-sources.md are ever cited that way.
+   Everything else is Wodouh's own reading and says so, rather than borrowing
+   authority it does not have. */
+function srcOf(c){
+  return c.src
+    ? `<div class="src-line law">${t("govern_by")}: ${esc(c.src[lang])}</div>`
+    : `<div class="src-line method">${t("src_method")}</div>`;
+}
+
 function scoreBand(n){ return n>=80 ? "great" : n>=60 ? "good" : n>=40 ? "fair" : "poor"; }
 
 /* People do not open a contract wanting a number — they want to know whether
@@ -2370,7 +2418,7 @@ function renderResult(reset){
     const div = document.createElement("div");
     div.className = "flag " + c.s;
     const adv = adviceFor(c);
-    const srcLine = (c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : "") + costLine(c);
+    const srcLine = srcOf(c) + costLine(c);
     const tip = adv
       ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${srcLine}${addBtnHtml(idx)}`
       : srcLine;
@@ -2494,10 +2542,12 @@ function calcEos(){
   const ed = document.getElementById("eosEnd").value;
   const wage = parseFloat(document.getElementById("eosWage").value);
   const out = document.getElementById("eosOut");
-  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; return; }
+  const eosSrc = document.getElementById("eosSrc");
+  /* The citation belongs to a result, so it appears and disappears with one. */
+  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; return; }
   const a = new Date(sd), bDate = new Date(ed);
   const y = serviceYears(a, bDate);
-  if (y <= 0){ out.innerHTML = ""; return; }
+  if (y <= 0){ out.innerHTML = ""; eosSrc.hidden = true; return; }
   const parts = serviceParts(a, bDate);
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
@@ -2527,6 +2577,7 @@ function calcEos(){
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
+  eosSrc.hidden = false;
   eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
   /* The figure counts up to exactly the computed total; the value and its
      formatting are unchanged, only its arrival. */
@@ -4032,7 +4083,7 @@ function renderClauses(){
        ${quote}
        <div class="plain">${c.p[lang]}${advice}</div>
        <span class="act">${act}</span>
-       ${c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : ""}
+       ${srcOf(c)}
        ${c.a ? addBtnHtml(i) : ""}`;
     wrap.appendChild(div);
   });

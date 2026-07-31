@@ -9,6 +9,27 @@ as `verified` below.** Everywhere else the product names the law without a
 number. Invented citation precision manufactures exactly the authority this
 register is meant to earn honestly.
 
+## Two kinds of origin, never blurred
+
+Every result the app displays states where it came from. There are exactly two
+kinds, and they are visually distinct in the UI:
+
+- **Law** (`.src-line.law`, marked §) — cites an article. Only articles marked
+  `verified` in the register below may ever appear here.
+- **Wodouh methodology** (`.src-line.method`, italic) — our own reading, our
+  own weighting, or a date we inferred from the contract's terms. It says so
+  in those words and claims no statutory authority.
+
+The score is always methodology: no statute produces a number out of 100.
+The end-of-service figure is always law: it implements Articles 84 and 85.
+
+Heuristic rules currently citing law: overtime (107), notice period (75),
+probation (53), annual leave (109). The remaining six — non-compete, penalty
+clause, one-sided termination, auto-renewal, intellectual property, salary —
+carry the methodology label, because no verified article backs the specific
+claim the rule makes. Three of those are the deliberately uncited claims noted
+at the bottom of this file.
+
 ## Primary sources
 
 | Source | Covers | Link |
