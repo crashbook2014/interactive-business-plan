@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://esm.sh; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://esm.sh; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214.5%22%20fill%3D%22%231E6E64%22%2F%3E%3Cg%20transform%3D%22translate%286.5%206.5%29%20scale%280.797%29%22%3E%3Ccircle%20cx%3D%2227.5%22%20cy%3D%2227.5%22%20r%3D%2217.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%226%22%2F%3E%3Cpath%20d%3D%22M19.5%2028.5l6%206%2011-12.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M41%2041l11.5%2011.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
 
 <meta charset="UTF-8"/>
@@ -837,6 +841,18 @@
   .tl-card p{font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-top:2px}
   .tl-empty{text-align:center;color:var(--ink-2);font-size:14px;padding:34px 12px;background:var(--card);border:1px dashed var(--line);border-radius:18px}
   .tl-note{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--ink-2);margin-bottom:16px}
+  .tl-export{margin-top:22px;padding:18px;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;box-shadow:var(--e1);text-align:center}
+  .tl-export[hidden]{display:none}
+  .tl-export-h{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:12px}
+  .tl-export-b{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .tl-export-b button{flex:1 1 140px;min-height:44px;padding:11px 16px;border-radius:var(--r-md);
+    border:1px solid var(--line);background:var(--bg);color:var(--teal-ink);
+    font-size:14px;font-weight:700;
+    transition:transform var(--t-fast) var(--ease-out),background var(--t-fast) var(--ease-out)}
+  .tl-export-b button:hover{background:var(--teal-soft)}
+  .tl-export-b button:active{transform:scale(.97)}
+  .tl-export-n{margin-top:12px;font-size:11.5px;color:var(--ink-2);line-height:1.5}
   .tl-note .dot-on{width:30px;height:18px;border-radius:99px;background:var(--teal);position:relative}
   .tl-note .dot-on::after{content:"";position:absolute;top:2.5px;inset-inline-end:2.5px;width:13px;height:13px;border-radius:99px;background:var(--on-teal)}
 
@@ -1271,6 +1287,14 @@
     <h2 class="section-title" data-t="tl_title"></h2>
     <div class="tl-note"><span class="dot-on"></span><span data-t="tl_note"></span></div>
     <div class="timeline" id="tlList"></div>
+    <div class="tl-export" id="tlExport" hidden>
+      <p class="tl-export-h" data-t="cal_head"></p>
+      <div class="tl-export-b">
+        <button type="button" onclick="exportReminders('ics')" data-t="cal_apple"></button>
+        <button type="button" onclick="exportReminders('google')" data-t="cal_google"></button>
+      </div>
+      <p class="tl-export-n" data-t="cal_note"></p>
+    </div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -1483,6 +1507,13 @@ const T = {
   tr_on_sub:{ar:"اعرض المواعيد القادمة",en:"View the upcoming dates"},
   tl_title:{ar:"مواعيدك القادمة",en:"Your upcoming dates"},
   tl_note:{ar:"سننبهك قبل كل موعد بأسبوعين وقبله بيوم",en:"We'll remind you two weeks and one day before each date"},
+  cal_head:{ar:"احفظها في تقويمك",en:"Save these to your calendar"},
+  cal_apple:{ar:"تقويم آبل",en:"Apple Calendar"},
+  cal_google:{ar:"تقويم قوقل",en:"Google Calendar"},
+  cal_note:{ar:"ملف تقويم يُفتح على جهازك — ما نطلب صلاحية الوصول لتقويمك.",
+            en:"A calendar file that opens on your device — we never ask for access to your calendar."},
+  cal_done:{ar:"تم تنزيل ملف التقويم",en:"Calendar file downloaded"},
+  cal_fail:{ar:"تعذّر إنشاء ملف التقويم. جرّب مرة ثانية.",en:"Couldn't create the calendar file. Try again."},
   tl_empty:{ar:"لا توجد عقود متابَعة بعد — حلّل عقدًا وفعّل التذكيرات.",en:"No tracked contracts yet — analyze one and turn reminders on."},
   tl_in:{ar:"بعد {n} يوم",en:"in {n} days"},
   tl_reminders:{ar:"تذكيراتك",en:"Your reminders"},
@@ -2931,6 +2962,9 @@ function answer(q){
    legibility check below and we say we could not read it, which is the
    honest outcome rather than analysing gibberish. */
 const MAX_FILE = 8 * 1024 * 1024;
+/* Longest contract text we will hold. Comfortably above a long employment
+   contract, and low enough that the rule pass stays instant. */
+const MAX_TEXT = 500 * 1000;
 
 async function inflate(bytes){
   /* PDF streams carry EOL padding after the compressed data, so the stream
@@ -3024,6 +3058,9 @@ async function handleFile(file){
   let text = "";
   try {
     text = isPdf ? await extractPdf(await file.arrayBuffer()) : await file.text();
+    /* An 8 MB PDF can decode to far more text than any contract contains.
+       Cap it so the regex pass and the textarea stay bounded. */
+    if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT);
   } catch(e){ text = ""; }
   document.getElementById("upMain").classList.remove("busy");
 
@@ -3439,6 +3476,116 @@ function renderHomeReminders(){
   /* The reminders tab replaced the home entry; nothing to render here. */
 }
 
+/* ------------------------------------------------- calendar export
+   Apple Calendar, Outlook and the stock Android calendar all import RFC 5545
+   .ics files, so one generated file covers them without asking for calendar
+   permission, an entitlement, or a backend. Google Calendar has no bulk
+   import URL: a single event opens its prefilled template, several fall back
+   to the same .ics, which Google imports from settings.
+
+   Because we never request calendar access there is no permission to be
+   denied. What can fail is the download itself, so both paths report back
+   and the UI says so rather than appearing to do nothing. */
+
+/* RFC 5545 §3.3.11 */
+function icsEsc(s){
+  return String(s == null ? "" : s)
+    .replace(/\\/g, "\\\\").replace(/;/g, "\\;")
+    .replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+}
+function icsPad(n){ return n < 10 ? "0" + n : String(n); }
+function icsUTC(d){
+  return d.getUTCFullYear() + icsPad(d.getUTCMonth()+1) + icsPad(d.getUTCDate()) +
+    "T" + icsPad(d.getUTCHours()) + icsPad(d.getUTCMinutes()) + icsPad(d.getUTCSeconds()) + "Z";
+}
+function icsDay(d){ return d.getFullYear() + icsPad(d.getMonth()+1) + icsPad(d.getDate()); }
+
+/* §3.1 limits a line to 75 octets. Arabic is multi-byte, so fold on encoded
+   length and never split a surrogate pair. */
+function icsFold(line){
+  let out = "", cur = "", len = 0;
+  for (let i = 0; i < line.length; i++){
+    let ch = line[i];
+    if (ch >= "\uD800" && ch <= "\uDBFF" && i + 1 < line.length) ch += line[++i];
+    const w = unescape(encodeURIComponent(ch)).length;
+    if (len + w > 74){ out += cur + "\r\n "; cur = ""; len = 1; }
+    cur += ch; len += w;
+  }
+  return out + cur;
+}
+
+/* The reminders, as calendar events. All-day, because these are dates the
+   user acts on, not appointments. */
+function reminderEvents(){
+  return TRACKED.flatMap(c => c.events.map(e => ({
+    start: e.when,
+    title: (e.t && e.t[lang]) || t(c.doc),
+    description: ((e.n && e.n[lang]) || "") + "\n\n" + t(c.doc) + " — Wodouh"
+  }))).filter(e => Number.isFinite(+e.start)).sort((a,b) => a.start - b.start);
+}
+
+function buildICS(events){
+  let lines = ["BEGIN:VCALENDAR","VERSION:2.0",
+    "PRODID:-//Wodouh//Contract reminders//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "X-WR-CALNAME:" + icsEsc(t("tl_title"))];
+  let n = 0;
+  events.forEach((ev, i) => {
+    const start = new Date(ev.start);
+    if (isNaN(start.getTime())) return;
+    lines = lines.concat([
+      "BEGIN:VEVENT",
+      "UID:wodouh-" + i + "-" + Math.random().toString(36).slice(2,10) + "@wodouh.app",
+      "DTSTAMP:" + icsUTC(new Date()),
+      "DTSTART;VALUE=DATE:" + icsDay(start),
+      "DTEND;VALUE=DATE:" + icsDay(new Date(start.getTime() + 86400000)),
+      "SUMMARY:" + icsEsc(ev.title),
+      "DESCRIPTION:" + icsEsc(ev.description),
+      /* Matches the two-weeks-and-one-day promise in tl_note. */
+      "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:" + icsEsc(ev.title),
+      "TRIGGER:-P14D","END:VALARM",
+      "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:" + icsEsc(ev.title),
+      "TRIGGER:-P1D","END:VALARM",
+      "END:VEVENT"
+    ]);
+    n++;
+  });
+  lines.push("END:VCALENDAR");
+  return n ? lines.map(icsFold).join("\r\n") + "\r\n" : null;
+}
+
+function downloadICS(events){
+  const ics = buildICS(events);
+  if (!ics) return false;
+  try {
+    const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = "wodouh-reminders.ics"; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 30000);
+    return true;
+  } catch(e){ return false; }
+}
+
+function googleCalUrl(ev){
+  const start = new Date(ev.start);
+  if (isNaN(start.getTime())) return null;
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=" + encodeURIComponent(ev.title) +
+    "&dates=" + icsDay(start) + "/" + icsDay(new Date(start.getTime() + 86400000)) +
+    "&details=" + encodeURIComponent(ev.description);
+}
+
+function exportReminders(target){
+  const events = reminderEvents();
+  if (!events.length) return;
+  buzz(8);
+  if (target === "google" && events.length === 1){
+    const url = googleCalUrl(events[0]);
+    if (url && window.open(url, "_blank", "noopener,noreferrer")) return;
+  }
+  toast(t(downloadICS(events) ? "cal_done" : "cal_fail"));
+}
+
 function renderTimeline(){
   document.getElementById("tlBack").hidden = tlOrigin === "tab";
   document.getElementById("tlBackLabel").textContent = t(tlOrigin==="result" ? "back_score" : "back_home");
@@ -3446,6 +3593,7 @@ function renderTimeline(){
   wrap.innerHTML = "";
   const all = TRACKED.flatMap(c => c.events.map(e => ({ ...e, doc: c.doc })))
                      .sort((a,b) => a.when - b.when);
+  document.getElementById("tlExport").hidden = !all.length;
   if (!all.length){
     wrap.innerHTML = `<div class="tl-empty">${t("tl_empty")}</div>`;
     return;
