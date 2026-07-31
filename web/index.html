@@ -321,7 +321,8 @@
     <p class="sec-lede" data-t="price_p"></p>
     <div class="prices">
       <div class="price"><h3 data-t="p1"></h3><div class="amt" data-t="p1a"></div><p data-t="p1p"></p><p class="get" data-t="p1g"></p></div>
-      <div class="price hi"><span class="tag" data-t="p2t"></span><h3 data-t="p2"></h3><div class="amt" id="p2a"></div><p data-t="p2p"></p><p class="get" data-t="p2g"></p></div>
+      <div class="price"><h3 data-t="p2"></h3><div class="amt" id="p2a"></div><p data-t="p2p"></p><p class="get" data-t="p2g"></p></div>
+      <div class="price hi"><span class="tag" data-t="p4t"></span><h3 data-t="p4"></h3><div class="amt" id="p4a"></div><p data-t="p4p"></p><p class="get" data-t="p4g"></p></div>
       <div class="price"><h3 data-t="p3"></h3><div class="amt" id="p3a"></div><p data-t="p3p"></p><p class="get" data-t="p3g"></p></div>
     </div>
     <p class="anchor" data-t="price_anchor"></p>
@@ -427,8 +428,12 @@ const T = {
            en:"The score, the flags, the clause explanations, and the calculator are always free — so we're never a party to your decision."},
   p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},
   p1p:{ar:"تقييم غير محدود، تنبيهات، شرح البنود، وحاسبة نهاية الخدمة.",en:"Unlimited scoring, flags, clause explanations, and the calculator."},
-  p2:{ar:"خطاب التفاوض",en:"Negotiation letter"}, p2t:{ar:"الأكثر طلبًا",en:"Most popular"},
+  p2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
+  p4:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"}, p4t:{ar:"الأفضل قيمة",en:"Best value"},
+  p4p:{ar:"لحظة تغيير الوظيفة كاملة — لا اشتراك شهري.",en:"The whole job-change moment — no monthly subscription."},
+  p4g:{ar:"تحصل على: الخطاب + تذكيرات مواعيد العقد ٦ أشهر + أسئلة بلا حدود عنه.",
+       en:"You get: the letter + 6 months of contract reminders + unlimited questions about it."},
   p3:{ar:"ملف القضية",en:"Case file"},
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
   price_anchor:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
@@ -497,6 +502,7 @@ function applyLang(){
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
   document.getElementById("p2a").innerHTML = (lang==="ar" ? "٤٩" : "49") + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = (lang==="ar" ? "٩٩" : "99") + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = (lang==="ar" ? "٢٤٩" : "249") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><p>${a}</p></details>`

@@ -204,7 +204,7 @@
 
   /* result */
   .back[hidden]{display:none}
-  .back{display:flex;align-items:center;gap:6px;color:var(--teal);font-size:14px;font-weight:700;padding:8px 2px;align-self:flex-start}
+  .back{display:flex;align-items:center;gap:6px;color:var(--teal);font-size:14px;font-weight:700;padding:10px 2px;min-height:44px;align-self:flex-start}
   html[dir="ltr"] .back .bk{transform:scaleX(-1)}
   .score-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:26px 20px 20px;text-align:center;box-shadow:var(--e2),var(--edge);--band:var(--teal)}
   /* The score is the emotional centre of the app, so it carries the verdict's
@@ -233,8 +233,10 @@
       font-family:var(--en);letter-spacing:.06em}
   .verdict{font-size:18.5px;color:var(--ink);line-height:1.75;text-wrap:balance;margin-top:2px}
   .doc-label{display:inline-block;margin-top:12px;font-size:12.5px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 14px;font-weight:700}
-  .how-built{display:block;margin:10px auto 0;font-size:12px;color:var(--ink-2);
-      border-bottom:1px solid var(--line);padding-bottom:1px}
+  /* 44px hit area via a transparent border, visual size unchanged */
+  .how-built{display:block;margin:0 auto;font-size:12px;color:var(--ink-2);
+      border:12px solid transparent;border-bottom-width:13px;background-clip:padding-box;
+      box-shadow:inset 0 -1px 0 var(--line)}
   .how-built:hover{color:var(--teal)}
   .legend{display:flex;justify-content:center;gap:14px;margin-top:14px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .legend i{font-style:normal;display:inline-block;width:9px;height:9px;border-radius:99px;margin-inline-end:5px}
@@ -419,6 +421,8 @@
       padding:9px 15px;font-size:13.5px;font-weight:700}
   html[lang="ar"] .esc-cta{font-weight:400;font-size:15px}
   .src-line{font-size:11.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+  .cost-line{font-size:12.5px;color:var(--ink);background:var(--card);border-radius:var(--r-sm);
+      padding:9px 12px;margin-top:9px;line-height:1.6}
   .clause .src-line{margin:0 16px 12px;padding-top:9px}
 
   /* file intake */
@@ -1364,6 +1368,13 @@ const T = {
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   plan_letter_d:{ar:"نص كامل قابل للتعديل، بالعربي والإنجليزي، مبني على البنود التي اخترتها",
                  en:"Full editable text in Arabic and English, built from the points you chose"},
+  plan_pack:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"},
+  plan_pack_d:{ar:"الخطاب + تذكيرات مواعيد هذا العقد ٦ أشهر + أسئلة بلا حدود عنه",
+               en:"The letter + 6 months of deadline reminders for this contract + unlimited questions about it"},
+  plan_best:{ar:"الأفضل قيمة",en:"Best value"},
+  cost_note:{ar:"يعني ما تقدر تترك خلال {m} — أي ما يعادل {v}.",
+             en:"That's {m} you can't leave during — about {v}."},
+  cost_months2:{ar:"شهرين",en:"two months"},
   plan_lawyer:{ar:"خطاب + مراجعة محامٍ",en:"Letter + lawyer review"},
   plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
   plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
@@ -1615,6 +1626,7 @@ const SAMPLES = {
            en:"A sweeping clause doesn't automatically bite: it must be limited in duration, place and type of work. If they try to enforce it, ask for it in writing narrowed — or contest it."} },
       { s:"amber",
         src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
+        cost:{months:2},
         t:{ar:"مدة الإشعار",en:"Notice period"},
         q:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
            en:"Either party wishing to terminate must give the other sixty days' written notice."},
@@ -2087,7 +2099,7 @@ function renderResult(reset){
     const div = document.createElement("div");
     div.className = "flag " + c.s;
     const adv = adviceFor(c);
-    const srcLine = c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : "";
+    const srcLine = (c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : "") + costLine(c);
     const tip = adv
       ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${srcLine}${addBtnHtml(idx)}`
       : srcLine;
@@ -3178,6 +3190,14 @@ let letterSet = new Set();
 let signedMode = false;
 
 function adviceFor(c){ return signedMode && c.r ? c.r : c.a; }
+
+/* Show a riyal figure only when the arithmetic is real and we actually know a
+   wage. An invented number here would be worse than no number at all. */
+function costLine(c){
+  if (!c.cost || !eosData || !eosData.wage) return "";
+  const v = money(eosData.wage * c.cost.months) + " " + t("eos_sar");
+  return `<div class="cost-line">${t("cost_note").replace("{m}", t("cost_months2")).replace("{v}", v)}</div>`;
+}
 function actionLabel(sv){
   if (sv === "green") return t("act_green");
   if (signedMode) return t(sv === "red" ? "act_red_signed" : "act_amber_signed");
@@ -3257,9 +3277,13 @@ function openLetterFlow(){
 
 /* ------------------------------------- negotiation letter + paywall */
 let pwPlan = 0, pwPaid = false;
+/* Consumers sign contracts episodically, so a monthly plan fights the usage
+   pattern. The middle option is sold at the life event instead, and sits
+   between an anchor above and a bare minimum below. */
 const PLANS = [
   { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٤٩ ر.س",en:"49 SAR"}, pop:false },
-  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:true }
+  { name:"plan_pack",   desc:"plan_pack_d",   price:{ar:"٩٩ ر.س",en:"99 SAR"}, pop:true, tag:"plan_best" },
+  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:false }
 ];
 /* A claim has money on the table, so the file prices well above the letter. */
 const PLANS_CASE = [
@@ -3297,6 +3321,7 @@ function buildLetter(){
 
 function openPaywall(){
   pwMode = "letter";
+  if (!pwPaid) pwPlan = 1;   /* the pack is the intended choice */
   if (pwPaid){ renderLetter(); show("letter"); return; }
   renderPaywall(); show("paywall");
 }
@@ -3335,7 +3360,7 @@ function renderPaywall(){
     b.className = "plan" + (i===pwPlan ? " sel" : "");
     b.innerHTML =
       `<span class="radio"></span>
-       <span style="flex:1"><b>${t(pl.name)}${pl.pop?`<span class="badge">${t("plan_pop")}</span>`:""}</b><span>${t(pl.desc)}</span></span>
+       <span style="flex:1"><b>${t(pl.name)}${pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}</b><span>${t(pl.desc)}</span></span>
        <span class="price">${pl.price[lang]}</span>`;
     b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
     wrap.appendChild(b);
