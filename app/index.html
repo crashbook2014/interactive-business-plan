@@ -424,6 +424,37 @@
       background:var(--amber-bg);border-radius:var(--r-md);padding:11px 13px;margin-top:10px;line-height:1.65}
   .clock svg{flex:none;width:15px;height:15px;margin-top:3px;color:var(--amber)}
 
+  /* case file */
+  .claim-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+      padding:20px 18px 16px;box-shadow:var(--e2),var(--edge);margin-bottom:20px}
+  .claim-card h4{font-size:13px;color:var(--ink-2);font-weight:400;margin-bottom:12px}
+  .claim-card .r{display:flex;align-items:baseline;gap:10px;font-size:13.5px;color:var(--ink-2);margin-bottom:9px}
+  .claim-card .r span{flex:1}
+  .claim-card .r b{font-family:var(--en);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+  html[lang="ar"] .claim-card .r b{font-family:var(--ar)}
+  .claim-card .r.tot{border-top:1px solid var(--line);padding-top:11px;margin-top:3px;color:var(--ink);font-size:15px}
+  .claim-card .r.tot b{color:var(--teal-ink);font-size:18px;font-weight:800}
+  html[lang="ar"] .claim-card .r.tot b{font-weight:600}
+  .claim-card .mini{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin:-3px 0 10px}
+  .leave-in{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
+  .leave-in span{flex:1;font-size:13px;color:var(--ink-2)}
+  .leave-in input{width:84px;background:var(--sand);border:1px solid var(--line);border-radius:var(--r-sm);
+      padding:9px 11px;font:inherit;font-size:14px;color:var(--ink);text-align:center}
+  .docs{display:grid;gap:9px;margin-bottom:16px}
+  .doc{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border:1px solid var(--line);
+      border-radius:var(--r-md);padding:13px 15px;text-align:start;box-shadow:var(--e1),var(--edge);transition:border-color .15s}
+  .doc .box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);
+      display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+  .doc .box svg{width:12px;height:12px;opacity:0;color:var(--on-teal)}
+  .doc.on{border-color:var(--teal)}
+  .doc.on .box{background:var(--teal);border-color:var(--teal)}
+  .doc.on .box svg{opacity:1}
+  .doc span{flex:1;font-size:14px;color:var(--ink)}
+  .ready{margin-bottom:16px}
+  .ready .meter{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+  .ready .meter i{display:block;height:100%;background:var(--teal);border-radius:6px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+  .ready .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-bottom:7px}
+
   /* plans */
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
   .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
@@ -764,7 +795,7 @@
 
   <!-- PAYWALL -->
   <section class="screen" id="screen-paywall">
-    <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show(pwMode==='case'?'case':'result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="pw_title"></h2>
     <p class="pw-note" data-t="pw_free_note"></p>
     <div class="preview">
@@ -816,6 +847,35 @@
     </div>
     <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
     <div id="eosOut"></div>
+    <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- CASE FILE BUILDER -->
+  <section class="screen" id="screen-case">
+    <button class="back" onclick="show('eos',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="eos_open"></span></button>
+    <h2 class="section-title" data-t="cf_title"></h2>
+    <p class="pw-note" data-t="cf_sub"></p>
+    <div id="caseClaim"></div>
+    <h3 class="biz-h" data-t="cf_docs"></h3>
+    <p class="biz-note" data-t="cf_docs_sub"></p>
+    <div class="docs" id="caseDocs"></div>
+    <div class="ready" id="caseReady"></div>
+    <button class="primary" onclick="openCasePaywall()" data-t="cf_view"></button>
+    <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- CASE FILE DOCUMENT -->
+  <section class="screen" id="screen-casedoc">
+    <button class="back" onclick="show('case',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="cf_title"></span></button>
+    <h2 class="section-title" data-t="cf_ready_ttl"></h2>
+    <div class="letter">
+      <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
+      <div class="body" id="caseBody"></div>
+      <div class="letterfoot" id="caseFoot"></div>
+    </div>
+    <div class="letter-actions">
+      <button class="ghost" id="caseCopyBtn" onclick="copyCase()"></button>
+    </div>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
@@ -1044,6 +1104,45 @@ const T = {
   st_sent:{ar:"مُرسل",en:"Sent"},
   st_signed:{ar:"موقّع",en:"Signed"},
   st_redline:{ar:"تعديلات واردة",en:"Redlines in"},
+  cf_cta:{ar:"جهّز ملف قضيتي",en:"Build my case file"},
+  cf_title:{ar:"ملف قضيتك",en:"Your case file"},
+  cf_sub:{ar:"نجمع مطالبتك ومستنداتك في ملف واحد — جاهز للتسوية أو للمحامي.",
+          en:"We gather your claim and documents into one file — ready for settlement or for a lawyer."},
+  cf_claim:{ar:"ما قد تطالب به",en:"What you may claim"},
+  cf_eos:{ar:"مكافأة نهاية الخدمة",en:"End-of-service award"},
+  cf_comp:{ar:"تعويض الإنهاء بغير سبب مشروع (تقديري)",en:"Compensation for termination without valid reason (estimate)"},
+  cf_comp_note:{ar:"١٥ يومًا عن كل سنة، بحد أدنى أجر شهرين — يستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع.",
+                en:"15 days per year, minimum two months' wage — owed only if the termination is found to be without valid reason."},
+  cf_leave:{ar:"بدل الإجازات غير المستخدمة",en:"Unused leave"},
+  cf_leave_q:{ar:"كم يوم إجازة لك غير مستخدم؟",en:"How many unused leave days?"},
+  cf_total:{ar:"إجمالي المطالبة التقديرية",en:"Estimated total claim"},
+  cf_docs:{ar:"مستنداتك",en:"Your documents"},
+  cf_docs_sub:{ar:"علّم ما لديك — كل مستند يقوّي موقفك.",en:"Tick what you have — each document strengthens your position."},
+  cf_ready:{ar:"جاهزية الملف",en:"File readiness"},
+  cf_ready_n:{ar:"{a} من {b} مستندات",en:"{a} of {b} documents"},
+  cf_view:{ar:"اعرض ملف القضية",en:"View my case file"},
+  cf_ready_ttl:{ar:"ملفك جاهز — انسخه أو أرسله",en:"Your file is ready — copy or send it"},
+  cf_copy:{ar:"انسخ الملف",en:"Copy file"},
+  d_contract:{ar:"العقد الموقّع",en:"The signed contract"},
+  d_letter:{ar:"خطاب الإنهاء",en:"Termination letter"},
+  d_pay:{ar:"كشوف الرواتب (آخر ٣ أشهر)",en:"Payslips (last 3 months)"},
+  d_wps:{ar:"سجل حماية الأجور",en:"Wage Protection System record"},
+  d_msgs:{ar:"المراسلات (إيميل أو واتساب)",en:"Correspondence (email or WhatsApp)"},
+  d_leave:{ar:"سجل الإجازات",en:"Leave record"},
+  pw_case_title:{ar:"ملف القضية",en:"The case file"},
+  pw_case_free:{ar:"الحساب والتقييم مجانيان — الملف المنسّق إضافة اختيارية.",
+                en:"The calculation and assessment are free — the assembled file is optional."},
+  plan_case:{ar:"ملف القضية",en:"Case file"},
+  plan_case_d:{ar:"ملف منسّق بالعربي والإنجليزي — مطالبتك ومستنداتك ووقائعك",
+               en:"A formatted bilingual file — your claim, documents, and the facts"},
+  plan_case_lawyer:{ar:"الملف + محامٍ مرخّص",en:"File + licensed lawyer"},
+  plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال ٢٤ ساعة",
+                      en:"A Saudi lawyer reviews your file and replies within 24h"},
+  cf_facts:{ar:"الوقائع",en:"The facts"},
+  cf_ev:{ar:"المستندات المرفقة",en:"Documents attached"},
+  cf_ask:{ar:"المطلوب",en:"Remedy sought"},
+  cf_ask_b:{ar:"صرف المستحقات أعلاه وديًا خلال مدة معقولة، وإلا فسيُصار إلى الجهات المختصة.",
+            en:"Payment of the above amicably within a reasonable period, failing which the matter goes to the competent authorities."},
   eos_open:{ar:"مكافأة نهاية الخدمة",en:"End-of-service pay"},
   eos_open_sub:{ar:"وقّعت أو انتهى عقدك؟ احسب مستحقك مجانًا",en:"Signed already, or it ended? Calculate what you're owed — free"},
   eos_title:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
@@ -1441,6 +1540,7 @@ function applyLang(){
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
   renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
+  if (eosData){ renderCase(); renderCaseDoc(); }
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
@@ -1729,6 +1829,7 @@ function calcEos(){
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
+  eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
   buzz(8);
   if (eosHow === "term") bindTriage(ed);
 }
@@ -1774,8 +1875,11 @@ function renderTriage(endDate){
        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
        <span>${t("tr_clock")}</span>
      </div>
-     <button class="primary" id="clockBtn">${t(claimAdded ? "tr_added" : "tr_addclock")}</button>`;
+     <button class="primary" id="clockBtn">${t(claimAdded ? "tr_added" : "tr_addclock")}</button>
+     ${cls==="act" ? `<button class="ghost wide" id="caseBtn">${t("cf_cta")}</button>` : ""}`;
   document.getElementById("clockBtn").onclick = ()=>addClaimClock(endDate);
+  const cb = document.getElementById("caseBtn");
+  if (cb) cb.onclick = ()=>openCase();
   buzz(6);
 }
 
@@ -1799,8 +1903,117 @@ function addClaimClock(endDate){
   document.getElementById("clockBtn").textContent = t("tr_added");
 }
 
+/* ------------------------------------------------------- case file ----
+   The post-signing counterpart to the negotiation letter: the same
+   build-as-you-go mechanic, aimed at recovery instead of negotiation. */
+let eosData = null, caseDocs = new Set(), leaveDays = 0;
+
+const CASE_DOCS = ["d_contract","d_letter","d_pay","d_wps","d_msgs","d_leave"];
+
+function openCase(){ renderCase(); show("case"); }
+
+function compEstimate(){
+  if (!eosData) return 0;
+  /* 15 days per year of service, floored at two months' wage. Conditional on
+     the termination being found unjustified, so it is labelled as such. */
+  const perDay = eosData.wage / 30;
+  return Math.max(eosData.wage * 2, eosData.years * 15 * perDay);
+}
+function leaveAmount(){ return eosData ? leaveDays * (eosData.wage / 30) : 0; }
+function claimTotal(){ return (eosData ? eosData.total : 0) + compEstimate() + leaveAmount(); }
+
+function renderCase(){
+  if (!eosData) return;
+  const cur = t("eos_sar");
+  const row = (l,v,cls)=>`<div class="r${cls?" "+cls:""}"><span>${l}</span><b>${money(v)} ${cur}</b></div>`;
+  document.getElementById("caseClaim").innerHTML =
+    `<div class="claim-card">
+       <h4>${t("cf_claim")}</h4>
+       ${row(t("cf_eos"), eosData.total)}
+       ${row(t("cf_comp"), compEstimate())}
+       <p class="mini">${t("cf_comp_note")}</p>
+       <div class="leave-in">
+         <span>${t("cf_leave_q")}</span>
+         <input type="number" min="0" max="365" id="leaveDays" value="${leaveDays}"/>
+       </div>
+       ${row(t("cf_leave"), leaveAmount())}
+       ${row(t("cf_total"), claimTotal(), "tot")}
+     </div>`;
+  document.getElementById("leaveDays").oninput = e=>{
+    leaveDays = Math.max(0, Math.min(365, parseInt(e.target.value||"0",10)));
+    renderCase();
+    document.getElementById("leaveDays").focus();
+  };
+
+  document.getElementById("caseDocs").innerHTML = CASE_DOCS.map(d=>
+    `<button class="doc${caseDocs.has(d)?" on":""}" data-doc="${d}">
+       <span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg></span>
+       <span>${t(d)}</span>
+     </button>`).join("");
+  document.querySelectorAll("[data-doc]").forEach(b=>{
+    b.onclick = ()=>{
+      const k = b.dataset.doc;
+      caseDocs.has(k) ? caseDocs.delete(k) : (caseDocs.add(k), buzz(8));
+      renderCase();
+    };
+  });
+
+  const pct = Math.round(caseDocs.size / CASE_DOCS.length * 100);
+  document.getElementById("caseReady").innerHTML =
+    `<div class="lbl"><span>${t("cf_ready")}</span>
+       <span>${t("cf_ready_n").replace("{a}",fmtNum(caseDocs.size)).replace("{b}",fmtNum(CASE_DOCS.length))}</span></div>
+     <div class="meter"><i style="width:${pct}%"></i></div>`;
+}
+
+function buildCaseDoc(){
+  const cur = t("eos_sar"), d = eosData;
+  const fmtD = ts => fmtDate(new Date(ts).getTime());
+  const docs = CASE_DOCS.filter(x=>caseDocs.has(x)).map(x=>"• "+t(x)).join("\n") || "—";
+  if (lang==="ar")
+    return `${t("cf_facts")}\n`+
+      `• بداية العمل: ${fmtD(d.start)}\n• نهاية العمل: ${fmtD(d.end)}\n`+
+      `• مدة الخدمة: ${t("eos_yrs").replace("{y}",fmtNum(d.parts.y)).replace("{m}",fmtNum(d.parts.m))}\n`+
+      `• آخر أجر شهري: ${money(d.wage)} ${cur}\n• طريقة الإنهاء: ${t("eos_h_term")}\n\n`+
+      `${t("cf_claim")}\n`+
+      `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
+      `• ${t("cf_comp")}: ${money(compEstimate())} ${cur}\n`+
+      `• ${t("cf_leave")}: ${money(leaveAmount())} ${cur}\n`+
+      `• ${t("cf_total")}: ${money(claimTotal())} ${cur}\n\n`+
+      `${t("cf_ev")}\n${docs}\n\n${t("cf_ask")}\n${t("cf_ask_b")}`;
+  return `${t("cf_facts")}\n`+
+    `• Start date: ${fmtD(d.start)}\n• End date: ${fmtD(d.end)}\n`+
+    `• Length of service: ${t("eos_yrs").replace("{y}",d.parts.y).replace("{m}",d.parts.m)}\n`+
+    `• Last monthly wage: ${money(d.wage)} ${cur}\n• How it ended: ${t("eos_h_term")}\n\n`+
+    `${t("cf_claim")}\n`+
+    `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
+    `• ${t("cf_comp")}: ${money(compEstimate())} ${cur}\n`+
+    `• ${t("cf_leave")}: ${money(leaveAmount())} ${cur}\n`+
+    `• ${t("cf_total")}: ${money(claimTotal())} ${cur}\n\n`+
+    `${t("cf_ev")}\n${docs}\n\n${t("cf_ask")}\n${t("cf_ask_b")}`;
+}
+
+function renderCaseDoc(){
+  if (!eosData) return;
+  document.getElementById("caseBody").textContent = buildCaseDoc();
+  document.getElementById("caseFoot").textContent = t("lt_foot");
+  document.getElementById("caseCopyBtn").textContent = t("cf_copy");
+}
+
+function copyCase(){
+  const btn = document.getElementById("caseCopyBtn");
+  const done = ()=>{ btn.textContent = t("copied"); setTimeout(()=>{ btn.textContent = t("cf_copy"); }, 1600); };
+  if (navigator.clipboard) navigator.clipboard.writeText(document.getElementById("caseBody").textContent).then(done,done);
+  else done();
+}
+
+function openCasePaywall(){
+  if (casePaid){ renderCaseDoc(); show("casedoc"); return; }
+  pwMode = "case"; pwPlan = 0; renderPaywall(); show("paywall");
+}
+
 /* ------------------------------------------------ plans & business tier */
 let billing = "month", planBack = "home", plan = "free";
+let pwMode = "letter", casePaid = false;
 
 const PLANS_T = [
   { id:"free", name:"pl_basic", desc:"pl_free_d", m:0, y:0,
@@ -2353,6 +2566,12 @@ const PLANS = [
   { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٢٩ ر.س",en:"29 SAR"}, pop:false },
   { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:true }
 ];
+/* A claim has money on the table, so the file prices well above the letter. */
+const PLANS_CASE = [
+  { name:"plan_case", desc:"plan_case_d", price:{ar:"٢٤٩ ر.س",en:"249 SAR"}, pop:false },
+  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", price:{ar:"٣٩٩ ر.س",en:"399 SAR"}, pop:true }
+];
+function activePlans(){ return pwMode === "case" ? PLANS_CASE : PLANS; }
 const LETTER_TO = {
   doc_emp:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
   doc_rent:{ar:"إلى: المؤجّر الكريم",en:"To: The landlord"},
@@ -2375,6 +2594,7 @@ function buildLetter(){
 }
 
 function openPaywall(){
+  pwMode = "letter";
   if (pwPaid){ renderLetter(); show("letter"); return; }
   renderPaywall(); show("paywall");
 }
@@ -2383,16 +2603,20 @@ function renderPaywall(){
   /* Prototype only: the locked copy is real text behind a CSS blur, which is
      readable via devtools. A production build must render placeholder lines
      and fetch the letter after payment. */
-  if (!current || !selected().length) return;
-  const full = buildLetter();
+  const isCase = pwMode === "case";
+  if (isCase ? !eosData : (!current || !selected().length)) return;
+  document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(isCase ? "pw_case_title" : "pw_title");
+  document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(isCase ? "pw_case_free" : "pw_free_note");
+  const full = isCase ? buildCaseDoc() : buildLetter();
   const lines = full.split("\n");
-  document.getElementById("pwPreviewHead").textContent = LETTER_TO[current.doc][lang];
+  document.getElementById("pwPreviewHead").textContent =
+    isCase ? t("cf_title") : LETTER_TO[current.doc][lang];
   document.getElementById("pwPreviewIntro").textContent = lines.slice(0,3).join("\n");
   document.getElementById("pwPreviewFog").textContent = lines.slice(3).join("\n");
   document.getElementById("pwLockLine").textContent = t("pw_lock");
   const wrap = document.getElementById("plans");
   wrap.innerHTML = "";
-  PLANS.forEach((pl,i)=>{
+  activePlans().forEach((pl,i)=>{
     const b = document.createElement("button");
     b.className = "plan" + (i===pwPlan ? " sel" : "");
     b.innerHTML =
@@ -2404,7 +2628,7 @@ function renderPaywall(){
   });
   const pay = document.getElementById("payBtn");
   pay.disabled = false;
-  pay.textContent = `${t("pw_pay")} ${PLANS[pwPlan].price[lang]}`;
+  pay.textContent = `${t("pw_pay")} ${activePlans()[pwPlan].price[lang]}`;
 }
 
 function pwPay(){
@@ -2412,8 +2636,9 @@ function pwPay(){
   pay.disabled = true;
   pay.textContent = t("pw_paying");
   setTimeout(()=>{
-    pwPaid = true;
     buzz([12,50,20]);
+    if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
+    pwPaid = true;
     renderLetter();
     show("letter");
   }, 900);
