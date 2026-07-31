@@ -219,6 +219,10 @@
   .ob-choice.on b{color:var(--teal-ink)}
   #obNext:disabled{opacity:.45;pointer-events:none}
   .dots{display:flex;justify-content:center;gap:8px;margin:18px 0 16px}
+  /* A display value beats the hidden attribute, so both need an explicit
+     guard — this has bitten this file before. */
+  .dots[hidden]{display:none}
+  #obNext[hidden]{display:none}
   .dots button{width:8px;height:8px;border-radius:99px;background:var(--line);padding:0;transition:all .25s;
     box-sizing:content-box;border:18px solid transparent;background-clip:padding-box;margin:-18px}
   /* background-color, not the shorthand — the shorthand would reset the
@@ -494,6 +498,13 @@
   .score-src{border-top:0;padding-top:0;margin-top:10px;text-align:center}
 
   /* Rights library */
+  .lib-ask{background:var(--teal-soft);border:1px solid color-mix(in srgb, var(--teal) 26%, transparent);
+    border-radius:14px;padding:14px 16px;margin-bottom:16px}
+  .lib-ask p{font-size:13px;color:var(--teal-ink);line-height:1.65;margin-bottom:10px}
+  .lib-ask-b{display:flex;gap:8px}
+  .lib-ask-b button{flex:1;min-height:44px;border-radius:var(--r-md);background:var(--card);
+    border:1px solid var(--line);color:var(--ink);font-size:14px;font-weight:700}
+  .lib-ask-b button:hover{border-color:var(--teal);color:var(--teal-ink)}
   .lib-h{font-size:17px;color:var(--ink);margin:30px 0 4px}
   .lib-sub{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:14px}
   .lib-g{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--teal);
@@ -1540,6 +1551,9 @@ const T = {
 
   /* Two kinds of origin, never blurred. A citation means a verified article;
      the methodology label means this is our own reading, and says so. */
+  nat_gate_h:{ar:"سؤال واحد قبل ما نقرأ",en:"One question before we read it"},
+  nat_gate_b:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض. عشان نعطيك الصح مو التقريبي — أنت مين؟",
+              en:"The labour law treats Saudis and residents differently on contract type, notice, and compensation. So we give you the right answer rather than the near-enough one — which are you?"},
   nat_showing:{ar:"الأنظمة المعروضة:",en:"Showing rules for:"},
   nat_change:{ar:"تغيير",en:"Change"},
   nat_now:{ar:"عرضنا أنظمة: {t}",en:"Now showing: {t}"},
@@ -1559,6 +1573,8 @@ const T = {
   src_method:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"},
 
   /* The rights library: grouped the way the questions actually arrive. */
+  lib_ask:{ar:"تعرض لك الآن الأنظمة المشتركة بين الجميع. اختر وضعك عشان نضيف اللي يخصك أنت.",
+           en:"You're seeing the rules that apply to everyone. Tell us which applies to you and we'll add the ones that are yours."},
   lib_title:{ar:"أسئلة الشغل الشائعة",en:"Common employment questions"},
   lib_sub:{ar:"إجابات قصيرة، كل وحدة ومعها مصدرها. للسعوديين وللمقيمين.",
            en:"Short answers, each with its source. For Saudis and residents alike."},
@@ -2453,6 +2469,35 @@ let obIndex = 0;
 /* The two tracks, as onboarding choices. Rendered into the card rather than
    bolted beside it so the dots, the art and the advance button keep working
    exactly as they did for the three cards that came before. */
+/* The nationality question is only meaningful at the moment it changes an
+   answer. Asked at the front door it is a toll; asked here it is obviously
+   the reason we can be specific.
+
+   Anything that would produce a divergent answer routes through this first,
+   so the original guarantee holds in a stronger form: we never render law
+   for an unknown track, and the question arrives with its consequence
+   visible rather than in the abstract. */
+let pendingAfterTrack = null;
+
+function needsTrack(resume){
+  if (nat) return false;
+  pendingAfterTrack = resume || null;
+  obIndex = OB.findIndex(o => o.pick);
+  natGate = true;
+  renderOnboard();
+  show("onboard");
+  return true;
+}
+
+function resumeAfterTrack(){
+  natGate = false;
+  const go = pendingAfterTrack;
+  pendingAfterTrack = null;
+  if (typeof go === "function") go(); else show("home");
+}
+
+let natGate = false;
+
 function renderObPick(slide){
   const box = document.getElementById("obPick");
   const next = document.getElementById("obNext");
@@ -2474,12 +2519,17 @@ function renderObPick(slide){
     b.onclick = ()=>{
       /* First choice, so assign directly — setNat() is for changing one. */
       nat = id; buzz(8); saveState();
-      renderOnboard(); renderNat(); renderLib();
+      renderNat(); renderLib();
+      if (natGate){ resumeAfterTrack(); return; }
+      renderOnboard();
     };
     box.appendChild(b);
   });
-  /* No default means no way past this card without answering. */
-  next.disabled = !nat;
+  /* Answering here is welcome but not required. The guarantee that nobody is
+     shown the wrong law is enforced where the law actually diverges — see
+     needsTrack() — not by blocking the front door before anyone has seen
+     what Wodouh does. */
+  next.disabled = false;
 }
 
 function renderOnboard(){
@@ -2490,6 +2540,15 @@ function renderOnboard(){
   document.getElementById("obSkip").textContent = t("ob_skip");
   document.getElementById("obNext").textContent = obIndex === OB.length-1 ? t("ob_start") : t("ob_next");
   document.getElementById("obSkip").style.visibility = obIndex === OB.length-1 ? "hidden" : "visible";
+  /* Reached as a gate rather than as a tour: the dots and the advance button
+     would both be lying about where the reader is, so neither appears. The
+     only way on is to answer, which is the whole point of being here. */
+  document.getElementById("obDots").hidden = natGate;
+  document.getElementById("obNext").hidden = natGate;
+  if (natGate){
+    document.getElementById("obTitle").textContent = t("nat_gate_h");
+    document.getElementById("obSub").textContent = t("nat_gate_b");
+  }
   renderObPick(s);
   const dots = document.getElementById("obDots");
   dots.innerHTML = "";
@@ -2508,14 +2567,7 @@ function obNext(){
 
 /* Skipping the tour is fine; skipping the question is not, because the answer
    decides which law we show. Skip therefore jumps to the choice. */
-function obSkip(){
-  if (!nat){
-    obIndex = OB.findIndex(o=>o.pick);
-    renderOnboard();
-    return;
-  }
-  show("home");
-}
+function obSkip(){ show("home"); }
 
 function pasteChanged(){
   /* The button stays live; if the text is too short we say so rather than
@@ -2526,6 +2578,9 @@ function pasteChanged(){
 
 /* ------------------------------------------------------------- analyze */
 function analyze(kind){
+  /* Which rules apply depends on the track, so ask before reading rather
+     than after, and come straight back here with the same contract. */
+  if (needsTrack(()=>analyze(kind))) return;
   const notice = document.getElementById("offlineNotice");
   if (navigator.onLine === false){ notice.hidden = false; return; }
   notice.hidden = true;
@@ -2934,6 +2989,28 @@ function renderLib(){
   const wrap = document.getElementById("rightsLib");
   if (!wrap) return;
   wrap.innerHTML = "";
+
+  /* With no track chosen the library is correct but incomplete — it shows
+     only what applies to everyone. Say so and offer the choice, rather than
+     letting someone conclude we have nothing on their situation. */
+  if (!nat){
+    const ask = document.createElement("div");
+    ask.className = "lib-ask";
+    const p1 = document.createElement("p");
+    p1.textContent = t("lib_ask");
+    ask.appendChild(p1);
+    const row = document.createElement("div");
+    row.className = "lib-ask-b";
+    [["sa","nat_sa_short"],["nonsa","nat_nonsa_short"]].forEach(([v,lbl])=>{
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = t(lbl);
+      b.onclick = ()=>{ nat = v; buzz(8); saveState(); renderNat(); renderLib(); };
+      row.appendChild(b);
+    });
+    ask.appendChild(row);
+    wrap.appendChild(ask);
+  }
   LIB.forEach(group=>{
     const items = group.items.filter(forTrack);
     if (!items.length) return;      /* never leave a heading with nothing under it */
@@ -3155,7 +3232,12 @@ let eosData = null, caseDocs = new Set(), leaveDays = 0;
 
 const CASE_DOCS = ["d_contract","d_letter","d_pay","d_wps","d_msgs","d_leave"];
 
-function openCase(){ renderCase(); show("case"); }
+function openCase(){
+  /* The compensation figure uses a different Article 77 branch per track,
+     and getting it wrong is what this whole distinction exists to prevent. */
+  if (needsTrack(openCase)) return;
+  renderCase(); show("case");
+}
 
 /* Article 77 has two branches, and which one applies is decided by the
    contract's type, not by preference.
