@@ -373,6 +373,57 @@
   .letter-tease.building{background:var(--teal-soft);border-color:var(--teal)}
   .letter-tease.building .go{color:var(--teal)}
 
+  /* end-of-service calculator */
+  .form{display:grid;gap:12px;margin-bottom:16px}
+  .fld{display:block}
+  .fld>span{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+  .fld em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-2);margin-top:5px;opacity:.85}
+  .fld input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
+      padding:13px 15px;font:inherit;font-size:15px;color:var(--ink);box-shadow:var(--e1),var(--edge)}
+  .fld input:focus{outline:2px solid var(--teal);border-color:transparent}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .opts button{border:1px solid var(--line);background:var(--card);border-radius:var(--r-md);
+      padding:11px 10px;font-size:13px;color:var(--ink);box-shadow:var(--e1),var(--edge);transition:border-color .15s}
+  .opts button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:700}
+  html[lang="ar"] .opts button.on{font-weight:400}
+  .opts button:first-child{grid-column:1/-1}
+
+  .eos-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+      padding:24px 20px 18px;margin-top:16px;text-align:center;box-shadow:var(--e2),var(--edge)}
+  .eos-card .lbl{font-size:12.5px;color:var(--ink-2)}
+  .eos-card .amt{font-family:var(--en);font-size:38px;font-weight:800;letter-spacing:-.03em;
+      color:var(--teal-ink);line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;direction:ltr}
+  html[lang="ar"] .eos-card .amt{font-family:var(--ar);font-weight:600;direction:rtl}
+  .eos-card .amt small{font-family:var(--en);font-size:15px;font-weight:700;letter-spacing:0;margin-inline-start:6px;color:var(--ink-2)}
+  .eos-card .svc{font-size:13px;color:var(--ink-2);margin-top:8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .rows{display:grid;gap:9px;margin-top:16px;text-align:start}
+  .rows .r{display:flex;align-items:baseline;gap:10px;font-size:13.5px;color:var(--ink-2)}
+  .rows .r span{flex:1;min-width:0}
+  .rows .r b{font-family:var(--en);color:var(--ink);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+  html[lang="ar"] .rows .r b{font-family:var(--ar);font-weight:600}
+  .rows .r.tot{border-top:1px solid var(--line);padding-top:10px;margin-top:2px;color:var(--ink);font-size:14.5px}
+  .rows .r.tot b{color:var(--teal-ink);font-size:16px}
+  .eos-note{font-size:11.5px;color:var(--ink-2);margin-top:14px;line-height:1.65;text-align:start}
+
+  /* termination triage */
+  .triage{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);
+      padding:18px;margin-top:14px;box-shadow:var(--e1),var(--edge)}
+  .triage h4{font-size:15px;color:var(--teal-ink);margin-bottom:12px}
+  .tq{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .tq span{flex:1;font-size:13.5px;color:var(--ink)}
+  .tq .yn{display:flex;gap:6px}
+  .tq .yn button{border:1px solid var(--line);background:var(--sand);border-radius:999px;
+      padding:6px 14px;font-size:12.5px;color:var(--ink-2);min-width:52px}
+  .tq .yn button.on{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+  .verdict-box{border-radius:var(--r-lg);padding:14px 15px;margin-top:6px}
+  .verdict-box.ok{background:var(--green-bg)} .verdict-box.warn{background:var(--amber-bg)}
+  .verdict-box.act{background:var(--red-bg)}
+  .verdict-box b{display:block;font-size:14.5px;color:var(--ink);margin-bottom:4px}
+  .verdict-box p{font-size:13px;color:var(--ink-2);line-height:1.7}
+  .clock{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink);
+      background:var(--amber-bg);border-radius:var(--r-md);padding:11px 13px;margin-top:10px;line-height:1.65}
+  .clock svg{flex:none;width:15px;height:15px;margin-top:3px;color:var(--amber)}
+
   /* plans */
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
   .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
@@ -634,6 +685,11 @@
     <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
     <p class="paste-hint" data-t="paste_hint"></p>
     <button class="primary" id="analyzeBtn" disabled onclick="analyze('pasted')" data-t="analyze"></button>
+    <button class="assist-entry" onclick="openEos()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 11h2M12 11h4M8 15h2M12 15h4"/></svg></span>
+      <span><b data-t="eos_open"></b><span data-t="eos_open_sub"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
     <button class="assist-entry" onclick="openAssist('home')">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
       <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
@@ -742,6 +798,25 @@
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
     <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- END OF SERVICE -->
+  <section class="screen" id="screen-eos">
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <h2 class="section-title" data-t="eos_title"></h2>
+    <p class="pw-note" data-t="eos_sub"></p>
+    <div class="form">
+      <label class="fld"><span data-t="eos_start"></span><input type="date" id="eosStart"/></label>
+      <label class="fld"><span data-t="eos_end"></span><input type="date" id="eosEnd"/></label>
+      <label class="fld"><span data-t="eos_wage"></span>
+        <input type="number" inputmode="numeric" min="0" step="100" id="eosWage"/>
+        <em data-t="eos_wage_hint"></em>
+      </label>
+      <div class="fld"><span data-t="eos_how"></span><div class="opts" id="eosHow"></div></div>
+    </div>
+    <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
+    <div id="eosOut"></div>
+    <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
   <!-- PLANS -->
@@ -969,6 +1044,55 @@ const T = {
   st_sent:{ar:"مُرسل",en:"Sent"},
   st_signed:{ar:"موقّع",en:"Signed"},
   st_redline:{ar:"تعديلات واردة",en:"Redlines in"},
+  eos_open:{ar:"مكافأة نهاية الخدمة",en:"End-of-service pay"},
+  eos_open_sub:{ar:"وقّعت أو انتهى عقدك؟ احسب مستحقك مجانًا",en:"Signed already, or it ended? Calculate what you're owed — free"},
+  eos_title:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
+  eos_sub:{ar:"أدخل بياناتك ونعرض لك الحساب خطوة بخطوة — بدون تسجيل.",
+           en:"Enter your details and we'll show the arithmetic step by step — no sign-up."},
+  eos_start:{ar:"تاريخ بداية العمل",en:"Start date"},
+  eos_end:{ar:"تاريخ نهاية العمل",en:"End date"},
+  eos_wage:{ar:"آخر أجر شهري كامل (ر.س)",en:"Last full monthly wage (SAR)"},
+  eos_wage_hint:{ar:"الأساسي مع البدلات الثابتة",en:"Basic plus fixed allowances"},
+  eos_how:{ar:"كيف انتهى العقد؟",en:"How did it end?"},
+  eos_h_term:{ar:"إنهاء من صاحب العمل",en:"Employer ended it"},
+  eos_h_resign:{ar:"استقالة",en:"I resigned"},
+  eos_h_expiry:{ar:"انتهاء مدة العقد",en:"Fixed term expired"},
+  eos_calc:{ar:"احسب",en:"Calculate"},
+  eos_result:{ar:"مستحقك التقديري",en:"Your estimated entitlement"},
+  eos_service:{ar:"مدة الخدمة",en:"Length of service"},
+  eos_yrs:{ar:"{y} سنة و{m} شهر",en:"{y} years, {m} months"},
+  eos_b_first:{ar:"أول ٥ سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
+  eos_b_after:{ar:"ما بعد ٥ سنوات — شهر عن كل سنة",en:"Beyond 5 years — one month per year"},
+  eos_b_sub:{ar:"المجموع قبل التعديل",en:"Subtotal before adjustment"},
+  eos_b_factor:{ar:"معامل الاستقالة",en:"Resignation factor"},
+  eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
+  eos_none:{ar:"الاستقالة قبل إتمام سنتين لا تستحق مكافأة عادةً.",
+            en:"Resigning before completing two years generally earns no award."},
+  eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى.",
+            en:"An estimate based on the standard formula. It excludes unused leave and other dues."},
+  eos_verify:{ar:"تحقق من النص النظامي الرسمي قبل الاعتماد على أي رقم.",
+              en:"Check the official statutory text before relying on any figure."},
+  eos_sar:{ar:"ر.س",en:"SAR"},
+
+  tr_head:{ar:"إنهاء من صاحب العمل — ثلاثة أسئلة",en:"Employer ended it — three questions"},
+  tr_q1:{ar:"هل ذُكر سبب نظامي للإنهاء؟",en:"Was a lawful reason stated?"},
+  tr_q2:{ar:"هل أُعطيت مدة الإشعار؟",en:"Were you given notice?"},
+  tr_q3:{ar:"هل كنت في فترة التجربة؟",en:"Were you in probation?"},
+  tr_yes:{ar:"نعم",en:"Yes"}, tr_no:{ar:"لا",en:"No"},
+  tr_out_ok:{ar:"يبدو إنهاءً نظاميًا",en:"This looks like a lawful termination"},
+  tr_out_ok_b:{ar:"مع ذلك تبقى لك مكافأة نهاية الخدمة وبدل الإجازات غير المستخدمة.",
+               en:"You're still owed your end-of-service award and any unused leave."},
+  tr_out_probation:{ar:"إنهاء أثناء التجربة",en:"Termination during probation"},
+  tr_out_probation_b:{ar:"الإنهاء في فترة التجربة أوسع نظامًا، لكن تأكد أن الفترة منصوص عليها كتابيًا وأنها لم تتجاوز حدودها.",
+                      en:"Termination during probation is broader by law — but check the period was in writing and within its limits."},
+  tr_out_claim:{ar:"قد يكون إنهاءً بغير سبب مشروع",en:"This may be termination without valid reason"},
+  tr_out_claim_b:{ar:"في هذه الحالة قد يستحق تعويض إضافي فوق المكافأة. جهّز مستنداتك واطلب التسوية الودية أولًا.",
+                  en:"That can carry compensation on top of the award. Gather your documents and start with amicable settlement."},
+  tr_clock:{ar:"مهم: الدعوى العمالية لا تُسمع عادة بعد اثني عشر شهرًا من انتهاء العلاقة.",
+            en:"Important: labour claims are generally not heard after twelve months from the end of the relationship."},
+  tr_addclock:{ar:"أضف المواعيد لتذكيراتي",en:"Add these dates to my reminders"},
+  tr_added:{ar:"أُضيفت لتذكيراتك ✓",en:"Added to your reminders ✓"},
+  doc_claim:{ar:"مطالبة عمالية",en:"Labour claim"},
   as_open:{ar:"اسأل وضوح",en:"Ask Wodouh"},
   as_open_sub:{ar:"سؤال قانوني؟ اسأل بلغتك العادية",en:"A legal question? Ask in your own words"},
   as_title:{ar:"اسأل وضوح",en:"Ask Wodouh"},
@@ -1316,6 +1440,7 @@ function applyLang(){
   renderHomeReminders();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
+  renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
@@ -1506,6 +1631,172 @@ function animateRing(){
       if (k<1) requestAnimationFrame(tick);
     })(t0);
   }));
+}
+
+/* --------------------------------------- end of service + termination ----
+   Deterministic arithmetic, not inference: the award follows the standard
+   formula (half a month per year for the first five years, a full month per
+   year thereafter, on the last wage), then a resignation factor. Every step
+   is shown so the user can check the maths rather than trust a black box.
+   Figures must be verified against the current statutory text before use. */
+let eosHow = "term", triage = { reason:null, notice:null, probation:null }, claimAdded = false;
+
+const EOS_HOW = [
+  { id:"term",   label:"eos_h_term" },
+  { id:"resign", label:"eos_h_resign" },
+  { id:"expiry", label:"eos_h_expiry" }
+];
+
+function openEos(){ renderEos(); show("eos"); }
+
+function renderEos(){
+  const wrap = document.getElementById("eosHow");
+  wrap.innerHTML = "";
+  EOS_HOW.forEach(o=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = eosHow===o.id ? "on" : "";
+    b.textContent = t(o.label);
+    b.onclick = ()=>{ eosHow = o.id; renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos(); };
+    wrap.appendChild(b);
+  });
+}
+
+/* Calendar arithmetic, not averaged days: an exact three-year span must come
+   out as 3.000, or the award is short by a few riyals for no good reason. */
+function serviceParts(a, b){
+  let y = b.getFullYear() - a.getFullYear();
+  let m = b.getMonth() - a.getMonth();
+  let d = b.getDate() - a.getDate();
+  if (d < 0){ m--; d += new Date(b.getFullYear(), b.getMonth(), 0).getDate(); }
+  if (m < 0){ y--; m += 12; }
+  return { y, m, d };
+}
+
+function serviceYears(a, b){
+  if (b <= a) return 0;
+  const { y, m, d } = serviceParts(a, b);
+  return y + m/12 + d/365;
+}
+
+function resignFactor(y){
+  if (y < 2) return 0;
+  if (y < 5) return 1/3;
+  if (y < 10) return 2/3;
+  return 1;
+}
+
+function money(n){
+  return new Intl.NumberFormat(lang==="ar" ? "ar-SA" : "en-US",
+    { maximumFractionDigits:0 }).format(Math.round(n));
+}
+
+function calcEos(){
+  const sd = document.getElementById("eosStart").value;
+  const ed = document.getElementById("eosEnd").value;
+  const wage = parseFloat(document.getElementById("eosWage").value);
+  const out = document.getElementById("eosOut");
+  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; return; }
+  const a = new Date(sd), bDate = new Date(ed);
+  const y = serviceYears(a, bDate);
+  if (y <= 0){ out.innerHTML = ""; return; }
+  const parts = serviceParts(a, bDate);
+
+  const first = Math.min(y, 5), after = Math.max(0, y - 5);
+  const firstAmt = first * 0.5 * wage, afterAmt = after * wage;
+  const sub = firstAmt + afterAmt;
+  const factor = eosHow === "resign" ? resignFactor(y) : 1;
+  const total = sub * factor;
+
+  const svc = t("eos_yrs").replace("{y}", fmtNum(parts.y)).replace("{m}", fmtNum(parts.m));
+  const cur = t("eos_sar");
+  const row = (label, val, cls) =>
+    `<div class="r${cls?" "+cls:""}"><span>${label}</span><b>${val}</b></div>`;
+
+  out.innerHTML =
+    `<div class="eos-card">
+       <div class="lbl">${t("eos_result")}</div>
+       <div class="amt">${money(total)}<small>${cur}</small></div>
+       <div class="svc">${t("eos_service")}: ${svc}</div>
+       <div class="rows">
+         ${row(t("eos_b_first"), money(firstAmt)+" "+cur)}
+         ${after > 0 ? row(t("eos_b_after"), money(afterAmt)+" "+cur) : ""}
+         ${row(t("eos_b_sub"), money(sub)+" "+cur)}
+         ${eosHow==="resign" ? row(t("eos_b_factor"), factor===0 ? "0" : (factor===1 ? "1" : (factor<0.5?"1/3":"2/3"))) : ""}
+         ${row(t("eos_b_total"), money(total)+" "+cur, "tot")}
+       </div>
+       ${eosHow==="resign" && factor===0 ? `<p class="eos-note">${t("eos_none")}</p>` : ""}
+       <p class="eos-note">${t("eos_note")}</p>
+     </div>` +
+    (eosHow === "term" ? triageHtml(ed) : "");
+  buzz(8);
+  if (eosHow === "term") bindTriage(ed);
+}
+
+function triageHtml(){
+  const q = (key, id) =>
+    `<div class="tq"><span>${t(key)}</span><div class="yn" data-q="${id}">
+       <button type="button" data-v="1">${t("tr_yes")}</button>
+       <button type="button" data-v="0">${t("tr_no")}</button>
+     </div></div>`;
+  return `<div class="triage">
+      <h4>${t("tr_head")}</h4>
+      ${q("tr_q1","reason")}${q("tr_q2","notice")}${q("tr_q3","probation")}
+      <div id="triageOut"></div>
+    </div>`;
+}
+
+function bindTriage(endDate){
+  triage = { reason:null, notice:null, probation:null }; claimAdded = false;
+  document.querySelectorAll("#eosOut .yn").forEach(g=>{
+    g.querySelectorAll("button").forEach(b=>{
+      b.onclick = ()=>{
+        triage[g.dataset.q] = b.dataset.v === "1";
+        g.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+        b.classList.add("on");
+        renderTriage(endDate);
+      };
+    });
+  });
+}
+
+function renderTriage(endDate){
+  const { reason, notice, probation } = triage;
+  if (reason === null || notice === null || probation === null) return;
+  const out = document.getElementById("triageOut");
+  let cls, head, body;
+  if (probation){ cls="warn"; head=t("tr_out_probation"); body=t("tr_out_probation_b"); }
+  else if (reason && notice){ cls="ok"; head=t("tr_out_ok"); body=t("tr_out_ok_b"); }
+  else { cls="act"; head=t("tr_out_claim"); body=t("tr_out_claim_b"); }
+  out.innerHTML =
+    `<div class="verdict-box ${cls}"><b>${head}</b><p>${body}</p></div>
+     <div class="clock">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+       <span>${t("tr_clock")}</span>
+     </div>
+     <button class="primary" id="clockBtn">${t(claimAdded ? "tr_added" : "tr_addclock")}</button>`;
+  document.getElementById("clockBtn").onclick = ()=>addClaimClock(endDate);
+  buzz(6);
+}
+
+/* The claim window is the one deadline that can cost someone everything, so
+   it goes straight into the same reminder timeline as contract dates. */
+function addClaimClock(endDate){
+  if (claimAdded) { openTimeline("home"); return; }
+  const base = new Date(endDate).getTime();
+  TRACKED.push({ doc:"doc_claim", events:[
+    { d:30, k:"action", when: base + 30*86400000,
+      t:{ar:"ابدأ التسوية الودية",en:"Start amicable settlement"},
+      n:{ar:"الطريق النظامي يبدأ بالتسوية الودية قبل المحكمة العمالية — بكّر فيها.",
+         en:"The formal route begins with amicable settlement before the labour court — start early."} },
+    { d:365, k:"deadline", when: base + 365*86400000,
+      t:{ar:"آخر موعد لسماع الدعوى",en:"Claim deadline"},
+      n:{ar:"بعد اثني عشر شهرًا من انتهاء العلاقة لا تُسمع الدعوى عادةً.",
+         en:"After twelve months from the end of the relationship a claim is generally not heard."} }
+  ]});
+  claimAdded = true; buzz(10);
+  renderHomeReminders();
+  document.getElementById("clockBtn").textContent = t("tr_added");
 }
 
 /* ------------------------------------------------ plans & business tier */
