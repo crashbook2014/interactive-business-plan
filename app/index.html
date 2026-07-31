@@ -2410,7 +2410,13 @@ function renderObPick(slide){
     b.innerHTML = `<b></b><span></span>`;
     b.querySelector("b").textContent = t(label);
     b.querySelector("span").textContent = t(desc);
-    b.onclick = ()=>{ nat = id; buzz(8); saveState(); renderOnboard(); };
+    b.onclick = ()=>{
+      nat = id; buzz(8); saveState();
+      /* The track decides what the library and the home toggle show, so both
+         have to be rebuilt the moment it is chosen — not left showing the
+         untracked content until something else happens to re-render. */
+      renderOnboard(); renderNat(); renderLib();
+    };
     box.appendChild(b);
   });
   /* No default means no way past this card without answering. */
