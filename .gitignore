@@ -1,1 +1,6 @@
 node_modules/
+supabase/config.js
+supabase/.env
+.env
+.env.*
+*.p8
