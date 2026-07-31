@@ -470,6 +470,32 @@
   .src-line.method{font-style:italic;opacity:.8}
   .src-line[hidden]{display:none}
   .score-src{border-top:0;padding-top:0;margin-top:10px;text-align:center}
+
+  /* Rights library */
+  .lib-h{font-size:17px;color:var(--ink);margin:30px 0 4px}
+  .lib-sub{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:14px}
+  .lib-g{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--teal);
+    text-transform:uppercase;margin:20px 0 8px}
+  .lib-item{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    margin-bottom:8px;overflow:hidden}
+  .lib-item summary{list-style:none;cursor:pointer;padding:14px 16px;min-height:44px;
+    display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:700;color:var(--ink);
+    transition:background var(--t-fast) var(--ease-out)}
+  .lib-item summary::-webkit-details-marker{display:none}
+  .lib-item summary::after{content:"";margin-inline-start:auto;width:8px;height:8px;flex:none;
+    border-inline-end:2px solid var(--ink-2);border-block-end:2px solid var(--ink-2);
+    transform:rotate(45deg);transition:transform var(--t-fast) var(--ease-out)}
+  .lib-item[open] summary::after{transform:rotate(-135deg)}
+  .lib-item summary:hover{background:var(--teal-soft)}
+  .lib-a{padding:0 16px 14px}
+  .lib-a p{font-size:14px;color:var(--ink-2);line-height:1.75}
+  .lib-go{margin-top:12px;min-height:44px;padding:10px 18px;border-radius:var(--r-md);
+    background:var(--teal);color:var(--on-teal);font-size:14px;font-weight:700;
+    transition:transform var(--t-fast) var(--ease-out)}
+  .lib-go:active{transform:scale(.97)}
+  @media (prefers-reduced-motion:no-preference){
+    .lib-item[open] .lib-a{animation:rise var(--t-fast) var(--ease-out) both}
+  }
   #eosSrc{text-align:center}
   .cost-line{font-size:12.5px;color:var(--ink);background:var(--card);border-radius:var(--r-sm);
       padding:9px 12px;margin-top:9px;line-height:1.6}
@@ -1173,11 +1199,14 @@
       <span><b data-t="r_know"></b><span data-t="r_know_d"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
     </button>
-    <button class="assist-entry" onclick="openEos()">
+    <button class="assist-entry" onclick="openRightsCase()">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
       <span><b data-t="r_case"></b><span data-t="r_case_d"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
     </button>
+    <h3 class="lib-h" data-t="lib_title"></h3>
+    <p class="lib-sub" data-t="lib_sub"></p>
+    <div class="lib" id="rightsLib"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -1435,6 +1464,19 @@ const T = {
   /* Two kinds of origin, never blurred. A citation means a verified article;
      the methodology label means this is our own reading, and says so. */
   src_method:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"},
+
+  /* The rights library: grouped the way the questions actually arrive. */
+  lib_title:{ar:"أسئلة الشغل الشائعة",en:"Common employment questions"},
+  lib_sub:{ar:"إجابات قصيرة، كل وحدة ومعها مصدرها. للسعوديين وللمقيمين.",
+           en:"Short answers, each with its source. For Saudis and residents alike."},
+  lib_g_before:{ar:"قبل ما توقّع",en:"Before you sign"},
+  lib_g_during:{ar:"وأنت على رأس العمل",en:"While you're working"},
+  lib_g_ending:{ar:"لمّا ينتهي العقد",en:"When it's ending"},
+  lib_g_after:{ar:"بعد ما تترك العمل",en:"After you've left"},
+  lib_go_review:{ar:"راجع عقدي الآن",en:"Check my contract"},
+  lib_go_ask:{ar:"اسأل وضوح",en:"Ask Wodouh"},
+  lib_go_calc:{ar:"احسب مستحقي",en:"Calculate what I'm owed"},
+  lib_go_case:{ar:"جهّز الملف",en:"Build the file"},
   src_score:{ar:"التقييم من منهجية وضوح، لا من نص نظامي.",
              en:"The score comes from Wodouh's methodology, not from any statute."},
   src_eos:{ar:"الحساب وفق نظام العمل السعودي — المادتان ٨٤ و٨٥",
@@ -2219,7 +2261,7 @@ function applyLang(){
   renderOnboard();
   renderMode();
   renderHomeReminders();
-  renderTabs(); renderMyContracts();
+  renderTabs(); renderMyContracts(); renderLib();
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -2553,6 +2595,144 @@ const EOS_HOW = [
   { id:"resign", label:"eos_h_resign" },
   { id:"expiry", label:"eos_h_expiry" }
 ];
+
+/* ---------------------------------------------- the rights library
+   The Rights tab used to be three buttons. That made Wodouh a tool you
+   visit once, when you have a contract in hand. The point of the library is
+   the opposite: a place to come back to with any employment question,
+   grouped the way the questions actually arrive — before you sign, while
+   you're working, when it's ending, and after you've left.
+
+   Every entry states an origin, same two kinds as everywhere else, and
+   every article cited here is verified in docs/legal-sources.md. Entries
+   that lead somewhere hand off to the tool that acts on them rather than
+   leaving the reader to find it. */
+
+const LIB = [
+  { g:"lib_g_before", items:[
+    { q:{ar:"كم فترة التجربة النظامية؟",en:"How long can probation be?"},
+      a:{ar:"لا تتجاوز ٩٠ يومًا، وتُمدّد باتفاق مكتوب إلى ١٨٠ يومًا كحد أقصى. لازم تكون منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة.",
+         en:"Up to 90 days, extendable by written agreement to 180 at most. It has to be stated explicitly in the contract — if it isn't there, there's no probation."},
+      src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
+    { q:{ar:"كم مدة الإشعار قبل إنهاء العقد؟",en:"How much notice is required?"},
+      a:{ar:"في العقد غير محدد المدة والراتب شهري: ٦٠ يومًا إذا كان الإنهاء من صاحب العمل، و٣٠ يومًا إذا كان منك. المدة غير متساوية — انتبه لأي عقد يساوي بينهما لغير صالحك.",
+         en:"On an indefinite, monthly-paid contract: 60 days if the employer ends it, 30 days if you do. It is deliberately asymmetric — watch for any contract that levels it against you."},
+      src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"} },
+    { q:{ar:"مين يتحمّل رسوم الاستقدام والإقامة؟",en:"Who pays recruitment and Iqama fees?"},
+      a:{ar:"صاحب العمل. تشمل رسوم الاستقدام، وإصدار وتجديد الإقامة ورخصة العمل، وغرامات التأخير، وتغيير المهنة، وتأشيرة الخروج والعودة. أي بند يحمّلك إياها مخالف.",
+         en:"The employer. That covers recruitment, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, and exit/re-entry visas. Any clause charging you is contrary to the law."},
+      src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+    { q:{ar:"يحق لصاحب العمل يحجز جوازي؟",en:"Can my employer hold my passport?"},
+      a:{ar:"لا. ما يحق له يحجز جواز سفرك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت ورقة تقول غير كذا.",
+         en:"No. He may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise."},
+      src:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"} },
+    { q:{ar:"أبي أراجع عقدًا قبل التوقيع",en:"I want a contract checked before I sign"},
+      a:{ar:"ارفعه أو الصقه ونعطيك قرارًا واضحًا: توقّع، أو فاوض، أو راجع محاميًا — مع البنود اللي وراء القرار.",
+         en:"Upload or paste it and you'll get a clear decision — sign, negotiate, or see a lawyer — with the clauses behind it."},
+      go:"goHome", label:"lib_go_review" }
+  ]},
+
+  { g:"lib_g_during", items:[
+    { q:{ar:"كيف يُحسب أجر العمل الإضافي؟",en:"How is overtime paid?"},
+      a:{ar:"أجر الساعة زائد ٥٠٪ من الأجر الأساسي. احتفظ بسجل ساعاتك — هو أساس أي مطالبة لاحقة.",
+         en:"Your hourly wage plus 50% of the basic wage. Keep your own record of hours — it's the basis of any later claim."},
+      src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"} },
+    { q:{ar:"كم إجازتي السنوية؟",en:"How much annual leave do I get?"},
+      a:{ar:"٢١ يومًا على الأقل، وترتفع إلى ٣٠ يومًا على الأقل بعد خمس سنوات متصلة عند نفس صاحب العمل.",
+         en:"At least 21 days, rising to at least 30 after five continuous years with the same employer."},
+      src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"} },
+    { q:{ar:"أقدر أنقل كفالتي بدون موافقته؟",en:"Can I transfer sponsorship without approval?"},
+      a:{ar:"في حالات محددة نعم، عبر منصة قوى — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتتأكد من انطباق حالتك.",
+         en:"In defined cases yes, through the Qiwa platform — including your contract expiring, three consecutive months of unpaid wages, and an expired Iqama. Check Qiwa to confirm your case qualifies."},
+      src:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"} },
+    { q:{ar:"عندي سؤال ثاني عن عقدي",en:"I have another question about my contract"},
+      a:{ar:"اسأل وضوح مباشرة — كل جواب يجيك ومعه مرجعه.",
+         en:"Ask Wodouh directly — every answer comes with its source."},
+      go:"goAssist", label:"lib_go_ask" }
+  ]},
+
+  { g:"lib_g_ending", items:[
+    { q:{ar:"كيف تُحسب مكافأة نهاية الخدمة؟",en:"How is end-of-service pay calculated?"},
+      a:{ar:"نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر، وبالتناسب للأجزاء.",
+         en:"Half a month for each of the first five years, then a full month per year after that, on your final wage, pro-rated for part years."},
+      src:{ar:"نظام العمل السعودي — المادة ٨٤",en:"Saudi Labor Law — Article 84"},
+      go:"openEos", label:"lib_go_calc" },
+    { q:{ar:"وإذا استقلت أنا؟",en:"What if I resign?"},
+      a:{ar:"أقل من سنتين: لا شيء. من سنتين إلى خمس: الثلث. من خمس إلى عشر: الثلثان. عشر فأكثر: المكافأة كاملة.",
+         en:"Under two years: nothing. Two to five: one third. Five to ten: two thirds. Ten or more: the full award."},
+      src:{ar:"نظام العمل السعودي — المادة ٨٥",en:"Saudi Labor Law — Article 85"},
+      go:"openEos", label:"lib_go_calc" },
+    { q:{ar:"مين يتحمّل تذكرة العودة؟",en:"Who pays my return ticket?"},
+      a:{ar:"صاحب العمل، عند نهاية العلاقة. تتحمّلها أنت فقط إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع.",
+         en:"The employer, at the end of the relationship. It falls on you only if you're unfit for work or you choose to leave without legitimate reason."},
+      src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} }
+  ]},
+
+  { g:"lib_g_after", items:[
+    { q:{ar:"كم عندي وقت أرفع فيه مطالبة؟",en:"How long do I have to bring a claim?"},
+      a:{ar:"اثنا عشر شهرًا من انتهاء العلاقة. بعدها لا تُسمع الدعوى — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء.",
+         en:"Twelve months from the end of the relationship. After that a claim isn't heard — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception."},
+      src:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
+    { q:{ar:"أبي أجهّز ملف مطالبتي",en:"I want to prepare my claim"},
+      a:{ar:"احسب مستحقك أولًا، وبعدها نجمع الوقائع والمستندات في ملف واحد جاهز للتسوية أو للمحامي.",
+         en:"Calculate what you're owed first, then we gather the facts and documents into one file, ready for settlement or a lawyer."},
+      go:"openRightsCase", label:"lib_go_case" }
+  ]}
+];
+
+const LIB_GO = {
+  goHome: ()=>goTab("home"),
+  goAssist: ()=>openAssist("rights"),
+  openEos: ()=>openEos(),
+  openRightsCase: ()=>openRightsCase()
+};
+
+function renderLib(){
+  const wrap = document.getElementById("rightsLib");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  LIB.forEach(group=>{
+    const h = document.createElement("h4");
+    h.className = "lib-g";
+    h.textContent = t(group.g);
+    wrap.appendChild(h);
+
+    group.items.forEach(it=>{
+      const d = document.createElement("details");
+      d.className = "lib-item";
+      const sum = document.createElement("summary");
+      sum.textContent = it.q[lang];
+      d.appendChild(sum);
+
+      const body = document.createElement("div");
+      body.className = "lib-a";
+      const para = document.createElement("p");
+      para.textContent = it.a[lang];
+      body.appendChild(para);
+
+      /* Same rule as the rest of the app: an origin, always. */
+      const src = document.createElement("div");
+      src.className = "src-line " + (it.src ? "law" : "method");
+      src.textContent = it.src ? t("govern_by") + ": " + it.src[lang] : t("src_method");
+      body.appendChild(src);
+
+      if (it.go && LIB_GO[it.go]){
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "lib-go";
+        b.textContent = t(it.label);
+        b.onclick = LIB_GO[it.go];
+        body.appendChild(b);
+      }
+      d.appendChild(body);
+      wrap.appendChild(d);
+    });
+  });
+}
+
+/* Calculating first is deliberate — the file is built from the figure. But
+   once that figure exists, the file itself is the right destination. */
+function openRightsCase(){ if (eosData) openCase(); else openEos(); }
 
 function openEos(){ renderEos(); show("eos"); }
 
@@ -2952,7 +3132,11 @@ function openAssist(origin){
   show("assist");
   setTimeout(()=>document.getElementById("askInput").focus(), 120);
 }
-function assistBack(){ show(["result","case","casedoc"].includes(asOrigin) ? (asOrigin==="case"?"case":"result") : "home", 1); }
+function assistBack(){
+  /* The library is a tab root, so returning there is a tab move, not a pop. */
+  if (asOrigin === "rights") return goTab("rights");
+  show(["result","case","casedoc"].includes(asOrigin) ? (asOrigin==="case"?"case":"result") : "home", 1);
+}
 
 function renderCaps(){
   const wrap = document.getElementById("caps");
