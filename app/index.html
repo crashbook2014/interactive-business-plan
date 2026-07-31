@@ -456,6 +456,7 @@
   .ready .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-bottom:7px}
 
   /* plans */
+  .mode-seg{margin:10px 0 14px}
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
   .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
   html[lang="ar"] .seg button{font-weight:400;font-size:15px}
@@ -687,9 +688,10 @@
   <!-- HOME -->
   <section class="screen" id="screen-home">
     <p class="greet" id="greet"></p>
-    <h1 class="hello" data-t="hello"></h1>
+    <div class="seg mode-seg" id="modeSeg"></div>
+    <h1 class="hello" id="helloLine"></h1>
     <div class="notice" id="offlineNotice" hidden></div>
-    <p class="sub" data-t="sub"></p>
+    <p class="sub" id="subLine"></p>
     <div class="samples">
       <button class="sample" onclick="analyze('employment')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-doc"/></svg></span>
@@ -970,6 +972,19 @@ const T = {
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
+  mode_before:{ar:"قبل التوقيع",en:"Before signing"},
+  mode_signed:{ar:"وقّعته بالفعل",en:"Already signed"},
+  hello_signed:{ar:"وقّعته؟ خلنا نعرف حقوقك فيه.",en:"Signed it? Let's find out where you stand."},
+  sub_signed:{ar:"نقرأ العقد ونوضّح لك وش تقدر تسويه الحين — وش ملزم ووش قابل للاعتراض.",
+              en:"We read it and show what you can still do — what binds you and what remains contestable."},
+  rights_label:{ar:"وش تقدر تسوي الحين؟",en:"What you can do now"},
+  act_red_signed:{ar:"تستطيع الاعتراض",en:"Contestable"},
+  act_amber_signed:{ar:"يمكن معالجته",en:"Can be addressed"},
+  lb_build_signed:{ar:"ابنِ خطاب المطالبة",en:"Build your letter"},
+  lb_build_sub_signed:{ar:"أضف النقاط وأنت تقرأ — ونجمعها خطابًا ترسله الآن",
+                       en:"Add points as you read — we'll assemble a letter you can send now"},
+  lt_sub_signed:{ar:"صيغة جاهزة تطرح بها النقاط على الطرف الآخر",
+                 en:"Ready wording to raise these points with the other party"},
   hello:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
   s_clean:{ar:"عرض وظيفي واضح",en:"A clean job offer"}, s_clean_d:{ar:"عقد بلا مفاجآت — نموذج تجريبي",en:"No surprises — sample"},
   doc_clean:{ar:"عرض وظيفي",en:"Job offer"},
@@ -1271,6 +1286,7 @@ const OB = [
 const SAMPLES = {
   employment: { score:68, doc:"doc_emp",
     verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
+    vs:{ar:"عقد عادل بشكل عام — بندان يستحقان المتابعة الآن.",en:"Mostly fair — two clauses are worth raising now."},
     clauses:[
       { s:"red",
         t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
@@ -1279,14 +1295,18 @@ const SAMPLES = {
         p:{ar:"هذا البند يمنعك من العمل في مجالك في كل السعودية لمدة سنتين. النطاق واسع جدًا مقارنة بالمعتاد.",
            en:"This blocks you from working in your field anywhere in Saudi Arabia for two years. That's unusually broad."},
         a:{ar:"اطلب تضييقه: مدينة واحدة، سنة واحدة، أو حذفه إذا كانت وظيفتك لا تمس أسرار الشركة.",
-           en:"Ask to narrow it: one city, one year — or remove it if your role doesn't touch trade secrets."} },
+           en:"Ask to narrow it: one city, one year — or remove it if your role doesn't touch trade secrets."},
+        r:{ar:"الشرط الواسع لا يعني نفاذه كما كُتب: النظام يشترط تحديد المدة والمكان ونوع العمل. إذا حاولوا تطبيقه عليك، اطلب حصره كتابيًا أو نازعه.",
+           en:"A sweeping clause doesn't automatically bite: it must be limited in duration, place and type of work. If they try to enforce it, ask for it in writing narrowed — or contest it."} },
       { s:"amber",
         t:{ar:"مدة الإشعار",en:"Notice period"},
         q:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
            en:"Either party wishing to terminate must give the other sixty days' written notice."},
         p:{ar:"٦٠ يومًا مدة طويلة نسبيًا؛ الشائع ٣٠ يومًا. تقيّدك إذا جاك عرض أفضل.",
            en:"Sixty days is on the long side; thirty is common. It slows you down if a better offer comes."},
-        a:{ar:"اطلب ٣٠ يومًا، أو ٦٠ للشركة و٣٠ لك.",en:"Ask for 30 days — or 60 for the company, 30 for you."} },
+        a:{ar:"اطلب ٣٠ يومًا، أو ٦٠ للشركة و٣٠ لك.",en:"Ask for 30 days — or 60 for the company, 30 for you."},
+        r:{ar:"المدة ملزمة الآن، لكنها قابلة للتقصير بالاتفاق عند الاستقالة. اطلب موافقة كتابية على إعفائك من باقي المدة.",
+           en:"The period binds you now, but it can be shortened by agreement when you resign. Ask for written consent to waive the remainder."} },
       { s:"amber",
         t:{ar:"أجر العمل الإضافي",en:"Overtime pay"},
         q:{ar:"قد يُطلب من الموظف العمل ساعات إضافية وفق حاجة العمل.",
@@ -1294,7 +1314,9 @@ const SAMPLES = {
         p:{ar:"العقد يذكر العمل الإضافي لكن ما يوضح كيف يُدفع. الغموض هنا عادة ما يكون في غير صالحك.",
            en:"The contract mentions overtime but never says how it's paid. Vagueness here rarely works in your favor."},
         a:{ar:"اطلب كتابته صراحة: أجر الساعة الإضافية وطريقة احتسابها.",
-           en:"Ask for it in writing: the overtime rate and how it's calculated."} },
+           en:"Ask for it in writing: the overtime rate and how it's calculated."},
+        r:{ar:"سكوت العقد لا يسقط حقك — الأجر الإضافي مستحق نظامًا. احفظ سجل ساعاتك وطالب بالفرق كتابيًا.",
+           en:"The contract's silence doesn't cancel the entitlement — overtime is owed by law. Keep your hours log and claim the difference in writing."} },
       { s:"green",
         t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
         q:{ar:"راتب أساسي شهري مع بدل سكن ٢٥٪ وبدل نقل ١٠٪ يُدفع نهاية كل شهر ميلادي.",
@@ -1317,6 +1339,7 @@ const SAMPLES = {
     ]},
   clean: { score:92, doc:"doc_clean",
     verdict:{ar:"عقد واضح وعادل — ما فيه شي يحتاج تفاوض.",en:"Clear and fair — nothing here needs negotiating."},
+    vs:{ar:"عقد واضح وعادل — ما فيه شي يستدعي تصرفًا منك.",en:"Clear and fair — nothing here calls for action."},
     clauses:[
       { s:"green",
         t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
@@ -1351,6 +1374,7 @@ const SAMPLES = {
     ]},
   rental: { score:74, doc:"doc_rent",
     verdict:{ar:"عقد جيد — بس بند الإخلاء يحتاج وقفة.",en:"A decent lease — but the eviction clause needs a closer look."},
+    vs:{ar:"عقد جيد — لكن بند الإخلاء قابل للاعتراض إذا استُخدم ضدك.",en:"A decent lease — but the eviction clause is contestable if used against you."},
     clauses:[
       { s:"red",
         t:{ar:"إنهاء العقد من طرف واحد",en:"Unilateral termination"},
@@ -1359,7 +1383,9 @@ const SAMPLES = {
         p:{ar:"المؤجر يقدر يطلب منك الإخلاء خلال أسبوع واحد وبدون سبب — وأنت ما عندك نفس الحق. هذا اختلال واضح.",
            en:"The landlord can ask you to leave within one week, for no reason — and you don't get the same right. That's clearly one-sided."},
         a:{ar:"اطلب حذف البند أو جعله متبادلًا بإشعار ٦٠ يومًا للطرفين.",
-           en:"Ask to remove it, or make it mutual with 60 days' notice for both sides."} },
+           en:"Ask to remove it, or make it mutual with 60 days' notice for both sides."},
+        r:{ar:"الإخلاء بإرادة المؤجر وحده ودون سبب نظامي وإشعار معقول قابل للاعتراض. عقدك المسجّل في إيجار هو سندك — لا تُخلِ بناءً على رسالة شفهية.",
+           en:"Eviction at the landlord's sole will, with no lawful reason and no reasonable notice, is contestable. Your Ejar-registered contract is your proof — don't vacate on a verbal message."} },
       { s:"amber",
         t:{ar:"الزيادة السنوية",en:"Annual rent increase"},
         q:{ar:"تُزاد الأجرة السنوية بنسبة ١٠٪ عند كل تجديد.",
@@ -1367,7 +1393,9 @@ const SAMPLES = {
         p:{ar:"زيادة تلقائية ١٠٪ كل سنة أعلى من المعتاد في أغلب الأحياء.",
            en:"An automatic 10% yearly increase is higher than typical in most neighborhoods."},
         a:{ar:"فاوض على ٥٪ أو اربط الزيادة بمؤشر إيجار المنطقة.",
-           en:"Negotiate 5%, or tie increases to the area's rental index."} },
+           en:"Negotiate 5%, or tie increases to the area's rental index."},
+        r:{ar:"الزيادة المتفق عليها سارية لهذه المدة، لكن التجديد فرصتك: أشعر قبل نافذة عدم التجديد وفاوض أو انتقل.",
+           en:"The agreed increase stands for this term, but renewal is your opening: give notice before the non-renewal window and either negotiate or move."} },
       { s:"amber",
         t:{ar:"الصيانة",en:"Maintenance"},
         q:{ar:"يتحمل المستأجر جميع أعمال الصيانة الدورية والطارئة للعين المؤجرة.",
@@ -1375,7 +1403,9 @@ const SAMPLES = {
         p:{ar:"«جميع» تشمل الأعطال الكبيرة مثل التكييف المركزي والسباكة الرئيسية — وهذي عادة على المالك.",
            en:"'All' includes major failures like central AC and main plumbing — usually the landlord's responsibility."},
         a:{ar:"اطلب تحديدها: الصيانة البسيطة عليك، والإنشائية والكبيرة على المالك.",
-           en:"Ask to split it: minor upkeep on you, structural and major repairs on the landlord."} },
+           en:"Ask to split it: minor upkeep on you, structural and major repairs on the landlord."},
+        r:{ar:"الأعطال الإنشائية الكبرى تبقى عادة على المالك مهما اتسعت الصيغة. وثّق العطل بالصور وراسله كتابيًا قبل أي إصلاح على حسابك.",
+           en:"Major structural failures usually remain the landlord's however broadly it's worded. Photograph the fault and write to them before paying for any repair yourself."} },
       { s:"green",
         t:{ar:"التأمين (العربون)",en:"Security deposit"},
         q:{ar:"يسترد المستأجر مبلغ التأمين كاملًا خلال أربعة عشر يومًا من الإخلاء بعد المعاينة.",
@@ -1392,6 +1422,7 @@ const SAMPLES = {
     ]},
   freelance: { score:55, doc:"doc_free",
     verdict:{ar:"وقّف شوي — ثلاثة بنود تحتاج تفاوض قبل الموافقة.",en:"Hold on — three clauses need negotiating before you agree."},
+    vs:{ar:"ثلاثة بنود تستحق ملحقًا أو مطالبة من الآن.",en:"Three clauses are worth an addendum or a claim, starting now."},
     clauses:[
       { s:"red",
         t:{ar:"الملكية الفكرية",en:"Intellectual property"},
@@ -1400,7 +1431,9 @@ const SAMPLES = {
         p:{ar:"البند ما ياخذ تصميم المشروع بس — ياخذ حتى أعمالك السابقة وأدواتك. هذا تنازل أكبر بكثير من الطبيعي.",
            en:"This doesn't just take the project design — it takes your pre-existing work and tools too. Far beyond normal."},
         a:{ar:"حصر الملكية في مخرجات هذا المشروع فقط، مع ترخيص استخدام لأدواتك.",
-           en:"Limit ownership to this project's deliverables only, with a license to your tools."} },
+           en:"Limit ownership to this project's deliverables only, with a license to your tools."},
+        r:{ar:"نقل أعمالك السابقة تنازل واسع غير معتاد. اطلب ملحقًا يحصر النقل في مخرجات هذا المشروع — كثير من العملاء يوافقون لأنهم لا يحتاجون أدواتك أصلًا.",
+           en:"Handing over your pre-existing work is an unusually broad giveaway. Ask for an addendum limiting the transfer to this project's deliverables — many clients agree, since they never needed your tools."} },
       { s:"red",
         t:{ar:"التعديلات",en:"Revisions"},
         q:{ar:"يلتزم المصمم بإجراء التعديلات التي يطلبها العميل حتى القبول النهائي دون مقابل إضافي.",
@@ -1408,7 +1441,9 @@ const SAMPLES = {
         p:{ar:"تعديلات غير محدودة وبلا مقابل يعني المشروع ممكن ما يخلص أبدًا — وأنت تتحمل التكلفة.",
            en:"Unlimited free revisions means the project may never end — and you absorb the cost."},
         a:{ar:"حدد جولتين أو ثلاث جولات تعديل، وما زاد فبسعر ساعة متفق عليه.",
-           en:"Cap it at two or three revision rounds; beyond that, an agreed hourly rate."} },
+           en:"Cap it at two or three revision rounds; beyond that, an agreed hourly rate."},
+        r:{ar:"وثّق الجولات المنجزة حتى الآن، واطلب ملحقًا يحدد ما تبقى بسعر متفق عليه قبل الاستمرار.",
+           en:"Document the rounds delivered so far, and ask for an addendum pricing what remains before you continue."} },
       { s:"amber",
         t:{ar:"موعد السداد",en:"Payment terms"},
         q:{ar:"تُدفع المستحقات خلال ستين يومًا من تاريخ استلام الفاتورة.",
@@ -1416,7 +1451,9 @@ const SAMPLES = {
         p:{ar:"٦٠ يومًا بعد الفاتورة مدة طويلة على مستقل — الشائع ١٤ إلى ٣٠ يومًا.",
            en:"Sixty days after invoicing is long for a freelancer — 14 to 30 days is common."},
         a:{ar:"اطلب دفعة مقدمة ٥٠٪ وسداد الباقي خلال ١٤ يومًا من التسليم.",
-           en:"Ask for 50% upfront and the balance within 14 days of delivery."} },
+           en:"Ask for 50% upfront and the balance within 14 days of delivery."},
+        r:{ar:"الموعد ملزم، لكن ما بعده تأخر يستوجب المطالبة. أرسل إشعارًا كتابيًا يوم الاستحقاق واحتفظ بالفاتورة وإثبات التسليم.",
+           en:"The date binds, but anything past it is late and claimable. Send a written notice on the due date and keep the invoice and proof of delivery."} },
       { s:"green",
         t:{ar:"نطاق العمل",en:"Scope of work"},
         q:{ar:"يشمل المشروع تصميم هوية بصرية: شعار، وألوان، وخطوط، ودليل استخدام من عشر صفحات.",
@@ -1441,39 +1478,53 @@ const RULES = [
     p:{ar:"وجدنا بند عدم منافسة. تأكد من نطاقه الجغرافي ومدته — كثير من الصيغ تكون أوسع من اللازم.",
        en:"We found a non-compete clause. Check its geographic scope and duration — many are broader than necessary."},
     a:{ar:"اطلب تضييق النطاق والمدة، أو حذفه إن لم يمس أسرار العمل.",
-       en:"Ask to narrow the scope and duration, or remove it if trade secrets aren't involved."} },
+       en:"Ask to narrow the scope and duration, or remove it if trade secrets aren't involved."},
+    r:{ar:"الشرط الفضفاض لا يُنفَّذ تلقائيًا — النظام يشترط تحديد المدة والمكان ونوع العمل.",
+       en:"An open-ended clause isn't automatically enforceable — it must be limited in time, place and type of work."} },
   { re:/(penalt|liquidated damages|شرط\s*جزائي|غرام)/i, s:"red",
     t:{ar:"الشرط الجزائي",en:"Penalty clause"},
     p:{ar:"يوجد شرط جزائي أو غرامة. اقرأ المبلغ ومتى يُطبق — وتأكد أنه متبادل لا عليك وحدك.",
        en:"There's a penalty clause. Read the amount and trigger — and make sure it cuts both ways, not just against you."},
     a:{ar:"اطلب سقفًا معقولًا للغرامة وجعلها متبادلة بين الطرفين.",
-       en:"Ask for a reasonable cap and make it mutual."} },
+       en:"Ask for a reasonable cap and make it mutual."},
+    r:{ar:"الشرط الجزائي المبالغ فيه قابل للتخفيض إذا لم يقع ضرر بقدره — احتفظ بما يثبت حجم الضرر الفعلي.",
+       en:"An excessive penalty can be reduced where the actual harm is smaller — keep whatever evidences the real loss."} },
   { re:/(terminate.{0,30}(any\s*time|without)|إنهاء.{0,20}(أي وقت|دون))/i, s:"red",
     t:{ar:"إنهاء العقد من طرف واحد",en:"One-sided termination"},
     p:{ar:"يبدو أن أحد الأطراف يستطيع إنهاء العقد في أي وقت أو دون سبب. غالبًا هذا الحق غير متبادل.",
        en:"One party appears able to terminate at any time or without cause. Often this right isn't mutual."},
-    a:{ar:"اجعل حق الإنهاء متبادلًا وبمدة إشعار عادلة.",en:"Make termination mutual, with a fair notice period."} },
+    a:{ar:"اجعل حق الإنهاء متبادلًا وبمدة إشعار عادلة.",en:"Make termination mutual, with a fair notice period."},
+    r:{ar:"الإنهاء المفاجئ دون سبب أو إشعار قابل للاعتراض — وثّق تاريخ الإبلاغ وطريقته.",
+       en:"Abrupt termination with no reason or notice is contestable — record the date and manner you were told."} },
   { re:/(overtime|ساعات\s*إضافية|عمل\s*إضافي)/i, s:"amber",
     t:{ar:"العمل الإضافي",en:"Overtime"},
     p:{ar:"العقد يذكر عملًا إضافيًا. تأكد أن أجره وطريقة حسابه مكتوبة صراحة.",
        en:"The contract mentions overtime. Make sure its rate and calculation are stated explicitly."},
-    a:{ar:"اطلب كتابة أجر الساعة الإضافية بوضوح.",en:"Ask for the overtime rate in writing."} },
+    a:{ar:"اطلب كتابة أجر الساعة الإضافية بوضوح.",en:"Ask for the overtime rate in writing."},
+    r:{ar:"الأجر الإضافي مستحق نظامًا ولو سكت العقد — احفظ سجل ساعاتك.",
+       en:"Overtime is owed by law even if the contract is silent — keep your hours log."} },
   { re:/(notice\s*period|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day))/i, s:"amber",
     t:{ar:"مدة الإشعار",en:"Notice period"},
     p:{ar:"انتبه لمدة الإشعار المطلوبة قبل إنهاء العقد — المدد الطويلة تقيّد حركتك.",
        en:"Watch the required notice period — long ones limit your flexibility."},
-    a:{ar:"الشائع ٣٠ يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."} },
+    a:{ar:"الشائع ٣٠ يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."},
+    r:{ar:"يمكن الاتفاق على إعفائك من باقي المدة عند الاستقالة — اطلبه كتابيًا.",
+       en:"The remainder can be waived by agreement when you resign — get it in writing."} },
   { re:/(auto[- ]?renew|تجديد\s*تلقائي)/i, s:"amber",
     t:{ar:"التجديد التلقائي",en:"Auto-renewal"},
     p:{ar:"العقد يتجدد تلقائيًا. لا بأس بذلك إذا كانت مهلة الاعتراض واضحة ومعقولة.",
        en:"The contract auto-renews. That's fine if the opt-out window is clear and reasonable."},
     a:{ar:"سجّل موعد الاعتراض في تقويمك واطلب تذكيرًا كتابيًا قبله.",
-       en:"Note the opt-out date and ask for a written reminder before it."} },
+       en:"Note the opt-out date and ask for a written reminder before it."},
+    r:{ar:"إن فات الموعد فالتجديد سارٍ — لكن أرسل إشعارك مبكرًا للدورة القادمة من الآن.",
+       en:"If the window passed, the renewal stands — but send your notice early for the next cycle now."} },
   { re:/(intellectual\s*property|ملكية\s*فكرية|جميع\s*(الأعمال|الحقوق))/i, s:"amber",
     t:{ar:"الملكية الفكرية",en:"Intellectual property"},
     p:{ar:"يوجد بند ملكية فكرية. تأكد أنه محصور في مخرجات هذا الاتفاق ولا يشمل أعمالك السابقة.",
        en:"There's an IP clause. Make sure it's limited to this agreement's deliverables, not your past work."},
-    a:{ar:"احصر النقل في مخرجات المشروع فقط.",en:"Limit the transfer to project deliverables only."} },
+    a:{ar:"احصر النقل في مخرجات المشروع فقط.",en:"Limit the transfer to project deliverables only."},
+    r:{ar:"اطلب ملحقًا يحصر النقل في مخرجات هذا الاتفاق دون أعمالك السابقة.",
+       en:"Ask for an addendum limiting the transfer to this agreement's deliverables, excluding your prior work."} },
   { re:/(probation|فترة\s*التجربة)/i, s:"green",
     t:{ar:"فترة التجربة",en:"Probation period"},
     p:{ar:"فترة تجربة موثقة — أمر طبيعي. تأكد فقط ألا تتجاوز المدد المعتادة.",
@@ -1505,7 +1556,12 @@ function analyzePasted(text){
   else if (ambers) verdict = {ar:"لا يوجد ما يقلق — لكن فيه نقاط تستاهل التفاوض.",
                               en:"Nothing alarming — but a few points are worth negotiating."};
   else verdict = {ar:"ما وجدنا مؤشرات خطر في النص المرسل.",en:"We found no risk signals in the submitted text."};
-  return { score, doc:"doc_pasted", verdict, clauses };
+  const vsigned = reds
+    ? {ar:"فيه بنود تستحق الاعتراض — ابدأ بالتنبيهات الحمراء.",en:"Some clauses are worth contesting — start with the red flags."}
+    : ambers
+      ? {ar:"لا يوجد ما يقلق — لكن فيه نقاط تستحق المتابعة.",en:"Nothing alarming — but a few points are worth following up."}
+      : {ar:"ما وجدنا مؤشرات خطر في النص المرسل.",en:"We found no risk signals in the submitted text."};
+  return { score, doc:"doc_pasted", verdict, vs:vsigned, clauses };
 }
 
 /* --------------------------------------------------------------- state */
@@ -1536,6 +1592,7 @@ function applyLang(){
   document.getElementById("deskSub").textContent = t("desk_sub");
   document.getElementById("deskMeta").textContent = t("desk_meta");
   renderOnboard();
+  renderMode();
   renderHomeReminders();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -1650,7 +1707,8 @@ function scoreBand(n){ return n>=80 ? "great" : n>=60 ? "good" : n>=40 ? "fair" 
 
 function renderResult(reset){
   document.querySelector(".score-card").dataset.band = scoreBand(current.score);
-  document.getElementById("verdict").textContent = current.verdict[lang];
+  document.getElementById("verdict").textContent =
+    (signedMode && current.vs ? current.vs : current.verdict)[lang];
   document.getElementById("docLabel").textContent = t(current.doc);
   if (reset){
     document.getElementById("scoreNum").textContent = "0";
@@ -1675,8 +1733,9 @@ function renderResult(reset){
   current.clauses.forEach((c,idx)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s;
-    const tip = c.a
-      ? `<div class="tip"><b>${t("what_to_do")}:</b> ${c.a[lang]}</div>${addBtnHtml(idx)}`
+    const adv = adviceFor(c);
+    const tip = adv
+      ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${addBtnHtml(idx)}`
       : "";
     div.innerHTML =
       `<button aria-expanded="false" onclick="toggleFlag(this)">
@@ -2322,8 +2381,8 @@ function answerSummary(){
   const amb = current.clauses.filter(c=>c.s==="amber").length;
   const grn = current.clauses.filter(c=>c.s==="green").length;
   const head = lang==="ar"
-    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من ١٠٠.\n${current.verdict.ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
-    : `${t(current.doc)} — scored ${current.score} out of 100.\n${current.verdict.en}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
+    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من ١٠٠.\n${(signedMode&&current.vs?current.vs:current.verdict).ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
+    : `${t(current.doc)} — scored ${current.score} out of 100.\n${(signedMode&&current.vs?current.vs:current.verdict).en}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
   const lines = current.clauses.map(c=>`• ${c.t[lang]} — ${c.p[lang]}`).join("\n");
   return { text: head + "\n\n" + lines };
 }
@@ -2446,6 +2505,27 @@ function renderTrackTease(){
   document.getElementById("trackTitle").textContent = t(isTracked() ? "tr_on_title" : "tr_title");
   document.getElementById("trackSub").textContent = t(isTracked() ? "tr_on_sub" : "tr_sub");
 }
+function renderMode(){
+  const seg = document.getElementById("modeSeg");
+  seg.innerHTML = "";
+  [[false,"mode_before"],[true,"mode_signed"]].forEach(([v,lbl])=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = signedMode===v ? "on" : "";
+    b.textContent = t(lbl);
+    b.onclick = ()=>{
+      if (signedMode === v) return;
+      signedMode = v; buzz(8); renderMode();
+      /* An analysis already on screen is re-framed, never recomputed —
+         the findings are the same, only the question changed. */
+      if (current){ renderResult(false); renderClauses(); renderTease(); syncAddButtons(); }
+    };
+    seg.appendChild(b);
+  });
+  document.getElementById("helloLine").textContent = t(signedMode ? "hello_signed" : "hello");
+  document.getElementById("subLine").textContent = t(signedMode ? "sub_signed" : "sub");
+}
+
 function renderHomeReminders(){
   /* Always present, so the feature (and its empty state) is discoverable
      before the first contract is ever tracked. */
@@ -2488,6 +2568,16 @@ function renderTimeline(){
    not generated after the fact. Each negotiable clause can be added as you
    go, and the letter contains exactly what you chose — in contract order. */
 let letterSet = new Set();
+/* Already-signed mode keeps the same analysis but changes the question from
+   "should I sign this?" to "what can I still do about it?" */
+let signedMode = false;
+
+function adviceFor(c){ return signedMode && c.r ? c.r : c.a; }
+function actionLabel(sv){
+  if (sv === "green") return t("act_green");
+  if (signedMode) return t(sv === "red" ? "act_red_signed" : "act_amber_signed");
+  return t(sv === "red" ? "act_red" : "act_amber");
+}
 
 function selected(){
   if (!current) return [];
@@ -2547,11 +2637,11 @@ function renderTease(){
   const title = tease.querySelector("b"), sub = title.nextElementSibling;
   tease.classList.toggle("building", n > 0);
   if (n === 0){
-    title.textContent = t("lb_build");
-    sub.textContent = t("lb_build_sub");
+    title.textContent = t(signedMode ? "lb_build_signed" : "lb_build");
+    sub.textContent = t(signedMode ? "lb_build_sub_signed" : "lb_build_sub");
   } else {
     title.textContent = n === 1 ? t("lb_ready1") : t("lb_ready").replace("{n}", fmtNum(n));
-    sub.textContent = t("lt_sub");
+    sub.textContent = t(signedMode ? "lt_sub_signed" : "lt_sub");
   }
 }
 
@@ -2586,11 +2676,18 @@ function buildLetter(){
   const items = selected();
   const list = items.map((c,i)=>{
     const n = lang==="ar" ? AR_NUM[i] : String(i+1);
-    return `${n}. ${c.t[lang]}: ${c.a[lang]}`;
+    return `${n}. ${c.t[lang]}: ${adviceFor(c)[lang]}`;
   }).join("\n");
-  if (lang==="ar")
-    return `السلام عليكم ورحمة الله،\n\nاطلعت على ${t(current.doc)} المعروض، وأشكركم على الثقة. قبل التوقيع، أتمنى مناقشة النقاط التالية:\n\n${list}\n\nواثق أننا نصل لصيغة عادلة للطرفين، وحاضر لأي نقاش.\n\nمع خالص التحية،\n[اسمك]`;
-  return `Dear Sir or Madam,\n\nThank you for sending the ${t(current.doc).toLowerCase()}. Before signing, I would like to discuss the following points:\n\n${list}\n\nI'm confident we can reach wording that is fair to both sides, and I'm happy to talk any of this through.\n\nBest regards,\n[Your name]`;
+  if (lang==="ar"){
+    const open = signedMode
+      ? `بالإشارة إلى ${t(current.doc)} الموقّع بيننا، أود طرح النقاط التالية:`
+      : `اطلعت على ${t(current.doc)} المعروض، وأشكركم على الثقة. قبل التوقيع، أتمنى مناقشة النقاط التالية:`;
+    return `السلام عليكم ورحمة الله،\n\n${open}\n\n${list}\n\nواثق أننا نصل لصيغة عادلة للطرفين، وحاضر لأي نقاش.\n\nمع خالص التحية،\n[اسمك]`;
+  }
+  const openEn = signedMode
+    ? `Regarding the ${t(current.doc).toLowerCase()} signed between us, I would like to raise the following points:`
+    : `Thank you for sending the ${t(current.doc).toLowerCase()}. Before signing, I would like to discuss the following points:`;
+  return `Dear Sir or Madam,\n\n${openEn}\n\n${list}\n\nI'm confident we can reach wording that is fair to both sides, and I'm happy to talk any of this through.\n\nBest regards,\n[Your name]`;
 }
 
 function openPaywall(){
@@ -2719,8 +2816,9 @@ function renderClauses(){
     div.className = "clause " + c.s;
     const q = lang==="ar" ? ["«","»"] : ["\u201C","\u201D"];
     const quote = c.q ? `<div class="quote">${q[0]}${c.q[lang]}${q[1]}</div>` : "";
-    const act = t(c.s==="red"?"act_red":c.s==="amber"?"act_amber":"act_green");
-    const advice = c.a ? ` ${c.a[lang]}` : "";
+    const act = actionLabel(c.s);
+    const adv = adviceFor(c);
+    const advice = adv ? ` ${adv[lang]}` : "";
     div.innerHTML =
       `<div class="head"><span class="stripe"></span><h4>${c.t[lang]}</h4></div>
        ${quote}
