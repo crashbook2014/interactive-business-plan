@@ -178,6 +178,8 @@
   .price .amt{font-family:var(--en);font-size:32px;font-weight:800;letter-spacing:-.03em;color:var(--ink);margin:10px 0 4px}
   .price .amt small{font-size:13px;font-weight:700;color:var(--ink-2);letter-spacing:0;margin-inline-start:5px}
   .price p{font-size:13.5px;color:var(--ink-2)}
+  .price .get{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--ink)}
+  .vat{margin-top:12px;text-align:center;font-size:13px;color:var(--ink-2)}
   .anchor{margin-top:26px;background:var(--teal-soft);border-radius:var(--r-md);padding:14px 18px;
     font-size:14.5px;color:var(--ink);text-align:center}
 
@@ -318,11 +320,12 @@
     <h2 data-t="price_h"></h2>
     <p class="sec-lede" data-t="price_p"></p>
     <div class="prices">
-      <div class="price"><h3 data-t="p1"></h3><div class="amt" data-t="p1a"></div><p data-t="p1p"></p></div>
-      <div class="price hi"><span class="tag" data-t="p2t"></span><h3 data-t="p2"></h3><div class="amt" id="p2a"></div><p data-t="p2p"></p></div>
-      <div class="price"><h3 data-t="p3"></h3><div class="amt" id="p3a"></div><p data-t="p3p"></p></div>
+      <div class="price"><h3 data-t="p1"></h3><div class="amt" data-t="p1a"></div><p data-t="p1p"></p><p class="get" data-t="p1g"></p></div>
+      <div class="price hi"><span class="tag" data-t="p2t"></span><h3 data-t="p2"></h3><div class="amt" id="p2a"></div><p data-t="p2p"></p><p class="get" data-t="p2g"></p></div>
+      <div class="price"><h3 data-t="p3"></h3><div class="amt" id="p3a"></div><p data-t="p3p"></p><p class="get" data-t="p3g"></p></div>
     </div>
     <p class="anchor" data-t="price_anchor"></p>
+    <p class="vat" data-t="price_vat"></p>
   </div>
 </section>
 
@@ -428,7 +431,16 @@ const T = {
   p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
   p3:{ar:"ملف القضية",en:"Case file"},
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
-  price_anchor:{ar:"للمقارنة: استشارة محامٍ تبدأ عادة من ٥٠٠ ر.س للساعة.",en:"For comparison: a lawyer consultation typically starts at 500 SAR an hour."},
+  price_anchor:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
+                en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
+  price_vat:{ar:"الأسعار شاملة ضريبة القيمة المضافة (١٥٪) · ما أعجبك؟ نرجّع لك المبلغ.",
+             en:"Prices include 15% VAT · Not happy? We refund you."},
+  p1g:{ar:"تحصل على: تقييم كامل، كل بند مشروح، وحاسبة نهاية الخدمة.",
+       en:"You get: the full score, every clause explained, and the calculator."},
+  p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
+       en:"You get: a complete editable letter in Arabic and English, built from your clauses."},
+  p3g:{ar:"تحصل على: ملف يجمع الوقائع والمطالبة بالأرقام وقائمة مستنداتك.",
+       en:"You get: a file with the facts, the claim in figures, and your document list."},
 
   k_trust:{ar:"الثقة",en:"Trust"},
   trust_h:{ar:"نقول لك بالضبط وش نسوي — ووش ما نسويه.",en:"We tell you exactly what we do — and what we don't."},
@@ -449,13 +461,17 @@ const T = {
     ["هل يغني عن المحامي؟","لا. وضوح يشرح ويجهّز ويوضّح خياراتك. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا مرخّصًا — ونوصّلك به وملفك جاهز."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
     ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
-    ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."]
+    ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
+    ["الأسعار شاملة الضريبة؟","نعم، كل الأسعار المعروضة شاملة ضريبة القيمة المضافة ١٥٪ — ما فيه مبالغ تظهر لك عند الدفع."],
+    ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."]
   ], en:[
     ["Do you keep my contract?","No. It's read and analyzed inside the app on your device — never uploaded, never stored. Delete the app and it all goes with it."],
     ["Does this replace a lawyer?","No. Wodouh explains, prepares, and clarifies your options. For a real dispute or large sums you need a licensed lawyer — and we connect you with one, file already prepared."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
     ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
-    ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."]
+    ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
+    ["Do prices include VAT?","Yes — every price shown includes 15% VAT. Nothing extra appears at checkout."],
+    ["What if the letter isn't useful?","We refund you, no questions. You're paying for an output you actually use, not for a trial."]
   ]},
 
   close_h:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
@@ -476,7 +492,7 @@ function applyLang(){
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
-  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٢٩" : "29") + `<small>${sar}</small>`;
+  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٤٩" : "49") + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = (lang==="ar" ? "٢٤٩" : "249") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><p>${a}</p></details>`

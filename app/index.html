@@ -274,11 +274,14 @@
   .preview{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:22px;overflow:hidden;box-shadow:var(--e2),var(--edge)}
   .preview .ltr-head{font-size:13px;color:var(--ink-2);margin-bottom:10px}
   .preview .body{font-size:14px;line-height:1.9;color:var(--ink)}
-  .preview .fog{filter:blur(5px);user-select:none;pointer-events:none}
-  .preview .veil{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 18%,var(--card) 82%)}
-  .preview .veil-lock{position:absolute;inset-inline:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink-2);font-size:13px}
-  .preview .veil-lock .lk{width:40px;height:40px;border-radius:999px;background:var(--teal);display:flex;align-items:center;justify-content:center}
-  .preview .veil-lock .lk svg{width:19px;height:19px}
+  .locked-row{display:flex;align-items:center;gap:11px;margin-top:16px;padding-top:15px;
+      border-top:1px dashed var(--line);color:var(--ink-2);font-size:13.5px}
+  .locked-row .lk{flex:none;width:32px;height:32px;border-radius:999px;background:var(--teal);
+      display:flex;align-items:center;justify-content:center}
+  .locked-row .lk svg{width:16px;height:16px}
+  .guarantee{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+      font-size:13px;color:var(--green)}
+  .guarantee svg{flex:none;width:16px;height:16px}
   .plans{display:grid;gap:10px;margin-top:14px}
   .plan{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);padding:13px 15px;text-align:start;transition:border-color .15s}
   .plan.sel{border-color:var(--teal);background:var(--teal-soft)}
@@ -289,7 +292,9 @@
   .plan span{font-size:12px;color:var(--ink-2);line-height:1.5;display:block}
   .plan .price{margin-inline-start:auto;font-family:var(--en);font-weight:800;font-size:16px;color:var(--teal-ink);white-space:nowrap}
   .plan .badge{display:inline-block;font-size:10.5px;font-weight:700;color:var(--amber-ink);background:var(--amber-bg);border-radius:99px;padding:1px 8px;margin-inline-start:6px;vertical-align:middle}
-  .pay-methods{display:flex;justify-content:center;gap:8px;margin-top:10px;font-size:11.5px;color:var(--ink-2)}
+  .pay-methods{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+      font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
+  .pay-methods svg{width:14px;height:14px;color:var(--teal)}
   .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
   .acc-anchor{text-align:center;font-size:12px;color:var(--ink);background:var(--teal-soft);
@@ -913,16 +918,19 @@
     <div class="preview">
       <div class="ltr-head" id="pwPreviewHead"></div>
       <div class="body" id="pwPreviewIntro"></div>
-      <div class="body fog" id="pwPreviewFog" aria-hidden="true"></div>
-      <div class="veil"></div>
-      <div class="veil-lock">
+      <div class="locked-row">
         <span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
         <span id="pwLockLine"></span>
       </div>
     </div>
+    <p class="guarantee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg><span data-t="guarantee"></span></p>
     <div class="plans" id="plans"></div>
     <button class="primary" id="payBtn" onclick="pwPay()"></button>
-    <div class="pay-methods"><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i></div>
+    <div class="pay-methods">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      <span data-t="secure_pay"></span><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i>
+    </div>
+    <p class="demo-tag" data-t="vat_line"></p>
     <p class="acc-anchor" data-t="anchor_price"></p>
     <p class="demo-tag" data-t="pw_demo"></p>
     <p class="disclaimer" data-t="disclaimer"></p>
@@ -1201,8 +1209,15 @@ const T = {
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. المراجع في هذا النموذج توضيحية وتحتاج تحققًا من النص الرسمي.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. References in this prototype are illustrative and need checking against the official text."},
   acc_lang:{ar:"اللغة",en:"Language"},
-  anchor_price:{ar:"للمقارنة: استشارة محامٍ تبدأ عادة من ٥٠٠ ر.س للساعة.",
-                en:"For comparison: a lawyer consultation typically starts at 500 SAR an hour."},
+  anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
+                en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
+  vat_line:{ar:"الأسعار شاملة ضريبة القيمة المضافة (١٥٪).",en:"Prices include 15% VAT."},
+  guarantee:{ar:"ما أعجبك؟ نرجّع لك المبلغ — بدون أسئلة.",en:"Not happy? We refund you — no questions."},
+  secure_pay:{ar:"دفع آمن",en:"Secure payment"},
+  pw_more:{ar:"+ {n} بنود أخرى في الخطاب الكامل",en:"+ {n} more points in the full letter"},
+  pw_more1:{ar:"+ بند واحد آخر في الخطاب الكامل",en:"+ 1 more point in the full letter"},
+  pw_more_case:{ar:"بقية الوقائع والمستندات والمطالبة في الملف الكامل",
+                en:"The rest of the facts, documents and claim are in the full file"},
   mode_before:{ar:"قبل التوقيع",en:"Before signing"},
   mode_signed:{ar:"وقّعته بالفعل",en:"Already signed"},
   hello_signed:{ar:"وقّعته؟ خلنا نعرف حقوقك فيه.",en:"Signed it? Let's find out where you stand."},
@@ -1280,7 +1295,8 @@ const T = {
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
   pw_demo:{ar:"نموذج تجريبي — لا يوجد دفع حقيقي.",en:"Prototype — no real payment happens."},
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
-  plan_letter_d:{ar:"صيغة جاهزة لكل بند مُعلَّم — عربي وإنجليزي",en:"Ready wording for every flagged clause — Arabic & English"},
+  plan_letter_d:{ar:"نص كامل قابل للتعديل، بالعربي والإنجليزي، مبني على البنود التي اخترتها",
+                 en:"Full editable text in Arabic and English, built from the points you chose"},
   plan_lawyer:{ar:"خطاب + مراجعة محامٍ",en:"Letter + lawyer review"},
   plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
   plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
@@ -1379,8 +1395,8 @@ const T = {
   pw_case_free:{ar:"الحساب والتقييم مجانيان — الملف المنسّق إضافة اختيارية.",
                 en:"The calculation and assessment are free — the assembled file is optional."},
   plan_case:{ar:"ملف القضية",en:"Case file"},
-  plan_case_d:{ar:"ملف منسّق بالعربي والإنجليزي — مطالبتك ومستنداتك ووقائعك",
-               en:"A formatted bilingual file — your claim, documents, and the facts"},
+  plan_case_d:{ar:"ملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، وقائمة مستنداتك",
+               en:"A formatted bilingual file: the facts, the claim in figures, and your document list"},
   plan_case_lawyer:{ar:"الملف + محامٍ مرخّص",en:"File + licensed lawyer"},
   plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال ٢٤ ساعة",
                       en:"A Saudi lawyer reviews your file and replies within 24h"},
@@ -3118,7 +3134,7 @@ function openLetterFlow(){
 /* ------------------------------------- negotiation letter + paywall */
 let pwPlan = 0, pwPaid = false;
 const PLANS = [
-  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٢٩ ر.س",en:"29 SAR"}, pop:false },
+  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٤٩ ر.س",en:"49 SAR"}, pop:false },
   { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:true }
 ];
 /* A claim has money on the table, so the file prices well above the letter. */
@@ -3162,20 +3178,32 @@ function openPaywall(){
 }
 
 function renderPaywall(){
-  /* Prototype only: the locked copy is real text behind a CSS blur, which is
-     readable via devtools. A production build must render placeholder lines
-     and fetch the letter after payment. */
+  /* Only the revealed portion is rendered; the withheld points never enter
+     the DOM before payment. */
   const isCase = pwMode === "case";
   if (isCase ? !eosData : (!current || !selected().length)) return;
   document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(isCase ? "pw_case_title" : "pw_title");
   document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(isCase ? "pw_case_free" : "pw_free_note");
+  /* Show one complete point rather than blurring everything: concealment reads
+     as evasion, while real withheld value reads as value. It also means no
+     unpaid text is sitting in the DOM behind a CSS filter. */
   const full = isCase ? buildCaseDoc() : buildLetter();
   const lines = full.split("\n");
   document.getElementById("pwPreviewHead").textContent =
     isCase ? t("cf_title") : LETTER_TO[current.doc][lang];
-  document.getElementById("pwPreviewIntro").textContent = lines.slice(0,3).join("\n");
-  document.getElementById("pwPreviewFog").textContent = lines.slice(3).join("\n");
-  document.getElementById("pwLockLine").textContent = t("pw_lock");
+  let shown, rest;
+  if (isCase){
+    shown = lines.slice(0, 5).join("\n");
+    rest = t("pw_more_case");
+  } else {
+    const firstPoint = lines.findIndex(l=>/^\s*[١٢٣٤٥1-5]\./.test(l));
+    const cut = firstPoint >= 0 ? firstPoint + 1 : 4;
+    shown = lines.slice(0, cut).join("\n");
+    const remaining = Math.max(0, selected().length - 1);
+    rest = remaining === 1 ? t("pw_more1") : t("pw_more").replace("{n}", fmtNum(remaining));
+  }
+  document.getElementById("pwPreviewIntro").textContent = shown;
+  document.getElementById("pwLockLine").textContent = rest;
   const wrap = document.getElementById("plans");
   wrap.innerHTML = "";
   activePlans().forEach((pl,i)=>{
