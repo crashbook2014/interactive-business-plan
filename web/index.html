@@ -30,6 +30,11 @@
     --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:22px; --r-2xl:28px;
     --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,sans-serif;
     --ar:'Noto Naskh Arabic','Geeza Pro','Amiri',serif;
+    /* Same rhythm as the app: entrances decelerate, confirmations overshoot. */
+    --t-fast:160ms; --t:240ms; --t-slow:360ms;
+    --ease-out:cubic-bezier(.22,.72,.28,1);
+    --ease-spring:cubic-bezier(.22,1.2,.36,1);
+    --ease-move:cubic-bezier(.4,0,.2,1);
   }
   @media (prefers-color-scheme: dark){
     :root{--teal:#3E9A8B;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B;--sand:#141B19;--card:#1B2422;
@@ -70,6 +75,70 @@
   }
   .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
   section{padding:clamp(56px,8vw,104px) 0}
+
+  /* ---- motion layer (additive) ---- */
+
+  /* Reveal on scroll. JS adds .rv, so content is visible without JS. */
+  .rv{opacity:0;transform:translateY(22px)}
+  .rv.in{opacity:1;transform:none;
+    transition:opacity var(--t-slow) var(--ease-out),transform var(--t-slow) var(--ease-out)}
+  .rv-d1{transition-delay:60ms} .rv-d2{transition-delay:120ms} .rv-d3{transition-delay:180ms}
+
+  /* Hero arrives in sequence rather than all at once */
+  .hero-seq>*{opacity:0;transform:translateY(18px);
+    animation:hero-in var(--t-slow) var(--ease-out) forwards}
+  .hero-seq>*:nth-child(1){animation-delay:80ms}
+  .hero-seq>*:nth-child(2){animation-delay:160ms}
+  .hero-seq>*:nth-child(3){animation-delay:240ms}
+  .hero-seq>*:nth-child(4){animation-delay:320ms}
+  .hero-seq>*:nth-child(5){animation-delay:400ms}
+  @keyframes hero-in{to{opacity:1;transform:none}}
+  .shot{animation:shot-in 560ms var(--ease-spring) 200ms both}
+  @keyframes shot-in{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+
+  /* Nav condenses once you leave the hero */
+  .nav{transition:height var(--t) var(--ease-move),box-shadow var(--t) var(--ease-out),
+       background var(--t) var(--ease-out)}
+  .nav .wrap{transition:height var(--t) var(--ease-move)}
+  .nav.tight .wrap{height:56px}
+  .nav.tight{box-shadow:var(--e1)}
+  .brand svg,.brand .ar{transition:transform var(--t) var(--ease-move)}
+  .nav.tight .brand svg{transform:scale(.88)}
+
+  /* Cards lift on hover, compress on press — depth reads as physical */
+  .quote,.step,.feat,.price,details{transition:transform var(--t-fast) var(--ease-spring),
+    box-shadow var(--t-fast) var(--ease-out),border-color var(--t-fast) var(--ease-out)}
+  @media (hover:hover){
+    .quote:hover,.step:hover,.feat:hover,.price:hover{transform:translateY(-3px);box-shadow:var(--e2),var(--edge)}
+  }
+  .btn:active{transform:scale(.97)}
+  .price:active,.feat:active{transform:scale(.99)}
+
+  /* FAQ opens smoothly — details does not animate on its own */
+  details .ans{display:grid;grid-template-rows:0fr;
+    transition:grid-template-rows var(--t) var(--ease-move)}
+  details[open] .ans{grid-template-rows:1fr}
+  details .ans>div{overflow:hidden}
+  summary{transition:color var(--t-fast) var(--ease-out)}
+  summary:hover{color:var(--teal)}
+
+  /* Score rows draw their ticks in as the card arrives */
+  .shot .row{opacity:0;transform:translateX(calc(var(--dir,1) * -10px));
+    animation:row-in var(--t) var(--ease-out) forwards}
+  .shot .row:nth-of-type(1){animation-delay:620ms}
+  .shot .row:nth-of-type(2){animation-delay:700ms}
+  .shot .row:nth-of-type(3){animation-delay:780ms}
+  @keyframes row-in{to{opacity:1;transform:none}}
+
+  /* Parallax on the hero card — decorative, capped */
+  .shot{will-change:transform}
+
+  @media (prefers-reduced-motion: reduce){
+    .rv,.rv.in,.hero-seq>*,.shot,.shot .row{
+      opacity:1 !important;transform:none !important;animation:none !important;transition:none !important}
+    details .ans{grid-template-rows:1fr !important;transition:none !important}
+    .quote:hover,.step:hover,.feat:hover,.price:hover{transform:none !important}
+  }
 
   /* nav */
   .nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--sand) 86%, transparent);
@@ -236,7 +305,7 @@
 <main>
 <section class="hero">
   <div class="wrap">
-    <div>
+    <div class="hero-seq">
       <span class="eyebrow">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/></svg>
         <span data-t="hero_eyebrow"></span>
@@ -496,6 +565,7 @@ const t = k => T[k][lang];
 
 function applyLang(){
   document.documentElement.lang = lang;
+  if (typeof setDir === "function") setDir();
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   document.title = lang === "ar" ? "وضوح — اقرأ عقدك قبل ما توقّع" : "Wodouh — read your contract before you sign";
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
@@ -505,10 +575,47 @@ function applyLang(){
   document.getElementById("p4a").innerHTML = (lang==="ar" ? "١٣٠" : "130") + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٢٥" : "325") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
-    `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><p>${a}</p></details>`
+    `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
 }
 function toggleLang(){ lang = lang === "ar" ? "en" : "ar"; applyLang(); }
+
+/* ---- motion layer: additive, and never a prerequisite for content ---- */
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+/* Reveal on scroll. Elements are visible in markup; JS opts them in, so a
+   failure here can never hide a section. */
+function armReveals(){
+  if (REDUCED.matches || !("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
+  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
+    .forEach((el,i)=>{
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.9){ el.classList.add("rv","in"); return; }
+      el.classList.add("rv");
+      const within = i % 3;
+      if (within) el.classList.add("rv-d" + within);
+      io.observe(el);
+    });
+}
+
+/* Nav condensation and a capped parallax drift on the hero card. */
+function onScroll(){
+  const nav = document.querySelector(".nav");
+  if (nav) nav.classList.toggle("tight", window.scrollY > 90);
+  if (REDUCED.matches) return;
+  const shot = document.querySelector(".shot");
+  if (shot && window.scrollY < 900){
+    const d = Math.max(-14, Math.min(14, window.scrollY * -0.045));
+    shot.style.transform = "translateY(" + d + "px)";
+  }
+}
+
+/* Direction token so the score rows slide in from the reading edge. */
+function setDir(){
+  document.documentElement.style.setProperty("--dir", lang === "ar" ? "-1" : "1");
+}
 
 /* the hero score counts up once, when it first comes into view */
 function animateScore(){
@@ -523,6 +630,9 @@ function animateScore(){
 }
 
 applyLang();
+armReveals();
+window.addEventListener("scroll", onScroll, { passive:true });
+onScroll();
 const shot = document.querySelector(".shot");
 if (window.matchMedia("(prefers-reduced-motion: reduce)").matches){
   document.getElementById("arc").style.strokeDashoffset = String(333 * 0.32);
