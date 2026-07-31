@@ -113,8 +113,11 @@
   }
   button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px}
+  h1:focus,h2:focus{outline:none}
   ::selection{background:color-mix(in srgb, var(--teal) 22%, transparent);color:var(--ink)}
   .app{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0 0 0 0);white-space:nowrap;border:0}
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
       transition-duration:.01ms !important;scroll-behavior:auto !important}
@@ -230,6 +233,9 @@
       font-family:var(--en);letter-spacing:.06em}
   .verdict{font-size:18.5px;color:var(--ink);line-height:1.75;text-wrap:balance;margin-top:2px}
   .doc-label{display:inline-block;margin-top:12px;font-size:12.5px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 14px;font-weight:700}
+  .how-built{display:block;margin:10px auto 0;font-size:12px;color:var(--ink-2);
+      border-bottom:1px solid var(--line);padding-bottom:1px}
+  .how-built:hover{color:var(--teal)}
   .legend{display:flex;justify-content:center;gap:14px;margin-top:14px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .legend i{font-style:normal;display:inline-block;width:9px;height:9px;border-radius:99px;margin-inline-end:5px}
   .flags{margin-top:16px;display:grid;gap:10px}
@@ -375,6 +381,45 @@
   .letter-tease.building .lock{background:var(--teal)}
   .letter-tease.building{background:var(--teal-soft);border-color:var(--teal)}
   .letter-tease.building .go{color:var(--teal)}
+
+  /* file intake */
+  .intake{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:4px}
+  .intake.over .up-main{border-color:var(--teal);background:var(--teal-soft)}
+  .up-main{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+      border-radius:var(--r-lg);padding:14px 15px;cursor:pointer;box-shadow:var(--e1),var(--edge);
+      transition:border-color .15s,background .15s}
+  .up-main:hover{border-color:var(--teal)}
+  .up-main .ic{flex:none;width:38px;height:38px;border-radius:var(--r-sm);background:var(--teal);
+      display:flex;align-items:center;justify-content:center;box-shadow:var(--e1)}
+  .up-main .ic svg{width:19px;height:19px}
+  .up-main b{display:block;font-size:14.5px;color:var(--ink)}
+  .up-main span span{font-size:12px;color:var(--ink-2)}
+  .up-main.busy{opacity:.6;pointer-events:none}
+  .up-main.busy .ic{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .up-photo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+      width:74px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+      color:var(--ink-2);font-size:11px;box-shadow:var(--e1),var(--edge);transition:color .15s,border-color .15s}
+  .up-photo:hover{color:var(--teal);border-color:var(--teal)}
+  .up-photo svg{width:21px;height:21px}
+  .intake + .or{margin:16px 0 10px}
+
+  /* photo capture */
+  .viewfinder{position:relative;aspect-ratio:3/4;max-height:46vh;border-radius:var(--r-2xl);
+      background:var(--card);border:1px solid var(--line);margin:6px 0 18px;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;box-shadow:var(--e2),var(--edge)}
+  .viewfinder .c{position:absolute;width:30px;height:30px;border:3px solid var(--teal);border-radius:4px}
+  .viewfinder .c.tl{top:16px;left:16px;border-right:0;border-bottom:0}
+  .viewfinder .c.tr{top:16px;right:16px;border-left:0;border-bottom:0}
+  .viewfinder .c.bl{bottom:16px;left:16px;border-right:0;border-top:0}
+  .viewfinder .c.br{bottom:16px;right:16px;border-left:0;border-top:0}
+  .vf-hint{font-size:13px;color:var(--ink-2);text-align:center;max-width:70%}
+  .shutter{width:70px;height:70px;border-radius:999px;border:3px solid var(--teal);margin:0 auto 16px;
+      display:flex;align-items:center;justify-content:center;background:none}
+  .shutter span{width:54px;height:54px;border-radius:999px;background:var(--teal);transition:transform .12s}
+  .shutter:active span{transform:scale(.9)}
+  #screen-photo .notice b{display:block;font-size:14px;margin-bottom:5px;color:var(--ink)}
+  #screen-photo .notice p{font-size:13px;color:var(--ink-2);line-height:1.7}
 
   /* tab bar — permanent orientation across the four roots */
   .tabbar[hidden]{display:none}
@@ -729,6 +774,7 @@
 
   <!-- ONBOARDING -->
   <section class="screen active" id="screen-onboard">
+    <h2 class="sr-only" data-t="ob_head"></h2>
     <button class="ob-skip" id="obSkip" onclick="show('home')"></button>
     <div class="ob-body">
       <div class="ob-art" id="obArt"></div>
@@ -745,7 +791,19 @@
     <div class="seg mode-seg" id="modeSeg"></div>
     <h1 class="hello" id="helloLine"></h1>
     <p class="sub" id="subLine"></p>
-    <div class="notice" id="offlineNotice" hidden></div>
+    <div class="notice" id="offlineNotice" role="status" aria-live="polite" hidden></div>
+    <div class="intake" id="intake">
+      <label class="up-main" id="upMain">
+        <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf" hidden/>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+        <span><b data-t="up_cta"></b><span data-t="up_hint"></span></span>
+      </label>
+      <button class="up-photo" onclick="openPhoto()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
+        <span data-t="up_photo"></span>
+      </button>
+    </div>
+    <div class="or" data-t="up_or"></div>
     <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
     <p class="paste-hint" data-t="paste_hint"></p>
     <button class="primary" id="analyzeBtn" onclick="analyze('pasted')" data-t="analyze"></button>
@@ -790,6 +848,7 @@
 
   <!-- LOADING -->
   <section class="screen" id="screen-loading">
+    <h2 class="sr-only" data-t="load_head"></h2>
     <svg class="lens-anim" viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg>
     <div class="load-step" id="loadStep"></div>
     <div class="load-track"><span id="loadFill"></span></div>
@@ -798,6 +857,7 @@
 
   <!-- RESULT -->
   <section class="screen" id="screen-result">
+    <h2 class="sr-only" data-t="res_head"></h2>
     <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
     <div class="score-card">
       <div class="share-mark"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
@@ -810,8 +870,9 @@
         </svg>
         <div class="num"><b id="scoreNum">0</b><i>/ 100</i></div>
       </div>
-      <div class="verdict" id="verdict"></div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
       <span class="doc-label" id="docLabel"></span>
+      <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
       <div class="legend">
         <span><i style="background:var(--red)"></i><span data-t="lg_red"></span></span>
         <span><i style="background:var(--amber)"></i><span data-t="lg_amber"></span></span>
@@ -883,6 +944,23 @@
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
+  <!-- PHOTO CAPTURE -->
+  <section class="screen" id="screen-photo">
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <h2 class="section-title" data-t="ph_title"></h2>
+    <div class="viewfinder">
+      <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
+      <span class="vf-hint" data-t="ph_guide"></span>
+    </div>
+    <button class="shutter" onclick="shoot()" aria-label="capture"><span></span></button>
+    <div class="notice" id="phNote" hidden>
+      <b data-t="ph_note_t"></b>
+      <p data-t="ph_note_b"></p>
+    </div>
+    <button class="primary" onclick="show('home',1)" data-t="ph_paste"></button>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
   <!-- RIGHTS (tab root) -->
   <section class="screen" id="screen-rights">
     <h2 class="section-title" data-t="rights_title"></h2>
@@ -934,16 +1012,16 @@
     <h2 class="section-title" data-t="eos_title"></h2>
     <p class="pw-note" data-t="eos_sub"></p>
     <div class="form">
-      <label class="fld"><span data-t="eos_start"></span><input type="date" id="eosStart"/></label>
-      <label class="fld"><span data-t="eos_end"></span><input type="date" id="eosEnd"/></label>
-      <label class="fld"><span data-t="eos_wage"></span>
+      <label class="fld" for="eosStart"><span data-t="eos_start"></span><input type="date" id="eosStart"/></label>
+      <label class="fld" for="eosEnd"><span data-t="eos_end"></span><input type="date" id="eosEnd"/></label>
+      <label class="fld" for="eosWage"><span data-t="eos_wage"></span>
         <input type="number" inputmode="numeric" min="0" step="100" id="eosWage"/>
         <em data-t="eos_wage_hint"></em>
       </label>
       <div class="fld"><span data-t="eos_how"></span><div class="opts" id="eosHow"></div></div>
     </div>
     <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
-    <div id="eosOut"></div>
+    <div id="eosOut" aria-live="polite"></div>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
@@ -1012,7 +1090,7 @@
     <button class="back" onclick="assistBack()"><span class="bk" aria-hidden="true">‹</span><span id="asBackLabel"></span></button>
     <h2 class="section-title" data-t="as_title"></h2>
     <div class="caps" id="caps"></div>
-    <div class="chat" id="chat"></div>
+    <div class="chat" id="chat" aria-live="polite"></div>
     <div class="quota" id="quota"></div>
     <form class="ask-bar" id="askBar" onsubmit="submitAsk(event)">
       <input id="askInput" autocomplete="off" />
@@ -1069,6 +1147,26 @@ const T = {
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
+  up_cta:{ar:"ارفع ملف العقد",en:"Upload contract file"},
+  up_hint:{ar:"PDF أو نص — يُقرأ على جهازك",en:"PDF or text — read on your device"},
+  up_drop:{ar:"أفلت الملف هنا",en:"Drop the file here"},
+  up_reading:{ar:"نقرأ الملف…",en:"Reading the file…"},
+  up_photo:{ar:"صوّر العقد",en:"Photograph it"},
+  up_photo_hint:{ar:"صورة من ورقة أو شاشة",en:"A photo of paper or a screen"},
+  up_or:{ar:"أو الصق النص",en:"or paste the text"},
+  ph_title:{ar:"تصوير العقد",en:"Photograph the contract"},
+  ph_guide:{ar:"حاذِ حواف الورقة داخل الإطار",en:"Line the page edges up inside the frame"},
+  ph_shoot:{ar:"التقط",en:"Capture"},
+  ph_note_t:{ar:"قراءة الصور تحتاج تعرّفًا ضوئيًا",en:"Reading photos needs optical recognition"},
+  ph_note_b:{ar:"في النسخة الحقيقية يُقرأ النص من الصورة على جهازك. في هذا النموذج غير مفعّل — الصق النص أو جرّب نموذجًا.",
+             en:"In the real app the text is read from the photo on your device. It isn't enabled in this prototype — paste the text or try a sample."},
+  ph_paste:{ar:"ألصق النص بدلًا من ذلك",en:"Paste the text instead"},
+  err_big:{ar:"الملف كبير — الحد ٨ ميجابايت.",en:"That file is large — the limit is 8 MB."},
+  err_type:{ar:"نوع غير مدعوم. ارفع PDF أو ملف نصي.",en:"Unsupported type. Upload a PDF or a text file."},
+  how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
+  res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
+  load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
+  ob_head:{ar:"تعريف بوضوح",en:"Introducing Wodouh"},
   tab_review:{ar:"راجع",en:"Review"},
   tab_rights:{ar:"حقوقي",en:"Rights"},
   tab_remind:{ar:"تذكيراتي",en:"Reminders"},
@@ -1740,7 +1838,8 @@ function applyLang(){
   }
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; loadState();
-applyLang(); }
+applyLang();
+initIntake(); }
 
 function show(name, back){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back"));
@@ -1748,6 +1847,8 @@ function show(name, back){
   el.classList.add("active");
   if (back) el.classList.add("back");
   window.scrollTo(0,0);
+  const h = el.querySelector("h1,h2");
+  if (h){ h.setAttribute("tabindex","-1"); h.focus({ preventScroll:true }); }
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
@@ -2575,6 +2676,135 @@ function answer(q){
     : "I didn't quite catch that. Try asking about a specific topic — probation, notice period, end-of-service pay — or ask me to summarize your contract." };
 }
 
+/* ----------------------------------------------------- file intake ----
+   Real PDF text extraction, no library and no server: locate the content
+   streams, inflate them with DecompressionStream, then read the text-showing
+   operators. Many Arabic PDFs embed subset fonts whose bytes are glyph
+   indices rather than Unicode — when that happens the output fails the
+   legibility check below and we say we could not read it, which is the
+   honest outcome rather than analysing gibberish. */
+const MAX_FILE = 8 * 1024 * 1024;
+
+async function inflate(bytes){
+  /* PDF streams carry EOL padding after the compressed data, so the stream
+     decodes fine and then throws "junk after end". Read incrementally and
+     keep whatever was decoded before the complaint. */
+  for (const fmt of ["deflate", "deflate-raw"]){
+    try {
+      const ds = new DecompressionStream(fmt);
+      const w = ds.writable.getWriter();
+      w.write(bytes).catch(()=>{});
+      w.close().catch(()=>{});
+      const reader = ds.readable.getReader();
+      const chunks = []; let total = 0;
+      try {
+        for(;;){
+          const { value, done } = await reader.read();
+          if (done) break;
+          chunks.push(value); total += value.length;
+        }
+      } catch(e){ /* keep the decoded prefix */ }
+      if (total){
+        const out = new Uint8Array(total); let off = 0;
+        for (const c of chunks){ out.set(c, off); off += c.length; }
+        return out;
+      }
+    } catch(e){ /* try the next format */ }
+  }
+  return null;
+}
+
+function latin(bytes){ let o=""; for (let i=0;i<bytes.length;i++) o+=String.fromCharCode(bytes[i]); return o; }
+
+/* Pull the strings out of BT…ET blocks: (str) Tj, [(a) -2 (b)] TJ, ' and " */
+function textFromContent(src){
+  let out = "";
+  const re = /\((?:\\.|[^\\()])*\)\s*(?:Tj|TJ|'|")|\[(?:[^\[\]]|\\.)*\]\s*TJ/g;
+  let m;
+  while ((m = re.exec(src))){
+    const chunk = m[0];
+    const strs = chunk.match(/\((?:\\.|[^\\()])*\)/g) || [];
+    for (const raw of strs){
+      out += raw.slice(1,-1)
+        .replace(/\\([nrtbf])/g, (x,c)=>({n:"\n",r:"",t:"\t",b:"",f:""}[c]))
+        .replace(/\\([0-7]{1,3})/g, (x,o)=>String.fromCharCode(parseInt(o,8)))
+        .replace(/\\(.)/g, "$1");
+    }
+    out += /T\*|'|"/.test(chunk) ? "\n" : " ";
+  }
+  return out;
+}
+
+async function extractPdf(buf){
+  const bytes = new Uint8Array(buf), src = latin(bytes);
+  let text = "";
+  const re = /stream\r?\n?/g;
+  let m;
+  while ((m = re.exec(src))){
+    const start = m.index + m[0].length;
+    const end = src.indexOf("endstream", start);
+    if (end < 0) continue;
+    const head = src.slice(Math.max(0, m.index - 400), m.index);
+    let stop = end;
+    while (stop > start && (bytes[stop-1] === 10 || bytes[stop-1] === 13)) stop--;
+    let raw = bytes.subarray(start, stop);
+    let data = /FlateDecode/.test(head) ? await inflate(raw) : raw;
+    if (!data) continue;
+    const content = latin(data);
+    if (/BT|Tj|TJ/.test(content)) text += textFromContent(content) + "\n";
+  }
+  return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* Enough real letters to be worth analysing? Guards against glyph-index soup. */
+function legible(txt){
+  if (!txt || txt.length < 40) return false;
+  const good = (txt.match(/[A-Za-z؀-ۿ]/g) || []).length;
+  return good / txt.length > 0.45;
+}
+
+async function handleFile(file){
+  const notice = document.getElementById("offlineNotice");
+  const fail = msg => { notice.textContent = msg; notice.hidden = false; };
+  notice.hidden = true;
+  if (!file) return;
+  if (file.size > MAX_FILE) return fail(t("err_big"));
+  const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
+  const isTxt = /^text\//i.test(file.type) || /\.(txt|md)$/i.test(file.name);
+  if (!isPdf && !isTxt) return fail(t("err_type"));
+
+  document.getElementById("upMain").classList.add("busy");
+  let text = "";
+  try {
+    text = isPdf ? await extractPdf(await file.arrayBuffer()) : await file.text();
+  } catch(e){ text = ""; }
+  document.getElementById("upMain").classList.remove("busy");
+
+  if (!legible(text)){ current = null; runLoading(()=>{ buzz(12); show("noread"); }); return; }
+  document.getElementById("pasteBox").value = text;
+  pasteChanged();
+  analyze("pasted");
+}
+
+function initIntake(){
+  const input = document.getElementById("fileInput");
+  input.onchange = e => { handleFile(e.target.files[0]); input.value = ""; };
+  const app = document.querySelector(".app");
+  ["dragenter","dragover"].forEach(ev=>app.addEventListener(ev, e=>{
+    e.preventDefault(); document.getElementById("intake").classList.add("over");
+  }));
+  ["dragleave","drop"].forEach(ev=>app.addEventListener(ev, e=>{
+    e.preventDefault(); document.getElementById("intake").classList.remove("over");
+  }));
+  app.addEventListener("drop", e=>{
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+}
+
+function openPhoto(){ document.getElementById("phNote").hidden = true; show("photo"); }
+function shoot(){ buzz(10); document.getElementById("phNote").hidden = false; }
+
 /* ------------------------------------------------------- navigation ----
    Four roots carry the tab bar; every deeper screen keeps its own back
    button, so the existing stacks are untouched. */
@@ -2599,7 +2829,7 @@ function renderTabs(){
   bar.hidden = !ROOTS.includes(cur);
   if (bar.hidden) return;
   bar.innerHTML = TABS.map(x=>
-    `<button class="tab${x.id===cur?" on":""}" data-tab="${x.id}">
+    `<button class="tab${x.id===cur?" on":""}" data-tab="${x.id}"${x.id===cur?' aria-current="page"':''}>
        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x.icon}</svg>
        <span>${t(x.label)}</span>
      </button>`).join("");
@@ -3066,6 +3296,7 @@ function renderClauses(){
 
 loadState();
 applyLang();
+initIntake();
 </script>
 </body>
 </html>
