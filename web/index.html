@@ -151,6 +151,10 @@
   .brand .en{font-family:var(--en);font-size:9.5px;font-weight:800;letter-spacing:.22em;
     text-transform:uppercase;color:var(--teal)}
   .nav-act{display:flex;align-items:center;gap:8px}
+  .nav-link{font-size:13.5px;font-weight:700;color:var(--ink-2);padding:7px 6px;border-radius:8px;
+    transition:color var(--t-fast) var(--ease-out)}
+  .nav-link:hover{color:var(--teal-ink)}
+  @media (max-width:520px){ .nav-link{display:none} }
   .lang{font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);
     border-radius:999px;padding:7px 14px}
   html[lang="en"] .lang{font-family:var(--ar);font-weight:400;font-size:15px}
@@ -277,6 +281,11 @@
   footer{border-top:1px solid var(--line);padding:30px 0 46px;text-align:center;font-size:12.5px;color:var(--ink-2)}
   footer .fb{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
   footer .fb svg{width:18px;height:18px}
+  .foot-links{display:flex;justify-content:center;gap:20px;margin-top:14px}
+  .foot-links a{color:var(--teal);font-weight:700;text-decoration:underline;
+    text-underline-offset:3px;text-decoration-thickness:1px}
+  .foot-links a:hover{color:var(--teal-ink)}
+  .price-go{margin-top:26px;text-align:center}
 </style>
 </head>
 <body>
@@ -297,7 +306,8 @@
     </div>
     <div class="nav-act">
       <button class="lang" id="langBtn" onclick="toggleLang()"></button>
-      <a class="btn" href="#get" data-t="nav_cta"></a>
+      <a class="nav-link" href="#get" data-t="nav_price"></a>
+      <a class="btn" href="../app/index.html" data-t="nav_cta"></a>
     </div>
   </div>
 </header>
@@ -313,7 +323,7 @@
       <h1 data-t="hero_h"></h1>
       <p class="lede" data-t="hero_p"></p>
       <div class="hero-cta">
-        <a class="btn" href="#get" data-t="hero_cta"></a>
+        <a class="btn" href="../app/index.html" data-t="hero_cta"></a>
         <a class="btn ghost" href="#how" data-t="hero_cta2"></a>
       </div>
       <p class="hero-note">
@@ -396,6 +406,7 @@
     </div>
     <p class="anchor" data-t="price_anchor"></p>
     <p class="vat" data-t="price_vat"></p>
+    <p class="price-go"><a class="btn" href="../app/index.html" data-t="price_cta"></a></p>
   </div>
 </section>
 
@@ -423,7 +434,7 @@
   <div class="wrap">
     <h2 data-t="close_h"></h2>
     <p data-t="close_p"></p>
-    <a class="btn" href="#get" data-t="close_cta"></a>
+    <a class="btn" href="../app/index.html" data-t="close_cta"></a>
   </div>
 </section>
 </main>
@@ -432,11 +443,16 @@
   <div class="wrap">
     <div class="fb"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark"/></svg><span lang="ar">وضوح</span></div>
     <p data-t="foot"></p>
+    <p class="foot-links"><a href="../app/index.html" data-t="foot_app"></a><a href="../brand/index.html" data-t="foot_brand"></a></p>
   </div>
 </footer>
 <script>
 const T = {
   nav_cta:{ar:"جرّبه الآن",en:"Try it now"},
+  nav_price:{ar:"الأسعار",en:"Pricing"},
+  price_cta:{ar:"ابدأ بالتقييم المجاني",en:"Start with the free score"},
+  foot_app:{ar:"افتح التطبيق",en:"Open the app"},
+  foot_brand:{ar:"الهوية البصرية",en:"Brand identity"},
   hero_eyebrow:{ar:"يعمل على جهازك — لا يُرفع عقدك لأي مكان",en:"Runs on your device — your contract is never uploaded"},
   hero_h:{ar:"اقرأ عقدك بوضوح — قبل ما توقّع.",en:"Read your contract clearly — before you sign."},
   hero_p:{ar:"وضوح يقرأ عقود العمل والإيجار والعمل الحر، يشرح كل بند بلغة بسيطة، ينبّهك للمخاطر، ويعطيك خلاصة واضحة وخطابًا جاهزًا ترسله.",
