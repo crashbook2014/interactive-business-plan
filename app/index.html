@@ -33,7 +33,7 @@
     --amber:#C9922E; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
     --green:#4E8F5B; --green-bg:#E2EEE2;
-    --amber-ink:#8A6114; --green-ink:#33663D;
+    --amber-ink:#8A6114; --green-ink:#33663D; --red-ink:#8E3A31;
     --ink:#2B3230; --ink-2:#5A625F;
     --line:#E8DFCE;
     --on-teal:#F7F1E6;
@@ -65,7 +65,7 @@
       --amber:#D9A648; --amber-bg:#2E2618;
       --red:#C86F63; --red-bg:#2E1E1C;
       --green:#6BAE78; --green-bg:#1A2A1E;
-      --amber-ink:#E3B865; --green-ink:#87C094;
+      --amber-ink:#E3B865; --green-ink:#87C094; --red-ink:#E0968B;
       --ink:#EDE6D8; --ink-2:#A3ABA6;
       --line:#2B3633;
       --on-teal:#0F1614;
@@ -84,7 +84,7 @@
     --amber:#D9A648; --amber-bg:#2E2618;
     --red:#C86F63; --red-bg:#2E1E1C;
     --green:#6BAE78; --green-bg:#1A2A1E;
-    --amber-ink:#E3B865; --green-ink:#87C094;
+    --amber-ink:#E3B865; --green-ink:#87C094; --red-ink:#E0968B;
     --ink:#EDE6D8; --ink-2:#A3ABA6;
     --line:#2B3633;
     --on-teal:#0F1614;
@@ -102,7 +102,7 @@
     --amber:#C9922E; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
     --green:#4E8F5B; --green-bg:#E2EEE2;
-    --amber-ink:#8A6114; --green-ink:#33663D;
+    --amber-ink:#8A6114; --green-ink:#33663D; --red-ink:#8E3A31;
     --ink:#2B3230; --ink-2:#5A625F;
     --line:#E8DFCE;
     --on-teal:#F7F1E6;
@@ -249,6 +249,24 @@
       color:var(--band);line-height:1;font-variant-numeric:tabular-nums}
   .ring .num i{font-style:normal;font-size:10.5px;color:var(--ink-2);direction:ltr;margin-top:3px;
       font-family:var(--en);letter-spacing:.06em}
+  /* The decision reads first. It carries its own state colour rather than
+     the score band, so a mostly-fine score with one serious clause still
+     shows as needing attention. */
+  .decision{--dc:var(--teal);--dc-bg:var(--teal-soft);--dc-ink:var(--teal-ink);
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    margin:0 0 20px;padding:16px 14px;border-radius:var(--r-lg);
+    background:var(--dc-bg);border:1px solid color-mix(in srgb, var(--dc) 26%, transparent)}
+  .decision[data-state="safe"]{--dc:var(--green);--dc-bg:var(--green-bg);--dc-ink:var(--green-ink)}
+  .decision[data-state="negotiate"]{--dc:var(--amber);--dc-bg:var(--amber-bg);--dc-ink:var(--amber-ink)}
+  .decision[data-state="lawyer"]{--dc:var(--red);--dc-bg:var(--red-bg);--dc-ink:var(--red-ink)}
+  .decision .dc-ic{display:flex;color:var(--dc-ink)}
+  .decision .dc-ic svg{width:26px;height:26px}
+  .dc-label{font-size:19px;line-height:1.35;color:var(--dc-ink);text-wrap:balance}
+  .dc-why{font-size:13.5px;color:var(--ink-2);line-height:1.6}
+  .dc-conf{font-size:11.5px;color:var(--ink-2);opacity:.85;line-height:1.55;text-wrap:balance}
+  @media (prefers-reduced-motion:no-preference){
+    .decision{animation:rise var(--t) var(--ease-spring) both}
+  }
   .verdict{font-size:18.5px;color:var(--ink);line-height:1.75;text-wrap:balance;margin-top:2px}
   .doc-label{display:inline-block;margin-top:12px;font-size:12.5px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 14px;font-weight:700}
   /* 44px hit area via a transparent border, visual size unchanged */
@@ -1021,6 +1039,12 @@
     <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
     <div class="score-card">
       <div class="share-mark"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
+      <div class="decision" id="decision" aria-live="polite">
+        <span class="dc-ic" id="dcIcon" aria-hidden="true"></span>
+        <b class="dc-label" id="dcLabel"></b>
+        <span class="dc-why" id="dcWhy"></span>
+        <span class="dc-conf" id="dcConf"></span>
+      </div>
       <div class="ring">
         <svg width="120" height="120" viewBox="0 0 120 120">
           <circle class="bezel" cx="60" cy="60" r="58.4" fill="none" stroke-width="1"/>
@@ -1345,6 +1369,35 @@ const T = {
   err_big:{ar:"الملف كبير — الحد ٨ ميجابايت.",en:"That file is large — the limit is 8 MB."},
   err_type:{ar:"نوع غير مدعوم. ارفع PDF أو ملف نصي.",en:"Unsupported type. Upload a PDF or a text file."},
   how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
+
+  /* The decision, before the number. Wording stays plain and avoids
+     promising an outcome we cannot guarantee: "safe to sign" is about what
+     we found, not a warranty. */
+  dc_safe:{ar:"ما وجدنا ما يمنع التوقيع",en:"Nothing here blocks signing"},
+  dc_negotiate:{ar:"فاوض قبل ما توقّع",en:"Negotiate before you sign"},
+  dc_lawyer:{ar:"يستحق مراجعة محامٍ",en:"Worth a lawyer's review"},
+  dc_safe_s:{ar:"ما وجدنا بندًا يستدعي إجراء",en:"Nothing here needs action"},
+  dc_negotiate_s:{ar:"فيه بنود تستحق المتابعة",en:"Some clauses are worth pursuing"},
+  dc_lawyer_s:{ar:"يستحق مراجعة محامٍ",en:"Worth a lawyer's review"},
+  dc_why_none:{ar:"ما طلع أي بند أحمر أو أصفر.",en:"No red or amber clauses came up."},
+  /* Arabic counted nouns inflect: one is singular, two takes the dual, 3–10
+     takes a broken plural, 11+ returns to the singular accusative. Rendering
+     "٢ بند أصفر" would read as broken Arabic in an Arabic-first product. */
+  dc_red_1:{ar:"بند أحمر",en:"1 red"},
+  dc_red_2:{ar:"بندان أحمران",en:"2 red"},
+  dc_red_p:{ar:"{n} بنود حمراء",en:"{n} red"},
+  dc_red_m:{ar:"{n} بندًا أحمر",en:"{n} red"},
+  dc_amber_1:{ar:"بند أصفر",en:"1 amber"},
+  dc_amber_2:{ar:"بندان أصفران",en:"2 amber"},
+  dc_amber_p:{ar:"{n} بنود صفراء",en:"{n} amber"},
+  dc_amber_m:{ar:"{n} بندًا أصفر",en:"{n} amber"},
+  dc_join:{ar:" و",en:" and "},
+  dc_conf_high:{ar:"ثقة عالية — نموذج معروف، فحصنا {n} بنود.",
+                en:"High confidence — a known sample, {n} clauses checked."},
+  dc_conf_med:{ar:"ثقة متوسطة — تعرّفنا على {n} بنود في نصّك. قد توجد بنود أخرى ما التقطناها.",
+               en:"Medium confidence — we recognised {n} clauses in your text. There may be others we didn't catch."},
+  dc_conf_low:{ar:"ثقة محدودة — تعرّفنا على {n} فقط. اقرأ بقية العقد بنفسك.",
+               en:"Limited confidence — we only recognised {n}. Read the rest of the contract yourself."},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
   ob_head:{ar:"تعريف بوضوح",en:"Introducing Wodouh"},
@@ -2221,8 +2274,74 @@ function renderEscalate(target){
 
 function scoreBand(n){ return n>=80 ? "great" : n>=60 ? "good" : n>=40 ? "fair" : "poor"; }
 
+/* People do not open a contract wanting a number — they want to know whether
+   they can sign. The decision is what the card leads with; the score stays
+   directly beneath it as the supporting detail.
+
+   Nothing new is computed here. The three states are read off the same
+   clause data the flags already render, and the "lawyer" threshold matches
+   renderEscalate, so the band and the existing escalation CTA can never
+   disagree. */
+function decide(a){
+  const reds = a.clauses.filter(c=>c.s==="red").length;
+  const ambers = a.clauses.filter(c=>c.s==="amber").length;
+  if (reds >= 2 || (reds === 1 && a.score < 50)) return "lawyer";
+  if (reds || ambers) return "negotiate";
+  return "safe";
+}
+
+/* Confidence is about how much of the document we actually recognised, and
+   it is never a fabricated percentage. A curated sample is a known quantity.
+   Pasted text is only as trustworthy as the number of clauses matched, so we
+   say what we matched and let the reader judge. */
+function confidence(a){
+  if (a.doc !== "doc_pasted") return { level:"high", n:a.clauses.length };
+  const n = a.clauses.length;
+  return { level: n >= 4 ? "med" : "low", n:n };
+}
+
+/* Picks the right inflected form for a counted noun. English collapses to a
+   single plural, so the same four keys serve both languages. */
+function countNoun(stem, n){
+  const form = n === 1 ? "_1" : n === 2 ? "_2" : n <= 10 ? "_p" : "_m";
+  return t(stem + form).replace("{n}", fmtNum(n));
+}
+
+const DC_ICON = {
+  safe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  negotiate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v6M12 16.5v.2"/><circle cx="12" cy="12" r="9"/></svg>',
+  lawyer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.2"/></svg>'
+};
+
+function renderDecision(){
+  const d = decide(current);
+  const reds = current.clauses.filter(c=>c.s==="red").length;
+  const ambers = current.clauses.filter(c=>c.s==="amber").length;
+  const box = document.getElementById("decision");
+  box.dataset.state = d;
+  document.getElementById("dcIcon").innerHTML = DC_ICON[d];
+  /* Already-signed users are not deciding whether to sign, so the same
+     finding is framed as what they can still act on. */
+  document.getElementById("dcLabel").textContent = t(signedMode ? "dc_"+d+"_s" : "dc_"+d);
+
+  let why;
+  if (d === "safe") why = t("dc_why_none");
+  else {
+    const parts = [];
+    if (reds) parts.push(countNoun("dc_red", reds));
+    if (ambers) parts.push(countNoun("dc_amber", ambers));
+    why = parts.join(t("dc_join"));
+  }
+  document.getElementById("dcWhy").textContent = why;
+
+  const c = confidence(current);
+  document.getElementById("dcConf").textContent =
+    t("dc_conf_" + c.level).replace("{n}", fmtNum(c.n));
+}
+
 function renderResult(reset){
   document.querySelector(".score-card").dataset.band = scoreBand(current.score);
+  renderDecision();
   document.getElementById("verdict").textContent =
     (signedMode && current.vs ? current.vs : current.verdict)[lang];
   document.getElementById("docLabel").textContent = t(current.doc);
