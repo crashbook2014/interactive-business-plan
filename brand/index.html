@@ -28,6 +28,11 @@
     --e3:0 18px 44px rgba(74,60,40,.11);
     --edge:inset 0 1px 0 rgba(255,255,255,.6);
     --r-lg:18px; --r-xl:22px; --r-2xl:28px;
+    /* Same rhythm as the product and the site. */
+    --t-fast:160ms; --t:240ms; --t-slow:360ms;
+    --ease-out:cubic-bezier(.22,.72,.28,1);
+    --ease-spring:cubic-bezier(.22,1.2,.36,1);
+    --ease-move:cubic-bezier(.4,0,.2,1);
     --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,'Trebuchet MS',sans-serif;
     --ar:'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif;
   }
@@ -52,6 +57,55 @@
   html[lang="en"] h2{letter-spacing:-.014em}
   [lang="ar"]{font-family:var(--ar);direction:rtl}
   .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  /* ---- motion layer (additive; the page had none) ---- */
+
+  /* Reveal on scroll. JS opts elements in, so nothing is hidden without it. */
+  .rv{opacity:0;transform:translateY(20px)}
+  .rv.in{opacity:1;transform:none;
+    transition:opacity var(--t-slow) var(--ease-out),transform var(--t-slow) var(--ease-out)}
+  .rv-d1{transition-delay:50ms} .rv-d2{transition-delay:100ms} .rv-d3{transition-delay:150ms}
+
+  /* The hero mark arrives with presence — it is the subject of the page. */
+  .hero .mark{animation:mark-in 620ms var(--ease-spring) both}
+  @keyframes mark-in{from{opacity:0;transform:scale(.82) rotate(-8deg)}to{opacity:1;transform:none}}
+  .hero .ar-name,.hero .en-name,.hero .promise{opacity:0;animation:hero-in var(--t-slow) var(--ease-out) forwards}
+  .hero .ar-name{animation-delay:180ms} .hero .en-name{animation-delay:260ms} .hero .promise{animation-delay:340ms}
+  @keyframes hero-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* The marks are stroke-built, so on reveal they draw themselves — the
+     motion shows how the logo is constructed rather than decorating it. */
+  .logo-stage svg use,.logo-stage svg>circle,.logo-stage svg>path,.logo-stage svg>rect{
+    stroke-dasharray:240;stroke-dashoffset:240}
+  .logo-card.in .logo-stage svg use,.logo-card.in .logo-stage svg>circle,
+  .logo-card.in .logo-stage svg>path,.logo-card.in .logo-stage svg>rect{
+    stroke-dashoffset:0;transition:stroke-dashoffset 900ms var(--ease-out)}
+  .logo-card.in .logo-stage svg>path{transition-delay:120ms}
+
+  /* Cards lift on hover, compress on press */
+  .logo-stage,.card,.swatch,.dont,.small-test .chip{
+    transition:transform var(--t-fast) var(--ease-spring),box-shadow var(--t-fast) var(--ease-out)}
+  @media (hover:hover){
+    .logo-stage:hover,.card:hover,.swatch:hover,.dont:hover{transform:translateY(-3px);box-shadow:var(--e2),var(--edge)}
+  }
+
+  /* Swatches arrive in sequence, so the palette reads as a set */
+  .swatch .color{transition:transform var(--t) var(--ease-spring)}
+  @media (hover:hover){ .swatch:hover .color{transform:scale(1.03)} }
+
+  /* The mockup's ring sweeps when it comes into view, the way the real one does */
+  .phone .ring circle:last-of-type{stroke-dashoffset:320.4;
+    transition:stroke-dashoffset 1200ms var(--ease-out)}
+  .phone.in .ring circle:last-of-type{stroke-dashoffset:102.5}
+
+  @media (prefers-reduced-motion: reduce){
+    .rv,.rv.in,.hero .mark,.hero .ar-name,.hero .en-name,.hero .promise{
+      opacity:1 !important;transform:none !important;animation:none !important;transition:none !important}
+    .logo-stage svg use,.logo-stage svg>circle,.logo-stage svg>path,.logo-stage svg>rect{
+      stroke-dasharray:none !important;stroke-dashoffset:0 !important;transition:none !important}
+    .phone .ring circle:last-of-type{stroke-dashoffset:102.5 !important;transition:none !important}
+    .logo-stage:hover,.card:hover,.swatch:hover,.dont:hover{transform:none !important}
+  }
   section{padding:56px 0;border-bottom:1px solid var(--line)}
   h2{font-size:26px;font-weight:700;color:var(--teal-ink);margin-bottom:6px}
   .kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
@@ -380,5 +434,57 @@
   <span lang="ar">وضوح</span> · Wodouh — brand identity v1
 </footer>
 
+<script>
+/* Motion layer. Purely additive: elements are visible in the markup and JS
+   opts them into an animated arrival, so a script failure can never hide any
+   part of the brand spec. */
+(function(){
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduced.matches || !("IntersectionObserver" in window)) return;
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (!e.isIntersecting) return;
+      e.target.classList.add("in");
+      io.unobserve(e.target);
+    });
+  }, { threshold:.14, rootMargin:"0px 0px -6% 0px" });
+
+  var sel = "section .kicker, section h2, section .lede, .logo-card, .swatch," +
+            " .card, .dont, .small-test .chip, .icon-row figure, .phone";
+  document.querySelectorAll(sel).forEach(function(el, i){
+    /* Already on screen at load: show immediately, no waiting for a scroll. */
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.92){
+      el.classList.add("rv","in");
+      return;
+    }
+    el.classList.add("rv");
+    var step = i % 3;
+    if (step) el.classList.add("rv-d" + step);
+    io.observe(el);
+  });
+
+  /* Safety net: fast or programmatic scrolling can let the observer coalesce
+     past a tall element, which would leave it invisible. Anything whose top
+     has reached the viewport is revealed regardless. Content visibility must
+     never depend on how quickly someone scrolls. */
+  var sweeping = false;
+  function sweep(){
+    sweeping = false;
+    document.querySelectorAll(".rv:not(.in)").forEach(function(el){
+      if (el.getBoundingClientRect().top < window.innerHeight){
+        el.classList.add("in");
+        io.unobserve(el);
+      }
+    });
+  }
+  window.addEventListener("scroll", function(){
+    if (sweeping) return;
+    sweeping = true;
+    requestAnimationFrame(sweep);
+  }, { passive:true });
+  window.addEventListener("load", sweep);
+})();
+</script>
 </body>
 </html>
