@@ -772,7 +772,17 @@
 
   /* plans */
   .mode-seg{margin:10px 0 8px}
-  .nat-seg{margin:0 0 14px}
+  /* A stated fact with a way to change it, not a second control competing
+     with the mode switch. Full 44px target despite the light appearance. */
+  .nat-chip{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;
+    padding:6px 2px;margin:0 0 10px;background:none;border:0;text-align:start;
+    font-size:12.5px;color:var(--ink-2);line-height:1.6}
+  .nat-chip[hidden]{display:none}
+  .nat-chip b{color:var(--teal-ink);font-size:12.5px;font-weight:800}
+  .nat-chip .nat-swap{margin-inline-start:auto;color:var(--teal);font-weight:700;
+    text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .nat-chip:hover .nat-swap{color:var(--teal-ink)}
+  .nat-chip:active{opacity:.7}
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
   .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
   html[lang="ar"] .seg button{font-weight:400;font-size:15px}
@@ -1054,7 +1064,11 @@
   <section class="screen" id="screen-home">
     <p class="greet" id="greet"></p>
     <div class="seg mode-seg" id="modeSeg"></div>
-    <div class="seg nat-seg" id="natSeg"></div>
+    <button class="nat-chip" id="natChip" type="button" onclick="toggleNat()">
+      <span class="nat-lbl" data-t="nat_showing"></span>
+      <b id="natVal"></b>
+      <span class="nat-swap" data-t="nat_change"></span>
+    </button>
     <h1 class="hello" id="helloLine"></h1>
     <p class="sub" id="subLine"></p>
     <div class="notice" id="offlineNotice" role="status" aria-live="polite" hidden></div>
@@ -1526,6 +1540,11 @@ const T = {
 
   /* Two kinds of origin, never blurred. A citation means a verified article;
      the methodology label means this is our own reading, and says so. */
+  nat_showing:{ar:"الأنظمة المعروضة:",en:"Showing rules for:"},
+  nat_change:{ar:"تغيير",en:"Change"},
+  nat_now:{ar:"عرضنا أنظمة: {t}",en:"Now showing: {t}"},
+  nat_switch_sa:{ar:"التبديل إلى سعودي",en:"switch to Saudi"},
+  nat_switch_nonsa:{ar:"التبديل إلى مقيم",en:"switch to resident"},
   nat_sa:{ar:"سعودي",en:"Saudi"},
   nat_sa_d:{ar:"عقدك ممكن يكون محدد المدة أو غير محدد، وتنطبق عليك مدد الإشعار.",
             en:"Your contract can be fixed-term or indefinite, and the notice-period rules apply to you."},
@@ -2453,10 +2472,8 @@ function renderObPick(slide){
     b.querySelector("b").textContent = t(label);
     b.querySelector("span").textContent = t(desc);
     b.onclick = ()=>{
+      /* First choice, so assign directly — setNat() is for changing one. */
       nat = id; buzz(8); saveState();
-      /* The track decides what the library and the home toggle show, so both
-         have to be rebuilt the moment it is chosen — not left showing the
-         untracked content until something else happens to re-render. */
       renderOnboard(); renderNat(); renderLib();
     };
     box.appendChild(b);
@@ -4198,33 +4215,47 @@ function renderMode(){
 /* The same control as renderMode, for the other axis. Changing track
    re-frames whatever is already on screen — findings are never recomputed,
    only re-read against the law that actually applies. */
+/* The two controls on this screen are not peers. "Before signing / already
+   signed" is a property of the contract in front of you and changes every
+   time. Nationality is a fact about you that changes essentially never.
+   Stacking two identical pill rows gave a rarely-touched setting the same
+   weight as the task, so the track is now a single quiet line that still
+   states its value and is still one tap away. */
 function renderNat(){
-  const seg = document.getElementById("natSeg");
-  if (!seg) return;
-  seg.innerHTML = "";
-  [["sa","nat_sa_short"],["nonsa","nat_nonsa_short"]].forEach(([v,lbl])=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = nat === v ? "on" : "";
-    b.textContent = t(lbl);
-    b.onclick = ()=>{
-      if (nat === v) return;
-      nat = v; buzz(8); saveState(); renderNat(); renderLib();
-      if (current){
-        /* A pasted contract is re-matched, because which rules apply is
-           exactly what changed. A sample keeps its authored clauses and is
-           only re-framed. */
-        if (current.srcText){
-          const again = analyzePasted(current.srcText);
-          if (again){ current.clauses = again.clauses; current.score = again.score; }
-        }
-        renderResult(false); renderClauses(); renderTease(); syncAddButtons();
-      }
-      if (eosData) { renderEos(); calcEos(); }
-    };
-    seg.appendChild(b);
-  });
+  const chip = document.getElementById("natChip");
+  if (!chip) return;
+  chip.hidden = !nat;                    /* nothing to show before it is chosen */
+  if (!nat) return;
+  document.getElementById("natVal").textContent =
+    t(nat === "sa" ? "nat_sa_short" : "nat_nonsa_short");
+  chip.querySelector(".nat-lbl").textContent = t("nat_showing");
+  chip.querySelector(".nat-swap").textContent = t("nat_change");
+  chip.setAttribute("aria-label",
+    t("nat_showing") + " " + t(nat === "sa" ? "nat_sa_short" : "nat_nonsa_short")
+    + " — " + t(nat === "sa" ? "nat_switch_nonsa" : "nat_switch_sa"));
 }
+
+function toggleNat(){ setNat(nat === "sa" ? "nonsa" : "sa"); }
+
+/* Applying a track is the same work wherever it is chosen from. */
+function setNat(v){
+  if (nat === v) return;
+  nat = v; buzz(8); saveState();
+  renderNat(); renderLib();
+  if (current){
+    /* A pasted contract is re-matched, because which rules apply is exactly
+       what changed. A sample keeps its authored clauses and is only
+       re-framed. */
+    if (current.srcText){
+      const again = analyzePasted(current.srcText);
+      if (again){ current.clauses = again.clauses; current.score = again.score; }
+    }
+    renderResult(false); renderClauses(); renderTease(); syncAddButtons();
+  }
+  if (eosData){ renderEos(); calcEos(); }
+  toast(t("nat_now").replace("{t}", t(v === "sa" ? "nat_sa_short" : "nat_nonsa_short")));
+}
+
 
 function renderHomeReminders(){
   /* The reminders tab replaced the home entry; nothing to render here. */
