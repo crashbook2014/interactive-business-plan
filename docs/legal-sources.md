@@ -48,13 +48,15 @@ at the bottom of this file.
 | Probation up to 90 days, extendable by written agreement to 180 total | **53** | ✅ verified | [DLA Piper](https://www.dlapiper.com/en/insights/publications/2024/08/amendments-to-the-ksa-labour-law) |
 | Overtime paid at the hourly wage plus 50% of the basic wage | **107** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
 | Annual leave at least 21 days, rising to at least 30 after five consecutive years with the same employer | **109** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
-| Notice, monthly-paid indefinite contract: **employer 60 days, employee 30 days** | **75** | ✅ verified | [Al Othman Law](https://alothmanlaw.sa/en/article-75/) |
+| Notice, monthly-paid **indefinite** contract: **employer 60 days, employee 30 days**. Applies to indefinite contracts only — a non-Saudi's contract is always fixed-term (art. 37), so this rule does not reach them | **75** | ✅ verified | [Al Othman Law](https://alothmanlaw.sa/en/article-75/) |
 | Labour claims not heard after 12 months from the end of the relationship, unless the court accepts an excuse or the defendant acknowledges the right | **222** | ✅ verified | [Innovation SA](https://innovation-sa.com/labor-courts-will-not-consider-claims-older-12-months/), [Mondaq](https://www.mondaq.com/saudiarabia/employment-and-hr/1603250/labour-and-employment-comparative-guide) |
-| Employer bears recruitment fees, Iqama and work permit issuance and renewal, fines for late renewal, profession-change fees, exit and re-entry visas, and the return ticket at the end of the relationship. Worker bears return cost only if unfit for work or leaving without legitimate reason. The employer receiving a transferred worker bears the transfer fee | **40** | ✅ verified | [HRSD — what the employer bears](https://www.hrsd.gov.sa/en/knowledge-centre/articles/64434), [official law text, laws.boe.gov.sa](https://laws.boe.gov.sa/Files/Download/?attId=704cf56e-eb7a-4ddb-8c28-adbb01244dc6) |
-| Employer may not withhold a non-Saudi worker's passport, residence permit (Iqama) or medical insurance card | **Implementing Regulations, art. 6** | ✅ verified | [HRSD — employers' obligations](https://www.hrsd.gov.sa/en/%D8%A7%D9%84%D8%AA%D8%B2%D8%A7%D9%85%D8%A7%D8%AA-%D8%B5%D8%A7%D8%AD%D8%A8-%D8%A7%D9%84%D8%B9%D9%85%D9%84), [Qiwa — workers' rights](https://qiwa.sa/en/labor-education/establishment-workers-rights) |
+| **Non-Saudi only.** Employer bears recruitment fees, Iqama and work permit issuance and renewal, fines for late renewal, profession-change fees, exit and re-entry visas, and the return ticket at the end of the relationship. Worker bears return cost only if unfit for work or leaving without legitimate reason. The employer receiving a transferred worker bears the transfer fee | **40** | ✅ verified | [HRSD — what the employer bears](https://www.hrsd.gov.sa/en/knowledge-centre/articles/64434), [official law text, laws.boe.gov.sa](https://laws.boe.gov.sa/Files/Download/?attId=704cf56e-eb7a-4ddb-8c28-adbb01244dc6) |
+| **Non-Saudi only.** Employer may not withhold a non-Saudi worker's passport, residence permit (Iqama) or medical insurance card | **Implementing Regulations, art. 6** | ✅ verified | [HRSD — employers' obligations](https://www.hrsd.gov.sa/en/%D8%A7%D9%84%D8%AA%D8%B2%D8%A7%D9%85%D8%A7%D8%AA-%D8%B5%D8%A7%D8%AD%D8%A8-%D8%A7%D9%84%D8%B9%D9%85%D9%84), [Qiwa — workers' rights](https://qiwa.sa/en/labor-education/establishment-workers-rights) |
 | Since the 2021 Labor Reform Initiative a worker may transfer employer through Qiwa without the current employer's consent in defined cases, including contract expiry, three consecutive months of unpaid wages, and an expired Iqama | — (Labor Reform Initiative, named without an article) | ✅ verified | [Qiwa — workers' rights](https://qiwa.sa/en/labor-education/establishment-workers-rights), [Etqan Law — expatriate guide](https://etqanlawfirm-sa.com/en/new-saudi-labor-law-for-expatriates/) |
 | Non-compete must be limited in duration, place and type of work; two years is the usual ceiling | — | ⚠️ **illustrative** — cite the law by name only, no article number, until verified | — |
-| Compensation for termination without valid reason (15 days per year, floor of two months' wage) | — | ⚠️ **illustrative** — used in the case-file estimate and labelled conditional in-product | — |
+| Compensation for termination without valid reason, **indefinite** contract: 15 days' wages per year of service, floor of two months' wages | **77** | ✅ verified | [Al Othman Law](https://alothmanlaw.sa/en/saudi-labour-law-article-77/), [Bird & Bird](https://www.twobirds.com/en/insights/2026/saudi-arabia/how-can-organisations-navigate-employee-dismissal-under-the-updated-saudi-labour-law) |
+| Compensation for termination without valid reason, **fixed-term** contract: the wages for the **remaining term** of the contract, floor of two months' wages. This is the branch that applies to every non-Saudi | **77** | ✅ verified | [Al Othman Law](https://alothmanlaw.sa/en/saudi-labour-law-article-77/), [Atayyar Legal](https://al-tayyar.com.sa/en/saudi-labor-law-article-77/) |
+| A non-Saudi's contract must be **written and fixed-term**, and never converts to indefinite regardless of duration or renewal, even by agreement. Where no term is stated it is taken as one year from actual commencement | **37** | ✅ verified | [Qiwa — employment of non-Saudis](https://www.qiwa.sa/en/labor-law/non-saudis/employment-non-saudis), [DLA Piper on the amendments](https://knowledge.dlapiper.com/dlapiperknowledge/globalemploymentlatestdevelopments/2024/Amendments-to-the-KSA-Labour-Law) |
 | Termination without award in specified cases | — | ⚠️ **illustrative** | — |
 
 ## Corrections log
@@ -68,6 +70,23 @@ to leave. Corrected, and the article is now cited.
 This error was found only because the sources feature forced verification of
 claims the app had been asserting for weeks. That is the argument for keeping
 this register current.
+
+**July 2026 — Article 77, and who it applies to.** The case-file estimate
+applied the indefinite-contract formula — 15 days' wages per year of service,
+floor two months — to every user. Article 77 has two branches, and a
+**fixed-term** contract is compensated with the wages for the **remaining
+term** instead. Under Article 37 a non-Saudi's contract is always fixed-term,
+so the app was showing the wrong branch to every non-Saudi who used it. On six
+years' service with eight months left, that understated the figure by roughly
+five months' wages.
+
+Both branches are now registered and verified, the calculator asks for the
+contract's end date when the fixed-term branch applies, and the app no longer
+falls back to the indefinite formula silently.
+
+The same audit found Article 75's notice rule and the two non-Saudi-only
+provisions (art. 40, Implementing Regulations art. 6) being shown to everyone
+regardless of nationality. Scoped accordingly.
 
 ## Before shipping to real users
 
