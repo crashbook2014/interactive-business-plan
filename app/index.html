@@ -200,6 +200,7 @@
   .load-sub{font-size:13px;color:var(--ink-2);margin-top:12px}
 
   /* result */
+  .back[hidden]{display:none}
   .back{display:flex;align-items:center;gap:6px;color:var(--teal);font-size:14px;font-weight:700;padding:8px 2px;align-self:flex-start}
   html[dir="ltr"] .back .bk{transform:scaleX(-1)}
   .score-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:26px 20px 20px;text-align:center;box-shadow:var(--e2),var(--edge);--band:var(--teal)}
@@ -285,6 +286,8 @@
   .pay-methods{display:flex;justify-content:center;gap:8px;margin-top:10px;font-size:11.5px;color:var(--ink-2)}
   .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
+  .acc-anchor{text-align:center;font-size:12px;color:var(--ink);background:var(--teal-soft);
+      border-radius:var(--r-sm);padding:9px 12px;margin-top:12px;line-height:1.6}
 
   /* unlocked letter */
   /* The letter is the artifact the user actually sends, so it is presented as
@@ -372,6 +375,56 @@
   .letter-tease.building .lock{background:var(--teal)}
   .letter-tease.building{background:var(--teal-soft);border-color:var(--teal)}
   .letter-tease.building .go{color:var(--teal)}
+
+  /* tab bar — permanent orientation across the four roots */
+  .tabbar[hidden]{display:none}
+  .tabbar{position:sticky;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+      background:color-mix(in srgb, var(--sand) 88%, transparent);backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);margin:18px -18px 0;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  @supports not (backdrop-filter: blur(4px)){ .tabbar{background:var(--sand)} }
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border-radius:var(--r-md);
+      color:var(--ink-2);transition:color .15s}
+  .tab svg{width:21px;height:21px}
+  .tab span{font-size:10.5px;font-weight:700}
+  html[lang="ar"] .tab span{font-weight:400;font-size:12px}
+  .tab.on{color:var(--teal)}
+  .tab.on svg{stroke-width:2.3}
+
+  /* home: trust line, sample disclosure, saved contracts */
+  .privacy-line{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:start;
+      margin-top:12px;padding:2px;color:var(--ink-2);font-size:12px;line-height:1.6}
+  .privacy-line svg{flex:none;width:15px;height:15px;margin-top:2px;color:var(--teal)}
+  .privacy-line span{flex:1;border-bottom:1px solid var(--line);padding-bottom:1px}
+  .samples-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+      margin-top:20px;padding:11px;border:1px solid var(--line);border-radius:var(--r-md);
+      color:var(--ink-2);font-size:13.5px;transition:color .15s,border-color .15s}
+  .samples-toggle:hover{color:var(--teal);border-color:var(--teal)}
+  .samples-toggle .chev{display:flex;transition:transform .2s}
+  .samples-toggle .chev svg{width:14px;height:14px}
+  .samples-toggle.open .chev{transform:rotate(180deg)}
+  .samples[hidden]{display:none}
+  .samples{margin-top:9px}
+  .mc-list[hidden]{display:none}
+  .mc-list{display:grid;gap:9px;margin-bottom:6px}
+  .paste-hint.nudge{color:var(--red);animation:nudge .4s ease}
+  @keyframes nudge{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .primary.soft{opacity:.6}
+
+  /* account */
+  .acc-plan-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+      border-radius:var(--r-lg);padding:15px 16px;box-shadow:var(--e1),var(--edge);margin-bottom:18px}
+  .acc-plan-row span{flex:1;display:block}
+  .acc-plan-row small{display:block;font-size:11.5px;color:var(--ink-2)}
+  .acc-plan-row b{font-size:16px;color:var(--teal-ink)}
+  .mini-cta{background:var(--teal);color:var(--on-teal);border-radius:var(--r-sm);padding:8px 14px;
+      font-size:13px;font-weight:700;white-space:nowrap}
+  html[lang="ar"] .mini-cta{font-weight:400;font-size:14.5px}
+  .acc-sec{border-top:1px solid var(--line);padding:16px 2px}
+  .acc-sec h3{font-size:15px;color:var(--teal-ink);margin-bottom:8px}
+  .acc-sec p{font-size:13.5px;color:var(--ink-2);line-height:1.8;margin-bottom:8px}
+  .acc-sec p.free{color:var(--green);}
+  .acc-sec p.anchor{font-size:12.5px;color:var(--ink);background:var(--teal-soft);
+      border-radius:var(--r-sm);padding:10px 12px;margin-top:4px}
 
   /* end-of-service calculator */
   .form{display:grid;gap:12px;margin-bottom:16px}
@@ -495,6 +548,7 @@
   .biz-stats .st b{display:block;font-family:var(--en);font-size:22px;color:var(--teal-ink);font-variant-numeric:tabular-nums}
   .biz-stats .st.warn b{color:var(--amber)}
   .biz-stats .st span{font-size:11px;color:var(--ink-2);line-height:1.4;display:block;margin-top:2px}
+  .biz-h[hidden]{display:none}
   .biz-h{font-size:15.5px;color:var(--teal-ink);margin:4px 2px 9px}
   .biz-note{font-size:12.5px;color:var(--ink-2);margin:-4px 2px 10px;line-height:1.6}
   .biz-list{display:grid;gap:9px;margin-bottom:20px}
@@ -690,51 +744,46 @@
     <p class="greet" id="greet"></p>
     <div class="seg mode-seg" id="modeSeg"></div>
     <h1 class="hello" id="helloLine"></h1>
-    <div class="notice" id="offlineNotice" hidden></div>
     <p class="sub" id="subLine"></p>
-    <div class="samples">
+    <div class="notice" id="offlineNotice" hidden></div>
+    <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
+    <p class="paste-hint" data-t="paste_hint"></p>
+    <button class="primary" id="analyzeBtn" onclick="analyze('pasted')" data-t="analyze"></button>
+    <button class="privacy-line" onclick="goTab('account')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg>
+      <span data-t="privacy_line"></span>
+    </button>
+
+    <button class="samples-toggle" id="samplesToggle" onclick="toggleSamples()">
+      <span data-t="try_sample"></span>
+      <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 6 5-6"/></svg></span>
+    </button>
+    <div class="samples" id="samplesWrap" hidden>
       <button class="sample" onclick="analyze('employment')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-doc"/></svg></span>
         <span><b data-t="s_emp"></b><span data-t="s_emp_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
       <button class="sample" onclick="analyze('rental')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-home"/></svg></span>
         <span><b data-t="s_rent"></b><span data-t="s_rent_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
       <button class="sample" onclick="analyze('clean')">
         <span class="ic"><svg viewBox="0 0 64 64" fill="none" stroke="var(--teal)"><path d="M14 32l12 12 24-26" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span><b data-t="s_clean"></b><span data-t="s_clean_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
       <button class="sample" onclick="analyze('freelance')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-pen"/></svg></span>
         <span><b data-t="s_free"></b><span data-t="s_free_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
     </div>
-    <div class="or" data-t="or"></div>
-    <textarea id="pasteBox" oninput="pasteChanged()"></textarea>
-    <p class="paste-hint" data-t="paste_hint"></p>
-    <button class="primary" id="analyzeBtn" disabled onclick="analyze('pasted')" data-t="analyze"></button>
-    <button class="assist-entry" onclick="openEos()">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 11h2M12 11h4M8 15h2M12 15h4"/></svg></span>
-      <span><b data-t="eos_open"></b><span data-t="eos_open_sub"></span></span>
-      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-    </button>
+
+    <h3 class="biz-h" id="mcHead" hidden data-t="my_contracts"></h3>
+    <div class="mc-list" id="myContracts"></div>
+
     <button class="assist-entry" onclick="openAssist('home')">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
       <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-    </button>
-    <button class="home-reminders" id="homeReminders" onclick="openTimeline('home')">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
-      <span id="homeRemindersLabel"></span>
-    </button>
-    <button class="home-plans" onclick="openPlans('home')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h9"/></svg>
-      <span data-t="pl_title"></span>
     </button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
@@ -813,6 +862,7 @@
     <div class="plans" id="plans"></div>
     <button class="primary" id="payBtn" onclick="pwPay()"></button>
     <div class="pay-methods"><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i></div>
+    <p class="acc-anchor" data-t="anchor_price"></p>
     <p class="demo-tag" data-t="pw_demo"></p>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
@@ -830,6 +880,51 @@
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- RIGHTS (tab root) -->
+  <section class="screen" id="screen-rights">
+    <h2 class="section-title" data-t="rights_title"></h2>
+    <p class="pw-note" data-t="rights_sub"></p>
+    <button class="assist-entry" onclick="openEos()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 11h2M12 11h4M8 15h2M12 15h4"/></svg></span>
+      <span><b data-t="r_eos"></b><span data-t="r_eos_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+    <button class="assist-entry" onclick="startSignedReview()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 14l2.5 2.5L17 12"/></svg></span>
+      <span><b data-t="r_know"></b><span data-t="r_know_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+    <button class="assist-entry" onclick="openEos()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
+      <span><b data-t="r_case"></b><span data-t="r_case_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- ACCOUNT (tab root) -->
+  <section class="screen" id="screen-account">
+    <h2 class="section-title" data-t="acc_title"></h2>
+    <div class="acc-plan" id="accPlan"></div>
+    <div class="acc-sec">
+      <h3 data-t="acc_pay_q"></h3>
+      <p class="free" data-t="acc_pay_free"></p>
+      <p data-t="acc_pay_paid"></p>
+      <p class="anchor" data-t="anchor_price"></p>
+    </div>
+    <div class="acc-sec">
+      <h3 data-t="acc_privacy"></h3>
+      <p data-t="acc_privacy_b"></p>
+    </div>
+    <div class="acc-sec">
+      <h3 data-t="acc_how"></h3>
+      <p data-t="acc_how_b"></p>
+      <p id="accNotLawyer"></p>
+    </div>
+    <button class="home-reminders" onclick="toggleLang()"><span id="accLangLabel"></span></button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -943,7 +1038,7 @@
 
   <!-- REMINDER TIMELINE -->
   <section class="screen" id="screen-timeline">
-    <button class="back" onclick="tlBack()"><span class="bk" aria-hidden="true">‹</span><span id="tlBackLabel"></span></button>
+    <button class="back" id="tlBack" onclick="tlBack()"><span class="bk" aria-hidden="true">‹</span><span id="tlBackLabel"></span></button>
     <h2 class="section-title" data-t="tl_title"></h2>
     <div class="tl-note"><span class="dot-on"></span><span data-t="tl_note"></span></div>
     <div class="timeline" id="tlList"></div>
@@ -957,6 +1052,8 @@
     <div id="clauseList"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
+  <nav class="tabbar" id="tabbar" hidden></nav>
+
   <div class="builder" id="builder" hidden>
     <span class="bcount" id="bCount"></span>
     <button class="bview" id="bView" onclick="openLetterFlow()"></button>
@@ -972,6 +1069,42 @@ const T = {
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
+  tab_review:{ar:"راجع",en:"Review"},
+  tab_rights:{ar:"حقوقي",en:"Rights"},
+  tab_remind:{ar:"تذكيراتي",en:"Reminders"},
+  tab_account:{ar:"حسابي",en:"Account"},
+  try_sample:{ar:"أو جرّب نموذجًا",en:"Or try a sample"},
+  privacy_line:{ar:"يُحلَّل النص على جهازك — لا يغادر ولا نحتفظ به.",
+                en:"Your text is analyzed on your device — it never leaves it and we don't keep it."},
+  privacy_more:{ar:"اعرف أكثر",en:"Learn more"},
+  my_contracts:{ar:"عقودي",en:"My contracts"},
+  mc_empty:{ar:"ما حلّلت أي عقد بعد.",en:"You haven't analyzed a contract yet."},
+  mc_open:{ar:"افتحه",en:"Open"},
+  rights_title:{ar:"حقوقك",en:"Your rights"},
+  rights_sub:{ar:"وقّعت بالفعل، أو انتهى عقدك؟ من هنا تعرف وين تقف.",
+              en:"Already signed, or your contract ended? Start here to see where you stand."},
+  r_eos:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
+  r_eos_d:{ar:"رقم دقيق بالحساب خطوة بخطوة — مجانًا",en:"An exact figure with the arithmetic shown — free"},
+  r_know:{ar:"اعرف حقوقك في عقد وقّعته",en:"Know your rights in a signed contract"},
+  r_know_d:{ar:"نقرأه ونوضّح وش ملزم ووش قابل للاعتراض",en:"We read it and show what binds you and what's contestable"},
+  r_case:{ar:"جهّز ملف قضيتك",en:"Build a case file"},
+  r_case_d:{ar:"احسب مستحقك أولًا، وبعدها نجمع الملف",en:"Calculate what you're owed first, then we assemble the file"},
+  acc_title:{ar:"حسابك",en:"Your account"},
+  acc_plan:{ar:"خطتك",en:"Your plan"},
+  acc_pay_q:{ar:"ما الذي أدفع مقابله؟",en:"What am I paying for?"},
+  acc_pay_free:{ar:"مجاني دائمًا: تقييم العقد، التنبيهات، شرح البنود، حاسبة نهاية الخدمة.",
+                en:"Always free: the contract score, the flags, clause explanations, and the end-of-service calculator."},
+  acc_pay_paid:{ar:"مدفوع: المخرجات فقط — خطاب التفاوض، ملف القضية، أسئلة المساعد بلا حدود، ومراجعة المحامي.",
+                en:"Paid: outputs only — the negotiation letter, the case file, unlimited assistant questions, and lawyer review."},
+  acc_privacy:{ar:"الخصوصية",en:"Privacy"},
+  acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
+                 en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
+  acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
+  acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. المراجع في هذا النموذج توضيحية وتحتاج تحققًا من النص الرسمي.",
+              en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. References in this prototype are illustrative and need checking against the official text."},
+  acc_lang:{ar:"اللغة",en:"Language"},
+  anchor_price:{ar:"للمقارنة: استشارة محامٍ تبدأ عادة من ٥٠٠ ر.س للساعة.",
+                en:"For comparison: a lawyer consultation typically starts at 500 SAR an hour."},
   mode_before:{ar:"قبل التوقيع",en:"Before signing"},
   mode_signed:{ar:"وقّعته بالفعل",en:"Already signed"},
   hello_signed:{ar:"وقّعته؟ خلنا نعرف حقوقك فيه.",en:"Signed it? Let's find out where you stand."},
@@ -1594,6 +1727,8 @@ function applyLang(){
   renderOnboard();
   renderMode();
   renderHomeReminders();
+  renderTabs(); renderMyContracts();
+  if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
   renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
@@ -1604,7 +1739,8 @@ function applyLang(){
     syncAddButtons(); renderBuilder();
   }
 }
-function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
+function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; loadState();
+applyLang(); }
 
 function show(name, back){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back"));
@@ -1614,6 +1750,7 @@ function show(name, back){
   window.scrollTo(0,0);
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();
+  if (typeof renderTabs === "function") renderTabs();
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */
@@ -1645,8 +1782,10 @@ function obNext(){
 }
 
 function pasteChanged(){
-  document.getElementById("analyzeBtn").disabled =
-    document.getElementById("pasteBox").value.trim().length < 40;
+  /* The button stays live; if the text is too short we say so rather than
+     greying out and leaving the user to guess. */
+  const short = document.getElementById("pasteBox").value.trim().length < 40;
+  document.getElementById("analyzeBtn").classList.toggle("soft", short);
 }
 
 /* ------------------------------------------------------------- analyze */
@@ -1654,6 +1793,12 @@ function analyze(kind){
   const notice = document.getElementById("offlineNotice");
   if (navigator.onLine === false){ notice.hidden = false; return; }
   notice.hidden = true;
+  if (kind === "pasted" && document.getElementById("pasteBox").value.trim().length < 40){
+    const hint = document.querySelector("#screen-home .paste-hint");
+    hint.classList.remove("nudge"); void hint.offsetWidth; hint.classList.add("nudge");
+    document.getElementById("pasteBox").focus();
+    return;
+  }
   const result = kind==="pasted"
     ? analyzePasted(document.getElementById("pasteBox").value)
     : SAMPLES[kind];
@@ -1668,6 +1813,7 @@ function analyze(kind){
   letterSet = new Set();
   runLoading(()=>{
     renderResult(true); renderClauses(); renderFeedback();
+    recordContract(); renderMyContracts();
     buzz(negotiables().length ? 12 : [10,60,18]);   /* lighter double-tap when all clear */
     show("result");
   });
@@ -1687,7 +1833,7 @@ function runLoading(done){
     fill.style.width = Math.min(100, ((i+1)/steps.length)*100) + "%";
     if (i < steps.length) el.textContent = steps[i];
     else { clearInterval(iv); done(); }
-  }, 650);
+  }, 380);
 }
 
 function retryPaste(){
@@ -1958,7 +2104,7 @@ function addClaimClock(endDate){
          en:"After twelve months from the end of the relationship a claim is generally not heard."} }
   ]});
   claimAdded = true; buzz(10);
-  renderHomeReminders();
+  saveState();
   document.getElementById("clockBtn").textContent = t("tr_added");
 }
 
@@ -2429,6 +2575,98 @@ function answer(q){
     : "I didn't quite catch that. Try asking about a specific topic — probation, notice period, end-of-service pay — or ask me to summarize your contract." };
 }
 
+/* ------------------------------------------------------- navigation ----
+   Four roots carry the tab bar; every deeper screen keeps its own back
+   button, so the existing stacks are untouched. */
+const TABS = [
+  { id:"home",     label:"tab_review",  icon:'<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/>' },
+  { id:"rights",   label:"tab_rights",  icon:'<path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/>' },
+  { id:"timeline", label:"tab_remind",  icon:'<path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/>' },
+  { id:"account",  label:"tab_account", icon:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.5 4-5 7-5s5.8 1.5 7 5"/>' }
+];
+const ROOTS = TABS.map(x=>x.id);
+
+function goTab(id){
+  if (id === "timeline"){ tlOrigin = "tab"; renderTimeline(); }
+  if (id === "account") renderAccount();
+  show(id);
+}
+
+function renderTabs(){
+  const bar = document.getElementById("tabbar");
+  const active = document.querySelector(".screen.active");
+  const cur = active ? active.id.replace("screen-","") : "home";
+  bar.hidden = !ROOTS.includes(cur);
+  if (bar.hidden) return;
+  bar.innerHTML = TABS.map(x=>
+    `<button class="tab${x.id===cur?" on":""}" data-tab="${x.id}">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x.icon}</svg>
+       <span>${t(x.label)}</span>
+     </button>`).join("");
+  bar.querySelectorAll("[data-tab]").forEach(b=>{ b.onclick = ()=>goTab(b.dataset.tab); });
+}
+
+function toggleSamples(){
+  const w = document.getElementById("samplesWrap");
+  w.hidden = !w.hidden;
+  document.getElementById("samplesToggle").classList.toggle("open", !w.hidden);
+}
+
+function startSignedReview(){
+  signedMode = true; renderMode(); goTab("home");
+  setTimeout(()=>document.getElementById("pasteBox").focus(), 150);
+}
+
+function renderAccount(){
+  const cur = plan==="biz" ? t("pl_biz") : plan==="plus" ? t("pl_plus") : t("pl_basic");
+  document.getElementById("accPlan").innerHTML =
+    `<div class="acc-plan-row">
+       <span><small>${t("acc_plan")}</small><b>${cur}</b></span>
+       <button class="mini-cta" onclick="openPlans('account')">${t("pl_title")}</button>
+     </div>`;
+  document.getElementById("accNotLawyer").textContent = t("as_not_lawyer");
+  document.getElementById("accLangLabel").textContent = t("acc_lang") + " · " + (lang==="ar" ? "English" : "عربي");
+}
+
+/* ------------------------------------------------- saved contracts ----
+   A tool you use once needs no memory; a companion does. */
+const STORE = "wodouh.v1";
+let myContracts = [];
+
+function saveState(){
+  try {
+    localStorage.setItem(STORE, JSON.stringify({
+      contracts: myContracts.slice(0,8),
+      tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
+    }));
+  } catch(e){}
+}
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    myContracts = d.contracts || [];
+    (d.tracked || []).forEach(x=>TRACKED.push(x));
+  } catch(e){}
+}
+function recordContract(){
+  if (!current) return;
+  myContracts.unshift({ doc:current.doc, score:current.score, at:Date.now(), signed:signedMode });
+  myContracts = myContracts.slice(0,8);
+  saveState();
+}
+
+function renderMyContracts(){
+  const wrap = document.getElementById("myContracts"), head = document.getElementById("mcHead");
+  head.hidden = !myContracts.length;
+  wrap.innerHTML = myContracts.map(c=>
+    `<div class="brow">
+       <span class="sc ${scoreBand(c.score)}">${fmtNum(c.score)}</span>
+       <span class="tx"><b>${t(c.doc)}</b><span>${fmtDate(c.at)}</span></span>
+     </div>`).join("");
+}
+
 /* ------------------------------------------------- reminder timeline */
 /* d = days from signing (today, in the prototype); k = info | action | deadline */
 const EVENTS = {
@@ -2484,7 +2722,7 @@ function trackOrView(){
       events: EVENTS[current.doc].map(e=>({ ...e, when: base + e.d*86400000 })) });
     TRACKED.sortStamp = Date.now();
   }
-  renderTrackTease(); renderHomeReminders();
+  renderTrackTease(); saveState();
   openTimeline("result");
 }
 
@@ -2493,7 +2731,7 @@ function openTimeline(origin){
   renderTimeline();
   show("timeline");
 }
-function tlBack(){ show(tlOrigin === "home" ? "home" : "result", 1); }
+function tlBack(){ show(tlOrigin === "result" ? "result" : "home", 1); }
 
 function fmtDate(ts){
   return new Intl.DateTimeFormat(lang==="ar" ? "ar-SA-u-ca-gregory" : "en-GB",
@@ -2527,15 +2765,12 @@ function renderMode(){
 }
 
 function renderHomeReminders(){
-  /* Always present, so the feature (and its empty state) is discoverable
-     before the first contract is ever tracked. */
-  document.getElementById("homeReminders").style.display = "flex";
-  document.getElementById("homeRemindersLabel").textContent =
-    TRACKED.length ? `${t("tl_reminders")} (${fmtNum(TRACKED.length)})` : t("tl_reminders");
+  /* The reminders tab replaced the home entry; nothing to render here. */
 }
 
 function renderTimeline(){
-  document.getElementById("tlBackLabel").textContent = t(tlOrigin==="home" ? "back_home" : "back_score");
+  document.getElementById("tlBack").hidden = tlOrigin === "tab";
+  document.getElementById("tlBackLabel").textContent = t(tlOrigin==="result" ? "back_score" : "back_home");
   const wrap = document.getElementById("tlList");
   wrap.innerHTML = "";
   const all = TRACKED.flatMap(c => c.events.map(e => ({ ...e, doc: c.doc })))
@@ -2829,6 +3064,7 @@ function renderClauses(){
   });
 }
 
+loadState();
 applyLang();
 </script>
 </body>
