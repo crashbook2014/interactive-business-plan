@@ -35,6 +35,12 @@
     --shadow:var(--e1);
     --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:22px; --r-2xl:28px;
     --grain:.035;
+    /* Motion follows meaning: entrances decelerate, confirmations overshoot,
+       positional moves stay neutral. One rhythm for the whole app. */
+    --t-fast:160ms; --t:240ms; --t-slow:360ms;
+    --ease-out:cubic-bezier(.22,.72,.28,1);
+    --ease-spring:cubic-bezier(.22,1.2,.36,1);
+    --ease-move:cubic-bezier(.4,0,.2,1);
     --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,'Trebuchet MS',sans-serif;
     --ar:'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif;
   }
@@ -331,7 +337,7 @@
   .all-clear{background:var(--green-bg);border-radius:var(--r-xl);padding:20px 18px;margin-top:16px;text-align:center}
   .all-clear .ac-tick{width:46px;height:46px;border-radius:999px;background:var(--green);
        display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
-       animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+       animation:pop var(--t-slow) var(--ease-spring) both}
   .all-clear .ac-tick svg{width:24px;height:24px}
   .all-clear b{display:block;font-size:17px;color:var(--ink)}
   .all-clear span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:5px;line-height:1.7}
@@ -350,17 +356,23 @@
   .ghost.wide{width:100%;margin-top:10px;flex:none}
 
   /* motion: screens enter along the reading direction */
-  .screen.active{animation:screen-in .3s cubic-bezier(.22,.7,.3,1) both}
-  @keyframes screen-in{from{opacity:0;transform:translateX(calc(var(--dir,1) * 14px))}
+  .screen.active{animation:screen-in var(--t-slow) var(--ease-out) both}
+  @keyframes screen-in{from{opacity:0;transform:translateX(calc(var(--dir,1) * 16px)) scale(.985)}
                        to{opacity:1;transform:none}}
   .screen.active.back{animation-name:screen-back}
-  @keyframes screen-back{from{opacity:0;transform:translateX(calc(var(--dir,1) * -14px))}
+  @keyframes screen-back{from{opacity:0;transform:translateX(calc(var(--dir,1) * -16px)) scale(.985)}
                          to{opacity:1;transform:none}}
-  .flag,.tl-item{animation:settle .32s ease both;animation-delay:var(--d,0ms)}
+  /* Tabs are siblings, not parents — no lateral push, just a settle. */
+  .screen.active.lateral{animation-name:screen-lateral}
+  @keyframes screen-lateral{from{opacity:0;transform:scale(1.012)}to{opacity:1;transform:none}}
+  /* Live drag: the screen tracks the finger, transitions suspended. */
+  .screen.dragging{animation:none !important;transition:none !important;will-change:transform}
+  .screen.settling{transition:transform var(--t) var(--ease-spring), opacity var(--t) var(--ease-out)}
+  .flag,.tl-item{animation:settle var(--t) var(--ease-out) both;animation-delay:var(--d,0ms)}
   @keyframes settle{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .primary:active,.sample:active,.plan:active,.letter-tease:active,.track-tease:active,
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
-  .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform .12s ease}
+  .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform var(--t-fast) var(--ease-spring),box-shadow var(--t-fast) var(--ease-out)}
 
   /* letter builder — reading the contract is how the letter gets written */
   .add-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--teal);
@@ -375,14 +387,14 @@
   .builder[hidden]{display:none}
   .builder{position:sticky;bottom:14px;z-index:5;display:flex;align-items:center;gap:12px;
       background:var(--teal);color:var(--on-teal);border-radius:var(--r-xl);padding:13px 15px;
-      margin-top:14px;box-shadow:var(--e3);animation:rise .3s cubic-bezier(.2,1.2,.4,1) both}
+      margin-top:14px;box-shadow:var(--e3);animation:rise var(--t-slow) var(--ease-spring) both}
   @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .builder .bcount{flex:1;font-size:14px;font-weight:700}
   html[lang="ar"] .builder .bcount{font-weight:400;font-size:15.5px}
   .builder .bview{background:var(--on-teal);color:var(--teal);border-radius:12px;
       padding:9px 15px;font-size:13.5px;font-weight:700;white-space:nowrap}
   html[lang="ar"] .builder .bview{font-weight:400;font-size:15px}
-  .builder.bump{animation:bump .32s ease}
+  .builder.bump{animation:bump var(--t) var(--ease-spring)}
   @keyframes bump{0%{transform:none}35%{transform:scale(1.035)}100%{transform:none}}
 
   .letter-tease.building .lock{background:var(--teal)}
@@ -424,6 +436,82 @@
   .cost-line{font-size:12.5px;color:var(--ink);background:var(--card);border-radius:var(--r-sm);
       padding:9px 12px;margin-top:9px;line-height:1.6}
   .clause .src-line{margin:0 16px 12px;padding-top:9px}
+
+  /* ---- premium motion components (additive) ---- */
+
+  /* Skeleton: shows the shape of what is coming, alongside the existing
+     loading copy — never instead of it. */
+  .skel{display:grid;gap:10px;width:100%;max-width:330px;margin:22px auto 0}
+  .skel-ring{width:104px;height:104px;border-radius:999px;margin:0 auto 6px;
+      border:8px solid var(--line);opacity:.65}
+  .sk{border-radius:var(--r-sm);background:var(--line);opacity:.55;position:relative;overflow:hidden}
+  .sk.l1{height:13px;width:78%;margin:0 auto} .sk.l2{height:13px;width:56%;margin:0 auto}
+  .sk.row{height:44px;border-radius:var(--r-lg)}
+  .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+      background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--card) 70%,transparent),transparent);
+      animation:shimmer 1.5s var(--ease-move) infinite}
+  @keyframes shimmer{to{transform:translateX(100%)}}
+  .skel.fading{animation:skel-out var(--t) var(--ease-out) forwards}
+  @keyframes skel-out{to{opacity:0;transform:scale(.98)}}
+
+  /* Sliding tab indicator */
+  .tabbar{position:sticky}
+  .tab-ind{position:absolute;top:6px;height:calc(100% - 12px - env(safe-area-inset-bottom));
+      border-radius:var(--r-md);background:var(--teal-soft);z-index:-1;
+      transition:transform var(--t) var(--ease-spring), width var(--t) var(--ease-spring);
+      pointer-events:none}
+  .tab{position:relative}
+
+  /* Reveal on scroll — JS adds .rv, so content is visible without JS */
+  .rv{opacity:0;transform:translateY(18px)}
+  .rv.in{opacity:1;transform:none;transition:opacity var(--t-slow) var(--ease-out),transform var(--t-slow) var(--ease-out)}
+
+  /* Header condenses as you scroll */
+  .bar{transition:padding var(--t) var(--ease-move)}
+  .bar.tight{padding-top:10px;padding-bottom:6px}
+  .bar .brand svg,.bar .brand .name-ar{transition:transform var(--t) var(--ease-move)}
+  .bar.tight .brand svg{transform:scale(.86)}
+  .bar.tight .brand .name-ar{transform:scale(.92)}
+
+  /* Parallax: decorative only, a few pixels */
+  .score-card .share-mark,.score-card .ring{will-change:transform}
+
+  /* Copy toast — additive; the button label swap still happens */
+  .toast{position:fixed;inset-inline:0;bottom:26px;margin:0 auto;width:max-content;max-width:80%;
+      background:var(--teal);color:var(--on-teal);border-radius:999px;padding:11px 20px;
+      font-size:14px;box-shadow:var(--e3);z-index:40;display:flex;align-items:center;gap:9px;
+      animation:toast-in var(--t-slow) var(--ease-spring) both}
+  .toast svg{width:16px;height:16px}
+  .toast.out{animation:toast-out var(--t) var(--ease-out) forwards}
+  @keyframes toast-in{from{opacity:0;transform:translateY(20px) scale(.94)}to{opacity:1;transform:none}}
+  @keyframes toast-out{to{opacity:0;transform:translateY(12px) scale(.97)}}
+
+  /* Draw-on confirmation ticks */
+  .draw path{stroke-dasharray:24;stroke-dashoffset:24;animation:draw 260ms var(--ease-spring) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  /* Press depth: scale paired with shadow, so it reads as physical */
+  .sample:active,.assist-entry:active,.brow:active,.src:active,.doc:active{box-shadow:var(--e1)}
+  .assist-entry,.brow,.src,.doc{transition:transform var(--t-fast) var(--ease-spring),
+      box-shadow var(--t-fast) var(--ease-out),border-color var(--t-fast) var(--ease-out)}
+  .assist-entry:active,.brow:active,.src:active,.doc:active{transform:scale(.985)}
+
+  /* Segmented controls and radios settle with a spring */
+  .seg button,.plan .radio,.opts button{transition:background var(--t-fast) var(--ease-out),
+      color var(--t-fast) var(--ease-out),border-color var(--t-fast) var(--ease-out)}
+  .plan .radio::after{animation:pop-dot var(--t-fast) var(--ease-spring) both}
+  @keyframes pop-dot{from{transform:scale(0)}to{transform:scale(1)}}
+
+  /* Expanded flag content fades in after the height settles */
+  .flag.open .advice>*{animation:adv-in var(--t) var(--ease-out) both;animation-delay:90ms}
+  @keyframes adv-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Reduced motion: neutralise everything decorative, keep everything usable */
+  @media (prefers-reduced-motion: reduce){
+    .sk::after,.skel,.toast,.draw path,.rv,.rv.in,.tab-ind,.flag.open .advice>*{
+      animation:none !important;transition:none !important;transform:none !important;opacity:1 !important}
+    .rv{opacity:1 !important;transform:none !important}
+  }
 
   /* file intake */
   .intake{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:4px}
@@ -896,6 +984,11 @@
     <div class="load-step" id="loadStep"></div>
     <div class="load-track"><span id="loadFill"></span></div>
     <div class="load-sub" data-t="load_sub"></div>
+    <div class="skel" id="skel" aria-hidden="true">
+      <div class="skel-ring"></div>
+      <div class="sk l1"></div><div class="sk l2"></div>
+      <div class="sk row"></div><div class="sk row"></div><div class="sk row"></div>
+    </div>
   </section>
 
   <!-- RESULT -->
@@ -923,7 +1016,7 @@
         <span><i style="background:var(--green)"></i><span data-t="lg_green"></span></span>
       </div>
       <div class="all-clear" id="allClear" hidden>
-        <span class="ac-tick"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <span class="ac-tick"><svg class="draw" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
         <b id="acTitle"></b>
         <span id="acBody"></span>
       </div>
@@ -1942,19 +2035,26 @@ function applyLang(){
 }
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; loadState();
 applyLang();
-initIntake(); }
+initIntake();
+initGestures();
+window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("resize", moveTabIndicator, { passive:true });
+requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); }); }
 
 function show(name, back){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back"));
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling"));
   const el = document.getElementById("screen-"+name);
   el.classList.add("active");
   if (back) el.classList.add("back");
+  if (lateralNav) el.classList.add("lateral");
+  el.style.transform = "";
   window.scrollTo(0,0);
   const h = el.querySelector("h1,h2");
   if (h){ h.setAttribute("tabindex","-1"); h.focus({ preventScroll:true }); }
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
+  if (typeof armReveals === "function") requestAnimationFrame(()=>armReveals(el));
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */
@@ -2024,6 +2124,8 @@ function analyze(kind){
 }
 
 function runLoading(done){
+  const sk = document.getElementById("skel");
+  if (sk){ sk.classList.remove("fading"); sk.hidden = false; }
   show("loading");
   const steps = T.load_steps[lang].slice();
   if (current) steps.splice(1, 0, t("load_" + current.doc.replace("doc_","")));
@@ -2036,7 +2138,12 @@ function runLoading(done){
     i++;
     fill.style.width = Math.min(100, ((i+1)/steps.length)*100) + "%";
     if (i < steps.length) el.textContent = steps[i];
-    else { clearInterval(iv); done(); }
+    else {
+      clearInterval(iv);
+      const sk2 = document.getElementById("skel");
+      if (sk2 && !REDUCED.matches){ sk2.classList.add("fading"); }
+      done();
+    }
   }, 380);
 }
 
@@ -2147,6 +2254,8 @@ function setRing(score){
 
 function animateRing(){
   const target = current.score;
+  /* Under reduced motion the number arrives at once; the value is identical. */
+  if (REDUCED.matches){ setRing(target); return; }
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     setRing(target);
     const numEl = document.getElementById("scoreNum");
@@ -2256,6 +2365,12 @@ function calcEos(){
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
   eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
+  /* The figure counts up to exactly the computed total; the value and its
+     formatting are unchanged, only its arrival. */
+  { const amtEl = document.querySelector("#eosOut .amt"), cur = t("eos_sar");
+    if (amtEl) rollTo(
+      { set textContent(v){ amtEl.innerHTML = v + "<small>" + cur + "</small>"; } },
+      total, money); }
   buzz(8);
   if (eosHow === "term") bindTriage(ed);
 }
@@ -2373,7 +2488,7 @@ function renderCase(){
 
   document.getElementById("caseDocs").innerHTML = CASE_DOCS.map(d=>
     `<button class="doc${caseDocs.has(d)?" on":""}" data-doc="${d}">
-       <span class="box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg></span>
+       <span class="box"><svg class="draw" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg></span>
        <span>${t(d)}</span>
      </button>`).join("");
   document.querySelectorAll("[data-doc]").forEach(b=>{
@@ -2428,7 +2543,7 @@ function renderCaseDoc(){
 
 function copyCase(){
   const btn = document.getElementById("caseCopyBtn");
-  const done = ()=>{ btn.textContent = t("copied"); setTimeout(()=>{ btn.textContent = t("cf_copy"); }, 1600); };
+  const done = ()=>{ btn.textContent = t("copied"); toast(t("copied")); setTimeout(()=>{ btn.textContent = t("cf_copy"); }, 1600); };
   if (navigator.clipboard) navigator.clipboard.writeText(document.getElementById("caseBody").textContent).then(done,done);
   else done();
 }
@@ -2930,6 +3045,144 @@ function initIntake(){
 function openPhoto(){ document.getElementById("phNote").hidden = true; show("photo"); }
 function shoot(){ buzz(10); document.getElementById("phNote").hidden = false; }
 
+/* ------------------------------------------------------ motion layer ----
+   Everything below is additive: it changes how existing state arrives on
+   screen, never what that state is. Each piece is guarded so the app behaves
+   identically with motion disabled. */
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+const COARSE  = window.matchMedia("(pointer: coarse)");
+
+/* Numbers arrive by counting, the way the score already does. */
+function rollTo(el, value, fmt){
+  if (!el) return;
+  const done = () => { el.textContent = fmt(value); };
+  if (REDUCED.matches || !value) return done();
+  const t0 = performance.now(), dur = 700;
+  (function tick(now){
+    const k = Math.min(1, (now - t0) / dur);
+    el.textContent = fmt(Math.round(value * (1 - Math.pow(1 - k, 3))));
+    if (k < 1) requestAnimationFrame(tick); else done();
+  })(t0);
+}
+
+/* Reveal-on-scroll. Elements start visible in markup; JS opts them in, so a
+   failure here can never hide content. */
+let revealObserver = null;
+function armReveals(root){
+  if (REDUCED.matches || !("IntersectionObserver" in window)) return;
+  if (!revealObserver){
+    revealObserver = new IntersectionObserver(es=>es.forEach(e=>{
+      if (e.isIntersecting){ e.target.classList.add("in"); revealObserver.unobserve(e.target); }
+    }), { threshold:.12, rootMargin:"0px 0px -6% 0px" });
+  }
+  const sel = ".clause, .pcard, .brow, .src, .tl-item, .acc-sec, .doc";
+  (root || document).querySelectorAll(sel).forEach(el=>{
+    if (el.dataset.rv) return;
+    el.dataset.rv = "1";
+    const box = el.getBoundingClientRect();
+    if (box.top < window.innerHeight * 0.92){ el.classList.add("rv","in"); return; }
+    el.classList.add("rv");
+    revealObserver.observe(el);
+  });
+}
+
+/* The tab pill slides between siblings rather than blinking. */
+function moveTabIndicator(){
+  const bar = document.getElementById("tabbar");
+  if (!bar || bar.hidden) return;
+  let ind = bar.querySelector(".tab-ind");
+  const on = bar.querySelector(".tab.on");
+  if (!on) return;
+  if (!ind){ ind = document.createElement("span"); ind.className = "tab-ind"; bar.appendChild(ind); }
+  ind.style.width = on.offsetWidth + "px";
+  ind.style.transform = "translateX(" + on.offsetLeft + "px)";
+}
+
+/* Header condenses, score card drifts. Decorative, capped, opt-out honoured. */
+function onScroll(){
+  const bar = document.querySelector(".bar");
+  if (bar) bar.classList.toggle("tight", window.scrollY > 40);
+  if (REDUCED.matches) return;
+  const card = document.querySelector("#screen-result.active .score-card");
+  if (card){
+    const d = Math.max(-6, Math.min(6, window.scrollY * -0.08));
+    const mark = card.querySelector(".share-mark"), ring = card.querySelector(".ring");
+    if (mark) mark.style.transform = "translateY(" + d + "px)";
+    if (ring) ring.style.transform = "translateY(" + (d * 0.6) + "px)";
+  }
+}
+
+/* A toast in addition to the existing button label change. */
+function toast(msg){
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.setAttribute("role","status");
+  el.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg><span></span>';
+  el.querySelector("span").textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(), 300); }, 1700);
+}
+
+/* Gesture navigation. Commits through the screens' own back actions, so it
+   introduces no navigation path that did not already exist. */
+const BACK_OF = {
+  result:()=>show("home",1), clauses:()=>show("result",1), letter:()=>show("result",1),
+  paywall:()=>show(pwMode==="case"?"case":"result",1), eos:()=>show("home",1),
+  case:()=>show("eos",1), casedoc:()=>show("case",1), plans:()=>show(planBack,1),
+  biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
+  photo:()=>show("home",1), timeline:()=>tlBack()
+};
+function initGestures(){
+  if (!COARSE.matches) return;
+  const app = document.querySelector(".app");
+  let sx=0, sy=0, dragging=false, cur=null, rtl=false, id=null;
+  const blocked = t => t.closest("textarea,input,.chat,.caps,.tabbar,.viewfinder");
+
+  app.addEventListener("pointerdown", e=>{
+    if (e.pointerType === "mouse" || blocked(e.target)) return;
+    cur = document.querySelector(".screen.active");
+    if (!cur) return;
+    sx = e.clientX; sy = e.clientY; dragging = false; id = e.pointerId;
+    rtl = document.documentElement.dir === "rtl";
+  }, { passive:true });
+
+  app.addEventListener("pointermove", e=>{
+    if (!cur || e.pointerId !== id) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!dragging){
+      if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+      dragging = true; cur.classList.add("dragging");
+    }
+    const name = cur.id.replace("screen-","");
+    const inward = rtl ? dx < 0 : dx > 0;           /* toward the back edge */
+    if (BACK_OF[name] && inward && !REDUCED.matches)
+      cur.style.transform = "translateX(" + (dx * 0.55) + "px)";
+  }, { passive:true });
+
+  const release = e=>{
+    if (!cur || (id !== null && e.pointerId !== id)) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    const scr = cur, name = scr.id.replace("screen-","");
+    scr.classList.remove("dragging");
+    scr.classList.add("settling");
+    scr.style.transform = "";
+    setTimeout(()=>scr.classList.remove("settling"), 260);
+    const horizontal = Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4;
+    if (horizontal && dragging){
+      const inward = rtl ? dx < 0 : dx > 0;
+      if (BACK_OF[name] && inward){ buzz(8); BACK_OF[name](); }
+      else if (ROOTS.includes(name)){
+        const i = ROOTS.indexOf(name);
+        const next = (rtl ? dx > 0 : dx < 0) ? i + 1 : i - 1;
+        if (next >= 0 && next < ROOTS.length){ buzz(8); goTab(ROOTS[next]); }
+      }
+    }
+    cur = null; dragging = false; id = null;
+  };
+  app.addEventListener("pointerup", release, { passive:true });
+  app.addEventListener("pointercancel", release, { passive:true });
+}
+
 /* ------------------------------------------------------- navigation ----
    Four roots carry the tab bar; every deeper screen keeps its own back
    button, so the existing stacks are untouched. */
@@ -2941,10 +3194,13 @@ const TABS = [
 ];
 const ROOTS = TABS.map(x=>x.id);
 
+let lateralNav = false;
 function goTab(id){
   if (id === "timeline"){ tlOrigin = "tab"; renderTimeline(); }
   if (id === "account") renderAccount();
+  lateralNav = true;                 /* siblings cross-fade instead of pushing */
   show(id);
+  lateralNav = false;
 }
 
 function renderTabs(){
@@ -2959,6 +3215,7 @@ function renderTabs(){
        <span>${t(x.label)}</span>
      </button>`).join("");
   bar.querySelectorAll("[data-tab]").forEach(b=>{ b.onclick = ()=>goTab(b.dataset.tab); });
+  requestAnimationFrame(moveTabIndicator);
 }
 
 function toggleSamples(){
@@ -3398,7 +3655,7 @@ function renderLetter(){
 
 function copyLetter(){
   const btn = document.getElementById("copyBtn");
-  const done = ()=>{ btn.textContent = t("copied"); setTimeout(()=>{ btn.textContent = t("copy_btn"); }, 1600); };
+  const done = ()=>{ btn.textContent = t("copied"); toast(t("copied")); setTimeout(()=>{ btn.textContent = t("copy_btn"); }, 1600); };
   if (navigator.clipboard) navigator.clipboard.writeText(document.getElementById("letterBody").textContent).then(done, done);
   else done();
 }
@@ -3413,7 +3670,7 @@ function renderFeedback(){
   if (fbState === "done"){
     el.innerHTML =
       `<div class="fb-thanks">
-         <span class="tick"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+         <span class="tick"><svg class="draw" viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
          <span>${t("fb_thanks")}</span>
        </div>`;
     return;
@@ -3480,6 +3737,10 @@ function renderClauses(){
 loadState();
 applyLang();
 initIntake();
+initGestures();
+window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("resize", moveTabIndicator, { passive:true });
+requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); });
 </script>
 </body>
 </html>
