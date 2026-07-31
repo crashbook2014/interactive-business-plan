@@ -2085,7 +2085,68 @@ const RULES = [
   { re:/(salary|راتب|أجر\s*شهري)/i, s:"green",
     t:{ar:"الراتب",en:"Salary"},
     p:{ar:"الراتب مذكور. تأكد أن المبلغ والبدلات ومواعيد الدفع كلها مكتوبة بأرقام.",
-       en:"Salary is mentioned. Confirm the amount, allowances, and payment dates are all in numbers."}, a:null }
+       en:"Salary is mentioned. Confirm the amount, allowances, and payment dates are all in numbers."}, a:null }  ,
+
+  /* ---- Non-Saudi workers.
+     Wodouh serves Saudis and residents alike, and the clauses that catch
+     residents out are ones the analyzer never looked for. Every claim below
+     is registered in docs/legal-sources.md: Article 40 and Implementing
+     Regulations article 6 are verified against HRSD and the official law
+     text, and the transfer rule names the Labor Reform Initiative without
+     inventing an article number for it. */
+
+  { re:/(passport|جواز\s*(?:السفر|سفر)|حجز\s*الجواز|استلام\s*الجواز)/i, s:"red",
+    t:{ar:"حجز جواز السفر",en:"Passport retention"},
+    src:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"},
+    p:{ar:"العقد يذكر جواز السفر. صاحب العمل ما يحق له يحجز جوازك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت على ذلك.",
+       en:"The contract mentions your passport. An employer may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise."},
+    a:{ar:"اطلب حذف أي بند يسلّم الجواز لصاحب العمل. الجواز يبقى معك.",
+       en:"Ask for any clause handing over your passport to be removed. Your passport stays with you."},
+    r:{ar:"حجز الجواز مخالفة. تقدر تبلّغ وزارة الموارد البشرية، والاحتفاظ بالجواز حقك أصلًا.",
+       en:"Holding your passport is a violation. You can report it to the Ministry of Human Resources — keeping your passport is your right."} },
+
+  { re:/(recruitment\s*(?:fee|cost)|iqama\s*fee|work\s*permit\s*fee|رسوم\s*(?:الاستقدام|الإقامة|رخصة\s*العمل|التأشيرة)|تتحمل\s*رسوم)/i, s:"red",
+    t:{ar:"رسوم الاستقدام والإقامة",en:"Recruitment and Iqama fees"},
+    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    p:{ar:"يبدو أن العقد يحمّلك رسومًا. رسوم الاستقدام وإصدار وتجديد الإقامة ورخصة العمل وغرامات التأخير وتغيير المهنة وتأشيرة الخروج والعودة — كلها على صاحب العمل.",
+       en:"The contract appears to put fees on you. Recruitment, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, and exit/re-entry visas are all the employer's cost."},
+    a:{ar:"اطلب حذف أي بند يحمّلك هذي الرسوم — النظام يضعها على صاحب العمل.",
+       en:"Ask for any clause charging you these fees to be removed — the law puts them on the employer."},
+    r:{ar:"إذا دفعتها من جيبك، احتفظ بالإيصالات — تقدر تطالب بها.",
+       en:"If you paid them yourself, keep the receipts — you can claim them back."} },
+
+  { re:/(return\s*ticket|repatriation|تذكرة\s*(?:العودة|السفر)|تذكرة\s*الرجوع)/i, s:"amber",
+    t:{ar:"تذكرة العودة",en:"Return ticket"},
+    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    p:{ar:"تذكرة العودة لبلدك في نهاية العلاقة على صاحب العمل. تتحملها أنت فقط إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع.",
+       en:"The return ticket home at the end of the relationship is the employer's cost. It falls on you only if you're unfit for work or you choose to leave without legitimate reason."},
+    a:{ar:"تأكد أن البند يذكر التذكرة صراحة ومن يتحملها ومتى.",
+       en:"Make sure the clause spells out the ticket, who pays it, and when."},
+    r:{ar:"إذا انتهت العلاقة ولم تُصرف، طالب بها ضمن مستحقاتك.",
+       en:"If the relationship ended and it wasn't paid, claim it with your other dues."} },
+
+  { re:/(sponsor(?:ship)?\s*transfer|transfer\s*of\s*sponsorship|نقل\s*(?:الكفالة|الخدمات)|الكفالة)/i, s:"amber",
+    t:{ar:"نقل الكفالة / الخدمات",en:"Sponsorship transfer"},
+    src:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"},
+    p:{ar:"العقد يذكر نقل الكفالة. من مبادرة تحسين العلاقة التعاقدية، تقدر تنتقل عبر قوى بدون موافقة صاحب العمل في حالات محددة — منها انتهاء العقد، أو تأخر الراتب ثلاثة أشهر متتالية، أو انتهاء الإقامة.",
+       en:"The contract mentions sponsorship transfer. Since the Labor Reform Initiative you can move employer through Qiwa without your current employer's consent in defined cases — including contract expiry, three consecutive months of unpaid wages, or an expired Iqama."},
+    a:{ar:"لا توقّع على تنازل عن حقك في النقل — تحقق من الحالات في قوى.",
+       en:"Don't sign away your transfer right — check the qualifying cases on Qiwa."},
+    r:{ar:"لو انطبقت إحدى الحالات، النقل ما يحتاج موافقته. راجع قوى.",
+       en:"If one of those cases applies, the transfer doesn't need his approval. Check Qiwa."} },
+
+  /* "الخروج والعودة" attaches the definite article to the second word, so
+     the optional "ال" is required to match how this is actually written. */
+  { re:/(exit\s*(?:and\s*)?re[- ]?entry|final\s*exit|خروج\s*وال?عودة|الخروج\s*النهائي)/i, s:"amber",
+    t:{ar:"تأشيرة الخروج والعودة",en:"Exit and re-entry visa"},
+    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    p:{ar:"العقد يذكر الخروج والعودة. رسوم التأشيرة على صاحب العمل، والسفر في إجازتك حق لك لا منّة.",
+       en:"The contract mentions exit and re-entry. The visa fee is the employer's cost, and travelling on your own leave is your right, not a favour."},
+    a:{ar:"اطلب توضيح أن التأشيرة تُصدر عند طلبك في إجازتك المستحقة وعلى حساب صاحب العمل.",
+       en:"Ask it to state the visa is issued on request during your earned leave, at the employer's cost."},
+    r:{ar:"المماطلة في إصدارها أثناء إجازتك المستحقة مخالفة تستحق البلاغ.",
+       en:"Stalling on it during your earned leave is a violation worth reporting."} }
+
 ];
 
 function analyzePasted(text){
@@ -3046,11 +3107,31 @@ const KB = [
   { k:/(محامي|محام|أقاضي|محكمة|lawyer|court|sue|litigat)/i,
     a:{ar:"إذا وصل الأمر لنزاع فعلي أو مبالغ كبيرة، تحتاج محاميًا مرخّصًا — أقدر أجهّز لك الملخص والأسئلة والمستندات قبل الجلسة، وهذا يوفّر عليك وقتًا وأتعابًا.",
        en:"If this has become a real dispute or involves large sums, you need a licensed lawyer — I can prepare your summary, questions, and documents beforehand, which saves you time and fees."},
-    r:null },
+    /* A recommendation, not a statutory claim — labelled as our own reading
+       so it still states an origin. */
+    r:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"} },
   { k:/(تقادم|مدة الدعوى|١٢ شهر|limitation|deadline to file|time limit)/i,
     a:{ar:"لا تُقبل الدعوى العمالية بعد اثني عشر شهرًا من انتهاء العلاقة — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء: بكّر.",
        en:"A labour claim isn't accepted after twelve months from the end of the relationship — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception: move early."},
-    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} }
+    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
+
+  /* ---- Non-Saudi workers. Same claims as the analyzer rules, registered in
+     docs/legal-sources.md before shipping. */
+
+  { k:/(جواز|passport|حجز الجواز)/i,
+    a:{ar:"صاحب العمل ما يحق له يحجز جواز سفرك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت ورقة تقول غير كذا، لأن التنازل عن حق نظامي ما ينفذ. لو محجوز عندك، تقدر تبلّغ وزارة الموارد البشرية.",
+       en:"Your employer may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise, because you can't validly sign away a statutory right. If yours is being held, you can report it to the Ministry of Human Resources."},
+    r:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"} },
+
+  { k:/(رسوم|استقدام|الإقامة|رخصة العمل|iqama|recruitment|work permit|fees)/i,
+    a:{ar:"رسوم الاستقدام، وإصدار وتجديد الإقامة ورخصة العمل، وغرامات التأخير، وتغيير المهنة، وتأشيرة الخروج والعودة، وتذكرة العودة لبلدك في نهاية العلاقة — كلها على صاحب العمل. الاستثناء الوحيد للتذكرة: إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع. وإذا انتقلت لصاحب عمل جديد، هو اللي يتحمل رسوم النقل.",
+       en:"Recruitment fees, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, exit and re-entry visas, and your return ticket at the end of the relationship are all the employer's cost. The only exception on the ticket: if you're unfit for work, or you choose to leave without legitimate reason. And if you move to a new employer, the new one pays the transfer fee."},
+    r:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+
+  { k:/(نقل الكفالة|نقل الخدمات|كفالة|sponsor|transfer)/i,
+    a:{ar:"من مبادرة تحسين العلاقة التعاقدية، تقدر تنقل خدماتك عبر منصة قوى بدون موافقة صاحب العمل الحالي في حالات محددة — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتشوف هل حالتك منها.",
+       en:"Since the Labor Reform Initiative you can transfer through the Qiwa platform without your current employer's consent in defined cases — including your contract expiring, three consecutive months of unpaid wages, and an expired Iqama. Check Qiwa to see whether your situation is one of them."},
+    r:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"} }
 ];
 
 const CAPS = [
