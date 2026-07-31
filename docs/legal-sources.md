@@ -81,3 +81,31 @@ this register current.
 4. The end-of-service calculator is the highest-risk surface — a wrong figure
    there costs someone real money. It should be checked against worked examples
    supplied by counsel, not only against the formula.
+
+## Review cadence
+
+Accuracy is not a launch task, it is a standing one. Reputation here compounds
+in whichever direction the content earns.
+
+- **Every claim carries a checked date.** The table above was last reviewed
+  July 2026 against law current to 19 February 2025.
+- **Re-verify every 12 months, and immediately on any amendment.** A row older
+  than twelve months is treated as stale and must be re-checked before it can
+  keep its ✅ — the same twelve months Article 222 gives a worker to bring a
+  claim, which is a useful reminder of how fast this matters to someone.
+- **Corrections stay published.** The Article 75 entry below is kept
+  deliberately. A visible corrections log is evidence the register is real; a
+  silently edited one is worth nothing.
+
+### How user feedback feeds this
+
+Every thumbs-down in the app records the rules that fired, the decision they
+produced, the confidence claimed, and the free-text comment (see `fbRecord`).
+That makes an inaccurate verdict traceable to the specific heuristic behind it
+rather than to a general sense that something was off.
+
+Recommended loop once feedback reaches a real backend: aggregate by rule id,
+sort by negative rate, and re-verify the worst-performing rules first. A rule
+that is consistently reported wrong is either mis-citing the law or matching
+text it should not — both are fixable, and neither is visible without the
+rule id.

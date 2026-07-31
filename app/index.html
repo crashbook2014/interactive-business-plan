@@ -1388,7 +1388,7 @@
 const T = {
   ob_skip:{ar:"تخطّي",en:"Skip"},
   ob_next:{ar:"التالي",en:"Next"},
-  ob_start:{ar:"ابدأ",en:"Get started"},
+  ob_start:{ar:"راجع عقدي مجانًا",en:"Check my contract free"},
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
@@ -1406,8 +1406,8 @@ const T = {
   ph_note_b:{ar:"في النسخة الحقيقية يُقرأ النص من الصورة على جهازك. في هذا النموذج غير مفعّل — الصق النص أو جرّب نموذجًا.",
              en:"In the real app the text is read from the photo on your device. It isn't enabled in this prototype — paste the text or try a sample."},
   ph_paste:{ar:"ألصق النص بدلًا من ذلك",en:"Paste the text instead"},
-  err_big:{ar:"الملف كبير — الحد ٨ ميجابايت.",en:"That file is large — the limit is 8 MB."},
-  err_type:{ar:"نوع غير مدعوم. ارفع PDF أو ملف نصي.",en:"Unsupported type. Upload a PDF or a text file."},
+  err_big:{ar:"الملف أكبر من ٨ ميجابايت. جرّب تلصق نص العقد بدلًا من رفعه.",en:"That file is over 8 MB. Try pasting the contract text instead."},
+  err_type:{ar:"نقرأ PDF والملفات النصية. لو عندك صورة أو صيغة ثانية، الصق النص مباشرة.",en:"We read PDFs and text files. If yours is an image or another format, paste the text directly."},
   how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
 
   /* The decision, before the number. Wording stays plain and avoids
@@ -1440,7 +1440,7 @@ const T = {
                en:"Limited confidence — we only recognised {n}. Read the rest of the contract yourself."},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
-  ob_head:{ar:"تعريف بوضوح",en:"Introducing Wodouh"},
+  ob_head:{ar:"اعرف وش وقّعت عليه",en:"Know what you're signing"},
   src_head:{ar:"مصادرنا",en:"Our sources"},
   src_sub:{ar:"كل ما نقوله مبني على هذه المصادر الرسمية. افتحها وتحقق بنفسك.",
            en:"Everything we say rests on these official sources. Open them and check for yourself."},
@@ -1551,8 +1551,8 @@ const T = {
   doc_clean:{ar:"عرض وظيفي",en:"Job offer"},
   load_clean:{ar:"نراجع الشروط بندًا بندًا…",en:"Checking the terms clause by clause…"},
   ac_title:{ar:"ما لقينا شي يقلق",en:"Nothing here worries us"},
-  ac_body:{ar:"راجعنا كل بند، وكلها ضمن المعتاد. تقدر توقّع وأنت مرتاح.",
-           en:"We read every clause and they all sit within the norm. You can sign with confidence."},
+  ac_body:{ar:"راجعنا البنود اللي تعرّفنا عليها، وكلها ضمن المعتاد — ما طلع شي يستدعي وقفة.",
+           en:"Every clause we recognised sits within the norm — nothing came up that calls for a pause."},
   nr_title:{ar:"ما قدرنا نقرأ هذا النص",en:"We couldn't read this one"},
   nr_body:{ar:"ما ودّنا نعطيك تقييمًا لعقد ما قرأناه صح — الأمانة أهم.",
            en:"We'd rather not score a contract we couldn't properly read. Honesty first."},
@@ -1605,8 +1605,8 @@ const T = {
   lt_ready:{ar:"خطابك جاهز — انسخه وأرسله",en:"Ready to copy and send"},
   pw_title:{ar:"خطاب التفاوض",en:"The negotiation letter"},
   pw_free_note:{ar:"تقييمك والتنبيهات مجانية دائمًا — الخطاب إضافة اختيارية.",en:"Your score and flags are always free — the letter is an optional extra."},
-  pw_lock:{ar:"يفتح الخطاب كاملًا بعد الدفع",en:"Unlocks in full after payment"},
-  pw_pay:{ar:"ادفع",en:"Pay"},
+  pw_lock:{ar:"النص الكامل يفتح بعد الدفع — جاهز للإرسال",en:"The full text unlocks after payment — ready to send"},
+  pw_pay:{ar:"احصل على خطابي",en:"Get my letter"},
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
   pw_demo:{ar:"نموذج تجريبي — لا يوجد دفع حقيقي.",en:"Prototype — no real payment happens."},
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
@@ -1638,7 +1638,7 @@ const T = {
             en:"A calendar file that opens on your device — we never ask for access to your calendar."},
   cal_done:{ar:"تم تنزيل ملف التقويم",en:"Calendar file downloaded"},
   cal_fail:{ar:"تعذّر إنشاء ملف التقويم. جرّب مرة ثانية.",en:"Couldn't create the calendar file. Try again."},
-  tl_empty:{ar:"لا توجد عقود متابَعة بعد — حلّل عقدًا وفعّل التذكيرات.",en:"No tracked contracts yet — analyze one and turn reminders on."},
+  tl_empty:{ar:"ما فيه عقود متابَعة بعد. أكثر الحقوق تضيع لأن موعدها فات — حلّل عقدًا ونذكّرك قبل كل موعد.",en:"No contracts tracked yet. Most rights are lost to a date that passed — analyze a contract and we'll warn you before each one."},
   tl_in:{ar:"بعد {n} يوم",en:"in {n} days"},
   tl_reminders:{ar:"تذكيراتك",en:"Your reminders"},
   desk_title:{ar:"اقرأ عقدك بوضوح — قبل ما توقّع.",en:"Read your contract clearly — before you sign."},
@@ -4314,9 +4314,35 @@ function renderFeedback(){
   if (fbState === "comment" && prevText) document.getElementById("fbText").value = prevText;
 }
 
+/* A stable identifier for a heuristic. Derived from the English title, which
+   is what the rule is, rather than its position in the array — so reordering
+   RULES never silently re-points historical feedback at the wrong rule.
+   Matches the rule_ids column in supabase/migrations/0001_init.sql. */
+function ruleId(c){
+  return String((c.t && c.t.en) || "unknown")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+/* "This was wrong" is only actionable if we know what "this" was. Recording
+   the rules that fired, the decision they produced, and the confidence we
+   claimed makes an inaccurate verdict traceable to the specific heuristic
+   behind it — which is what turns feedback into an accuracy record instead
+   of a sentiment score. */
 function fbRecord(vote, comment){
-  FEEDBACK.push({ doc: current ? current.doc : null, score: current ? current.score : null, vote, comment: comment || "" });
-  console.log("wodouh feedback:", FEEDBACK[FEEDBACK.length-1]);
+  const entry = {
+    at: Date.now(),
+    doc: current ? current.doc : null,
+    score: current ? current.score : null,
+    decision: current ? decide(current) : null,
+    confidence: current ? confidence(current).level : null,
+    ruleIds: current ? current.clauses.map(ruleId) : [],
+    signedMode,
+    lang,
+    vote,
+    comment: comment || ""
+  };
+  FEEDBACK.push(entry);
+  console.log("wodouh feedback:", entry);
 }
 
 function fbVote(up){
