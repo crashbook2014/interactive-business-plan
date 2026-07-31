@@ -501,9 +501,9 @@ function applyLang(){
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
-  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٤٩" : "49") + `<small>${sar}</small>`;
-  document.getElementById("p4a").innerHTML = (lang==="ar" ? "٩٩" : "99") + `<small>${sar}</small>`;
-  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٢٤٩" : "249") + `<small>${sar}</small>`;
+  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٦٥" : "65") + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = (lang==="ar" ? "١٣٠" : "130") + `<small>${sar}</small>`;
+  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٢٥" : "325") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><p>${a}</p></details>`
   ).join("");

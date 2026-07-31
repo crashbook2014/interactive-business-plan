@@ -1287,6 +1287,7 @@ const T = {
   secure_pay:{ar:"دفع آمن",en:"Secure payment"},
   pw_more:{ar:"+ {n} بنود أخرى في الخطاب الكامل",en:"+ {n} more points in the full letter"},
   pw_more1:{ar:"+ بند واحد آخر في الخطاب الكامل",en:"+ 1 more point in the full letter"},
+  pw_more0:{ar:"النص الكامل منسّقًا وجاهزًا للإرسال",en:"The complete letter, formatted and ready to send"},
   pw_more_case:{ar:"بقية الوقائع والمستندات والمطالبة في الملف الكامل",
                 en:"The rest of the facts, documents and claim are in the full file"},
   mode_before:{ar:"قبل التوقيع",en:"Before signing"},
@@ -1546,7 +1547,7 @@ const T = {
   as_quota_t:{ar:"خلصت أسئلتك المجانية",en:"You've used your free questions"},
   as_quota_b:{ar:"اشترك في وضوح+ لأسئلة بلا حدود، وملخصات، وصياغة المستندات.",
               en:"Subscribe to Wodouh+ for unlimited questions, summaries, and document drafting."},
-  as_quota_cta:{ar:"اشترك — ٣٩ ر.س/شهر",en:"Subscribe — 39 SAR/month"},
+  as_quota_cta:{ar:"اشترك — ٥٠ ر.س/شهر",en:"Subscribe — 50 SAR/month"},
   as_not_lawyer:{ar:"أنا لست محاميًا — أشرح لك النظام وأساعدك تفهم. للقضايا المعقدة، وصّلك بمحامٍ مرخّص.",
                  en:"I'm not a lawyer — I explain the law and help you understand. For complex matters, I'll connect you with a licensed one."},
   cap_ask:{ar:"سؤال قانوني",en:"Legal question"},
@@ -2444,9 +2445,9 @@ let pwMode = "letter", casePaid = false;
 const PLANS_T = [
   { id:"free", name:"pl_basic", desc:"pl_free_d", m:0, y:0,
     on:["f_score","f_clauses","f_q3"], off:["f_qmax","f_draft","f_remind"] },
-  { id:"plus", name:"pl_plus", desc:"pl_plus_d", m:39, y:390, hi:true, tag:"pl_popular",
+  { id:"plus", name:"pl_plus", desc:"pl_plus_d", m:50, y:500, hi:true, tag:"pl_popular",
     on:["f_score","f_clauses","f_qmax","f_draft","f_remind"], off:["f_seats","f_tmpl"] },
-  { id:"biz",  name:"pl_biz",  desc:"pl_biz_d",  m:299, y:2990, biz:true, seat:true, tag:"pl_teams",
+  { id:"biz",  name:"pl_biz",  desc:"pl_biz_d",  m:390, y:3900, biz:true, seat:true, tag:"pl_teams",
     on:["f_qmax","f_draft","f_seats","f_tmpl","f_redline","f_api","f_lawyer"], off:[] }
 ];
 
@@ -3281,14 +3282,14 @@ let pwPlan = 0, pwPaid = false;
    pattern. The middle option is sold at the life event instead, and sits
    between an anchor above and a bare minimum below. */
 const PLANS = [
-  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٤٩ ر.س",en:"49 SAR"}, pop:false },
-  { name:"plan_pack",   desc:"plan_pack_d",   price:{ar:"٩٩ ر.س",en:"99 SAR"}, pop:true, tag:"plan_best" },
-  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٤٩ ر.س",en:"149 SAR"}, pop:false }
+  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٦٥ ر.س",en:"65 SAR"}, pop:false },
+  { name:"plan_pack",   desc:"plan_pack_d",   price:{ar:"١٣٠ ر.س",en:"130 SAR"}, pop:true, tag:"plan_best" },
+  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٩٥ ر.س",en:"195 SAR"}, pop:false }
 ];
 /* A claim has money on the table, so the file prices well above the letter. */
 const PLANS_CASE = [
-  { name:"plan_case", desc:"plan_case_d", price:{ar:"٢٤٩ ر.س",en:"249 SAR"}, pop:false },
-  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", price:{ar:"٣٩٩ ر.س",en:"399 SAR"}, pop:true }
+  { name:"plan_case", desc:"plan_case_d", price:{ar:"٣٢٥ ر.س",en:"325 SAR"}, pop:false },
+  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", price:{ar:"٥٢٠ ر.س",en:"520 SAR"}, pop:true }
 ];
 function activePlans(){ return pwMode === "case" ? PLANS_CASE : PLANS; }
 const LETTER_TO = {
@@ -3348,8 +3349,12 @@ function renderPaywall(){
     const firstPoint = lines.findIndex(l=>/^\s*[١٢٣٤٥1-5]\./.test(l));
     const cut = firstPoint >= 0 ? firstPoint + 1 : 4;
     shown = lines.slice(0, cut).join("\n");
+    /* With a single point chosen there is no "+0 more" to promise; the value
+       withheld is the finished document itself. */
     const remaining = Math.max(0, selected().length - 1);
-    rest = remaining === 1 ? t("pw_more1") : t("pw_more").replace("{n}", fmtNum(remaining));
+    rest = remaining === 0 ? t("pw_more0")
+         : remaining === 1 ? t("pw_more1")
+         : t("pw_more").replace("{n}", fmtNum(remaining));
   }
   document.getElementById("pwPreviewIntro").textContent = shown;
   document.getElementById("pwLockLine").textContent = rest;

@@ -26,14 +26,29 @@ anchor is the one form of dishonesty this brand cannot survive.
 | Item | Price | Reasoning | Confidence |
 |---|---|---|---|
 | Score, flags, clause explanations, EOS calculator | **Free** | The verdict must never be shaded by revenue. If we earned more by finding more risk, the score stops meaning anything. This is a positioning decision, not a growth tactic. | High |
-| Negotiation letter | **49 SAR** | ~0.5% of an average monthly wage; ~1/10th of a consultation. Raised from 29 because 29 sits below the point where price signals seriousness for a legal good — under-pricing a trust good suppresses both perceived value and conversion. | **Low — test this first** |
-| Letter + lawyer review | 149 SAR | Undercuts a direct consultation while the lawyer receives a prepared file, so their time is shorter. Margin is the marketplace cut. | Medium |
-| Case file | 249 SAR | A third to a seventh of attorney document review, against a claim often worth five figures. The strongest-justified price in the set. | Medium-high |
-| Case file + lawyer | 399 SAR | Same logic, higher stakes. | Medium |
-| Wodouh+ | 39 SAR/month | Below the $20–40 global band. Deliberately cheap: the subscription's job is retention and habit, not margin. | Medium |
-| Business | 299 SAR/month per 5 seats | 60 SAR/seat, cheap for B2B. Priced for a beachhead, not for capture. Expect to raise substantially once template scoring proves its value. | **Low — do real discovery** |
+| Negotiation letter | **65 SAR** | ~0.6% of an average monthly wage; ~1/6th of the cheapest consultation. | **Low — test this first** |
+| Job-change pack | **130 SAR** | Letter + 6 months of reminders + unlimited questions on that contract. Sold at the life event rather than as a subscription, because consumers sign contracts episodically. Positioned as the intended choice between 65 and 195. | Low |
+| Letter + lawyer review | 195 SAR | Still under the cheapest direct consultation while including a lawyer, because the lawyer receives a prepared file and spends less time. Margin is the marketplace cut. | Medium |
+| Case file | 325 SAR | Roughly a quarter to a sixth of attorney document review, against a claim often worth five figures. The strongest-justified price in the set. | Medium-high |
+| Case file + lawyer | 520 SAR | Mid-range of a consultation, but delivers the assembled file as well as the review. | Medium |
+| Wodouh+ | 50 SAR/month (500/year) | Still under the $20–40 global band. The subscription's job is retention, not margin. Annual is exactly ten months, so "two months free" is literally true. | Medium |
+| Business | 390 SAR/month per 5 seats (3,900/year) | 78 SAR/seat, still cheap for B2B. Priced for a beachhead, not capture. | **Low — do real discovery** |
 
 All prices are VAT-inclusive (15%) and stated as such in the product.
+
+## July 2026 — 30% uplift
+
+All paid tiers were raised roughly 30% by founder decision, rounded to clean
+multiples of five so every figure reads deliberately rather than arithmetically:
+49→65, 99→130, 149→195, 249→325, 399→520, 39→50/month, 299→390/month. Annual
+plans are set at exactly ten times monthly so the "two months free" claim stays
+literally true.
+
+The uplift is **still within every comparable**: the letter remains about a
+sixth of the cheapest Saudi consultation, and the case file remains well under
+attorney document review. Nothing here crossed a ceiling the research
+established. But it moves the letter further from the "obvious yes" zone, which
+makes the price test below more important, not less.
 
 ## What is not validated
 
@@ -42,23 +57,26 @@ only customers confirm a price. Specifically unproven:
 
 - Whether Saudi consumers will pay **anything** for a legal output from an
   unknown brand, at any price.
-- Whether the letter converts better at 29, 49, or 79.
-- Whether businesses see 299/month as trivial (likely) or as an unbudgeted
+- Whether the letter converts better at 49, 65, or 89, and whether the 130 pack
+  outperforms the bare letter as expected.
+- Whether businesses see 390/month as trivial (likely) or as an unbudgeted
   line item requiring procurement (also likely, and slower).
 - Whether the refund promise increases conversion enough to cover its cost.
 
 ## The test to run
 
-**1. Letter price test.** Three cohorts — 29 / 49 / 79 SAR — assigned randomly
+**1. Letter price test.** Three cohorts — 49 / 65 / 89 SAR — assigned randomly
 and held for the user's session. Target ≈100 paywall views per arm before
 reading anything into it. Measure:
 
 - paywall view → purchase rate
-- refund rate per arm (a high rate at 79 means the price outran the value)
+- refund rate per arm (a high rate at 89 means the price outran the value)
 - revenue per paywall view, which is the number that actually decides it
 
-Expect 49 to win on revenue per view even if 29 wins on raw conversion. If 79
-holds conversion within a few points of 49, the product is underpriced.
+Expect 65 to win on revenue per view even if 49 wins on raw conversion. If 89
+holds conversion within a few points of 65, the product is still underpriced.
+Run the same test on the 130 pack, which is now the default selection and so
+carries most of the revenue.
 
 **2. Five decline interviews.** Recruit five people who reached the paywall and
 did not buy. Ask what they expected the letter to contain, what they would have
