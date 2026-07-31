@@ -246,6 +246,13 @@
   .score-card[data-band="good"]{--band:var(--teal)}
   .score-card[data-band="fair"]{--band:var(--amber)}
   .score-card[data-band="poor"]{--band:var(--red)}
+  /* The decision wins. A score band and a decision state can legitimately
+     disagree — 68/100 is "good" on the score scale but still needs
+     negotiating — and when they do, two colours arguing on one card is worse
+     than either. Set after the band rules so it always takes precedence. */
+  .score-card[data-decision="safe"]{--band:var(--green)}
+  .score-card[data-decision="negotiate"]{--band:var(--amber)}
+  .score-card[data-decision="lawyer"]{--band:var(--red)}
   .score-card .share-mark{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;
       padding-bottom:14px;border-bottom:1px solid var(--line)}
   .score-card .share-mark svg{width:17px;height:17px}
@@ -889,6 +896,40 @@
   .track-tease.solo b{font-size:14.5px}
   .track-tease.solo .bell{background:var(--teal);width:36px;height:36px}
   .track-tease.solo .bell svg{stroke:var(--on-teal)}
+
+  /* One recommended next step, and the rest quiet. Demoted blocks keep their
+     full hit area and stay perfectly usable — this is emphasis, not a gate. */
+  /* Reading the clauses is a drill-down, not a next step. As a solid teal
+     button it outweighed the step we actually recommend, which defeats the
+     point of recommending one. Same size and hit area, less shout. */
+  .primary.detail{background:none;color:var(--teal-ink);
+    border:1.5px solid color-mix(in srgb, var(--teal) 42%, transparent);box-shadow:none}
+  .primary.detail:hover{background:var(--teal-soft)}
+
+  .is-next{position:relative;box-shadow:0 0 0 2px color-mix(in srgb, var(--band) 45%, transparent), var(--e2)}
+  .demoted{opacity:.62;filter:saturate(.55)}
+  .demoted:hover,.demoted:focus-within{opacity:1;filter:none}
+  .letter-tease.demoted{background:none;border-color:var(--line)}
+  .escalate.demoted{background:none;border-color:var(--line)}
+  /* The chip lives on blocks both inside and outside the score card, so it
+     cannot borrow --band, which is card-scoped. It takes its pair from the
+     result screen instead, using the same bg/ink combinations already
+     contrast-checked for the decision band. The parent selectors are needed
+     to outrank ".track-tease span" and ".letter-tease span". */
+  #screen-result{--nx-bg:var(--teal-soft);--nx-ink:var(--teal-ink)}
+  #screen-result[data-decision="safe"]{--nx-bg:var(--green-bg);--nx-ink:var(--green-ink)}
+  #screen-result[data-decision="negotiate"]{--nx-bg:var(--amber-bg);--nx-ink:var(--amber-ink)}
+  #screen-result[data-decision="lawyer"]{--nx-bg:var(--red-bg);--nx-ink:var(--red-ink)}
+  .letter-tease .next-chip,.track-tease .next-chip,.escalate .next-chip,.next-chip{
+    position:absolute;top:-9px;inset-inline-start:14px;
+    background:var(--nx-bg);color:var(--nx-ink);
+    border:1px solid color-mix(in srgb, var(--nx-ink) 35%, transparent);
+    border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:800;
+    letter-spacing:.02em;white-space:nowrap;line-height:1.6}
+  @media (prefers-reduced-motion:no-preference){
+    .is-next{transition:box-shadow var(--t) var(--ease-out)}
+    .demoted{transition:opacity var(--t-fast) var(--ease-out),filter var(--t-fast) var(--ease-out)}
+  }
   .home-plans{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:4px;
       color:var(--ink-2);font-size:12.5px;padding:10px;border-radius:var(--r-sm);opacity:.85}
   .home-plans:hover{color:var(--teal)}
@@ -1122,7 +1163,7 @@
         <span id="acBody"></span>
       </div>
       <div class="flags" id="flags"></div>
-      <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
+      <button class="primary detail" onclick="show('clauses')" data-t="cta_clauses"></button>
       <button class="letter-tease" id="letterTease" onclick="openLetterFlow()">
         <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
         <span><b data-t="lt_title"></b><span data-t="lt_sub"></span></span>
@@ -1495,6 +1536,7 @@ const T = {
   nat_nonsa_short:{ar:"مقيم",en:"Resident"},
   nat_why:{ar:"نعرض لك الأنظمة اللي تنطبق على وضعك — لأن العقد والإشعار والتعويض تختلف.",
            en:"We show the rules that apply to your situation — contract type, notice, and compensation all differ."},
+  next_step:{ar:"الخطوة التالية",en:"Next step"},
   src_method:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"},
 
   /* The rights library: grouped the way the questions actually arrive. */
@@ -2608,6 +2650,10 @@ function renderDecision(){
   const ambers = current.clauses.filter(c=>c.s==="amber").length;
   const box = document.getElementById("decision");
   box.dataset.state = d;
+  document.querySelector(".score-card").dataset.decision = d;
+  /* Also on the screen, so blocks outside the card (the escalation panel)
+     can pick up the same palette. */
+  document.getElementById("screen-result").dataset.decision = d;
   document.getElementById("dcIcon").innerHTML = DC_ICON[d];
   /* Already-signed users are not deciding whether to sign, so the same
      finding is framed as what they can still act on. */
@@ -2626,6 +2672,38 @@ function renderDecision(){
   const c = confidence(current);
   document.getElementById("dcConf").textContent =
     t("dc_conf_" + c.level).replace("{n}", fmtNum(c.n));
+}
+
+/* Which single action we recommend, given the decision. Everything else
+   stays exactly where it is and stays clickable — this decides emphasis, not
+   availability. Leading with a decision is hollow if five next steps then
+   compete for it. */
+const NEXT_OF = { safe:"trackTease", negotiate:"letterTease", lawyer:"escalate" };
+
+function applyNextStep(d){
+  const want = NEXT_OF[d];
+  ["letterTease","trackTease","assistTease","escalate"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    /* A block that is not on screen is neither promoted nor dimmed — marking
+       it either way would leave stale classes for the next render. */
+    const shown = !el.hidden && el.style.display !== "none";
+    const isNext = shown && id === want;
+    el.classList.toggle("is-next", isNext);
+    el.classList.toggle("demoted", shown && !!want && !isNext);
+  });
+  const chip = document.getElementById("nextChip");
+  const host = document.querySelector(".is-next");
+  if (chip){
+    chip.remove();
+  }
+  if (host){
+    const c = document.createElement("span");
+    c.className = "next-chip";
+    c.id = "nextChip";
+    c.textContent = t("next_step");
+    host.appendChild(c);
+  }
 }
 
 function renderResult(reset){
@@ -2653,6 +2731,7 @@ function renderResult(reset){
   renderTrackTease();
   if (!clear) renderTease();
   renderEscalate("result");
+  applyNextStep(decide(current));
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
   current.clauses.forEach((c,idx)=>{
