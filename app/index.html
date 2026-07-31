@@ -387,6 +387,40 @@
   .letter-tease.building{background:var(--teal-soft);border-color:var(--teal)}
   .letter-tease.building .go{color:var(--teal)}
 
+  /* sources, currency, escalation */
+  .stamp{display:flex;gap:11px;align-items:flex-start;background:var(--teal-soft);border-radius:var(--r-md);
+      padding:13px 15px;margin:4px 0 14px}
+  .stamp svg{flex:none;width:17px;height:17px;color:var(--teal);margin-top:2px}
+  .stamp b{display:block;font-size:14px;color:var(--ink)}
+  .stamp span span{font-size:12.5px;color:var(--ink-2);line-height:1.6}
+  .src-list{display:grid;gap:9px;margin-top:6px}
+  .src{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+      border-radius:var(--r-md);padding:13px 15px;text-decoration:none;box-shadow:var(--e1),var(--edge);
+      transition:border-color .15s}
+  .src:hover{border-color:var(--teal)}
+  .src .tx{flex:1;min-width:0}
+  .src b{display:block;font-size:14px;color:var(--ink)}
+  .src .tx>span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+  .src .rev{font-size:11px;color:var(--teal);margin-top:4px}
+  .src>svg{flex:none;width:15px;height:15px;color:var(--ink-2)}
+  html[dir="rtl"] .src>svg{transform:scaleX(-1)}
+  .caveat{font-size:12px;color:var(--ink-2);line-height:1.7;margin-top:12px}
+  .currency{font-size:11.5px;color:var(--ink-2);text-align:center;margin-top:6px}
+  .escalate[hidden]{display:none}
+  .escalate{display:flex;gap:12px;align-items:flex-start;background:var(--amber-bg);
+      border:1px solid var(--amber);border-radius:var(--r-xl);padding:16px 17px;margin-top:16px;
+      box-shadow:var(--e1),var(--edge)}
+  .escalate .ic{flex:none;width:36px;height:36px;border-radius:var(--r-sm);background:var(--amber);
+      display:flex;align-items:center;justify-content:center}
+  .escalate .ic svg{width:19px;height:19px}
+  .escalate b{display:block;font-size:15px;color:var(--ink);margin-bottom:4px}
+  .escalate p{font-size:13px;color:var(--ink-2);line-height:1.7}
+  .esc-cta{margin-top:11px;background:var(--teal);color:var(--on-teal);border-radius:var(--r-sm);
+      padding:9px 15px;font-size:13.5px;font-weight:700}
+  html[lang="ar"] .esc-cta{font-weight:400;font-size:15px}
+  .src-line{font-size:11.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+  .clause .src-line{margin:0 16px 12px;padding-top:9px}
+
   /* file intake */
   .intake{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:4px}
   .intake.over .up-main{border-color:var(--teal);background:var(--teal-soft)}
@@ -878,6 +912,7 @@
       <div class="verdict" id="verdict" aria-live="polite"></div>
       <span class="doc-label" id="docLabel"></span>
       <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
+      <p class="currency" data-t="src_stamp"></p>
       <div class="legend">
         <span><i style="background:var(--red)"></i><span data-t="lg_red"></span></span>
         <span><i style="background:var(--amber)"></i><span data-t="lg_amber"></span></span>
@@ -906,6 +941,7 @@
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
     </div>
+    <div class="escalate" id="escalate" hidden></div>
     <div class="feedback" id="feedback"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
@@ -1010,6 +1046,13 @@
       <p data-t="acc_how_b"></p>
       <p id="accNotLawyer"></p>
     </div>
+    <div class="acc-sec">
+      <h3 data-t="src_head"></h3>
+      <p data-t="src_sub"></p>
+      <div class="stamp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><b data-t="src_stamp"></b><span data-t="src_stamp_why"></span></span></div>
+      <div class="src-list" id="srcList"></div>
+      <p class="caveat" data-t="src_caveat"></p>
+    </div>
     <button class="home-reminders" onclick="toggleLang()"><span id="accLangLabel"></span></button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
@@ -1059,6 +1102,7 @@
     <div class="letter-actions">
       <button class="ghost" id="caseCopyBtn" onclick="copyCase()"></button>
     </div>
+    <div class="escalate" id="caseEscalate" hidden></div>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
@@ -1175,6 +1219,29 @@ const T = {
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
   ob_head:{ar:"تعريف بوضوح",en:"Introducing Wodouh"},
+  src_head:{ar:"مصادرنا",en:"Our sources"},
+  src_sub:{ar:"كل ما نقوله مبني على هذه المصادر الرسمية. افتحها وتحقق بنفسك.",
+           en:"Everything we say rests on these official sources. Open them and check for yourself."},
+  src_stamp:{ar:"المراجع محدّثة حتى فبراير ٢٠٢٥",en:"References current to February 2025"},
+  src_stamp_why:{ar:"آخر تعديلات نظام العمل دخلت حيّز النفاذ في ١٩ فبراير ٢٠٢٥.",
+                 en:"The latest Labor Law amendments came into force on 19 February 2025."},
+  src_reviewed:{ar:"روجعت",en:"Reviewed"},
+  src_labor:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
+  src_labor_d:{ar:"المرسوم الملكي م/٥١ وتعديلاته — الأساس لأحكام العمل والإجازات ونهاية الخدمة",
+               en:"Royal Decree M/51 and its amendments — the basis for employment, leave and end-of-service"},
+  src_hrsd:{ar:"وزارة الموارد البشرية والتنمية الاجتماعية",en:"Ministry of Human Resources and Social Development"},
+  src_hrsd_d:{ar:"النص الرسمي واللوائح والأدلة التنفيذية",en:"The official text, regulations and implementing guides"},
+  src_ejar:{ar:"شبكة إيجار",en:"Ejar network"},
+  src_ejar_d:{ar:"تسجيل العقود السكنية والعلاقة الإيجارية",en:"Residential lease registration and the tenancy relationship"},
+  src_moj:{ar:"وزارة العدل — المحاكم العمالية",en:"Ministry of Justice — labour courts"},
+  src_moj_d:{ar:"مسار التسوية والتقاضي العمالي",en:"The settlement and labour litigation route"},
+  src_caveat:{ar:"نذكر رقم المادة فقط حين نكون تحققنا منها. وإلا نذكر النظام باسمه دون رقم — لأن الدقة المصطنعة أسوأ من عدمها.",
+              en:"We name an article number only where we've verified it. Otherwise we name the law without one — invented precision is worse than none."},
+  govern_by:{ar:"ما ينظّم هذا البند",en:"What governs this"},
+  esc_head:{ar:"هذا يستحق محاميًا",en:"This deserves a lawyer"},
+  esc_body:{ar:"فيه بند أو أكثر قد يتحول لنزاع فعلي. وضوح يشرح ويجهّز، لكن القرار في نزاع حقيقي يحتاج محاميًا سعوديًا مرخّصًا — ونقدر نجهّز لك ملفك قبل ما تروح له.",
+            en:"One or more clauses here could become a real dispute. Wodouh explains and prepares, but a genuine dispute needs a licensed Saudi lawyer — and we can have your file ready before you go."},
+  esc_cta:{ar:"جهّز ملفي للمحامي",en:"Prepare my file for a lawyer"},
   tab_review:{ar:"راجع",en:"Review"},
   tab_rights:{ar:"حقوقي",en:"Rights"},
   tab_remind:{ar:"تذكيراتي",en:"Reminders"},
@@ -1206,8 +1273,8 @@ const T = {
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
-  acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. المراجع في هذا النموذج توضيحية وتحتاج تحققًا من النص الرسمي.",
-              en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. References in this prototype are illustrative and need checking against the official text."},
+  acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
+              en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
   acc_lang:{ar:"اللغة",en:"Language"},
   anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
                 en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
@@ -1431,8 +1498,8 @@ const T = {
             en:"Resigning before completing two years generally earns no award."},
   eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى.",
             en:"An estimate based on the standard formula. It excludes unused leave and other dues."},
-  eos_verify:{ar:"تحقق من النص النظامي الرسمي قبل الاعتماد على أي رقم.",
-              en:"Check the official statutory text before relying on any figure."},
+  eos_verify:{ar:"الحساب مبني على المادتين ٨٤ و٨٥ من نظام العمل — راجع المصادر في «حسابي».",
+              en:"Based on Articles 84 and 85 of the Labor Law — see the sources under Account."},
   eos_sar:{ar:"ر.س",en:"SAR"},
 
   tr_head:{ar:"إنهاء من صاحب العمل — ثلاثة أسئلة",en:"Employer ended it — three questions"},
@@ -1536,6 +1603,7 @@ const SAMPLES = {
     vs:{ar:"عقد عادل بشكل عام — بندان يستحقان المتابعة الآن.",en:"Mostly fair — two clauses are worth raising now."},
     clauses:[
       { s:"red",
+        src:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
         t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
         q:{ar:"يلتزم الموظف بعدم العمل في أي نشاط مشابه داخل المملكة لمدة سنتين من تاريخ انتهاء العقد.",
            en:"The employee shall not engage in any similar business within the Kingdom for two years after the contract ends."},
@@ -1546,6 +1614,7 @@ const SAMPLES = {
         r:{ar:"الشرط الواسع لا يعني نفاذه كما كُتب: النظام يشترط تحديد المدة والمكان ونوع العمل. إذا حاولوا تطبيقه عليك، اطلب حصره كتابيًا أو نازعه.",
            en:"A sweeping clause doesn't automatically bite: it must be limited in duration, place and type of work. If they try to enforce it, ask for it in writing narrowed — or contest it."} },
       { s:"amber",
+        src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
         t:{ar:"مدة الإشعار",en:"Notice period"},
         q:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
            en:"Either party wishing to terminate must give the other sixty days' written notice."},
@@ -1555,6 +1624,7 @@ const SAMPLES = {
         r:{ar:"المدة ملزمة الآن، لكنها قابلة للتقصير بالاتفاق عند الاستقالة. اطلب موافقة كتابية على إعفائك من باقي المدة.",
            en:"The period binds you now, but it can be shortened by agreement when you resign. Ask for written consent to waive the remainder."} },
       { s:"amber",
+        src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
         t:{ar:"أجر العمل الإضافي",en:"Overtime pay"},
         q:{ar:"قد يُطلب من الموظف العمل ساعات إضافية وفق حاجة العمل.",
            en:"The employee may be required to work additional hours as business needs require."},
@@ -1572,12 +1642,14 @@ const SAMPLES = {
            en:"Clear and specific: salary, allowances, and payment dates are all written down. Exactly what we like to see."},
         a:null },
       { s:"green",
+        src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
         t:{ar:"الإجازة السنوية",en:"Annual leave"},
         q:{ar:"يستحق الموظف إجازة سنوية مدفوعة مدتها ثلاثون يومًا.",
            en:"The employee is entitled to thirty days of paid annual leave."},
         p:{ar:"٣٠ يومًا مدفوعة — مطابقة للمعيار المعتاد.",en:"Thirty paid days — matches the standard."},
         a:null },
       { s:"green",
+        src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"يخضع الموظف لفترة تجربة مدتها تسعون يومًا من تاريخ مباشرة العمل.",
            en:"The employee is subject to a probation period of ninety days from the start date."},
@@ -1607,6 +1679,7 @@ const SAMPLES = {
         p:{ar:"٣٠ يومًا مدفوعة وتذكرة سنوية — أعلى من الحد المعتاد.",
            en:"Thirty paid days and a yearly ticket — above the usual baseline."}, a:null },
       { s:"green",
+        src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
         t:{ar:"العمل الإضافي",en:"Overtime"},
         q:{ar:"يُحتسب أجر العمل الإضافي بواقع ١٥٠٪ من أجر الساعة ويُدفع مع راتب الشهر ذاته.",
            en:"Overtime is paid at 150% of the hourly rate, with the same month's salary."},
@@ -1660,6 +1733,7 @@ const SAMPLES = {
         p:{ar:"مدة استرداد محددة وشرط معاينة واضح — ممتاز.",en:"A fixed refund window and a clear inspection condition — great."},
         a:null },
       { s:"green",
+        src:{ar:"شبكة إيجار",en:"Ejar network"},
         t:{ar:"التسجيل في إيجار",en:"Ejar registration"},
         q:{ar:"يُسجَّل هذا العقد في شبكة إيجار وتُدفع الأجرة على أربع دفعات عبر المنصة.",
            en:"This contract is registered on the Ejar network, with rent paid in four installments through the platform."},
@@ -1966,6 +2040,21 @@ const ICONS = {
   green:'<svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
+/* Escalation is graded by what we actually found: a red flag means this can
+   become a dispute, and saying so plainly matters more than any disclaimer. */
+function renderEscalate(target){
+  const el = document.getElementById(target === "case" ? "caseEscalate" : "escalate");
+  if (!el) return;
+  const reds = target === "case" ? 1 : (current ? current.clauses.filter(c=>c.s==="red").length : 0);
+  el.hidden = !reds;
+  if (!reds) return;
+  el.innerHTML =
+    `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.9-3 3.2-4.4 6-4.4S14.1 16 15 19"/><path d="M17 8h5M19.5 5.5v5"/></svg></span>
+     <div><b>${t("esc_head")}</b><p>${t("esc_body")}</p>
+       <button class="esc-cta" onclick="openAssist('${target === "case" ? "case" : "result"}')">${t("esc_cta")}</button>
+     </div>`;
+}
+
 function scoreBand(n){ return n>=80 ? "great" : n>=60 ? "good" : n>=40 ? "fair" : "poor"; }
 
 function renderResult(reset){
@@ -1991,15 +2080,17 @@ function renderResult(reset){
   document.getElementById("trackTease").classList.toggle("solo", clear);
   renderTrackTease();
   if (!clear) renderTease();
+  renderEscalate("result");
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
   current.clauses.forEach((c,idx)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s;
     const adv = adviceFor(c);
+    const srcLine = c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : "";
     const tip = adv
-      ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${addBtnHtml(idx)}`
-      : "";
+      ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${srcLine}${addBtnHtml(idx)}`
+      : srcLine;
     div.innerHTML =
       `<button aria-expanded="false" onclick="toggleFlag(this)">
          <span class="dot">${ICONS[c.s]}</span>
@@ -2319,6 +2410,7 @@ function renderCaseDoc(){
   document.getElementById("caseBody").textContent = buildCaseDoc();
   document.getElementById("caseFoot").textContent = t("lt_foot");
   document.getElementById("caseCopyBtn").textContent = t("cf_copy");
+  renderEscalate("case");
 }
 
 function copyCase(){
@@ -2457,7 +2549,7 @@ function openAssist(origin){
   show("assist");
   setTimeout(()=>document.getElementById("askInput").focus(), 120);
 }
-function assistBack(){ show(asOrigin === "result" ? "result" : "home", 1); }
+function assistBack(){ show(["result","case","casedoc"].includes(asOrigin) ? (asOrigin==="case"?"case":"result") : "home", 1); }
 
 function renderCaps(){
   const wrap = document.getElementById("caps");
@@ -2576,7 +2668,7 @@ const KB = [
   { k:/(نهاية الخدمة|مكافأة|end of service|eosb|gratuity)/i,
     a:{ar:"مكافأة نهاية الخدمة تُحسب عادة نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر. طريقة إنهاء العقد (استقالة أو إنهاء من صاحب العمل) تغيّر المستحق.",
        en:"End-of-service pay is generally half a month for each of the first five years, then a full month per year after that, based on your final wage. How the contract ends — resignation or employer termination — changes what you're owed."},
-    r:{ar:"نظام العمل السعودي — أحكام مكافأة نهاية الخدمة",en:"Saudi Labor Law — end-of-service provisions"} },
+    r:{ar:"نظام العمل السعودي — المادتان ٨٤ و٨٥",en:"Saudi Labor Law — Articles 84 & 85"} },
   { k:/(عدم المنافسة|منافسة|non.?compete)/i,
     a:{ar:"شرط عدم المنافسة لا يصح إلا إذا كان محددًا في المدة والمكان ونوع العمل، والحد الأعلى المتعارف عليه سنتان. الشروط المفتوحة (كل المملكة، كل المجالات) غالبًا أوسع مما يلزم وقابلة للتفاوض.",
        en:"A non-compete is only valid if it's limited in duration, geography, and type of work — two years is the usual ceiling. Open-ended ones (the whole Kingdom, every field) are typically broader than necessary and negotiable."},
@@ -2584,19 +2676,19 @@ const KB = [
   { k:/(فترة التجربة|تجربة|probation)/i,
     a:{ar:"فترة التجربة لا تتجاوز ٩٠ يومًا، ويمكن تمديدها باتفاق مكتوب إلى ١٨٠ يومًا. يجب النص عليها صراحة في العقد، ولا تُحتسب إجازة العيد والمرضية ضمنها.",
        en:"Probation cannot exceed 90 days, extendable to 180 by written agreement. It must be stated explicitly in the contract, and Eid and sick leave don't count toward it."},
-    r:{ar:"نظام العمل السعودي — فترة التجربة",en:"Saudi Labor Law — probation period"} },
+    r:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
   { k:/(الإشعار|إشعار|notice period|notice)/i,
-    a:{ar:"في العقود غير محددة المدة، مدة الإشعار ٦٠ يومًا لمن يتقاضى أجرًا شهريًا، و٣٠ يومًا لغيرهم. يجوز الاتفاق على مدة أطول، لكن لا تقل عن الحد النظامي.",
-       en:"For indefinite contracts, notice is 60 days if you're paid monthly and 30 days otherwise. You can agree to longer, but not shorter than the statutory minimum."},
-    r:{ar:"نظام العمل السعودي — إنهاء العقد والإشعار",en:"Saudi Labor Law — termination and notice"} },
+    a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل ٦٠ يومًا، وأنت عليك إشعاره قبل ٣٠ يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",
+       en:"For an indefinite contract paid monthly the notice is not symmetrical: the employer must give you 60 days, and you must give the employer 30. You can agree to longer, never shorter."},
+    r:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"} },
   { k:/(إجازة|اجازه|annual leave|vacation|leave)/i,
     a:{ar:"الإجازة السنوية لا تقل عن ٢١ يومًا مدفوعة، وترتفع إلى ٣٠ يومًا بعد خمس سنوات متصلة لدى نفس صاحب العمل. لا يجوز التنازل عنها مقابل بدل أثناء سريان العقد.",
        en:"Annual leave is at least 21 paid days, rising to 30 after five continuous years with the same employer. You can't waive it for cash while the contract is running."},
-    r:{ar:"نظام العمل السعودي — الإجازات",en:"Saudi Labor Law — leave entitlements"} },
+    r:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"} },
   { k:/(عمل إضافي|إضافي|overtime)/i,
     a:{ar:"أجر ساعة العمل الإضافي يساوي أجر الساعة زائد ٥٠٪ من الأجر الأساسي. أي بند يطلب عملًا إضافيًا دون تحديد طريقة احتسابه بند ناقص، واطلب توضيحه كتابيًا.",
        en:"Overtime is the hourly wage plus 50% of the basic wage. Any clause requiring extra hours without saying how they're paid is incomplete — ask for it in writing."},
-    r:{ar:"نظام العمل السعودي — ساعات العمل والأجر الإضافي",en:"Saudi Labor Law — working hours and overtime"} },
+    r:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"} },
   { k:/(إيجار|ايجار|المؤجر|المستأجر|rent|lease|landlord|tenant|ejar)/i,
     a:{ar:"عقود الإيجار السكني تُسجَّل في شبكة إيجار، والتسجيل يحفظ حقوق الطرفين ويجعل الدفعات موثّقة. الإخلاء لا يكون بإرادة المؤجر وحده دون سبب نظامي وإشعار معقول.",
        en:"Residential leases are registered on the Ejar network, which documents payments and protects both sides. Eviction isn't the landlord's unilateral call without a lawful reason and reasonable notice."},
@@ -2612,7 +2704,11 @@ const KB = [
   { k:/(محامي|محام|أقاضي|محكمة|lawyer|court|sue|litigat)/i,
     a:{ar:"إذا وصل الأمر لنزاع فعلي أو مبالغ كبيرة، تحتاج محاميًا مرخّصًا — أقدر أجهّز لك الملخص والأسئلة والمستندات قبل الجلسة، وهذا يوفّر عليك وقتًا وأتعابًا.",
        en:"If this has become a real dispute or involves large sums, you need a licensed lawyer — I can prepare your summary, questions, and documents beforehand, which saves you time and fees."},
-    r:null }
+    r:null },
+  { k:/(تقادم|مدة الدعوى|١٢ شهر|limitation|deadline to file|time limit)/i,
+    a:{ar:"لا تُقبل الدعوى العمالية بعد اثني عشر شهرًا من انتهاء العلاقة — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء: بكّر.",
+       en:"A labour claim isn't accepted after twelve months from the end of the relationship — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception: move early."},
+    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} }
 ];
 
 const CAPS = [
@@ -2863,6 +2959,33 @@ function startSignedReview(){
   setTimeout(()=>document.getElementById("pasteBox").focus(), 150);
 }
 
+/* ------------------------------------------------------ legal sources ----
+   Displayed so a user can check us rather than trust us. Article numbers
+   appear only where they were verified against the official text; everything
+   else names the law without a number, because invented precision would
+   manufacture exactly the authority this panel exists to earn. */
+const SOURCES = [
+  { name:"src_labor", desc:"src_labor_d", url:"https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/e0d24ee8-1c5f-4b8e-9f0f-a9a700f2b2fc/1", reviewed:"2026-07" },
+  { name:"src_hrsd",  desc:"src_hrsd_d",  url:"https://www.hrsd.gov.sa/", reviewed:"2026-07" },
+  { name:"src_ejar",  desc:"src_ejar_d",  url:"https://www.ejar.sa/", reviewed:"2026-07" },
+  { name:"src_moj",   desc:"src_moj_d",   url:"https://www.moj.gov.sa/", reviewed:"2026-07" }
+];
+
+function renderSources(){
+  const wrap = document.getElementById("srcList");
+  if (!wrap) return;
+  wrap.innerHTML = SOURCES.map(x=>{
+    const [y,m] = x.reviewed.split("-");
+    const when = new Intl.DateTimeFormat(lang==="ar"?"ar-SA-u-ca-gregory":"en-GB",
+      { month:"long", year:"numeric" }).format(new Date(+y, +m-1, 1));
+    return `<a class="src" href="${x.url}" target="_blank" rel="noopener noreferrer">
+        <span class="tx"><b>${t(x.name)}</b><span>${t(x.desc)}</span>
+          <span class="rev">${t("src_reviewed")}: ${when}</span></span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7"/><path d="M13 3L6.5 9.5"/><path d="M11 10.5V13H3V5h2.5"/></svg>
+      </a>`;
+  }).join("");
+}
+
 function renderAccount(){
   const cur = plan==="biz" ? t("pl_biz") : plan==="plus" ? t("pl_plus") : t("pl_basic");
   document.getElementById("accPlan").innerHTML =
@@ -2872,6 +2995,7 @@ function renderAccount(){
      </div>`;
   document.getElementById("accNotLawyer").textContent = t("as_not_lawyer");
   document.getElementById("accLangLabel").textContent = t("acc_lang") + " · " + (lang==="ar" ? "English" : "عربي");
+  renderSources();
 }
 
 /* ------------------------------------------------- saved contracts ----
@@ -3317,6 +3441,7 @@ function renderClauses(){
        ${quote}
        <div class="plain">${c.p[lang]}${advice}</div>
        <span class="act">${act}</span>
+       ${c.src ? `<div class="src-line">${t("govern_by")}: ${c.src[lang]}</div>` : ""}
        ${c.a ? addBtnHtml(i) : ""}`;
     wrap.appendChild(div);
   });
