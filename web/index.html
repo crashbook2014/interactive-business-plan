@@ -585,10 +585,11 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 /* Reveal on scroll. Elements are visible in markup; JS opts them in, so a
    failure here can never hide a section. */
+let revealIO = null;
 function armReveals(){
   if (REDUCED.matches || !("IntersectionObserver" in window)) return;
-  const io = new IntersectionObserver(es=>es.forEach(e=>{
-    if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  revealIO = new IntersectionObserver(es=>es.forEach(e=>{
+    if (e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); }
   }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
   document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
     .forEach((el,i)=>{
@@ -596,8 +597,29 @@ function armReveals(){
       el.classList.add("rv");
       const within = i % 3;
       if (within) el.classList.add("rv-d" + within);
-      io.observe(el);
+      revealIO.observe(el);
     });
+}
+
+/* Safety net: on a very short viewport, or under fast or programmatic
+   scrolling, the observer can coalesce past an element taller than the screen
+   and leave it invisible for good. Content visibility must never depend on how
+   quickly someone scrolls, so anything whose top has reached the viewport is
+   revealed regardless of observer timing. */
+let sweepQueued = false;
+function sweepReveals(){
+  sweepQueued = false;
+  document.querySelectorAll(".rv:not(.in)").forEach(el=>{
+    if (el.getBoundingClientRect().top < window.innerHeight){
+      el.classList.add("in");
+      if (revealIO) revealIO.unobserve(el);
+    }
+  });
+}
+function queueSweep(){
+  if (sweepQueued) return;
+  sweepQueued = true;
+  requestAnimationFrame(sweepReveals);
 }
 
 /* Nav condensation and a capped parallax drift on the hero card. */
@@ -632,6 +654,9 @@ function animateScore(){
 applyLang();
 armReveals();
 window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("scroll", queueSweep, { passive:true });
+window.addEventListener("resize", queueSweep, { passive:true });
+window.addEventListener("load", sweepReveals);
 onScroll();
 const shot = document.querySelector(".shot");
 if (window.matchMedia("(prefers-reduced-motion: reduce)").matches){
