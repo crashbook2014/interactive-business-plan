@@ -788,6 +788,26 @@
   /* Informational, not an alarm. Teal like the rest of the interface, not
      the amber we reserve for "something is wrong with your contract" —
      borrowing the warning colour for a calendar date would cry wolf. */
+  /* Quiet by design: the code route is for people who already paid, not a
+     second call to action competing with the price ladder. */
+  .redeem{margin-top:14px;text-align:center}
+  .redeem[hidden]{display:none}
+  .rd-open{min-height:44px;padding:8px 12px;font-size:13px;font-weight:700;
+    color:var(--teal);text-decoration:underline;text-underline-offset:3px}
+  .rd-open:hover{color:var(--teal-ink)}
+  .rd-form{display:flex;gap:8px;margin-top:10px}
+  .rd-form[hidden]{display:none}
+  .rd-form input{flex:1;min-height:44px;padding:10px 14px;border-radius:var(--r-md);
+    border:1px solid var(--line);background:var(--card);color:var(--ink);
+    font-family:var(--en);font-size:15px;letter-spacing:.06em;text-align:center;
+    text-transform:uppercase}
+  .rd-form input:focus-visible{border-color:var(--teal)}
+  .rd-go{min-height:44px;padding:10px 18px;border-radius:var(--r-md);
+    background:var(--teal);color:var(--on-teal);font-size:14px;font-weight:700}
+  .rd-msg{margin-top:9px;font-size:12.5px;line-height:1.6;color:var(--teal-ink)}
+  .rd-msg[hidden]{display:none}
+  .rd-msg.bad{color:var(--red-ink)}
+
   .timely{background:var(--teal-soft);border:1px solid color-mix(in srgb, var(--teal) 24%, transparent);
     border-radius:var(--r-lg);padding:14px 16px;margin:0 0 16px}
   .timely[hidden]{display:none}
@@ -1249,6 +1269,16 @@
     <p class="guarantee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg><span data-t="guarantee"></span></p>
     <div class="plans" id="plans"></div>
     <button class="primary" id="payBtn" onclick="pwPay()"></button>
+    <div class="redeem" id="redeem" hidden>
+      <button type="button" class="rd-open" id="rdOpen" onclick="toggleRedeem()" data-t="rd_have"></button>
+      <div class="rd-form" id="rdForm" hidden>
+        <label class="sr-only" for="rdCode" data-t="rd_label"></label>
+        <input id="rdCode" type="text" inputmode="latin" autocomplete="off"
+               spellcheck="false" maxlength="14" placeholder="WD-XXXX-XXXX"/>
+        <button type="button" class="rd-go" onclick="redeem()" data-t="rd_go"></button>
+      </div>
+      <p class="rd-msg" id="rdMsg" role="status" aria-live="polite" hidden></p>
+    </div>
     <div class="pay-methods">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
       <span data-t="secure_pay"></span><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i>
@@ -1585,6 +1615,12 @@ const T = {
              en:"Migrating it is your employer's job, and you lose nothing on that date. Your part is simply to check your contract is on Qiwa and that your copy matches the registered one."},
   tm_more:{ar:"كيف أتحقق؟",en:"How do I check?"},
   tm_dismiss:{ar:"فهمت",en:"Got it"},
+  rd_have:{ar:"اشتريت من المتجر؟ أدخل رمزك",en:"Bought from the store? Enter your code"},
+  rd_label:{ar:"رمز الشراء",en:"Purchase code"},
+  rd_go:{ar:"تفعيل",en:"Activate"},
+  rd_ok:{ar:"تم التفعيل — نفتح لك الخطاب الآن.",en:"Activated — opening your letter now."},
+  rd_bad:{ar:"الرمز غير صحيح. تحقق منه ثم جرّب مرة ثانية.",en:"That code isn't right. Check it and try again."},
+  rd_used:{ar:"هذا الرمز مستخدم على هذا الجهاز من قبل.",en:"That code has already been used on this device."},
   nat_showing:{ar:"الأنظمة المعروضة:",en:"Showing rules for:"},
   nat_change:{ar:"تغيير",en:"Change"},
   nat_now:{ar:"عرضنا أنظمة: {t}",en:"Now showing: {t}"},
@@ -4271,6 +4307,7 @@ function saveState(){
     localStorage.setItem(STORE, JSON.stringify({
       nat,
       timelyOff,
+      usedCodes,
       contracts: myContracts.slice(0,8),
       tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
     }));
@@ -4290,6 +4327,8 @@ function loadState(){
        so the reader is asked rather than assumed. */
     nat = (d.nat === "sa" || d.nat === "nonsa") ? d.nat : null;
     timelyOff = d.timelyOff === true;
+    usedCodes = Array.isArray(d.usedCodes)
+      ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
 
     myContracts = (Array.isArray(d.contracts) ? d.contracts : [])
       .filter(c => c && typeof c === "object"
@@ -4309,7 +4348,7 @@ function loadState(){
     tracked.forEach(x => TRACKED.push(x));
   } catch(e){
     /* Corrupt or foreign payload: start clean rather than render partial state. */
-    myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false;
+    myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false; usedCodes = [];
   }
 }
 function recordContract(){
@@ -4849,9 +4888,90 @@ function renderPaywall(){
     b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
     wrap.appendChild(b);
   });
+  renderRedeem();
   const pay = document.getElementById("payBtn");
   pay.disabled = false;
   pay.textContent = `${t("pw_pay")} ${activePlans()[pwPlan].price[lang]}`;
+}
+
+/* ---------------------------------------------- redemption codes
+   A bridge for selling through Zid without a backend: the buyer pays on Zid,
+   receives a code, and enters it here.
+
+   WHAT THIS IS NOT: security. Every check below happens in the reader's own
+   browser, so anyone willing to open the developer tools can set pwPaid
+   themselves and skip the paywall entirely. Storing hashes rather than
+   plaintext only means the page does not simply list working codes; it does
+   not make the gate hold. That is an acceptable trade for a test of tens of
+   buyers and unacceptable as a launch mechanism — see
+   docs/zid-test-runbook.md.
+
+   Ships EMPTY on purpose. The feature stays invisible and inert until real
+   hashes are pasted in from test/make-codes.mjs, so no placeholder code can
+   ever unlock anything. */
+const REDEEM_HASHES = [];
+
+let usedCodes = [];
+
+function redeemArmed(){ return REDEEM_HASHES.length > 0; }
+
+function normaliseCode(v){
+  return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+async function hashCode(norm){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
+
+function renderRedeem(){
+  const box = document.getElementById("redeem");
+  if (!box) return;
+  box.hidden = !redeemArmed() || pwPaid;
+  const open = document.getElementById("rdOpen");
+  if (open) open.textContent = t("rd_have");
+}
+
+function toggleRedeem(){
+  const f = document.getElementById("rdForm");
+  f.hidden = !f.hidden;
+  if (!f.hidden) document.getElementById("rdCode").focus();
+}
+
+function rdSay(key, ok){
+  const m = document.getElementById("rdMsg");
+  m.hidden = false;
+  m.textContent = t(key);
+  m.classList.toggle("bad", !ok);
+}
+
+async function redeem(){
+  const raw = document.getElementById("rdCode").value;
+  const norm = normaliseCode(raw);
+  if (norm.length < 6) return rdSay("rd_bad", false);
+
+  let h;
+  try { h = await hashCode(norm); }
+  catch(e){ return rdSay("rd_bad", false); }
+
+  if (REDEEM_HASHES.indexOf(h) === -1) return rdSay("rd_bad", false);
+  /* One redemption per code on this device. It cannot stop the same code being
+     used on another phone — that needs a server. */
+  if (usedCodes.indexOf(h) !== -1) return rdSay("rd_used", false);
+
+  usedCodes.push(h);
+  saveState();
+  rdSay("rd_ok", true);
+  buzz([12,50,20]);
+  /* Land in exactly the same place a payment does, so there is one route to
+     the paid state rather than two that can drift apart. */
+  setTimeout(()=>{
+    if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
+    pwPaid = true;
+    renderLetter();
+    show("letter");
+  }, 600);
 }
 
 function pwPay(){
