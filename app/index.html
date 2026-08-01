@@ -3709,7 +3709,7 @@ const KB = [
   { k:/(عدم المنافسة|منافسة|non.?compete)/i,
     a:{ar:"شرط عدم المنافسة لا يصح إلا إذا كان محددًا في المدة والمكان ونوع العمل، والحد الأعلى المتعارف عليه سنتان. الشروط المفتوحة (كل المملكة، كل المجالات) غالبًا أوسع مما يلزم وقابلة للتفاوض.",
        en:"A non-compete is only valid if it's limited in duration, geography, and type of work — two years is the usual ceiling. Open-ended ones (the whole Kingdom, every field) are typically broader than necessary and negotiable."},
-    r:{ar:"نظام العمل السعودي — شرط عدم المنافسة",en:"Saudi Labor Law — non-compete clause"} },
+    r:{ar:"نظام العمل السعودي — المادة ٨٣",en:"Saudi Labor Law — Article 83"} },
   { k:/(فترة التجربة|تجربة|probation)/i,
     a:{ar:"فترة التجربة لا تتجاوز ٩٠ يومًا، ويمكن تمديدها باتفاق مكتوب إلى ١٨٠ يومًا. يجب النص عليها صراحة في العقد، ولا تُحتسب إجازة العيد والمرضية ضمنها.",
        en:"Probation cannot exceed 90 days, extendable to 180 by written agreement. It must be stated explicitly in the contract, and Eid and sick leave don't count toward it."},
@@ -3718,7 +3718,13 @@ const KB = [
     a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل ٦٠ يومًا، وأنت عليك إشعاره قبل ٣٠ يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",
        en:"For an indefinite contract paid monthly the notice is not symmetrical: the employer must give you 60 days, and you must give the employer 30. You can agree to longer, never shorter."},
     r:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"} },
-  { k:/(إجازة|اجازه|annual leave|vacation|leave)/i,
+  { k:/(?=[\s\S]*(أسافر|السفر|سفر|أطلع برة|الخروج|خروج|travel|leave the country|exit))(?=[\s\S]*(إجاز|اجاز|عودة|رجوع|بلدي|vacation|leave|re.?entry|return|country))/i,
+    nat:"nonsa",
+    a:{ar:"للسفر والعودة تحتاج تأشيرة خروج وعودة، ورسومها على صاحب العمل لا عليك. والسفر في إجازتك المستحقة حق لك، والمماطلة في إصدارها تقدر تبلّغ عنها وزارة الموارد البشرية.",
+       en:"To travel and come back you need an exit and re-entry visa, and its cost falls on your employer, not you. Travelling on leave you've earned is your right, and if they stall on issuing it you can report that to the Ministry of Human Resources."},
+    r:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+
+  { k:/(إجاز|اجاز|annual leave|leave days|leave balance|vacation)/i,
     a:{ar:"الإجازة السنوية لا تقل عن ٢١ يومًا مدفوعة، وترتفع إلى ٣٠ يومًا بعد خمس سنوات متصلة لدى نفس صاحب العمل. لا يجوز التنازل عنها مقابل بدل أثناء سريان العقد.",
        en:"Annual leave is at least 21 paid days, rising to 30 after five continuous years with the same employer. You can't waive it for cash while the contract is running."},
     r:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"} },
@@ -3738,16 +3744,16 @@ const KB = [
     a:{ar:"الشرط الجزائي جائز، لكن القاضي يملك تخفيضه إذا كان مبالغًا فيه أو لم يقع ضرر فعلي بقدره. الأفضل أن يكون متبادلًا وبسقف واضح.",
        en:"Penalty clauses are permitted, but a judge can reduce one that's excessive or exceeds the actual harm. Best practice is mutual and capped."},
     r:{ar:"الأنظمة العامة — الشرط الجزائي وتقديره",en:"General provisions — penalty clauses and assessment"} },
+  { k:/(تقادم|دعو|١٢ شهر|اثني عشر شهر|limitation|deadline to file|time limit|how long.*(sue|file|claim)|sue.*(how long|deadline))/i,
+    a:{ar:"لا تُقبل الدعوى العمالية بعد اثني عشر شهرًا من انتهاء العلاقة — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء: بكّر.",
+       en:"A labour claim isn't accepted after twelve months from the end of the relationship — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception: move early."},
+    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
   { k:/(محامي|محام|أقاضي|محكمة|lawyer|court|sue|litigat)/i,
     a:{ar:"إذا وصل الأمر لنزاع فعلي أو مبالغ كبيرة، تحتاج محاميًا مرخّصًا — أقدر أجهّز لك الملخص والأسئلة والمستندات قبل الجلسة، وهذا يوفّر عليك وقتًا وأتعابًا.",
        en:"If this has become a real dispute or involves large sums, you need a licensed lawyer — I can prepare your summary, questions, and documents beforehand, which saves you time and fees."},
     /* A recommendation, not a statutory claim — labelled as our own reading
        so it still states an origin. */
     r:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"} },
-  { k:/(تقادم|مدة الدعوى|١٢ شهر|limitation|deadline to file|time limit)/i,
-    a:{ar:"لا تُقبل الدعوى العمالية بعد اثني عشر شهرًا من انتهاء العلاقة — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء: بكّر.",
-       en:"A labour claim isn't accepted after twelve months from the end of the relationship — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception: move early."},
-    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
 
   /* ---- Non-Saudi workers. Same claims as the analyzer rules, registered in
      docs/legal-sources.md before shipping. */
@@ -3767,7 +3773,7 @@ const KB = [
        en:"Recruitment fees, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, exit and re-entry visas, and your return ticket at the end of the relationship are all the employer's cost. The only exception on the ticket: if you're unfit for work, or you choose to leave without legitimate reason. And if you move to a new employer, the new one pays the transfer fee."},
     r:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
 
-  { k:/(نقل الكفالة|نقل الخدمات|كفالة|sponsor|transfer)/i, nat:"nonsa",
+  { k:/(كفال|نقل الخدمات|sponsor|sponsorship transfer)/i, nat:"nonsa",
     a:{ar:"من مبادرة تحسين العلاقة التعاقدية، تقدر تنقل خدماتك عبر منصة قوى بدون موافقة صاحب العمل الحالي في حالات محددة — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتشوف هل حالتك منها.",
        en:"Since the Labor Reform Initiative you can transfer through the Qiwa platform without your current employer's consent in defined cases — including your contract expiring, three consecutive months of unpaid wages, and an expired Iqama. Check Qiwa to see whether your situation is one of them."},
     r:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"} },
@@ -3785,7 +3791,7 @@ const KB = [
        en:"Your contract has to be authenticated on the Qiwa platform to be enforceable. Unregistered or hand-signed contracts no longer carry the same standing. Check that yours is on Qiwa, and that your copy matches the registered one."},
     r:{ar:"برنامج توحيد عقود العمل — منصة قوى",en:"Employment contract transition programme — Qiwa"} },
 
-  { k:/(راتب متأخر|ما صرفوا|تأخر الراتب|ناجز|najiz|unpaid wage|salary not paid)/i,
+  { k:/(ناجز|najiz|(?=[\s\S]*(راتب|رات|أجر|اجر|salary|wage|pay))(?=[\s\S]*(ما صرف|ماصرف|متأخر|تأخر|ما استلم|ما وصل|لم يُدفع|لم يدفع|unpaid|not paid|late|withheld|owed)))/i,
     a:{ar:"بند الأجر في عقد قوى صار قابلًا للتنفيذ مباشرة: تقدر ترفع مطالبة بالأجر غير المدفوع عبر بوابة ناجز في وزارة العدل، دون المرور أولًا بالموارد البشرية أو المحكمة العمالية.",
        en:"The wage clause in a Qiwa contract now carries direct enforcement: you can pursue unpaid wages through the Ministry of Justice's Najiz portal without going through MHRSD or the labour court first."},
     r:{ar:"برنامج توحيد عقود العمل — بوابة ناجز",en:"Employment contract transition programme — Najiz"} },
