@@ -785,6 +785,22 @@
   .mode-seg{margin:10px 0 8px}
   /* A stated fact with a way to change it, not a second control competing
      with the mode switch. Full 44px target despite the light appearance. */
+  /* Informational, not an alarm. Teal like the rest of the interface, not
+     the amber we reserve for "something is wrong with your contract" —
+     borrowing the warning colour for a calendar date would cry wolf. */
+  .timely{background:var(--teal-soft);border:1px solid color-mix(in srgb, var(--teal) 24%, transparent);
+    border-radius:var(--r-lg);padding:14px 16px;margin:0 0 16px}
+  .timely[hidden]{display:none}
+  .tm-txt{display:flex;flex-direction:column;gap:5px}
+  .tm-txt b{font-size:14px;color:var(--teal-ink);line-height:1.5}
+  .tm-txt span{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+  .tm-act{display:flex;gap:8px;margin-top:12px}
+  .tm-go,.tm-x{min-height:44px;padding:9px 16px;border-radius:var(--r-md);
+    font-size:13.5px;font-weight:700;transition:transform var(--t-fast) var(--ease-out)}
+  .tm-go{background:var(--teal);color:var(--on-teal)}
+  .tm-x{background:none;color:var(--ink-2);border:1px solid var(--line)}
+  .tm-go:active,.tm-x:active{transform:scale(.97)}
+
   .nat-chip{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;
     padding:6px 2px;margin:0 0 10px;background:none;border:0;text-align:start;
     font-size:12.5px;color:var(--ink-2);line-height:1.6}
@@ -1083,6 +1099,13 @@
     <h1 class="hello" id="helloLine"></h1>
     <p class="sub" id="subLine"></p>
     <div class="notice" id="offlineNotice" role="status" aria-live="polite" hidden></div>
+    <div class="timely" id="timely" hidden>
+      <div class="tm-txt"><b data-t="tm_qiwa_h"></b><span data-t="tm_qiwa_b"></span></div>
+      <div class="tm-act">
+        <button type="button" class="tm-go" onclick="openTimely()" data-t="tm_more"></button>
+        <button type="button" class="tm-x" onclick="dismissTimely()" data-t="tm_dismiss"></button>
+      </div>
+    </div>
     <div class="intake" id="intake">
       <label class="up-main" id="upMain">
         <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf" hidden/>
@@ -1554,6 +1577,14 @@ const T = {
   nat_gate_h:{ar:"سؤال واحد قبل ما نقرأ",en:"One question before we read it"},
   nat_gate_b:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض. عشان نعطيك الصح مو التقريبي — أنت مين؟",
               en:"The labour law treats Saudis and residents differently on contract type, notice, and compensation. So we give you the right answer rather than the near-enough one — which are you?"},
+  /* Deliberately not a countdown. No "only N days left", no alarm. The
+     obligation is the employer's; the reader's move is simply to look. */
+  tm_qiwa_h:{ar:"من ٦ أغسطس: كل العقود على صيغة قوى الموحدة",
+             en:"From 6 August: all contracts move to the unified Qiwa form"},
+  tm_qiwa_b:{ar:"التحويل مسؤولية صاحب العمل، وما تفقد أي حق في هذا التاريخ. اللي يخصك: تتأكد أن عقدك مسجّل في قوى وأن نسختك تطابق المسجّلة.",
+             en:"Migrating it is your employer's job, and you lose nothing on that date. Your part is simply to check your contract is on Qiwa and that your copy matches the registered one."},
+  tm_more:{ar:"كيف أتحقق؟",en:"How do I check?"},
+  tm_dismiss:{ar:"فهمت",en:"Got it"},
   nat_showing:{ar:"الأنظمة المعروضة:",en:"Showing rules for:"},
   nat_change:{ar:"تغيير",en:"Change"},
   nat_now:{ar:"عرضنا أنظمة: {t}",en:"Now showing: {t}"},
@@ -2431,7 +2462,7 @@ function applyLang(){
   renderOnboard();
   renderMode();
   renderHomeReminders();
-  renderTabs(); renderMyContracts(); renderLib(); renderNat();
+  renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -2954,7 +2985,7 @@ const LIB = [
       a:{ar:"كمقيم ما تدفع شيء من راتبك للتأمينات. صاحب العمل يدفع ٢٪ فقط من الأجر الخاضع لفرع الأخطار المهنية وحده — تغطية إصابات العمل. ما أنت مشمول بالمعاشات ولا بساند. فأي خصم تأمينات في مسير راتبك يستحق السؤال عنه.",
          en:"As a resident you pay nothing to GOSI from your salary. Your employer pays 2% of the contributable wage for the occupational-hazards branch alone — work-injury cover. You are not in the pension branch or SANED. So any GOSI deduction on your payslip is worth questioning."},
       src:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
-    { q:{ar:"عقدي موثق في قوى؟ وليه يهم؟",en:"Is my contract on Qiwa, and why does it matter?"},
+    { key:"qiwa", q:{ar:"عقدي موثق في قوى؟ وليه يهم؟",en:"Is my contract on Qiwa, and why does it matter?"},
       a:{ar:"العقد لازم يكون موثقًا في قوى عشان يكون نافذًا — العقود غير المسجلة أو الموقّعة باليد ما عادت تحمل القوة النظامية نفسها. والعقود القائمة انتقلت للصيغة الموحدة على مراحل: محددة المدة من ٦ مارس ٢٠٢٦، وغير محددة المدة من ٦ أغسطس ٢٠٢٦. تحقق أن نسختك تطابق المسجلة في قوى.",
          en:"A contract has to be authenticated on Qiwa to be enforceable — unregistered or hand-signed contracts no longer carry the same standing. Existing contracts moved to the standard form in stages: fixed-term from 6 March 2026, indefinite from 6 August 2026. Check that your copy matches what is registered on Qiwa."},
       src:{ar:"برنامج توحيد عقود العمل — منصة قوى",en:"Employment contract transition programme — Qiwa"} },
@@ -3059,6 +3090,7 @@ function renderLib(){
     items.forEach(it=>{
       const d = document.createElement("details");
       d.className = "lib-item";
+      if (it.key) d.dataset.key = it.key;
       const sum = document.createElement("summary");
       sum.textContent = it.q[lang];
       d.appendChild(sum);
@@ -4232,6 +4264,7 @@ function saveState(){
   try {
     localStorage.setItem(STORE, JSON.stringify({
       nat,
+      timelyOff,
       contracts: myContracts.slice(0,8),
       tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
     }));
@@ -4250,6 +4283,7 @@ function loadState(){
        field in payloads written by earlier versions — means "not chosen yet",
        so the reader is asked rather than assumed. */
     nat = (d.nat === "sa" || d.nat === "nonsa") ? d.nat : null;
+    timelyOff = d.timelyOff === true;
 
     myContracts = (Array.isArray(d.contracts) ? d.contracts : [])
       .filter(c => c && typeof c === "object"
@@ -4269,7 +4303,7 @@ function loadState(){
     tracked.forEach(x => TRACKED.push(x));
   } catch(e){
     /* Corrupt or foreign payload: start clean rather than render partial state. */
-    myContracts = []; TRACKED.length = 0; nat = null;
+    myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false;
   }
 }
 function recordContract(){
@@ -4410,6 +4444,42 @@ function renderNat(){
 }
 
 function toggleNat(){ setNat(nat === "sa" ? "nonsa" : "sa"); }
+
+/* ---------------------------------------------- timely notices
+   A dated, checkable prompt — not a countdown. The 6 August obligation sits
+   on the EMPLOYER to migrate contracts onto the standard Qiwa form; the
+   worker loses nothing on that date. So this says "check yours is there",
+   never "act or lose your rights". Getting that distinction wrong would be a
+   false alarm, which costs more trust than the notice earns.
+
+   It expires on its own. A stale urgency banner is worse than none, so this
+   stops rendering a week after the date regardless of anything else. */
+const TIMELY = { id:"qiwa2026", until:Date.UTC(2026, 7, 13) };  /* 13 Aug 2026 */
+let timelyOff = false;
+
+function renderTimely(){
+  const el = document.getElementById("timely");
+  if (!el) return;
+  el.hidden = timelyOff || Date.now() > TIMELY.until;
+}
+
+function dismissTimely(){
+  timelyOff = true;
+  saveState();
+  renderTimely();
+}
+
+function openTimely(){
+  goTab("rights");
+  /* Open the entry this refers to rather than leaving them to hunt for it. */
+  requestAnimationFrame(()=>{
+    const d = document.querySelector('.lib-item[data-key="qiwa"]');
+    if (!d) return;
+    d.open = true;
+    d.scrollIntoView({ block:"center", behavior: REDUCED.matches ? "auto" : "smooth" });
+  });
+}
+
 
 /* Applying a track is the same work wherever it is chosen from. */
 function setNat(v){
