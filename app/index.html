@@ -1875,8 +1875,8 @@ const T = {
   eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
   eos_none:{ar:"الاستقالة قبل إتمام سنتين لا تستحق مكافأة عادةً.",
             en:"Resigning before completing two years generally earns no award."},
-  eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى.",
-            en:"An estimate based on the standard formula. It excludes unused leave and other dues."},
+  eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى. وهذي المكافأة مستقلة عن التأمينات الاجتماعية — التأمينات ما تنقصها ولا تغني عنها.",
+            en:"An estimate based on the standard formula. It excludes unused leave and other dues. This award is separate from GOSI — social insurance does not reduce it or replace it."},
   eos_verify:{ar:"الحساب مبني على المادتين ٨٤ و٨٥ من نظام العمل — راجع المصادر في «حسابي».",
               en:"Based on Articles 84 and 85 of the Labor Law — see the sources under Account."},
   eos_sar:{ar:"ر.س",en:"SAR"},
@@ -2946,6 +2946,14 @@ const LIB = [
       a:{ar:"في حالات محددة نعم، عبر منصة قوى — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتتأكد من انطباق حالتك.",
          en:"In defined cases yes, through the Qiwa platform — including your contract expiring, three consecutive months of unpaid wages, and an expired Iqama. Check Qiwa to confirm your case qualifies."},
       src:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"} },
+    { q:{ar:"وش المخصوم مني للتأمينات؟",en:"What am I paying to GOSI?"}, nat:"sa",
+      a:{ar:"يعتمد على تاريخ تسجيلك. قبل ٣ يوليو ٢٠٢٤: ٢١٫٥٪ إجمالًا — ١١٫٧٥٪ على صاحب العمل و٩٫٧٥٪ عليك. بعده: النظام الجديد، وارتفع في يوليو ٢٠٢٦ إلى ٢٣٫٥٪ — ١٢٫٧٥٪ عليه و١٠٫٧٥٪ عليك. ويُحتسب على الأساسي وبدل السكن فقط، بحد أقصى ٤٥٬٠٠٠ ريال شهريًا.",
+         en:"It depends when you were registered. Before 3 July 2024: 21.5% in total — 11.75% employer, 9.75% you. After that you are on the new system, which rose in July 2026 to 23.5% — 12.75% employer, 10.75% you. It is calculated on basic plus housing allowance only, capped at SAR 45,000 a month."},
+      src:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
+    { q:{ar:"يخصمون مني تأمينات — هل هذا صحيح؟",en:"They're deducting GOSI from me — is that right?"}, nat:"nonsa",
+      a:{ar:"كمقيم ما تدفع شيء من راتبك للتأمينات. صاحب العمل يدفع ٢٪ فقط من الأجر الخاضع لفرع الأخطار المهنية وحده — تغطية إصابات العمل. ما أنت مشمول بالمعاشات ولا بساند. فأي خصم تأمينات في مسير راتبك يستحق السؤال عنه.",
+         en:"As a resident you pay nothing to GOSI from your salary. Your employer pays 2% of the contributable wage for the occupational-hazards branch alone — work-injury cover. You are not in the pension branch or SANED. So any GOSI deduction on your payslip is worth questioning."},
+      src:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
     { q:{ar:"عقدي موثق في قوى؟ وليه يهم؟",en:"Is my contract on Qiwa, and why does it matter?"},
       a:{ar:"العقد لازم يكون موثقًا في قوى عشان يكون نافذًا — العقود غير المسجلة أو الموقّعة باليد ما عادت تحمل القوة النظامية نفسها. والعقود القائمة انتقلت للصيغة الموحدة على مراحل: محددة المدة من ٦ مارس ٢٠٢٦، وغير محددة المدة من ٦ أغسطس ٢٠٢٦. تحقق أن نسختك تطابق المسجلة في قوى.",
          en:"A contract has to be authenticated on Qiwa to be enforceable — unregistered or hand-signed contracts no longer carry the same standing. Existing contracts moved to the standard form in stages: fixed-term from 6 March 2026, indefinite from 6 August 2026. Check that your copy matches what is registered on Qiwa."},
@@ -2991,6 +2999,15 @@ const LIB = [
       a:{ar:"اثنا عشر شهرًا من انتهاء العلاقة. بعدها لا تُسمع الدعوى — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء.",
          en:"Twelve months from the end of the relationship. After that a claim isn't heard — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception."},
       src:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
+    { q:{ar:"فقدت وظيفتي — لي إعانة؟",en:"I lost my job — is there support?"}, nat:"sa",
+      a:{ar:"نعم، ساند — تأمين التعطل عن العمل، للسعوديين. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك ١٢ شهرًا على الأقل خلال آخر ٣٦ شهرًا، ومسجَّل في طاقات. التعويض ٦٠٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى ٩٬٠٠٠ ريال، ثم ٥٠٪، لمدة تصل إلى ١٢ شهرًا.",
+         en:"Yes — SANED, unemployment insurance, for Saudi nationals. The conditions: you lost the job involuntarily, you're actively looking, you have at least 12 months of contributions in the last 36, and you're registered with Taqat. It pays 60% of your average covered wage over the previous two years for the first three months, capped at SAR 9,000, then 50%, for up to 12 months."},
+      src:{ar:"نظام التأمينات الاجتماعية — برنامج ساند",en:"Social Insurance Law — SANED programme"} },
+    { q:{ar:"قالوا التأمينات تغني عن المكافأة",en:"They said GOSI replaces my end-of-service award"},
+      a:{ar:"غير صحيح. المكافأة والتأمينات نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين ٨٤ و٨٥، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا — الكتابة وحدها تنهي أكثر هذي النقاشات.",
+         en:"Not true. The award and GOSI are separate systems. Your employer pays the award themselves under Articles 84 and 85, and it is not reduced by, offset against, or replaced by GOSI contributions. If you're told otherwise, ask for it in writing — putting it in writing ends most of these conversations."},
+      src:{ar:"نظام التأمينات الاجتماعية مع المادتين ٨٤ و٨٥",en:"Social Insurance Law read with Articles 84 and 85"},
+      go:"openEos", label:"lib_go_calc" },
     { q:{ar:"أبي أجهّز ملف مطالبتي",en:"I want to prepare my claim"},
       a:{ar:"احسب مستحقك أولًا، وبعدها نجمع الوقائع والمستندات في ملف واحد جاهز للتسوية أو للمحامي.",
          en:"Calculate what you're owed first, then we gather the facts and documents into one file, ready for settlement or a lawyer."},
@@ -3642,6 +3659,17 @@ function ask(text){
    Every reference below is illustrative and must be checked against the
    current official text before shipping. */
 const KB = [
+  /* Order matters: KB.find takes the first match. This asks a narrower
+     question than the end-of-service entry below, whose pattern would
+     otherwise swallow it and answer something the reader did not ask. */
+  /* Matches on the pair of concepts rather than guessed phrasings: any question
+     naming both GOSI and the award is asking how the two relate, however it is
+     worded. Listing literal phrases missed "تغني عن" and "replace". */
+  { k:/(?=[\s\S]*(تأمينات|التأمينات|ساند|gosi|social insurance))(?=[\s\S]*(مكافأة|مكافأه|نهاية الخدمة|end of service|eosb|gratuity))/i,
+    a:{ar:"لا. مكافأة نهاية الخدمة والتأمينات الاجتماعية نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين ٨٤ و٨٥، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا.",
+       en:"No. The end-of-service award and GOSI are separate systems. The award is paid by your employer under Articles 84 and 85, and it is not reduced by, offset against, or replaced by GOSI contributions. If you are told otherwise, ask for it in writing."},
+    r:{ar:"نظام التأمينات الاجتماعية مع المادتين ٨٤ و٨٥",en:"Social Insurance Law read with Articles 84 and 85"} },
+
   { k:/(نهاية الخدمة|مكافأة|end of service|eosb|gratuity)/i,
     a:{ar:"مكافأة نهاية الخدمة تُحسب عادة نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر. طريقة إنهاء العقد (استقالة أو إنهاء من صاحب العمل) تغيّر المستحق.",
        en:"End-of-service pay is generally half a month for each of the first five years, then a full month per year after that, based on your final wage. How the contract ends — resignation or employer termination — changes what you're owed."},
@@ -3728,7 +3756,33 @@ const KB = [
   { k:/(راتب متأخر|ما صرفوا|تأخر الراتب|ناجز|najiz|unpaid wage|salary not paid)/i,
     a:{ar:"بند الأجر في عقد قوى صار قابلًا للتنفيذ مباشرة: تقدر ترفع مطالبة بالأجر غير المدفوع عبر بوابة ناجز في وزارة العدل، دون المرور أولًا بالموارد البشرية أو المحكمة العمالية.",
        en:"The wage clause in a Qiwa contract now carries direct enforcement: you can pursue unpaid wages through the Ministry of Justice's Najiz portal without going through MHRSD or the labour court first."},
-    r:{ar:"برنامج توحيد عقود العمل — بوابة ناجز",en:"Employment contract transition programme — Najiz"} }
+    r:{ar:"برنامج توحيد عقود العمل — بوابة ناجز",en:"Employment contract transition programme — Najiz"} },
+
+  /* ---- GOSI. A different statute from the Labor Law, so it names the
+     Social Insurance Law and GOSI as the authority rather than borrowing an
+     article number that would not exist. Both tracks get an entry because
+     the answer is genuinely opposite for each. */
+
+  { k:/(تأمينات|التأمينات الاجتماعية|جوسي|gosi|social insurance)/i, nat:"nonsa",
+    a:{ar:"كمقيم، ما تدفع شيء من راتبك للتأمينات الاجتماعية. صاحب العمل يدفع ٢٪ فقط من الأجر الخاضع، وهذي لفرع الأخطار المهنية وحده — يعني تغطية إصابات العمل. ما أنت مشمول بفرع المعاشات ولا بساند. فإذا شفت خصم تأمينات في مسير راتبك، هذا غلط يستحق السؤال.",
+       en:"As a resident you pay nothing to GOSI from your salary. Your employer pays 2% of the contributable wage, and that is for the occupational-hazards branch alone — work-injury cover. You are not in the pension branch and not in SANED. So if you see a GOSI deduction on your payslip, that is wrong and worth questioning."},
+    r:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
+
+  { k:/(تأمينات|التأمينات الاجتماعية|جوسي|gosi|social insurance|معاش|تقاعد|pension)/i, nat:"sa",
+    a:{ar:"الاشتراك يعتمد على تاريخ تسجيلك. المسجَّلون قبل ٣ يوليو ٢٠٢٤: ٢١٫٥٪ إجمالًا — ١١٫٧٥٪ على صاحب العمل و٩٫٧٥٪ عليك. والمسجَّلون بعده يخضعون للنظام الجديد، وارتفع في يوليو ٢٠٢٦ إلى ٢٣٫٥٪ — ١٢٫٧٥٪ عليه و١٠٫٧٥٪ عليك. والاشتراك يُحتسب على الأجر الأساسي وبدل السكن فقط، بحد أقصى ٤٥٬٠٠٠ ريال شهريًا.",
+       en:"Your rate depends on when you were registered. Registered before 3 July 2024: 21.5% in total — 11.75% employer, 9.75% you. Registered after that, you are on the new system, which rose in July 2026 to 23.5% — 12.75% employer, 10.75% you. Contributions are calculated on basic wage plus housing allowance only, capped at SAR 45,000 a month."},
+    r:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
+
+  { k:/(ساند|saned|إعانة البطالة|تعطل عن العمل|unemployment)/i, nat:"nonsa",
+    a:{ar:"ساند للسعوديين فقط، فما أنت مشمول فيه. اللي لك عند نهاية العلاقة: مكافأة نهاية الخدمة من صاحب العمل، وتذكرة العودة، وأي مستحقات متأخرة. وإذا كان الإنهاء بغير سبب مشروع، تعويض أجر المدة الباقية من عقدك بحد أدنى شهرين.",
+       en:"SANED is for Saudi nationals only, so you are not covered by it. What you do have at the end of the relationship: the end-of-service award from your employer, the return ticket, and any outstanding dues. And if the termination was without valid reason, compensation for your contract's remaining term with a floor of two months."},
+    r:{ar:"نظام التأمينات الاجتماعية مع المادتين ٤٠ و٧٧",en:"Social Insurance Law read with Articles 40 and 77"} },
+
+  { k:/(ساند|saned|إعانة البطالة|تعطل عن العمل|unemployment)/i, nat:"sa",
+    a:{ar:"ساند تأمين ضد التعطل، وهو للسعوديين فقط. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك ١٢ شهرًا على الأقل خلال آخر ٣٦ شهرًا، ومسجَّل في طاقات. التعويض ٦٠٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى ٩٬٠٠٠ ريال، ثم ٥٠٪، لمدة تصل إلى ١٢ شهرًا.",
+       en:"SANED is unemployment insurance, and it is for Saudi nationals only. The conditions: you lost the job involuntarily, you are actively looking for work, you have at least 12 months of contributions in the last 36, and you are registered with Taqat. It pays 60% of your average covered wage over the previous two years for the first three months, capped at SAR 9,000, then 50%, for up to 12 months."},
+    r:{ar:"نظام التأمينات الاجتماعية — برنامج ساند",en:"Social Insurance Law — SANED programme"} },
+
 ];
 
 const CAPS = [

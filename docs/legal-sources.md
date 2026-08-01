@@ -28,12 +28,19 @@ kinds, and they are visually distinct in the UI:
 The score is always methodology: no statute produces a number out of 100.
 The end-of-service figure is always law: it implements Articles 84 and 85.
 
-Heuristic rules currently citing law: overtime (107), notice period (75),
-probation (53), annual leave (109). The remaining six — non-compete, penalty
-clause, one-sided termination, auto-renewal, intellectual property, salary —
-carry the methodology label, because no verified article backs the specific
-claim the rule makes. Three of those are the deliberately uncited claims noted
-at the bottom of this file.
+Heuristic rules citing law: overtime (107), notice period (75 for Saudis, 77
+for residents), probation (53), annual leave (109), non-compete (83),
+one-sided termination (80), contract type (37), and the five non-Saudi rules
+(40 and Implementing Regulations art. 6). Four still carry the methodology
+label — penalty clause, auto-renewal, intellectual property, salary — because
+no verified article backs the specific claim those rules make, and saying so
+is the point.
+
+**There are no uncited claims left.** All three former "illustrative" rows
+were resolved to verified articles on 31 July 2026.
+
+GOSI is cited by naming the Social Insurance Law and GOSI as the authority,
+never with a Labor Law article number, because it is a different statute.
 
 ## Primary sources
 
@@ -66,6 +73,11 @@ at the bottom of this file.
 | A resignation is deemed accepted if the employer does not respond within 30 days | **79** | ✅ verified | [Clyde & Co — resignations](https://www.clydeco.com/en/insights/2025/03/ksa-labour-law-amendments-resignations), [Al Tamimi](https://www.tamimi.com/news/key-amendments-to-saudi-arabias-labour-law/) |
 | Bankruptcy, and resignation as newly defined, are lawful grounds for ending a contract | **74** | ✅ verified | [Al Tamimi](https://www.tamimi.com/news/key-amendments-to-saudi-arabias-labour-law/), [Addleshaw Goddard](https://www.addleshawgoddard.com/en/insights/insights-briefings/2025/employment/navigating-new-horizon-understanding-2025-amendments-ksa-labour-law/) |
 | Contracts must be authenticated through Qiwa to be enforceable; unregistered or hand-signed contracts no longer carry enforceable status. Existing fixed-term contracts moved to the standard form from **6 March 2026**, indefinite contracts from **6 August 2026** | — (contract-transition programme, named without an article) | ✅ verified | [Morgan Lewis](https://www.morganlewis.com/blogs/shiftingsandsoflaborlaw/2025/12/employment-contract-enhancements-in-the-kingdom-of-saudi-arabia), [Pinsent Masons](https://www.pinsentmasons.com/out-law/news/saudi-arabia-salary-protection-unified-employment-contract) |
+| **Non-Saudi only.** A non-Saudi employee contributes **nothing** to GOSI from salary. The employer pays **2%** of the contributable wage for the occupational-hazards branch alone. Non-Saudis are not covered by the pension (annuities) branch or by SANED | — (Social Insurance Law; GOSI is the authority, no Labor Law article) | ✅ verified | [GOSI](https://www.gosi.gov.sa/GOSIOnline/Contribution&locale=en_US), [Mercans 2026 rates](https://mercans.com/resources/statutory-alerts/saudi-arabia-gosi-contribution-rates-saned-unemployment-fund-2026/) |
+| **Saudi only.** Saudi nationals registered **before 3 July 2024** contribute under the legacy system: **21.5%** total, employer 11.75% and employee 9.75%. Those registered **on or after 3 July 2024** fall under the new system, which rose in July 2026 to **23.5%** total, employer 12.75% and employee 10.75% | — (Social Insurance Law) | ✅ verified | [GOSI](https://www.gosi.gov.sa/GOSIOnline/Contribution&locale=en_US), [Mercans 2026 rates](https://mercans.com/resources/statutory-alerts/saudi-arabia-gosi-contribution-rates-saned-unemployment-fund-2026/) |
+| GOSI contributions are calculated on **basic wage plus housing allowance only**, capped at a contributable wage of **SAR 45,000 per month** | — (Social Insurance Law) | ✅ verified | [GOSI](https://www.gosi.gov.sa/GOSIOnline/Contribution&locale=en_US), [Mercans](https://mercans.com/glossary/gosi-contributions/) |
+| GOSI and the end-of-service award are **separate entitlements**. The award under Articles 84 and 85 is paid by the employer and is not reduced by, offset against, or replaced by GOSI pension contributions | — (Social Insurance Law read with Labor Law arts. 84–85) | ✅ verified | [HRSD — end of service](https://www.hrsd.gov.sa/en/%D9%85%D9%83%D8%A7%D9%81%D8%A3%D8%A9-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AE%D8%AF%D9%85%D8%A9), [Cercli](https://www.cercli.com/resources/saudi-labor-law-end-of-service) |
+| **Saudi only.** SANED unemployment insurance: available to Saudi nationals who lost work **involuntarily**, are actively seeking work, have contributed for at least **12 months in the past 36**, and are registered with Taqat (HRDF). Pays **60%** of the average covered monthly wage over the previous two years for the first three months, capped at **SAR 9,000**, then **50%**, for up to **12 months**. Funded 0.75% employer and 0.75% employee | — (Social Insurance Law; SANED programme) | ✅ verified | [GOSI — SANED](https://www.gosi.gov.sa/GOSIOnline/Unemployment_Insurance_(SANED)&locale=en_US), [ISSA](https://www.issa.int/gp/173467) |
 | The wage clause in a Qiwa contract carries direct enforcement: unpaid wages can be pursued through the Ministry of Justice's Najiz portal without first going through MHRSD or the labour courts | — (contract-transition programme) | ✅ verified | [Pinsent Masons](https://www.pinsentmasons.com/out-law/news/saudi-arabia-salary-protection-unified-employment-contract), [BCLP](https://www.bclplaw.com/en-US/events-insights-news/saudi-arabias-evolving-labor-landscape-a-consolidated-legal-update.html) |
 
 ## Corrections log
