@@ -3929,7 +3929,7 @@ function answerRisks(){
       ? "ما لقيت مخاطر تستدعي القلق في هذا العقد — كل البنود ضمن المعتاد."
       : "I found no risks worth worrying about in this one — every clause sits within the norm." };
   const body = risky.map((c,i)=>{
-    const n = lang==="ar" ? AR_NUM[i] : String(i+1);
+    const n = pointNum(i);
     const tag = c.s==="red" ? t("act_red") : t("act_amber");
     return `${n}. ${c.t[lang]} (${tag})\n   ${c.p[lang]}\n   ${c.a ? c.a[lang] : ""}`;
   }).join("\n\n");
@@ -4843,14 +4843,22 @@ const LETTER_TO = {
   doc_free:{ar:"إلى: العميل الكريم",en:"To: The client"},
   doc_pasted:{ar:"إلى: الطرف الآخر",en:"To: The other party"}
 };
-const AR_NUM = ["١","٢","٣","٤","٥","٦","٧","٨","٩"];
+/* Point numbering for the letter and the risk summary. This was a nine-slot
+   table of Arabic-Indic numerals, and it was two rules away from printing
+   "undefined." where a point number belonged: the rule set grew from 10 to 17
+   this session, and the ceiling on numbered points grew with it — 7 today on
+   the Saudi track. Converting is total, so it cannot run out. */
+function pointNum(i){
+  const n = String(i + 1);
+  return lang === "ar" ? n.replace(/[0-9]/g, d => "٠١٢٣٤٥٦٧٨٩"[+d]) : n;
+}
 
 function negotiables(){ return current ? current.clauses.filter(c=>c.a) : []; }
 
 function buildLetter(){
   const items = selected();
   const list = items.map((c,i)=>{
-    const n = lang==="ar" ? AR_NUM[i] : String(i+1);
+    const n = pointNum(i);
     return `${n}. ${c.t[lang]}: ${adviceFor(c)[lang]}`;
   }).join("\n");
   if (lang==="ar"){
@@ -4876,6 +4884,12 @@ function renderPaywall(){
   /* Only the revealed portion is rendered; the withheld points never enter
      the DOM before payment. */
   const isCase = pwMode === "case";
+  /* The two modes have different plan lists — three for the letter, two for the
+     case file — so an index carried across a mode switch can point past the end
+     and leave the pay button reading "Pay undefined". Every entry point happens
+     to reset it today; clamping here, above the guard, makes that a property of
+     the paywall rather than of the callers remembering. */
+  pwPlan = Math.max(0, Math.min(pwPlan, activePlans().length - 1));
   if (isCase ? !eosData : (!current || !selected().length)) return;
   document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(isCase ? "pw_case_title" : "pw_title");
   document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(isCase ? "pw_case_free" : "pw_free_note");
