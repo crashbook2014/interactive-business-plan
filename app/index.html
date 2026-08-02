@@ -160,7 +160,7 @@
   .brand svg{width:34px;height:34px}
   .brand .name-ar{font-family:var(--ar);font-size:22px;color:var(--teal-ink);line-height:1}
   .brand .name-en{font-family:var(--en);font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
-  .lang-toggle{font-family:var(--en);font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:7px 14px}
+  .lang-toggle{font-family:var(--en);font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:7px 14px;min-height:44px}
   html[lang="en"] .lang-toggle{font-family:var(--ar);font-size:15px;padding:5px 14px}
 
   .screen{display:none;flex:1;flex-direction:column}
@@ -433,7 +433,7 @@
   /* letter builder — reading the contract is how the letter gets written */
   .add-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--teal);
       color:var(--teal);background:none;border-radius:999px;padding:7px 13px;font-size:12.5px;
-      font-weight:700;transition:background .15s,color .15s,border-color .15s}
+      font-weight:700;min-height:44px;transition:background .15s,color .15s,border-color .15s}
   html[lang="ar"] .add-btn{font-weight:400;font-size:14px}
   .add-btn svg{width:13px;height:13px}
   .add-btn.on{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
@@ -486,7 +486,7 @@
   .escalate b{display:block;font-size:15px;color:var(--ink);margin-bottom:4px}
   .escalate p{font-size:13px;color:var(--ink-2);line-height:1.7}
   .esc-cta{margin-top:11px;background:var(--teal);color:var(--on-teal);border-radius:var(--r-sm);
-      padding:9px 15px;font-size:13.5px;font-weight:700}
+      padding:9px 15px;font-size:13.5px;font-weight:700;min-height:44px}
   html[lang="ar"] .esc-cta{font-weight:400;font-size:15px}
   .src-line{font-size:11.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
   /* A citation and an opinion must not look alike. Law carries the teal mark
@@ -1231,6 +1231,7 @@
         <b id="acTitle"></b>
         <span id="acBody"></span>
       </div>
+      <h3 class="sr-only" data-t="res_flags_h"></h3>
       <div class="flags" id="flags"></div>
       <button class="primary detail" onclick="show('clauses')" data-t="cta_clauses"></button>
       <button class="letter-tease" id="letterTease" onclick="openLetterFlow()">
@@ -1580,6 +1581,7 @@ const T = {
                en:"Medium confidence — we recognised {n} clauses in your text. There may be others we didn't catch."},
   dc_conf_low:{ar:"ثقة محدودة — تعرّفنا على {n} فقط. اقرأ بقية العقد بنفسك.",
                en:"Limited confidence — we only recognised {n}. Read the rest of the contract yourself."},
+  res_flags_h:{ar:"البنود المرصودة",en:"Flagged clauses"},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
   ob_head:{ar:"اعرف وش وقّعت عليه",en:"Know what you're signing"},
