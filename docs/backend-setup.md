@@ -129,7 +129,7 @@ change, and no edit to the OAuth or webhook functions.
 
 ## 6. Wire the app
 
-`app/js/wodouh-auth.js` is written and loads the Supabase SDK lazily — only
+`supabase/client/wodouh-auth.js` is written and loads the Supabase SDK lazily — only
 when a user actually tries to sign in — so the signed-out app keeps making
 zero external requests.
 
