@@ -807,6 +807,7 @@
   .rd-msg{margin-top:9px;font-size:12.5px;line-height:1.6;color:var(--teal-ink)}
   .rd-msg[hidden]{display:none}
   .rd-msg.bad{color:var(--red-ink)}
+  .mini.warn{color:var(--amber-ink);font-weight:700}
 
   .timely{background:var(--teal-soft);border:1px solid color-mix(in srgb, var(--teal) 24%, transparent);
     border-radius:var(--r-lg);padding:14px 16px;margin:0 0 16px}
@@ -1882,6 +1883,8 @@ const T = {
   eos_term_end:{ar:"متى كان عقدك ينتهي؟",en:"When was your contract due to end?"},
   eos_term_hint:{ar:"من العقد نفسه — عليها يُحسب تعويض الإنهاء المبكر",
                  en:"From the contract itself — early-termination compensation is calculated on it"},
+  cf_term_odd:{ar:"تاريخ نهاية العقد يبدو بعيدًا جدًا — تأكد من السنة. الرقم أعلاه محسوب على ما أدخلته.",
+                en:"That contract end date looks unusually far away — check the year. The figure above is calculated from what you entered."},
   cf_comp_note_term:{ar:"أجر المدة الباقية من عقدك، بحد أدنى أجر شهرين — عقد غير السعودي محدد المدة دائمًا. يستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع.",
                      en:"The wages for your contract's remaining term, with a floor of two months — a non-Saudi's contract is always fixed-term. Owed only if the termination is found to be without valid reason."},
   cf_comp_note_need:{ar:"هذا الحد الأدنى فقط (أجر شهرين). أضف تاريخ نهاية عقدك في الحاسبة عشان نحسب أجر المدة الباقية — وهو غالبًا أكبر.",
@@ -3187,6 +3190,12 @@ function serviceParts(a, b){
   let m = b.getMonth() - a.getMonth();
   let d = b.getDate() - a.getDate();
   if (d < 0){ m--; d += new Date(b.getFullYear(), b.getMonth(), 0).getDate(); }
+  /* One borrow is not always enough. From 31 Jan to 1 Mar the borrow is a
+     28- or 29-day February against a 30-day shortfall, leaving d negative,
+     which then subtracts from the award through serviceYears. The span really
+     is a completed month with no extra days, so floor it there rather than
+     letting a negative leak into money. */
+  if (d < 0) d = 0;
   if (m < 0){ y--; m += 12; }
   return { y, m, d };
 }
@@ -3219,7 +3228,10 @@ function calcEos(){
   if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; return; }
   const a = new Date(sd), bDate = new Date(ed);
   const y = serviceYears(a, bDate);
-  if (y <= 0){ out.innerHTML = ""; eosSrc.hidden = true; return; }
+  /* Written as !(y > 0) rather than y <= 0: NaN fails every comparison, so
+     the old guard let an unparseable date through to the arithmetic and the
+     reader saw "not a number" where a figure should be. */
+  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; return; }
   const parts = serviceParts(a, bDate);
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
@@ -3383,6 +3395,18 @@ function remainingTermMonths(){
   return Math.max(0, months);
 }
 
+/* A fixed-term contract with decades left is almost always a mistyped year:
+   2099 instead of 2029 turned a 480,000 claim into 8,880,000 in testing, with
+   nothing on screen to suggest anything was wrong. We do not cap it — capping
+   would invent a number for someone with a genuinely long term — we ask them
+   to check the date. */
+const TERM_SANITY_MONTHS = 60;
+
+function termLooksImplausible(){
+  const m = remainingTermMonths();
+  return m != null && m > TERM_SANITY_MONTHS;
+}
+
 /* Which of the two Article 77 branches produced the number on screen. */
 function compBasisKey(){
   if (!isNonSaudi()) return "cf_comp_note";
@@ -3401,6 +3425,7 @@ function renderCase(){
        ${row(t("cf_eos"), eosData.total)}
        ${row(t("cf_comp"), compEstimate())}
        <p class="mini">${t(compBasisKey())}</p>
+       ${termLooksImplausible() ? `<p class="mini warn">${t("cf_term_odd")}</p>` : ""}
        <div class="leave-in">
          <span>${t("cf_leave_q")}</span>
          <input type="number" min="0" max="365" id="leaveDays" value="${leaveDays}"/>
