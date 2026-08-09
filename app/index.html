@@ -773,6 +773,17 @@
   .ai-find.attention b{color:var(--red-ink)}
   .ai-find.review b{color:var(--amber-ink)}
   .ai-summary{font-size:13px;color:var(--ink-2);line-height:1.65;margin:6px 0}
+  .airv-reason{font-size:12.5px;color:var(--red-ink);line-height:1.65;margin:8px 0}
+  .airv-c{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+  .airv-c .hd{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:6px}
+  .airv-c b{font-size:13.5px}
+  .airv-detail{font-size:13px;color:var(--ink);line-height:1.65}
+  .airv-note{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:4px}
+  .rv-bar{height:3px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:10px}
+  .rv-bar i{display:block;height:100%;width:40%;background:var(--teal);
+    animation:rvslide 1.1s var(--ease-move) infinite}
+  @keyframes rvslide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+  @media (prefers-reduced-motion:reduce){ .rv-bar i{animation:none;width:100%} }
   .tm-steps{display:grid;gap:10px}
   .tm-step{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
   .tm-step .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
@@ -1883,8 +1894,8 @@ const T = {
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، ويبقى فيه: التقييم والمبالغ والتواريخ وكل إجاباتك ما تغادر جهازك أبدًا.\n\nفيه استثناء واحد: «قراءة أعمق لعقدك». لو وافقت عليها صراحةً، يُرسل نص العقد وحده — بدون اسمك ولا أرقامك ولا إجاباتك — إلى خادم وضوح ومنه إلى نموذج Claude من Anthropic، ولا يُحفظ في أي مرحلة. ما تشتغل إلا لو ضغطتها بنفسك، وتقدر تتجاهلها والتقييم كامل بدونها.",
-                    en:"Your contract is analyzed inside the app on your device, and stays there: the assessment, the amounts, the dates and every answer you give never leave it.\n\nThere is one exception: \"a closer read of your contract\". If you explicitly agree to it, the contract text alone — not your name, your figures or your answers — is sent to Wodouh's server and from there to Anthropic's Claude model, and is not stored at any point. It only runs if you press it yourself, and the assessment is complete without it."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه استثناءان، كلاهما اختياري وكلاهما يحتاج موافقتك الصريحة. وهما منفصلان عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\nالاثنان يمرّان بخادم وضوح إلى نموذج Claude من Anthropic، ولا يُحفظ شيء في أي مرحلة. ولا واحد منهما يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتهما، التقييم يشتغل كامل.",
+                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are two exceptions. Both are optional, both need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\nBoth go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. Neither can change any amount — all the arithmetic stays on your device. Decline both and the assessment works in full."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -2564,6 +2575,53 @@ const T = {
   fc_bilingual:{ar:"تطابق العربي والإنجليزي",en:"Arabic and English results consistent"},
   fc_estimates:{ar:"التمييز بين التقدير والمؤكد",en:"Estimates distinguished from confirmed amounts"},
 
+  /* --- AI second-pass review */
+  airv_title:{ar:"مراجعة ثانية بالذكاء الاصطناعي",en:"AI second-pass review"},
+  airv_offer:{ar:"بعد ما يجهز تقييمك، نقدر نمرّره على Claude كمراجع ناقد: يدوّر على قاعدة طُبّقت في غير محلها، أو مبلغ محسوب مرتين، أو ثقة أكثر مما تحتمل معلوماتك.",
+              en:"Once your assessment is ready, we can pass it to Claude as a critical reviewer: looking for a rule applied where it doesn't reach, an amount counted twice, or more confidence than your information supports."},
+  airv_consent_b:{ar:"هذي المرة يطلع أكثر من نص العقد: التواريخ، والراتب، ونوع العقد، وطريقة الإنهاء، وكل مبلغ ظهر في تقييمك، والأوراق اللي علّمتها، وإجاباتك عن المخالصة والمكافأة والإجازة. يُرسل لخادم وضوح ومنه لنموذج Claude من Anthropic، ولا يُحفظ في أي مرحلة.",
+                  en:"This sends more than the contract text: your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and your answers about settlement, award and leave. It goes to Wodouh's server and from there to Anthropic's Claude model, and is not stored at any point."},
+  airv_reason_warn:{ar:"ومنها أيضًا اللي كتبته بخط يدك في خانة «السبب اللي أُعطي لك». إذا كتبت فيها اسم شركتك أو اسم مديرك، فهو يطلع معها — راجعها قبل لا توافق.",
+                    en:"That includes what you typed yourself in \"the reason you were given\". If you wrote your company's name or your manager's name in it, that goes too — check it before you agree."},
+  airv_agree:{ar:"فاهم، وأوافق على إرسال تقييمي للمراجعة",en:"I understand, and I agree to send my assessment for review"},
+  airv_decline:{ar:"لو ما وافقت، تقييمك يظهر كامل ومعه مراجعتنا الذاتية — المراجعة الثانية إضافة، مو شرط.",
+                en:"If you decline, your assessment appears in full with our own review — the second pass is an addition, not a requirement."},
+  airv_checking:{ar:"نراجع تقييمك قبل ما نعرضه",en:"Reviewing your assessment before we show it"},
+  airv_checking_b:{ar:"ثواني. لو تأخرت المراجعة، نعرض التقييم كامل بدونها.",
+                   en:"A few seconds. If the review is slow, we'll show the full assessment without it."},
+  airv_sub:{ar:"مراجع ثانٍ قرأ تقييمنا وحاول يلقى فيه خطأ. ما يقدر يغيّر أي مبلغ — كل رقم محسوب على جهازك ويبقى كذا.",
+            en:"A second reviewer read our assessment and tried to find fault with it. It cannot change any amount — every figure is calculated on your device and stays that way."},
+  airv_none:{ar:"ما رفع أي ملاحظة على تقييمنا.",en:"It raised nothing against our assessment."},
+  airv_v_sound:{ar:"يبدو سليمًا",en:"Looks sound"},
+  airv_v_check:{ar:"يستحق مراجعة",en:"Worth checking"},
+  airv_v_problem:{ar:"فيه ما يستدعي الوقوف",en:"Something to look at"},
+  airv_confirmed:{ar:"تأكدنا منها",en:"We confirmed it"},
+  airv_unconfirmed:{ar:"لم نتأكد منها",en:"Unconfirmed"},
+  airv_confirmed_b:{ar:"فحوصاتنا الخاصة توافق على هذي النقطة، وأثرها ظاهر في التقييم أعلاه.",
+                    en:"Our own checks agree with this one, and its effect is already reflected above."},
+  airv_unconfirmed_b:{ar:"فحوصاتنا ما قدرت تعيد إنتاج هذي الملاحظة. نعرضها لك كما هي، وما غيّرنا شيئًا بناءً عليها.",
+                      en:"Our own checks could not reproduce this. We show it to you as raised, and changed nothing on the strength of it."},
+  airv_incomplete:{ar:"لم تكتمل",en:"Didn't finish"},
+  airv_working:{ar:"المراجعة جارية.",en:"The review is still running."},
+  airv_timeout:{ar:"المراجعة تأخرت أكثر من اللازم، فأوقفناها.",en:"The review took too long, so we stopped waiting."},
+  airv_busy:{ar:"الخدمة مزدحمة حاليًا.",en:"The service is busy right now."},
+  airv_failed:{ar:"ما قدرنا نكمل المراجعة الثانية.",en:"We couldn't complete the second pass."},
+  airv_offline:{ar:"ما فيه اتصال.",en:"No connection."},
+  airv_unaffected:{ar:"تقييمك أعلاه ما تأثر — كله محسوب على جهازك، ومراجعتنا الذاتية اشتغلت كالمعتاد.",
+                   en:"Your assessment above is unaffected — all of it was calculated on your device, and our own review ran as usual."},
+  airv_src:{ar:"مراجعة آلية لتقييمنا: تنبّه ولا تحسب، وما غيّرت أي مبلغ.",
+            en:"an automated review of our own assessment: it flags, it does not calculate, and it changed no amount."},
+  airvc_date_mismatch:{ar:"تواريخ لا تستقيم",en:"Dates that don't line up"},
+  airvc_wrong_contract_type:{ar:"نوع العقد",en:"Contract type"},
+  airvc_rule_misapplied:{ar:"قاعدة في غير محلها",en:"A rule applied where it may not reach"},
+  airvc_scope_error:{ar:"نطاق القاعدة",en:"Scope of a rule"},
+  airvc_double_counted:{ar:"احتساب مزدوج",en:"Something counted twice"},
+  airvc_estimate_as_entitlement:{ar:"تقدير عُرض كأنه مستحق",en:"An estimate presented as an entitlement"},
+  airvc_overstated_strength:{ar:"تقدير أقوى مما تحتمل الأدلة",en:"Strength beyond what the evidence carries"},
+  airvc_evidence_gap:{ar:"فجوة في الأدلة",en:"A gap in the evidence"},
+  airvc_missing_info:{ar:"معلومات ناقصة",en:"Missing information"},
+  airvc_arithmetic_doubt:{ar:"شك في الحساب",en:"A doubt about the arithmetic"},
+
   pw_term_title:{ar:"تقييم إنهاء العقد",en:"Your termination assessment"},
   pw_term_free:{ar:"الأسئلة وقائمة الأوراق مجانية. التقييم والمبالغ هي الجزء المدفوع.",
                 en:"The questions and the document list are free. The assessment and the amounts are the paid part."},
@@ -3179,7 +3237,7 @@ function applyLang(){
      from the same state rather than keeping stale strings. */
   if (term){
     renderTermHow(); renderTermQ(); renderTermEv(); renderAiPanel();
-    if (termPaid){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
+    if (termPaid && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
   }
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
@@ -4908,10 +4966,30 @@ function assessmentSafe(){
   return { ok:true };
 }
 
-function openTermResult(){
+async function openTermResult(){
   if (!termPaid){ pwMode = "term"; pwPlan = 0; renderPaywall(); show("paywall"); return; }
+
+  /* The brief asks for the second pass to run before the result is presented,
+     so it does — but never at the cost of the reader seeing their assessment.
+     Timeout, failure and refusal all land in the same place: render offline. */
+  if (aiReviewOn()){
+    renderTermChecking();
+    show("termres");
+    await aiReview();
+  } else {
+    aiRvState = "idle"; aiRvResult = null;
+  }
   renderTermResult();
   show("termres");
+}
+
+function renderTermChecking(){
+  document.getElementById("termVerdict").innerHTML =
+    `<div class="tm-sec"><div class="hd"><b>${t("airv_checking")}</b></div>
+       <p>${t("airv_checking_b")}</p>
+       <div class="rv-bar"><i></i></div></div>`;
+  ["termSections","termMoney","termClaims","termHowFactors","termGaps","termReview"]
+    .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
 }
 
 function renderTermResult(){
@@ -5007,7 +5085,14 @@ function renderTermResult(){
        ${failed.length ? `<p><b>${t("rv_unchecked")}</b><br>${
          failed.map(c => "• " + t(c.k)).join("<br>")}</p>` : ""}
        ${!notes.length && !failed.length ? `<p>${t("rv_clean_b")}</p>` : ""}
-     </div>`;
+     </div>` + aiReviewHtml();
+
+  /* Model output reaches the DOM through textContent only — it read free text
+     the reader typed, and before that a contract someone else wrote. */
+  const cs = aiReviewConcerns();
+  document.querySelectorAll("#termReview .airv-detail").forEach((el, i) => {
+    el.textContent = cs[i] ? cs[i].detail : "";
+  });
 
   const ev = evidenceStrength();
   document.getElementById("termHowFactors").innerHTML = [
@@ -5134,11 +5219,34 @@ function renderAiPanel(){
          <span>${t("ai_agree")}</span></label>
        <button class="ghost wide" id="aiGo" disabled>${t("ai_go")}</button>
        <p class="tq-skip">${t("ai_decline")}</p>
-     </div>`;
+     </div>` + aiReviewConsentHtml();
   const box = document.getElementById("aiAgree"), go = document.getElementById("aiGo");
   go.disabled = !box.checked;
   box.onchange = () => { aiConsent = box.checked; go.disabled = !box.checked; };
   go.onclick = aiRun;
+  bindReviewConsent();
+}
+
+/* A separate opt-in, because it sends something different. Folding it into the
+   contract-read consent would make that consent's own promise — "not your
+   figures, your answers" — a lie. */
+function aiReviewConsentHtml(){
+  if (!aiAvailable()) return "";
+  return `<div class="tm-sec">
+       <div class="hd"><b>${t("airv_title")}</b><span class="tm-tag review">${t("ai_tag")}</span></div>
+       <p>${t("airv_offer")}</p>
+       <p><b>${t("ai_consent_h")}</b></p>
+       <p>${t("airv_consent_b")}</p>
+       <p class="airv-reason">${t("airv_reason_warn")}</p>
+       <label class="ai-agree"><input type="checkbox" id="aiRvAgree"${aiRvConsent ? " checked" : ""}/>
+         <span>${t("airv_agree")}</span></label>
+       <p class="tq-skip">${t("airv_decline")}</p>
+     </div>`;
+}
+
+function bindReviewConsent(){
+  const box = document.getElementById("aiRvAgree");
+  if (box) box.onchange = () => { aiRvConsent = box.checked; };
 }
 
 /* The document text comes from whatever the reader already pasted into the
@@ -5184,6 +5292,176 @@ async function aiRun(){
   }
   aiBusy = false;
   renderAiPanel();
+}
+
+/* ========================================= AI second-pass review
+   A critical reviewer of the assessment, when configured and consented. The
+   deterministic reviewer above still runs first and still runs offline; this
+   adds the judgement it cannot have — whether a rule is being applied where it
+   does not reach, whether the reason was read sensibly, whether the picture is
+   overstated.
+
+   THE RULE THAT GOVERNS ALL OF IT: the model cannot move money.
+
+   Every riyal is computed here and stays computed here. A returned concern can
+   do exactly two things:
+
+     1. trigger a deterministic re-check we already own. If reviewAssessment()
+        agrees, our correction applies — the model only pointed at it.
+     2. appear as a visible concern, labelled as raised but unconfirmed.
+
+   It can never write an amount, drop a line, or change a certainty level. The
+   closed code enum is what makes that enforceable: a code we do not recognise
+   cannot reach a re-check, so a hijacked completion has nothing to steer. */
+
+const AI_REVIEW_CODES = [
+  "date_mismatch", "wrong_contract_type", "rule_misapplied", "scope_error",
+  "double_counted", "estimate_as_entitlement", "overstated_strength",
+  "evidence_gap", "missing_info", "arithmetic_doubt"
+];
+
+/* Which of our own checks a concern is allowed to re-run. Codes absent from
+   this map are display-only: the reviewer may raise them, and we show them,
+   but nothing in the assessment moves. */
+const AI_RECHECK = {
+  date_mismatch:      () => reviewAssessment().filter(i =>
+                              ["rv_reversed","rv_end_future","rv_start_future",
+                               "rv_start_ancient","rv_term_far"].indexOf(i.key) !== -1),
+  wrong_contract_type:() => reviewAssessment().filter(i => i.key === "rv_ctype_conflict"),
+  double_counted:     () => reviewAssessment().filter(i =>
+                              i.key === "rv_duplicate" || i.key === "rv_eos_paid_but_claimed"),
+  scope_error:        () => reviewAssessment().filter(i =>
+                              i.key === "rv_notice_scope" || i.key === "rv_comp_wrong_path"),
+  overstated_strength:() => reviewAssessment().filter(i => i.key === "rv_strength_thin"),
+  missing_info:       () => termUnassessed().map(g => ({ sev:"info", key:"rv_uncertain_lines" }))
+};
+
+let aiRvConsent = false, aiRvState = "idle", aiRvResult = null;
+const AI_REVIEW_TIMEOUT_MS = 15000;
+
+function aiReviewOn(){ return aiAvailable() && aiRvConsent; }
+
+/* Exactly what leaves the device, built explicitly rather than by serialising
+   `term` — so that adding a field to the state cannot silently widen what is
+   sent. The consent copy names this list, and a test asserts it matches. */
+function reviewPayload(){
+  const p = termParts();
+  return {
+    track: isNonSaudi() ? "non_saudi" : "saudi",
+    contract_type: termCtype(),
+    how_it_ended: term.how,
+    start_date: term.start,
+    end_date: term.end,
+    contract_due_to_end: term.termEnd || null,
+    service: { years: p.y, months: p.m },
+    monthly_wage: termWage(),
+    basic_wage: term.basic || null,
+    notice_days_due: term.noticeDue,
+    notice_days_given: term.noticeGiven,
+    received_final_settlement: term.gotSettle,
+    received_end_of_service: term.gotEos,
+    unused_leave_days: term.leaveDays,
+    unpaid_months: term.unpaidMonths,
+    other_amount: term.otherAmt,
+    article_87_exception: term.exc87,
+    reason_given: String(term.reason || "").slice(0, 500),
+    amounts: termLines().map(l => ({ item: l.key, amount: Math.round(l.amt),
+                                     basis: l.src, kind: l.kind })),
+    total: Math.round(termTotal()),
+    sections: termSections().map(s => ({ item: s.k, state: s.state })),
+    certainty: termLines().map(l => ({ item: l.key, level: certaintyFor(l.key).level })),
+    could_not_assess: termUnassessed().map(g => g.key),
+    evidence_held: term.docs.slice(),
+    our_own_notes: reviewAssessment().map(i => i.key),
+    overall_strength: termStrength().cls
+  };
+}
+
+async function aiReview(){
+  if (!aiReviewOn() || !term) return;
+  aiRvState = "working"; aiRvResult = null;
+
+  const ctrl = new AbortController();
+  /* The reader must never be stuck behind a network call to see their own
+     assessment. On timeout we render exactly what we would have rendered
+     offline, and say the pass did not finish. */
+  const timer = setTimeout(() => ctrl.abort(), AI_REVIEW_TIMEOUT_MS);
+  try {
+    const res = await fetch(analyzeUrl(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      signal: ctrl.signal,
+      body: JSON.stringify({ kind: "review", assessment: reviewPayload() })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !Array.isArray(data.concerns)){
+      aiRvState = res.status === 429 ? "busy" : "failed";
+    } else {
+      /* Coerce again on this side. The server already dropped unknown codes;
+         doing it twice costs nothing against the one class of bug that would
+         let model output steer the app. */
+      aiRvResult = {
+        verdict: ["sound","check","problem"].indexOf(data.verdict) !== -1 ? data.verdict : "sound",
+        concerns: data.concerns.slice(0, 6).map(c => ({
+          code: String(c && c.code || ""),
+          severity: c && (c.severity === "block" || c.severity === "review") ? c.severity : "info",
+          detail: String(c && c.detail || "").slice(0, 500)
+        })).filter(c => c.detail && AI_REVIEW_CODES.indexOf(c.code) !== -1)
+      };
+      aiRvState = "done";
+    }
+  } catch(e){
+    aiRvState = e && e.name === "AbortError" ? "timeout" : "offline";
+  }
+  clearTimeout(timer);
+}
+
+/* What a concern is actually allowed to do. Returns the concern annotated with
+   whether OUR OWN checks agree with it — which is the only thing that can
+   change what the reader sees. */
+function aiReviewConcerns(){
+  if (!aiRvResult) return [];
+  return aiRvResult.concerns.map(c => {
+    const recheck = AI_RECHECK[c.code];
+    const confirmed = recheck ? recheck() : [];
+    return { ...c, confirmed: confirmed.length > 0, ourKeys: confirmed.map(x => x.key) };
+  });
+}
+
+/* The second opinion, kept visually and rhetorically separate from our own
+   checks. A concern our own re-check confirms is marked as confirmed; one it
+   does not is marked as raised-but-unverified, which is the honest label for
+   something a model noticed and we could not reproduce. */
+function aiReviewHtml(){
+  if (!aiAvailable() || !aiRvConsent) return "";
+  if (aiRvState === "idle") return "";
+
+  if (aiRvState !== "done"){
+    const key = { working:"airv_working", timeout:"airv_timeout", busy:"airv_busy",
+                  failed:"airv_failed", offline:"airv_offline" }[aiRvState] || "airv_failed";
+    return `<div class="tm-sec">
+        <div class="hd"><b>${t("airv_title")}</b><span class="tm-tag review">${t("airv_incomplete")}</span></div>
+        <p>${t(key)}</p><p>${t("airv_unaffected")}</p></div>`;
+  }
+
+  const cs = aiReviewConcerns();
+  const vk = { sound:"airv_v_sound", check:"airv_v_check", problem:"airv_v_problem" }[aiRvResult.verdict];
+  const cls = aiRvResult.verdict === "problem" ? "issue"
+            : aiRvResult.verdict === "check" ? "review" : "ok";
+  return `<div class="tm-sec">
+      <div class="hd"><b>${t("airv_title")}</b><span class="tm-tag ${cls}">${t(vk)}</span></div>
+      <p>${t("airv_sub")}</p>
+      ${cs.length ? cs.map(c =>
+        `<div class="airv-c">
+           <div class="hd"><b>${t("airvc_" + c.code)}</b>
+             <span class="tm-tag ${c.confirmed ? "issue" : "review"}">${
+               t(c.confirmed ? "airv_confirmed" : "airv_unconfirmed")}</span></div>
+           <p class="airv-detail"></p>
+           <p class="airv-note">${t(c.confirmed ? "airv_confirmed_b" : "airv_unconfirmed_b")}</p>
+         </div>`).join("")
+        : `<p>${t("airv_none")}</p>`}
+      <p class="src-line method">${t("src_method")} — ${t("airv_src")}</p>
+    </div>`;
 }
 
 /* ------------------------------------------------------- the documents

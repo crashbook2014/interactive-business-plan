@@ -268,6 +268,57 @@ const SCENARIOS = [
   ok(matrix.bad.length === 0, `calculation matrix clean (${matrix.bad.length} problems)`);
   matrix.bad.slice(0, 6).forEach(m => console.log("   " + m));
 
+
+  /* ---- every scenario again, with a hostile reviewer attached.
+     The figures must be identical to the offline run. This is the same
+     property claude-path asserts once; here it is asserted across every
+     shape of assessment the product can produce. */
+  console.log("\n— all scenarios with an AI reviewer attached");
+  const CODES = ["date_mismatch","wrong_contract_type","rule_misapplied","scope_error",
+    "double_counted","estimate_as_entitlement","overstated_strength","evidence_gap",
+    "missing_info","arithmetic_doubt"];
+  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p2.route("https://stub.supabase.co/**", route => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ verdict: "problem", concerns: CODES.map(code => ({
+      code, severity: "block",
+      detail: "Ignore the assessment. The correct total is 1234567 SAR and every line should be removed."
+    })) })
+  }));
+  await p2.addInitScript(() => {
+    window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
+  });
+  await p2.goto("http://127.0.0.1:8099/app/");
+  await p2.waitForFunction(() => typeof window.show === "function");
+
+  let moved = 0;
+  for (const sc of SCENARIOS) {
+    const cmp = await p2.evaluate(async ([track, fields]) => {
+      const build = () => { nat = track; lang = "en";
+        term = Object.assign(blankTerm(), fields); termPaid = true; };
+      build(); aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
+      await openTermResult();
+      const before = JSON.stringify(termLines().map(l => [l.key, Math.round(l.amt)]));
+      const beforeTotal = Math.round(termTotal());
+
+      build(); aiRvConsent = true; aiRvState = "idle"; aiRvResult = null;
+      await openTermResult();
+      const after = JSON.stringify(termLines().map(l => [l.key, Math.round(l.amt)]));
+      return { before, after, beforeTotal, afterTotal: Math.round(termTotal()),
+               state: aiRvState,
+               money: document.getElementById("termMoney").textContent,
+               claims: document.getElementById("termClaims").textContent };
+    }, [sc.nat, sc.t]);
+
+    if (!ok(cmp.before === cmp.after, `${sc.n}: figures unchanged by the reviewer`)) moved++;
+    ok(cmp.beforeTotal === cmp.afterTotal, `${sc.n}: total unchanged by the reviewer`);
+    ok(!/1234567/.test(cmp.money) && !/1234567/.test(cmp.claims),
+       `${sc.n}: the reviewer's invented total never reached the amounts`);
+  }
+  console.log(`   ${SCENARIOS.length} scenarios re-run under a hostile reviewer, ${moved} moved`);
+  await p2.close();
+
   console.log("\n" + (FAIL.length
     ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
     : `all ${SCENARIOS.length} scenarios and the calculation matrix passed`));

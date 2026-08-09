@@ -124,6 +124,60 @@ if (/article\s*\d+/i.test(all)) {
   console.log("   no article numbers invented");
 }
 
+/* 5. Review mode — the second thing the app calls. */
+step(5, "Sending a specimen assessment for review");
+const SPECIMEN_ASSESSMENT = {
+  track: "saudi", contract_type: "indef", how_it_ended: "employer",
+  start_date: "2019-01-01", end_date: "2026-01-31",
+  service: { years: 7, months: 0 }, monthly_wage: 12000,
+  notice_days_due: 60, notice_days_given: 10,
+  received_final_settlement: false, received_end_of_service: false,
+  unused_leave_days: 14, unpaid_months: 2, other_amount: 0,
+  reason_given: "Specimen only — not a real matter.",
+  amounts: [{ item: "end_of_service", amount: 54000, kind: "law" },
+            { item: "notice", amount: 20000, kind: "law" }],
+  total: 74000,
+  sections: [{ item: "notice", state: "issue" }],
+  evidence_held: ["contract", "termination_letter"],
+  overall_strength: "review"
+};
+
+let rv;
+try {
+  rv = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ kind: "review", assessment: SPECIMEN_ASSESSMENT }),
+  });
+} catch (e) {
+  fail(`review request failed (${e.message})`);
+}
+const rvBody = await rv.json().catch(() => null);
+if (!rv.ok) fail(`review returned ${rv.status}: ${JSON.stringify(rvBody)}`);
+if (!rvBody || !Array.isArray(rvBody.concerns))
+  fail("no concerns array in the review response", JSON.stringify(rvBody).slice(0, 300));
+
+const VALID = ["date_mismatch", "wrong_contract_type", "rule_misapplied", "scope_error",
+  "double_counted", "estimate_as_entitlement", "overstated_strength", "evidence_gap",
+  "missing_info", "arithmetic_doubt"];
+console.log(`   verdict: ${rvBody.verdict}`);
+console.log(`   concerns: ${rvBody.concerns.length}`);
+rvBody.concerns.forEach((c) => console.log(`   - [${c.severity}] ${c.code}: ${c.detail.slice(0, 90)}`));
+
+const strayCode = rvBody.concerns.filter((c) => !VALID.includes(c.code));
+if (strayCode.length) fail(`${strayCode.length} concerns carry a code outside the enum`,
+  "The server should have dropped these. Check REVIEW_CODES in the function.");
+console.log("   every concern code is inside the enum");
+
+/* The reviewer must not try to compute. It cannot change a figure either way —
+   the app ignores anything but the code — but a model reaching for numbers is
+   worth knowing about. */
+const rvText = rvBody.concerns.map((c) => c.detail).join(" ");
+if (/\b\d{4,}\b/.test(rvText))
+  console.log("   ! the reviewer quoted a figure. Harmless (the app ignores it) but note it.");
+else
+  console.log("   the reviewer raised no figures of its own");
+
 console.log(`\nConnected. Put this in config.js and the panel will appear:\n
 window.WODOUH_CONFIG = { ANALYZE_URL: "${url}" };\n
 Then re-read docs/claude-analysis.md — turning this on changes what the app

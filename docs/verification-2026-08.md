@@ -141,11 +141,28 @@ annotating it; everything else is displayed under *"We reviewed our own
 result"*. Then a **17-point verified check** runs, and anything it cannot
 satisfy is shown as *"What we could not verify"* rather than passing silently.
 
-**An AI second pass over the assessment is deliberately not enabled.** It would
-mean sending the reader's dates, wage and figures off the device, which is a
-larger change to the privacy promise than the contract-text read — and a model
-cannot guarantee the correction the brief asks for, whereas the deterministic
-pass can. Available on request; not switched on unilaterally.
+**An AI second pass over the assessment was subsequently added**, on request.
+It runs before display when configured and consented, and it is bounded by one
+rule: **the model cannot move money.**
+
+A concern it returns may only trigger a deterministic re-check the app already
+owns, or appear as a visible note labelled *Unconfirmed*. It can never write an
+amount, remove a line, or change a certainty level. Concerns arrive as codes
+from a closed enum, dropped on the server if unrecognised and dropped again in
+the browser — so a completion talked out of its role has nothing to steer.
+
+That bound is tested under attack: every code at once, each carrying an
+instruction to rewrite the total, across all 16 scenarios. The figures come
+back byte-identical.
+
+The deterministic pass remains the one that actually corrects, because the
+brief requires that an identified error *is* corrected and a model cannot
+guarantee that. The AI pass notices; the app decides.
+
+It sends more than the contract read does — dates, wage, every amount, and the
+free-text reason — so it has **its own consent**, and the consent copy names
+the reason field explicitly, because that is where a reader might have typed an
+employer's or manager's name.
 
 ---
 
