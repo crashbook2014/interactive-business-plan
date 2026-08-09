@@ -713,6 +713,59 @@
   .opts button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:700}
   html[lang="ar"] .opts button.on{font-weight:400}
   .opts button:first-child{grid-column:1/-1}
+  /* Seven termination options read as a list, not a keypad. */
+  .opts.stack{grid-template-columns:1fr}
+  .opts.stack button{text-align:start;padding:14px 14px;min-height:44px;line-height:1.45}
+  .opts.stack button:first-child{grid-column:auto}
+
+  /* ---------------------------------------------- termination assessment */
+  .tq-steps{display:flex;gap:6px;margin-bottom:14px}
+  .tq-steps i{flex:1;height:3px;border-radius:2px;background:var(--line);
+    transition:background var(--t) var(--ease-out)}
+  .tq-steps i.on{background:var(--teal)}
+  .tq-skip{font-size:12px;color:var(--ink-2);text-align:center;margin-top:10px}
+  .ev-honest{font-size:12px;color:var(--ink-2);line-height:1.6;margin:12px 0 4px}
+  .tm-secs{display:grid;gap:10px;margin-bottom:6px}
+  .tm-sec{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:12px 14px}
+  .tm-sec .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .tm-sec b{font-size:14px}
+  .tm-sec p{font-size:13px;color:var(--ink-2);line-height:1.65;margin-top:6px}
+  .tm-tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  html[lang="ar"] .tm-tag{font-weight:400}
+  .tm-tag.ok{background:var(--green-bg);color:var(--green-ink)}
+  .tm-tag.review{background:var(--amber-bg);color:var(--amber-ink)}
+  .tm-tag.issue{background:var(--red-bg);color:var(--red-ink)}
+  .tm-money{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
+  .tm-money .r{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+    padding:9px 0;border-bottom:1px solid var(--line)}
+  .tm-money .r:last-of-type{border-bottom:0}
+  .tm-money .r>span{font-size:13.5px;color:var(--ink-2)}
+  .tm-money .r>b{font-size:14px;white-space:nowrap}
+  .tm-money .r.tot{border-top:2px solid var(--line);margin-top:4px;padding-top:12px}
+  .tm-money .r.tot>span,.tm-money .r.tot>b{color:var(--ink);font-size:15px}
+  .tm-money .src-line{margin:2px 0 8px}
+  .tm-money .cap{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:12px}
+  .tm-claims{display:grid;gap:10px}
+  .tm-claim{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:12px 14px}
+  .tm-claim b{font-size:14px;display:block;margin-bottom:6px}
+  .tm-claim dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px;margin-top:6px}
+  .tm-claim dt{color:var(--ink-2)}
+  .tm-claim dd{color:var(--ink);line-height:1.55}
+  .tm-how details{border:1px solid var(--line);border-radius:var(--r-md);
+    background:var(--card);margin-bottom:8px}
+  .tm-how summary{padding:12px 14px;font-size:13.5px;cursor:pointer;min-height:44px;
+    display:flex;align-items:center;list-style:none}
+  .tm-how summary::-webkit-details-marker{display:none}
+  .tm-how summary::after{content:"+";margin-inline-start:auto;color:var(--ink-2);font-size:17px}
+  .tm-how details[open] summary::after{content:"−"}
+  .tm-how p{padding:0 14px 12px;font-size:13px;color:var(--ink-2);line-height:1.65}
+  .tm-steps{display:grid;gap:10px}
+  .tm-step{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
+  .tm-step .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:50%;background:var(--teal);color:var(--on-teal);font-size:12px;margin-bottom:8px}
+  .tm-step b{display:block;font-size:14px;margin-bottom:4px}
+  .tm-step p{font-size:13px;color:var(--ink-2);line-height:1.65}
+  .tm-step button{margin-top:10px;min-height:44px}
 
   .eos-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
       padding:24px 20px 18px;margin-top:16px;text-align:center;box-shadow:var(--e2),var(--edge)}
@@ -1173,6 +1226,16 @@
     <h3 class="biz-h" id="mcHead" hidden data-t="my_contracts"></h3>
     <div class="mc-list" id="myContracts"></div>
 
+    <!-- The other half of the employment life: this app answers "should I
+         sign?", and this card answers "it already ended, what happened?".
+         Deliberately the same calm card as everything else — someone arriving
+         here is upset, and an advert would be the wrong greeting. -->
+    <button class="assist-entry" onclick="openTerm()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span>
+      <span><b data-t="tm_card"></b><span data-t="tm_card_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+
     <button class="assist-entry" onclick="openAssist('home')">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
       <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
@@ -1257,7 +1320,7 @@
 
   <!-- PAYWALL -->
   <section class="screen" id="screen-paywall">
-    <button class="back" onclick="show(pwMode==='case'?'case':'result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show(pwMode==='case'?'case':pwMode==='term'?'termev':'result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="pw_title"></h2>
     <p class="pw-note" data-t="pw_free_note"></p>
     <div class="preview">
@@ -1431,6 +1494,104 @@
     </div>
     <div class="escalate" id="caseEscalate" hidden></div>
     <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- ================= TERMINATION ASSESSMENT =================
+       For someone whose job has already ended and who thinks it was handled
+       wrongly. They arrive frightened or angry, so every screen here is built
+       to lower the temperature: "let's understand what happened", never
+       "let's sue your employer". Nothing states a legal outcome. -->
+
+  <!-- 1. WHAT HAPPENED -->
+  <section class="screen" id="screen-term">
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <h2 class="section-title" data-t="tm_h_title"></h2>
+    <p class="pw-note" data-t="tm_h_sub"></p>
+    <div class="opts stack" id="termHow"></div>
+    <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- 2. PROGRESSIVE QUESTIONS -->
+  <section class="screen" id="screen-termq">
+    <button class="back" onclick="termQBack()"><span class="bk" aria-hidden="true">‹</span><span id="tqBackLabel"></span></button>
+    <div class="tq-steps" id="tqSteps" aria-hidden="true"></div>
+    <h2 class="section-title" id="tqTitle"></h2>
+    <p class="pw-note" id="tqSub"></p>
+    <div class="form" id="tqForm"></div>
+    <button class="primary" id="tqNext" onclick="termQNext()"></button>
+    <p class="tq-skip" data-t="tm_q_optional"></p>
+    <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- 3. EVIDENCE -->
+  <section class="screen" id="screen-termev">
+    <button class="back" onclick="show('termq',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_q_back"></span></button>
+    <h2 class="section-title" data-t="tm_ev_title"></h2>
+    <p class="pw-note" data-t="tm_ev_sub"></p>
+    <div class="docs" id="termDocs"></div>
+    <div class="ready" id="termReady"></div>
+    <div id="termEvOut"></div>
+    <p class="ev-honest" data-t="tm_ev_honest"></p>
+    <button class="primary" onclick="openTermResult()" data-t="tm_ev_cta"></button>
+    <p class="disclaimer" data-t="eos_verify"></p>
+  </section>
+
+  <!-- 4. ASSESSMENT -->
+  <section class="screen" id="screen-termres">
+    <button class="back" onclick="show('termev',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_ev_title"></span></button>
+    <h2 class="section-title" data-t="tm_r_title"></h2>
+    <div id="termVerdict"></div>
+    <h3 class="biz-h" data-t="tm_r_sections"></h3>
+    <div class="tm-secs" id="termSections"></div>
+    <h3 class="biz-h" data-t="tm_r_money"></h3>
+    <div id="termMoney"></div>
+    <h3 class="biz-h" data-t="tm_r_claims"></h3>
+    <div class="tm-claims" id="termClaims"></div>
+    <h3 class="biz-h" data-t="tm_r_how"></h3>
+    <div class="tm-how" id="termHowFactors"></div>
+    <button class="primary" onclick="show('termnext')" data-t="tm_r_cta"></button>
+    <p class="disclaimer" data-t="tm_r_disclaim"></p>
+  </section>
+
+  <!-- 5. WHAT TO DO NEXT -->
+  <section class="screen" id="screen-termnext">
+    <button class="back" onclick="show('termres',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_r_title"></span></button>
+    <h2 class="section-title" data-t="tm_n_title"></h2>
+    <p class="pw-note" data-t="tm_n_sub"></p>
+    <div class="tm-steps" id="termSteps"></div>
+    <p class="disclaimer" data-t="tm_r_disclaim"></p>
+  </section>
+
+  <!-- 6. CASE FILE DOCUMENT -->
+  <section class="screen" id="screen-termdoc">
+    <button class="back" onclick="show('termnext',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_n_title"></span></button>
+    <h2 class="section-title" data-t="tm_doc_title"></h2>
+    <div class="letter">
+      <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
+      <div class="body" id="termDocBody"></div>
+      <div class="letterfoot" id="termDocFoot"></div>
+    </div>
+    <div class="letter-actions">
+      <button class="ghost" id="termDocCopy" onclick="copyTermDoc()"></button>
+    </div>
+    <p class="disclaimer" data-t="tm_r_disclaim"></p>
+  </section>
+
+  <!-- 7. LETTER TO EMPLOYER -->
+  <section class="screen" id="screen-termltr">
+    <button class="back" onclick="show('termnext',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_n_title"></span></button>
+    <h2 class="section-title" data-t="tm_l_title"></h2>
+    <p class="pw-note" data-t="tm_l_sub"></p>
+    <div class="seg" id="termTone"></div>
+    <div class="letter">
+      <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
+      <div class="body" id="termLtrBody"></div>
+      <div class="letterfoot" id="termLtrFoot"></div>
+    </div>
+    <div class="letter-actions">
+      <button class="ghost" id="termLtrCopy" onclick="copyTermLtr()"></button>
+    </div>
+    <p class="disclaimer" data-t="tm_r_disclaim"></p>
   </section>
 
   <!-- PLANS -->
@@ -1909,6 +2070,315 @@ const T = {
   d_wps:{ar:"سجل حماية الأجور",en:"Wage Protection System record"},
   d_msgs:{ar:"المراسلات (إيميل أو واتساب)",en:"Correspondence (email or WhatsApp)"},
   d_leave:{ar:"سجل الإجازات",en:"Leave record"},
+  d_warn:{ar:"الإنذارات أو الجزاءات",en:"Warnings or disciplinary notices"},
+  d_settle:{ar:"المخالصة النهائية",en:"Final settlement"},
+  d_hr:{ar:"مراسلات الموارد البشرية",en:"HR correspondence"},
+  d_comm:{ar:"سجل العمولات أو البدلات",en:"Commission or allowance records"},
+
+  /* ---------------------------------------------- termination assessment */
+  tm_card:{ar:"تم إنهاء عقدي",en:"My contract was terminated"},
+  tm_card_d:{ar:"تحسّ إن إنهاء عقدك ما كان صحيح؟ راجع عقدك وحقوقك المحتملة وما قد تكون مستحقًا له.",
+             en:"Think your termination may not have been right? Check your contract, your potential rights, and what you may be owed."},
+  tm_h_title:{ar:"وش صار في عملك؟",en:"What happened to your employment?"},
+  tm_h_sub:{ar:"اختر الأقرب لحالتك. الجواب يغيّر الحقوق اللي ننظر فيها، فخذ وقتك.",
+            en:"Pick what's closest. Your answer changes which rights we look at, so take a moment."},
+  th_employer:{ar:"صاحب العمل أنهى عقدي",en:"My employer terminated my contract"},
+  th_forced:{ar:"طُلب مني أقدّم استقالة",en:"I was asked to resign"},
+  th_resigned:{ar:"استقلت باختياري",en:"I resigned"},
+  th_expired:{ar:"انتهى عقدي وما تجدّد",en:"My contract ended and was not renewed"},
+  th_probation:{ar:"أُنهي عقدي خلال فترة التجربة",en:"I was terminated during probation"},
+  th_noreason:{ar:"أُنهي عقدي بدون سبب واضح",en:"I was terminated without a clear reason"},
+  th_other:{ar:"غير ذلك",en:"Something else"},
+
+  tm_q_next:{ar:"التالي",en:"Continue"},
+  tm_q_done:{ar:"التالي: الأوراق",en:"Next: your documents"},
+  tm_q_back:{ar:"رجوع",en:"Back"},
+  tm_q_optional:{ar:"غير التواريخ والأجر، كل شيء اختياري. اللي تتركه فاضي نقوله لك ناقص، وما نخمّنه.",
+                 en:"Apart from the dates and the wage, everything is optional. Anything you leave blank we report as missing — we don't guess it."},
+  tm_q1_t:{ar:"المدة والأجر",en:"Your dates and pay"},
+  tm_q1_s:{ar:"هذي الثلاثة تبني كل رقم بعدها.",en:"These three build every figure that follows."},
+  tm_q2_t:{ar:"العقد والإشعار",en:"Your contract and notice"},
+  tm_q2_s:{ar:"وش كان مكتوب، ووش صار فعلًا.",en:"What it said, and what actually happened."},
+  tm_q3_t:{ar:"اللي استلمته واللي ما استلمته",en:"What you were and weren't paid"},
+  tm_q3_s:{ar:"هنا تتحدد المبالغ اللي ممكن تكون مستحقة لك.",en:"This is where the amounts you may be owed come from."},
+  tm_f_start:{ar:"تاريخ بداية العمل",en:"Employment start date"},
+  tm_f_end:{ar:"تاريخ نهاية العمل",en:"Termination date"},
+  tm_f_wage:{ar:"إجمالي الأجر الشهري",en:"Total monthly salary"},
+  tm_f_wage_h:{ar:"الأجر الأخير كامل بالبدلات — عليه تُحسب المكافأة.",
+               en:"Your last full salary including allowances — the award is calculated on it."},
+  tm_f_basic:{ar:"الأجر الأساسي الشهري",en:"Monthly basic salary"},
+  tm_f_basic_h:{ar:"اختياري. يفيد لو فيه خلاف على أي رقم يُعتمد.",
+                en:"Optional. Useful if there's any dispute about which figure applies."},
+  tm_f_ctype:{ar:"نوع العقد",en:"Contract type"},
+  tm_f_indef:{ar:"غير محدد المدة",en:"Indefinite"},
+  tm_f_fixed:{ar:"محدد المدة",en:"Fixed-term"},
+  tm_f_ctype_fixed:{ar:"عقدك محدد المدة بحكم النظام — عقد غير السعودي ما يكون غير محدد المدة.",
+                    en:"Your contract is fixed-term by law — a non-Saudi's contract is never indefinite."},
+  tm_f_termend:{ar:"التاريخ اللي كان المفروض ينتهي فيه العقد",en:"Date the contract was due to end"},
+  tm_f_termend_h:{ar:"من نسختك من العقد. تأكد من السنة — غلطة رقم واحد تغيّر المبلغ كثير.",
+                  en:"From your copy of the contract. Check the year — a single digit changes the figure a lot."},
+  tm_f_ndue:{ar:"مدة الإشعار المذكورة في العقد (أيام)",en:"Notice period in your contract (days)"},
+  tm_f_ndue_h:{ar:"اتركها فاضية إذا ما تذكر.",en:"Leave blank if you're not sure."},
+  tm_f_ngiven:{ar:"كم يوم إشعار أُعطيت فعلًا؟",en:"How many days' notice were you actually given?"},
+  tm_f_ngiven_h:{ar:"صفر إذا انتهى العقد في نفس اليوم.",en:"Zero if it ended the same day."},
+  tm_f_reason:{ar:"السبب اللي أُعطي لك",en:"The reason you were given"},
+  tm_f_reason_h:{ar:"بكلامهم لو تذكره. اكتب «ما أُعطيت سبب» إذا ما قالوا شيء.",
+                 en:"In their words if you remember it. Write \"no reason given\" if they didn't say."},
+  tm_f_settle:{ar:"استلمت مخالصة نهائية؟",en:"Did you receive a final settlement?"},
+  tm_f_eos:{ar:"استلمت مكافأة نهاية الخدمة؟",en:"Did you receive your end-of-service award?"},
+  tm_f_unpaid:{ar:"كم شهر راتب متأخر عليك؟",en:"How many months' salary are unpaid?"},
+  tm_f_unpaid_h:{ar:"اتركها فاضية إذا ما فيه متأخرات.",en:"Leave blank if nothing is outstanding."},
+  tm_f_leave:{ar:"كم يوم إجازة سنوية ما أخذتها؟",en:"Unused annual leave days"},
+  tm_f_leave_h:{ar:"الرصيد اللي كان باقي لك يوم انتهى العمل.",en:"The balance you had left on your last day."},
+  tm_f_other:{ar:"عمولات أو بدلات أو مبالغ أخرى غير مدفوعة",en:"Unpaid commissions, allowances or other amounts"},
+  tm_f_other_h:{ar:"بالريال، لو تعرف المبلغ.",en:"In riyals, if you know the amount."},
+
+  tm_ev_title:{ar:"وش الأوراق اللي عندك؟",en:"What documents do you have?"},
+  tm_ev_sub:{ar:"علّم اللي تقدر توصل له. ما نطلب منك ترفعها.",
+             en:"Tick whatever you can lay your hands on. We're not asking you to upload them."},
+  tm_ev_honest:{ar:"وضوح ما يقرأ هذي الملفات — يسألك وش عندك عشان يعرف قوة موقفك ووش ينقصك. ولا تنشئ أو تعدّل أي ورقة أبدًا؛ الورقة المعدّلة تهدم القضية الصحيحة.",
+                en:"Wodouh doesn't read these files — it asks what you have so it can tell you how strong your position looks and what's missing. And never create or alter a document: an altered one destroys an otherwise good case."},
+  tm_ev_cta:{ar:"اعرض تقييم حالتي",en:"See my assessment"},
+  tm_ev_strength:{ar:"قوة الأدلة",en:"Evidence strength"},
+  tm_ev_missing:{ar:"اللي يقوّي موقفك لو حصلت عليه:",en:"What would strengthen your position:"},
+  tm_ev_strong:{ar:"قوية",en:"Strong"},
+  tm_ev_strong_w:{ar:"عندك الأوراق الأساسية اللي تُبنى عليها المطالبة — العقد وما يوثّق الإنهاء.",
+                  en:"You have the documents a claim is actually built on — the contract and what records the ending."},
+  tm_ev_mod:{ar:"متوسطة",en:"Moderate"},
+  tm_ev_mod_w:{ar:"عندك جزء من الأوراق. اللي ناقص ما يلغي موقفك، لكنه يخليه يعتمد على كلامك أكثر من الورق.",
+               en:"You have some of it. What's missing doesn't sink your position, but it leaves it resting on your account rather than on paper."},
+  tm_ev_limited:{ar:"محدودة",en:"Limited"},
+  tm_ev_limited_w:{ar:"ما زال عندك القليل. أهمها العقد وأي شيء مكتوب يثبت كيف انتهى العمل.",
+                   en:"There's not much here yet. The two that matter most are the contract and anything in writing about how the job ended."},
+
+  tm_r_title:{ar:"تقييم إنهاء العقد",en:"Termination assessment"},
+  tm_r_sections:{ar:"البنود اللي راجعناها",en:"What we looked at"},
+  tm_r_money:{ar:"وش ممكن يكون مستحق لك؟",en:"What may be owed to you?"},
+  tm_r_claims:{ar:"المطالبات المحتملة",en:"Potential claims"},
+  tm_r_how:{ar:"كيف وصل وضوح لهذي النتيجة",en:"How Wodouh reached this result"},
+  tm_r_cta:{ar:"وش أسوي الحين؟",en:"What should I do next?"},
+  tm_r_notfinal:{ar:"هذا مو حكم نهائي ولا رأي محامٍ. هو قراءة لما أدخلته، والنتيجة الفعلية تعتمد على الوقائع كاملة والجهة المختصة.",
+                 en:"This is not a final determination and it is not legal advice. It's a reading of what you told us — the actual outcome depends on the full facts and the competent authority."},
+  tm_r_disclaim:{ar:"وضوح يعطيك معلومة عامة ومصدرها — لا رأيًا قانونيًا في حالتك. للنزاعات المعقّدة راجع محاميًا.",
+                 en:"Wodouh gives you general legal information and its source — not legal advice on your situation. For complex disputes, see a lawyer."},
+  tm_st_ok:{ar:"يبدو متوافقًا",en:"Appears consistent"},
+  tm_st_review:{ar:"يحتاج مراجعة",en:"Needs review"},
+  tm_st_issue:{ar:"ملاحظة محتملة",en:"Potential issue"},
+
+  tm_s_contract:{ar:"الالتزام بالعقد",en:"Contract compliance"},
+  tm_s_contract_review:{ar:"بناءً على ما ذكرته، يستاهل تقارن نص عقدك بما صار فعلًا — خصوصًا بند الإنهاء ومدة الإشعار.",
+                        en:"Based on what you told us, it's worth comparing your contract's wording with what actually happened — the termination clause and the notice period in particular."},
+  tm_s_contract_issue:{ar:"الإنهاء بدون سبب واضح يستدعي مراجعة. النظام يوجب على صاحب العمل يوثّق السبب ويمكّنك من سماع أقوالك ويبلغك كتابيًا.",
+                       en:"A termination with no clear reason is worth reviewing. The employer is required to document the reason, let you state your case, and notify you in writing."},
+  tm_s_contract_prob:{ar:"الإنهاء خلال فترة التجربة مسموح لو كانت الفترة منصوصة في العقد وما تجاوزت الحد النظامي.",
+                      en:"Termination during probation is permitted, provided the period was written into your contract and stayed within the statutory limit."},
+  tm_s_notice:{ar:"مدة الإشعار",en:"Notice period"},
+  tm_s_notice_ok:{ar:"الإشعار اللي أُعطيت يغطي المدة المذكورة، حسب ما أدخلته.",
+                  en:"The notice you were given covers the period stated, based on what you entered."},
+  tm_s_notice_issue:{ar:"الإشعار اللي أُعطيت أقل من المذكور. الفرق قد يستحق تعويضًا بأجر تلك المدة.",
+                     en:"The notice you were given falls short of what was stated. The difference may attract compensation at your wage for that period."},
+  tm_s_notice_review:{ar:"ما ذكرت مدة الإشعار في عقدك، فما نقدر نقيسها. ارجع لنسختك.",
+                      en:"You didn't tell us the notice period in your contract, so we can't measure it. Check your copy."},
+  tm_s_notice_fixed:{ar:"تعويض الإشعار مرتبط بالعقد غير محدد المدة، وعقدك محدد المدة — فما ينطبق هنا.",
+                     en:"Notice compensation belongs to indefinite contracts, and yours is fixed-term — so it doesn't apply here."},
+  tm_s_notice_na:{ar:"طريقة انتهاء عملك ما تثير مسألة الإشعار.",
+                  en:"The way your job ended doesn't raise the notice question."},
+  tm_s_eos:{ar:"مكافأة نهاية الخدمة",en:"End-of-service award"},
+  tm_s_eos_due:{ar:"المكافأة تُستحق عن كامل مدة خدمتك، وتُحسب على آخر أجر.",
+                en:"The award is due for your whole period of service, calculated on your last wage."},
+  tm_s_eos_81:{ar:"لو كان تركك للعمل بسبب إخلال من صاحب العمل، فالنظام يبقي لك كامل حقوقك النظامية — ومنها المكافأة كاملة، لا المخفّضة. هذي نقطة تستاهل مراجعة جادة.",
+               en:"If you left because the employer breached its obligations, the law preserves all your statutory rights — including the full award rather than the reduced one. This point deserves serious review."},
+  tm_s_eos_resign:{ar:"الاستقالة العادية تُخفّض المكافأة بحسب سنوات الخدمة. لو كانت الاستقالة مدفوعة بإخلال من صاحب العمل، الوضع يختلف — ارجع للخيار «طُلب مني أقدّم استقالة».",
+                   en:"An ordinary resignation reduces the award according to your years of service. If the resignation was driven by an employer breach, the position is different — go back and pick \"I was asked to resign\"."},
+  tm_s_eos_prob:{ar:"الإنهاء خلال فترة التجربة ما يستحق مكافأة نهاية خدمة.",
+                 en:"Termination during probation doesn't carry an end-of-service award."},
+  tm_s_eos_paid:{ar:"ذكرت إنك استلمت المكافأة. يبقى تتأكد إن المبلغ محسوب على آخر أجر كامل.",
+                 en:"You said you received it. What's left is checking the amount was calculated on your full last wage."},
+  tm_s_unpaid:{ar:"الرواتب المتأخرة",en:"Unpaid salary"},
+  tm_s_unpaid_issue:{ar:"الأجر المتأخر مستحق بذاته ولا علاقة له بسبب الإنهاء.",
+                     en:"Unpaid wages are owed in their own right, whatever the reason for the ending."},
+  tm_s_unpaid_ok:{ar:"ما ذكرت رواتب متأخرة.",en:"You didn't report any unpaid salary."},
+  tm_s_leave:{ar:"الإجازة السنوية غير المستخدمة",en:"Unused annual leave"},
+  tm_s_leave_issue:{ar:"رصيد إجازتك يُدفع نقدًا عند انتهاء العمل، وهذا حق ما يسقط بالاتفاق.",
+                    en:"Your leave balance is paid in cash when the job ends, and it's a right that can't be waived by agreement."},
+  tm_s_leave_review:{ar:"ما ذكرت رصيد إجازة. لو باقي لك أيام، تُدفع لك نقدًا — ارجع لسجل الإجازات.",
+                     en:"You didn't give us a leave balance. If any days were left, they're paid in cash — check your leave record."},
+  tm_s_other:{ar:"مبالغ تعاقدية أخرى",en:"Other contractual amounts"},
+  tm_s_other_review:{ar:"العمولات والبدلات تتبع نص عقدك أكثر من النظام — راجع البند اللي يحكمها.",
+                     en:"Commissions and allowances follow your contract's wording more than the statute — check the clause that governs them."},
+  tm_s_other_ok:{ar:"ما ذكرت مبالغ أخرى.",en:"You didn't report any other amounts."},
+  tm_s_comp:{ar:"تعويض الإنهاء",en:"Termination compensation"},
+  tm_s_comp_review:{ar:"يُستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع. الرقم أدناه تقدير لما قد يُبحث، لا مبلغ مؤكد.",
+                    en:"Owed only if the termination is found to be without valid reason. The figure below is an estimate of what may be examined, not a confirmed amount."},
+  tm_s_settle:{ar:"المخالصة النهائية",en:"Final settlement"},
+  tm_s_settle_issue:{ar:"المخالصة تُدفع خلال أسبوع من نهاية العلاقة إذا كان الإنهاء من صاحب العمل أو بانتهاء المدة، وخلال أسبوعين إذا كنت أنت من استقال.",
+                     en:"Settlement is due within one week of the relationship ending where the employer terminated or the contract expired, and within two weeks where you resigned."},
+  tm_s_settle_ok:{ar:"ما ذكرت مشكلة في المخالصة.",en:"You didn't report a problem with the settlement."},
+
+  tm_m_unpaid:{ar:"رواتب متأخرة",en:"Unpaid salary"},
+  tm_m_unpaid_why:{ar:"ذكرت شهورًا لم تُدفع. الأجر المستحق دين قائم بذاته.",
+                   en:"You reported months that went unpaid. Wages owed are a debt in their own right."},
+  tm_m_unpaid_ev:{ar:"سجل حماية الأجور وكشوف الرواتب",en:"Wage Protection System record and payslips"},
+  tm_m_leave:{ar:"بدل إجازة غير مستخدمة",en:"Unused annual leave"},
+  tm_m_leave_why:{ar:"رصيد إجازتك يوم انتهى العمل، محسوبًا على آخر أجر.",
+                  en:"Your leave balance on your last day, calculated on your last wage."},
+  tm_m_leave_ev:{ar:"سجل الإجازات والمخالصة",en:"Leave record and final settlement"},
+  tm_m_eos:{ar:"مكافأة نهاية الخدمة",en:"End-of-service award"},
+  tm_m_eos_why:{ar:"محسوبة على مدة خدمتك وآخر أجر، وبحسب طريقة انتهاء العمل.",
+                en:"Calculated from your length of service and last wage, and from how the job ended."},
+  tm_m_eos_ev:{ar:"العقد والمخالصة",en:"The contract and the final settlement"},
+  tm_m_notice:{ar:"تعويض عن نقص الإشعار",en:"Notice compensation"},
+  tm_m_notice_why:{ar:"الفرق بين مدة الإشعار المذكورة في عقدك وما أُعطيت فعلًا.",
+                   en:"The gap between the notice your contract stated and the notice you were actually given."},
+  tm_m_notice_ev:{ar:"العقد وخطاب الإنهاء",en:"The contract and the termination letter"},
+  tm_m_comp:{ar:"تعويض الإنهاء (تقدير)",en:"Termination compensation (estimate)"},
+  tm_m_comp_why:{ar:"يُستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع — وهذا ما تقرره الجهة المختصة لا نحن.",
+                 en:"Owed only if the termination is found to be without valid reason — and that is for the competent authority to decide, not us."},
+  tm_m_comp_ev:{ar:"خطاب الإنهاء وأي إنذارات سابقة",en:"The termination letter and any prior warnings"},
+  tm_m_other:{ar:"عمولات وبدلات أخرى",en:"Other commissions and allowances"},
+  tm_m_other_why:{ar:"المبلغ اللي ذكرته كمستحق تعاقدي غير مدفوع.",
+                  en:"The amount you gave us as an unpaid contractual entitlement."},
+  tm_m_other_ev:{ar:"العقد وسجل العمولات",en:"The contract and commission records"},
+  tm_m_total:{ar:"إجمالي ما قد يكون مستحقًا",en:"Estimated potential entitlement"},
+  tm_m_none:{ar:"ما طلع لنا مبلغ من اللي أدخلته. هذا ما يعني إنه ما فيه شيء مستحق — يعني إن اللي عندنا ما يكفي لحسابه.",
+             en:"Nothing came out as an amount from what you entered. That doesn't mean nothing is owed — it means we don't have enough to calculate it."},
+  tm_m_caveat:{ar:"هذي تقديرات لما قد يكون مستحقًا، بناءً على ما أدخلته. المستحق الفعلي يعتمد على الوقائع كاملة والأنظمة السارية ونصوص عقدك والجهة المختصة.",
+               en:"These are estimates of what may be owed, based on what you provided. Final entitlement depends on the full facts, applicable regulations, contract terms, and the competent authority."},
+  tm_src_84:{ar:"نظام العمل السعودي — المادة ٨٤",en:"Saudi Labor Law — Article 84"},
+  tm_src_8485:{ar:"نظام العمل السعودي — المادتان ٨٤ و٨٥",en:"Saudi Labor Law — Articles 84 and 85"},
+  tm_src_111:{ar:"نظام العمل السعودي — المادة ١١١",en:"Saudi Labor Law — Article 111"},
+  tm_src_76:{ar:"نظام العمل السعودي — المادتان ٧٥ و٧٦",en:"Saudi Labor Law — Articles 75 and 76"},
+  tm_src_77:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"},
+  tm_src_wage:{ar:"حساب من الشهور اللي ذكرتها، لا من نص نظامي.",
+               en:"Calculated from the months you reported, not from a statutory rule."},
+  tm_src_other:{ar:"المبلغ اللي أدخلته أنت — يتبع نص عقدك لا النظام.",
+                en:"The amount you entered — governed by your contract's wording, not the statute."},
+
+  tm_c_why:{ar:"السبب",en:"Why"},
+  tm_c_amt:{ar:"المبلغ المحتمل",en:"Potential amount"},
+  tm_c_ev:{ar:"الدليل",en:"Evidence"},
+  tm_c_conf:{ar:"درجة الثقة",en:"Confidence"},
+  tm_c_none:{ar:"ما قدرنا نحدد مطالبة من المعلومات الحالية.",
+             en:"We couldn't identify a claim from the information provided so far."},
+  tm_conf_high:{ar:"مرتفعة",en:"High"},
+  tm_conf_mod:{ar:"متوسطة",en:"Moderate"},
+  tm_conf_low:{ar:"منخفضة — ينقصنا معلومات",en:"Low — information is missing"},
+  tm_cs_label:{ar:"تقدير عام",en:"Overall"},
+  tm_cs_strong:{ar:"أساس واضح يستدعي المراجعة",en:"Strong basis for further review"},
+  tm_cs_strong_w:{ar:"فيه أكثر من نقطة تستاهل البحث، ومعك ورق يسندها.",
+                  en:"More than one point is worth pursuing, and you have paper behind it."},
+  tm_cs_possible:{ar:"أساس محتمل يستدعي المراجعة",en:"Possible basis for further review"},
+  tm_cs_possible_w:{ar:"فيه ما يستاهل البحث، لكن ينقص معلومات أو أوراق مهمة.",
+                    en:"There's something worth investigating, but important information or evidence is missing."},
+  tm_cs_limited:{ar:"أساس محدود بالمعلومات الحالية",en:"Limited basis based on current information"},
+  tm_cs_limited_w:{ar:"اللي عندنا الحين ما يُظهر مشكلة واضحة. أدلة إضافية ممكن تغيّر التقييم.",
+                   en:"What we have doesn't show a clear issue. Additional evidence could change this."},
+
+  tm_hw_answers:{ar:"إجاباتك",en:"Your answers"},
+  tm_hw_answers_b:{ar:"اخترت: {h}. هذا الاختيار وحده يحدد أي مواد ننظر فيها وكيف تُحسب المكافأة.",
+                   en:"You chose: {h}. That one choice decides which articles we look at and how the award is calculated."},
+  tm_hw_service:{ar:"مدة خدمتك",en:"Your length of service"},
+  tm_hw_service_b:{ar:"{y} سنة و{m} شهر — تدخل مباشرة في حساب المكافأة والتعويض.",
+                   en:"{y} years and {m} months — this feeds straight into the award and the compensation figure."},
+  tm_hw_track:{ar:"جنسيتك في النظام",en:"Which body of law applies to you"},
+  tm_hw_track_sa:{ar:"طبّقنا مسار المواطن السعودي: العقد قد يكون غير محدد المدة، وقواعد الإشعار تنطبق.",
+                  en:"We applied the Saudi track: the contract may be indefinite, and the notice rules apply."},
+  tm_hw_track_nonsa:{ar:"طبّقنا مسار المقيم: عقدك محدد المدة دائمًا، فتعويض الإنهاء يُحسب بأجر المدة الباقية، وقواعد الإشعار ما تنطبق.",
+                     en:"We applied the resident track: your contract is always fixed-term, so termination compensation is the wages for the remaining term, and the notice rules don't apply."},
+  tm_hw_docs:{ar:"الأوراق اللي عندك",en:"The documents you have"},
+  tm_hw_docs_b:{ar:"علّمت {n} من الأوراق، وهذا يعطي قوة أدلة: {s}. عدد الأوراق ما يغيّر المبالغ، لكنه يغيّر قدرتك على إثباتها.",
+                en:"You ticked {n} of them, giving evidence strength: {s}. The count doesn't change the amounts — it changes your ability to prove them."},
+  tm_hw_rules:{ar:"الأنظمة اللي طبّقناها",en:"The rules we applied"},
+  tm_hw_rules_b:{ar:"كل مادة تظهر هنا محققة في سجل المصادر داخل التطبيق. اللي ما وراه مادة محققة نقوله بصريح العبارة إنه قراءة وضوح لا نص نظامي.",
+                 en:"Every article shown here is verified in the sources register inside the app. Anything without a verified article says plainly that it's Wodouh's reading, not a statutory rule."},
+
+  tm_n_title:{ar:"وش أسوي الحين؟",en:"What should I do next?"},
+  tm_n_sub:{ar:"بالترتيب. ما تحتاج تسوي الكل اليوم.",en:"In order. You don't have to do all of it today."},
+  tm_n1:{ar:"افهم اللي صار",en:"Review your termination"},
+  tm_n1_b:{ar:"ارجع للبنود فوق واقرأ ليش وضوح وقف عند كل وحدة. لو فيه شيء ما ينطبق على حالتك، عدّل إجاباتك — التقييم يتغيّر معها.",
+           en:"Go back through the sections above and read why Wodouh flagged each one. If something doesn't fit your situation, change your answers — the assessment moves with them."},
+  tm_n2:{ar:"اجمع أوراقك",en:"Collect your evidence"},
+  tm_n2_b:{ar:"الأوراق الناقصة هي أسرع شيء يقوّي موقفك، وأغلبها تقدر تطلبه من الموارد البشرية أو من التأمينات وحماية الأجور.",
+           en:"The missing documents are the fastest way to strengthen your position, and most can be requested from HR or pulled from GOSI and the wage protection system."},
+  tm_n2_cta:{ar:"راجع قائمة الأوراق",en:"Review the document list"},
+  tm_n3:{ar:"اطلب حقوقك",en:"Request your rights"},
+  tm_n3_b:{ar:"ابدأ بخطاب مكتوب لصاحب العمل. أغلب الحالات تنتهي هنا، وخطاب هادئ موثّق أنفع من نزاع مبكّر.",
+           en:"Start with a written request to your employer. Most cases end here, and a calm, documented letter does more than an early dispute."},
+  tm_n3_cta:{ar:"جهّز الخطاب",en:"Prepare the letter"},
+  tm_n4:{ar:"جهّز ملف حالتك",en:"Prepare your case file"},
+  tm_n4_b:{ar:"ملخّص واحد منظّم فيه الوقائع والمبالغ والأوراق وما ينقصك — تاخذه معك لأي جهة أو محامٍ.",
+           en:"One structured summary of the facts, the amounts, the documents and the gaps — to take with you to any authority or lawyer."},
+  tm_n4_cta:{ar:"ابنِ ملف الحالة",en:"Build my case file"},
+  tm_n5:{ar:"الطريق النظامي",en:"The formal route"},
+  tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية عادة ما تُسمع بعد اثني عشر شهرًا من نهاية العلاقة. وضوح ما يرفع الدعوى نيابة عنك.",
+           en:"If nothing is resolved, the route begins with amicable settlement through the Ministry of Human Resources platform, before the labour court. Watch the clock: a labour claim is generally not heard after twelve months from the end of the relationship. Wodouh does not file anything on your behalf."},
+
+  tm_doc_title:{ar:"ملف الحالة",en:"Case file"},
+  tm_d_h_facts:{ar:"معلومات التوظيف",en:"Employment summary"},
+  tm_d_h_issues:{ar:"نقاط تحتاج مراجعة",en:"Points requiring review"},
+  tm_d_h_money:{ar:"المبالغ المحتملة",en:"Potential financial claims"},
+  tm_d_h_have:{ar:"الأوراق المتوفرة",en:"Evidence available"},
+  tm_d_h_missing:{ar:"الأوراق الناقصة",en:"Evidence not yet available"},
+  tm_d_h_questions:{ar:"أسئلة تحتاج توضيحًا",en:"Questions requiring clarification"},
+  tm_d_h_next:{ar:"الخطوات المقترحة",en:"Suggested next steps"},
+  tm_d_start:{ar:"بداية العمل",en:"Start date"},
+  tm_d_end:{ar:"نهاية العمل",en:"End date"},
+  tm_d_service:{ar:"مدة الخدمة",en:"Length of service"},
+  tm_d_wage:{ar:"آخر أجر شهري",en:"Last monthly wage"},
+  tm_d_how:{ar:"طريقة الإنهاء",en:"How it ended"},
+  tm_d_ctype:{ar:"نوع العقد",en:"Contract type"},
+  tm_d_reason:{ar:"السبب المذكور",en:"Reason given"},
+  tm_d_unknown:{ar:"غير محدد",en:"Not stated"},
+  tm_d_none_given:{ar:"لم يُذكر سبب",en:"No reason was given"},
+  tm_d_none:{ar:"لا يوجد",en:"None"},
+  tm_d_questions_b:{ar:"— أساس احتساب المخالصة النهائية وتاريخ صرفها\n— سبب الإنهاء كما هو موثّق لدى صاحب العمل\n— رصيد الإجازة المعتمد في سجلات الشركة\n— أي إنذارات أو جزاءات سابقة وتواريخها",
+                    en:"— The basis on which the final settlement was calculated, and the date it was paid\n— The reason for termination as documented by the employer\n— The leave balance recorded in the company's own records\n— Any prior warnings or disciplinary notices, and their dates"},
+  tm_d_next_b:{ar:"— مطالبة مكتوبة لصاحب العمل بالمبالغ أعلاه\n— استكمال الأوراق الناقصة\n— التسوية الودية عبر منصة وزارة الموارد البشرية إذا لم يصل الطرفان لحل\n\nأُعد هذا الملف من معلومات قدّمها العامل. المبالغ تقديرية ولا تمثل مطالبة نهائية.",
+               en:"— A written request to the employer for the amounts above\n— Obtaining the outstanding documents\n— Amicable settlement through the Ministry of Human Resources platform if no resolution is reached\n\nThis file was prepared from information provided by the employee. The amounts are estimates and do not constitute a final claim."},
+
+  tm_l_title:{ar:"خطاب لصاحب العمل",en:"Letter to your employer"},
+  tm_l_sub:{ar:"نفس الوقائع ونفس المبالغ في كل نبرة — اللي يتغيّر هو الأسلوب فقط.",
+            en:"The same facts and the same amounts in every tone — only the register changes."},
+  tm_l_to:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
+  tm_tone_friendly:{ar:"ودّي",en:"Friendly"},
+  tm_tone_professional:{ar:"مهني",en:"Professional"},
+  tm_tone_firm:{ar:"حازم",en:"Firm"},
+  tm_tone_formal:{ar:"رسمي",en:"Formal"},
+  tm_l_open_friendly:{ar:"السلام عليكم ورحمة الله،\n\nأشكركم على المدة اللي قضيتها معكم. بعد انتهاء عملي، حابب أتأكد من بعض المستحقات، وأتمنى نوصل لتوضيح بيني وبينكم مباشرة.",
+                      en:"Dear colleagues,\n\nThank you for the time I spent with the company. Now that my employment has ended, I'd like to check a few entitlements, and I hope we can clear this up between us directly."},
+  tm_l_open_professional:{ar:"السلام عليكم ورحمة الله،\n\nبالإشارة إلى انتهاء علاقتي الوظيفية بالشركة، أود مراجعة مستحقاتي النهائية بناءً على الوقائع التالية.",
+                          en:"Dear Sir or Madam,\n\nFollowing the end of my employment with the company, I would like to review my final entitlements on the basis of the following."},
+  tm_l_open_firm:{ar:"السلام عليكم ورحمة الله،\n\nبالإشارة إلى انتهاء علاقتي الوظيفية، لم تُسوَّ حتى تاريخه مستحقات أراها قائمة. أدرج أدناه الوقائع والمبالغ، وأطلب مراجعتها.",
+                  en:"Dear Sir or Madam,\n\nFollowing the end of my employment, entitlements that I believe remain outstanding have not yet been settled. I set out the facts and the amounts below and ask that they be reviewed."},
+  tm_l_open_formal:{ar:"إلى إدارة الموارد البشرية المحترمة،\n\nبالإشارة إلى انتهاء علاقتي الوظيفية بالشركة، أتقدّم بهذا الطلب لمراجعة المستحقات النهائية، وفق الوقائع والمبالغ الموضحة أدناه.",
+                    en:"To the Human Resources Department,\n\nFurther to the termination of my employment with the company, I submit this request for a review of my final entitlements, on the basis of the facts and amounts set out below."},
+  tm_l_items:{ar:"المبالغ محل المراجعة:",en:"Amounts for review:"},
+  tm_l_noitems:{ar:"أطلب توضيح أساس احتساب المخالصة النهائية.",
+                en:"I would like clarification of the basis on which the final settlement was calculated."},
+  tm_l_ask_friendly:{ar:"لو فيه شيء فهمته غلط، أنا حاضر أسمع وأصحّح. وإذا كان في محله، أتمنى نرتّب الصرف في أقرب وقت يناسبكم.",
+                     en:"If I've misunderstood anything, I'm happy to hear it and stand corrected. If it's right, I'd be grateful if we could arrange payment at a time that suits you."},
+  tm_l_ask_professional:{ar:"أرجو مراجعة الأرقام أعلاه وموافاتي بأساس احتسابها، وتزويدي بنسخة من المخالصة النهائية وسجل الإجازات.",
+                         en:"I would be grateful if you could review the figures above, share the basis on which they were calculated, and provide a copy of the final settlement and the leave record."},
+  tm_l_ask_firm:{ar:"أرجو موافاتي بردّ مكتوب خلال خمسة عشر يومًا يتضمن أساس الاحتساب وموعد الصرف.",
+                 en:"I would ask for a written response within fifteen days setting out the basis of calculation and the date of payment."},
+  tm_l_ask_formal:{ar:"أرجو التكرم بالإفادة كتابيًا بأساس احتساب المستحقات وموعد صرفها، مع تزويدي بصورة من المخالصة النهائية وسجل الإجازات.",
+                   en:"I should be grateful for a written response setting out the basis on which the entitlements were calculated and the date of payment, together with a copy of the final settlement and the leave record."},
+  tm_l_close_friendly:{ar:"شاكر لكم، وتحياتي للزملاء.",en:"Thank you, and my regards to the team."},
+  tm_l_close_professional:{ar:"شاكرًا لكم حسن تعاونكم.",en:"Thank you for your cooperation."},
+  tm_l_close_firm:{ar:"شاكرًا لكم، وفي انتظار ردّكم.",en:"Thank you — I look forward to your response."},
+  tm_l_close_formal:{ar:"وتفضلوا بقبول فائق الاحترام،",en:"Yours faithfully,"},
+  tm_l_sign:{ar:"[اسمك]",en:"[Your name]"},
+
+  pw_term_title:{ar:"تقييم إنهاء العقد",en:"Your termination assessment"},
+  pw_term_free:{ar:"الأسئلة وقائمة الأوراق مجانية. التقييم والمبالغ هي الجزء المدفوع.",
+                en:"The questions and the document list are free. The assessment and the amounts are the paid part."},
+  pw_term_more:{ar:"يفتح التقييم كامل: كل بند وحالته، والمبالغ المحتملة بمصادرها، والمطالبات، وملف الحالة، والخطاب.",
+                en:"Unlocks the full assessment: every section and its state, the potential amounts with their sources, the claims, the case file and the letter."},
+  plan_term:{ar:"التقييم",en:"The assessment"},
+  plan_term_d:{ar:"التقييم كامل بالمبالغ ومصادرها",en:"The full assessment with amounts and sources"},
+  plan_term_full:{ar:"التقييم مع الملف والخطاب",en:"Assessment, case file and letter"},
+  plan_term_full_d:{ar:"كل ما سبق، مع ملف الحالة وخطاب صاحب العمل بأربع نبرات",
+                    en:"Everything above, plus the case file and the employer letter in four tones"},
   pw_case_title:{ar:"ملف القضية",en:"The case file"},
   pw_case_free:{ar:"الحساب والتقييم مجانيان — الملف المنسّق إضافة اختيارية.",
                 en:"The calculation and assessment are free — the assembled file is optional."},
@@ -2509,6 +2979,12 @@ function applyLang(){
   renderPlans(); renderBiz();
   renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
   if (eosData){ renderCase(); renderCaseDoc(); }
+  /* Language is a pure re-render, so every live termination screen redraws
+     from the same state rather than keeping stale strings. */
+  if (term){
+    renderTermHow(); renderTermQ(); renderTermEv();
+    if (termPaid){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
+  }
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
     renderPaywall(); renderLetter(); renderTimeline();
@@ -3215,6 +3691,63 @@ function resignFactor(y){
   return 1;
 }
 
+/* ------------------------------------------------- shared money core
+   The end-of-service calculator and the termination assessment are separate
+   journeys, deliberately. Their arithmetic is not: two copies of a money
+   formula drift, and the one that drifts is the one nobody is looking at.
+   Everything below is pure — no globals, no DOM — so both flows call it and
+   the fuzzer can hit it directly. */
+
+/* Article 84: half a month per year for the first five, a full month per year
+   after that, on the last wage, pro-rata. */
+function awardBase(y, wage){
+  const first = Math.min(y, 5), after = Math.max(0, y - 5);
+  return first * 0.5 * wage + after * wage;
+}
+
+/* Months from one date to another, part-months as thirtieths. Null when we
+   were not told; never negative — a contract already past its term owes
+   nothing for time remaining. */
+function monthsBetween(fromMs, toMs){
+  if (fromMs == null || toMs == null) return null;
+  const a = new Date(fromMs), b = new Date(toMs);
+  if (isNaN(a) || isNaN(b)) return null;
+  const months = (b.getFullYear() - a.getFullYear()) * 12
+               + (b.getMonth() - a.getMonth())
+               + (b.getDate() - a.getDate()) / 30;
+  return Math.max(0, months);
+}
+
+/* Article 77, both branches, floored at two months' wages.
+   `branch` is "fixed" or "indef". Getting this wrong understated a resident's
+   figure by about five months' wages once already — see the corrections log. */
+function compFor(wage, years, branch, remainingMonths){
+  if (!(wage > 0)) return 0;
+  const floor = wage * 2;
+  if (branch === "fixed"){
+    /* Without the contract's end date the remaining term is unknown. Return
+       the floor and say so, rather than quietly using the wrong branch. */
+    if (remainingMonths == null) return floor;
+    return Math.max(floor, remainingMonths * wage);
+  }
+  return Math.max(floor, (years > 0 ? years : 0) * 15 * (wage / 30));
+}
+
+/* Article 111: accrued leave not taken, paid on the last wage. */
+function leaveFor(days, wage){
+  if (!(wage > 0) || !(days > 0)) return 0;
+  return days * (wage / 30);
+}
+
+/* Article 76: the party who ignored the notice period pays the wage for it,
+   or for the balance of it. Indefinite contracts only — it is the remedy for
+   breaching Article 75, which does not reach an always-fixed-term contract. */
+function noticeFor(dueDays, givenDays, wage){
+  if (!(wage > 0) || !(dueDays > 0)) return 0;
+  const short = Math.max(0, dueDays - Math.max(0, givenDays || 0));
+  return short * (wage / 30);
+}
+
 function money(n){
   return new Intl.NumberFormat(lang==="ar" ? "ar-SA" : "en-US",
     { maximumFractionDigits:0 }).format(Math.round(n));
@@ -3238,7 +3771,7 @@ function calcEos(){
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
   const firstAmt = first * 0.5 * wage, afterAmt = after * wage;
-  const sub = firstAmt + afterAmt;
+  const sub = awardBase(y, wage);
   const factor = eosHow === "resign" ? resignFactor(y) : 1;
   const total = sub * factor;
 
@@ -3371,30 +3904,16 @@ function openCase(){
    Both branches floor at two months' wages. */
 function compEstimate(){
   if (!eosData) return 0;
-  const floor = eosData.wage * 2;
-  if (isNonSaudi()){
-    const months = remainingTermMonths();
-    /* Without the contract's end date the remaining term is unknown. Return
-       the floor and say so, rather than quietly using the wrong branch. */
-    if (months == null) return floor;
-    return Math.max(floor, months * eosData.wage);
-  }
-  const perDay = eosData.wage / 30;
-  return Math.max(floor, eosData.years * 15 * perDay);
+  return compFor(eosData.wage, eosData.years,
+                 isNonSaudi() ? "fixed" : "indef", remainingTermMonths());
 }
 
-/* Months between the termination date and the date the contract was due to
-   end. Null when we have not been told, negative clamped to zero — a contract
-   that had already run its term owes nothing for time remaining. */
+/* The calculator's binding to the shared core: read the contract end date off
+   the form, measure from the date they actually left. */
 function remainingTermMonths(){
   const el = document.getElementById("eosTermEnd");
   if (!el || !el.value || !eosData) return null;
-  const end = new Date(el.value), out = new Date(eosData.end);
-  if (isNaN(end) || isNaN(out)) return null;
-  const months = (end.getFullYear() - out.getFullYear()) * 12
-               + (end.getMonth() - out.getMonth())
-               + (end.getDate() - out.getDate()) / 30;
-  return Math.max(0, months);
+  return monthsBetween(eosData.end, new Date(el.value).getTime());
 }
 
 /* A fixed-term contract with decades left is almost always a mistyped year:
@@ -3414,7 +3933,7 @@ function compBasisKey(){
   if (!isNonSaudi()) return "cf_comp_note";
   return remainingTermMonths() == null ? "cf_comp_note_need" : "cf_comp_note_term";
 }
-function leaveAmount(){ return eosData ? leaveDays * (eosData.wage / 30) : 0; }
+function leaveAmount(){ return eosData ? leaveFor(leaveDays, eosData.wage) : 0; }
 function claimTotal(){ return (eosData ? eosData.total : 0) + compEstimate() + leaveAmount(); }
 
 function renderCase(){
@@ -3508,6 +4027,616 @@ function copyCase(){
 function openCasePaywall(){
   if (casePaid){ renderCaseDoc(); show("casedoc"); return; }
   pwMode = "case"; pwPlan = 0; renderPaywall(); show("paywall");
+}
+
+/* ================================================ termination assessment
+   The post-employment counterpart to the contract review. Someone arrives here
+   because their job ended and they think it was handled wrongly.
+
+   Two rules govern every line below:
+
+   1. It never states a legal outcome. "Potential", "may", "appears",
+      "based on what you told us" — never "illegal", never "you will win".
+      A wrong promise to someone who has just lost their income is the worst
+      thing this product could do.
+   2. Every figure carries its origin, law or Wodouh's reading, exactly as the
+      rest of the app does. The money here shares the arithmetic core with the
+      calculator rather than reimplementing it. */
+
+let term = null;              /* the answers; null until the flow starts */
+let termStep = 0;
+let termPaid = false;
+let termTone = "professional";
+
+/* What happened, and what each answer means legally. The seven options are not
+   cosmetic: `award` decides whether the end-of-service figure is the full
+   Article 84 amount, the reduced Article 85 tiers, or nothing at all, and that
+   is the difference between showing someone their full award and showing them
+   zero. See the Article 81 entry in the corrections log. */
+const TERM_HOW = [
+  { id:"employer",  label:"th_employer",  award:"full",   comp:true,  notice:true },
+  { id:"forced",    label:"th_forced",    award:"full",   comp:true,  notice:true,  art81:true },
+  { id:"resigned",  label:"th_resigned",  award:"resign", comp:false, notice:false },
+  { id:"expired",   label:"th_expired",   award:"full",   comp:false, notice:false },
+  { id:"probation", label:"th_probation", award:"none",   comp:false, notice:false, prob:true },
+  { id:"noreason",  label:"th_noreason",  award:"full",   comp:true,  notice:true,  art80:true },
+  { id:"other",     label:"th_other",     award:"full",   comp:false, notice:false, cautious:true }
+];
+function termHow(){ return TERM_HOW.find(x => x.id === (term && term.how)) || null; }
+
+/* The evidence list. Wider than the case file's six because a termination
+   dispute turns on different paper — warnings and settlement especially. */
+const TERM_DOCS = ["d_contract","d_letter","d_pay","d_wps","d_msgs","d_leave",
+                   "d_warn","d_settle","d_hr","d_comm"];
+
+function blankTerm(){
+  return { how:null, start:"", end:"", wage:0, basic:0, ctype:null, termEnd:"",
+           probation:null, reason:"", noticeDue:null, noticeGiven:null,
+           gotSettle:null, gotEos:null, leaveDays:0, unpaidMonths:0, otherAmt:0,
+           docs:[] };
+}
+
+function openTerm(){
+  /* Article 77 and Article 76 both branch on nationality, and getting that
+     wrong is what this whole distinction exists to prevent. Ask before any
+     money is computed, not after. */
+  if (needsTrack(openTerm)) return;
+  if (!term) term = blankTerm();
+  termStep = 0;
+  renderTermHow();
+  show("term");
+}
+
+function renderTermHow(){
+  const wrap = document.getElementById("termHow");
+  wrap.innerHTML = "";
+  TERM_HOW.forEach(o => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = term && term.how === o.id ? "on" : "";
+    b.textContent = t(o.label);
+    b.onclick = () => {
+      term.how = o.id;
+      /* Probation is answered by the choice itself; don't ask again. */
+      if (o.prob) term.probation = true;
+      saveState();
+      buzz(8);
+      renderTermHow();
+      termStep = 0;
+      renderTermQ();
+      show("termq");
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* ------------------------------------------------------ the questions
+   Three short screens rather than one wall of fields. Only the first three
+   values are required; everything else refines the picture, and a blank
+   answer is reported as missing rather than guessed. */
+const TERM_STEPS = [
+  { title:"tm_q1_t", sub:"tm_q1_s", fields:["start","end","wage","basic"] },
+  { title:"tm_q2_t", sub:"tm_q2_s", fields:["ctype","termEnd","noticeDue","noticeGiven","reason"] },
+  { title:"tm_q3_t", sub:"tm_q3_s", fields:["gotSettle","gotEos","unpaidMonths","leaveDays","otherAmt"] }
+];
+
+function termQBack(){
+  if (termStep > 0){ termStep--; renderTermQ(); return; }
+  show("term", 1);
+}
+
+function termQNext(){
+  saveState();
+  if (termStep < TERM_STEPS.length - 1){ termStep++; renderTermQ(); buzz(6); return; }
+  renderTermEv();
+  show("termev");
+}
+
+/* A non-Saudi's contract is always fixed-term under Article 37, so asking them
+   to choose is offering a wrong answer. */
+function termCtype(){
+  if (isNonSaudi()) return "fixed";
+  return term && term.ctype ? term.ctype : null;
+}
+
+function renderTermQ(){
+  const st = TERM_STEPS[termStep];
+  document.getElementById("tqTitle").textContent = t(st.title);
+  document.getElementById("tqSub").textContent = t(st.sub);
+  document.getElementById("tqBackLabel").textContent =
+    t(termStep === 0 ? "tm_h_title" : "tm_q_back");
+  document.getElementById("tqSteps").innerHTML =
+    TERM_STEPS.map((x, i) => `<i class="${i <= termStep ? "on" : ""}"></i>`).join("");
+  document.getElementById("tqNext").textContent =
+    t(termStep === TERM_STEPS.length - 1 ? "tm_q_done" : "tm_q_next");
+
+  const F = {
+    start:   () => dateFld("tmStart", "tm_f_start", term.start),
+    end:     () => dateFld("tmEnd", "tm_f_end", term.end),
+    wage:    () => numFld("tmWage", "tm_f_wage", term.wage, "tm_f_wage_h"),
+    basic:   () => numFld("tmBasic", "tm_f_basic", term.basic, "tm_f_basic_h"),
+    ctype:   () => isNonSaudi()
+      ? note("tm_f_ctype_fixed")
+      : segFld("tmCtype", "tm_f_ctype",
+               [["indef","tm_f_indef"],["fixed","tm_f_fixed"]], term.ctype),
+    termEnd: () => termCtype() === "fixed"
+      ? dateFld("tmTermEnd", "tm_f_termend", term.termEnd, "tm_f_termend_h") : "",
+    noticeDue:   () => numFld("tmNoticeDue", "tm_f_ndue", term.noticeDue, "tm_f_ndue_h"),
+    noticeGiven: () => numFld("tmNoticeGiven", "tm_f_ngiven", term.noticeGiven, "tm_f_ngiven_h"),
+    reason:      () => textFld("tmReason", "tm_f_reason", term.reason, "tm_f_reason_h"),
+    gotSettle: () => ynFld("tmSettle", "tm_f_settle", term.gotSettle),
+    gotEos:    () => ynFld("tmEos", "tm_f_eos", term.gotEos),
+    unpaidMonths: () => numFld("tmUnpaid", "tm_f_unpaid", term.unpaidMonths, "tm_f_unpaid_h"),
+    leaveDays:    () => numFld("tmLeave", "tm_f_leave", term.leaveDays, "tm_f_leave_h"),
+    otherAmt:     () => numFld("tmOther", "tm_f_other", term.otherAmt, "tm_f_other_h")
+  };
+  document.getElementById("tqForm").innerHTML = st.fields.map(f => F[f]()).join("");
+  bindTermQ();
+}
+
+function dateFld(id, label, val, hint){
+  return `<label class="fld" for="${id}"><span>${t(label)}</span>
+    <input type="date" id="${id}" value="${esc(val || "")}"/>
+    ${hint ? `<em>${t(hint)}</em>` : ""}</label>`;
+}
+function numFld(id, label, val, hint){
+  const v = (val === null || val === undefined || val === 0) ? "" : val;
+  return `<label class="fld" for="${id}"><span>${t(label)}</span>
+    <input type="number" inputmode="numeric" min="0" id="${id}" value="${esc(String(v))}"/>
+    ${hint ? `<em>${t(hint)}</em>` : ""}</label>`;
+}
+function textFld(id, label, val, hint){
+  return `<label class="fld" for="${id}"><span>${t(label)}</span>
+    <input type="text" id="${id}" value="${esc(val || "")}" maxlength="140"/>
+    ${hint ? `<em>${t(hint)}</em>` : ""}</label>`;
+}
+function segFld(id, label, opts, val){
+  return `<div class="fld"><span>${t(label)}</span><div class="opts" id="${id}">
+    ${opts.map(([v, k]) => `<button type="button" data-v="${v}" class="${val === v ? "on" : ""}">${t(k)}</button>`).join("")}
+  </div></div>`;
+}
+function ynFld(id, label, val){
+  return segFld(id, label, [["yes","tr_yes"],["no","tr_no"]],
+                val === true ? "yes" : val === false ? "no" : null);
+}
+function note(key){ return `<p class="tq-skip">${t(key)}</p>`; }
+
+function bindTermQ(){
+  const num = (id, key, max) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.oninput = () => {
+      const n = parseFloat(el.value);
+      term[key] = isFinite(n) && n > 0 ? Math.min(n, max) : 0;
+    };
+  };
+  const txt = (id, key) => {
+    const el = document.getElementById(id);
+    if (el) el.oninput = () => { term[key] = el.value; };
+  };
+  txt("tmStart", "start"); txt("tmEnd", "end");
+  txt("tmTermEnd", "termEnd"); txt("tmReason", "reason");
+  /* Ceilings are sanity bounds, not legal ones: they stop a typo becoming a
+     number nobody questions. The remaining-term check does the same job for
+     the one figure where a typo is worth millions. */
+  num("tmWage", "wage", 1e7); num("tmBasic", "basic", 1e7);
+  num("tmNoticeDue", "noticeDue", 365); num("tmNoticeGiven", "noticeGiven", 365);
+  num("tmUnpaid", "unpaidMonths", 60); num("tmLeave", "leaveDays", 365);
+  num("tmOther", "otherAmt", 1e7);
+
+  const seg = (id, apply) => {
+    const w = document.getElementById(id);
+    if (!w) return;
+    w.querySelectorAll("button").forEach(b => {
+      b.onclick = () => { apply(b.dataset.v); renderTermQ(); };
+    });
+  };
+  seg("tmCtype", v => { term.ctype = v; });
+  seg("tmSettle", v => { term.gotSettle = v === "yes"; });
+  seg("tmEos", v => { term.gotEos = v === "yes"; });
+}
+
+/* --------------------------------------------------------- evidence
+   Declared, not uploaded. Wodouh cannot read a payslip photo or a WhatsApp
+   thread, so it asks what you have rather than pretending to analyse it —
+   and says so on the screen instead of implying otherwise. */
+function renderTermEv(){
+  document.getElementById("termDocs").innerHTML = TERM_DOCS.map(d =>
+    `<button class="doc${term.docs.indexOf(d) !== -1 ? " on" : ""}" data-tdoc="${d}">
+       <span class="box"><svg class="draw" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg></span>
+       <span>${t(d)}</span>
+     </button>`).join("");
+  document.querySelectorAll("[data-tdoc]").forEach(b => {
+    b.onclick = () => {
+      const k = b.dataset.tdoc, i = term.docs.indexOf(k);
+      i === -1 ? (term.docs.push(k), buzz(8)) : term.docs.splice(i, 1);
+      saveState();
+      renderTermEv();
+    };
+  });
+
+  const pct = Math.round(term.docs.length / TERM_DOCS.length * 100);
+  document.getElementById("termReady").innerHTML =
+    `<div class="lbl"><span>${t("cf_ready")}</span>
+       <span>${t("cf_ready_n").replace("{a}", fmtNum(term.docs.length)).replace("{b}", fmtNum(TERM_DOCS.length))}</span></div>
+     <div class="meter"><i style="width:${pct}%"></i></div>`;
+
+  const ev = evidenceStrength();
+  const missing = TERM_DOCS.filter(d => term.docs.indexOf(d) === -1);
+  document.getElementById("termEvOut").innerHTML =
+    `<div class="tm-sec">
+       <div class="hd"><b>${t("tm_ev_strength")}</b><span class="tm-tag ${ev.cls}">${t(ev.key)}</span></div>
+       <p>${t(ev.why)}</p>
+       ${missing.length ? `<p><b>${t("tm_ev_missing")}</b><br>${missing.map(m => "• " + t(m)).join("<br>")}</p>` : ""}
+     </div>`;
+}
+
+/* Weighted, not counted: the contract and the termination letter carry the
+   dispute, and ten payslips do not replace either. */
+const EV_KEY = { d_contract:3, d_letter:3, d_settle:2, d_pay:2, d_warn:2, d_msgs:1,
+                 d_wps:1, d_leave:1, d_hr:1, d_comm:1 };
+
+function evidenceScore(){
+  return (term ? term.docs : []).reduce((n, d) => n + (EV_KEY[d] || 0), 0);
+}
+function evidenceStrength(){
+  const s = evidenceScore();
+  if (s >= 9)  return { cls:"ok",     key:"tm_ev_strong",  why:"tm_ev_strong_w" };
+  if (s >= 4)  return { cls:"review", key:"tm_ev_mod",     why:"tm_ev_mod_w" };
+  return { cls:"issue", key:"tm_ev_limited", why:"tm_ev_limited_w" };
+}
+
+/* ------------------------------------------------------------ the money
+   Every function here delegates to the shared pure core. The figures are
+   estimates of what may be owed, never a determination that anything is. */
+
+function termServiceYears(){
+  if (!term || !term.start || !term.end) return 0;
+  const a = new Date(term.start), b = new Date(term.end);
+  if (isNaN(a) || isNaN(b)) return 0;
+  const y = serviceYears(a, b);
+  return y > 0 ? y : 0;
+}
+function termParts(){
+  if (!term || !term.start || !term.end) return { y:0, m:0, d:0 };
+  const a = new Date(term.start), b = new Date(term.end);
+  if (isNaN(a) || isNaN(b) || b <= a) return { y:0, m:0, d:0 };
+  return serviceParts(a, b);
+}
+function termWage(){ return term && term.wage > 0 ? term.wage : 0; }
+
+/* Article 84, then Article 85 only where the departure was an ordinary
+   resignation. A departure under Article 81 keeps the full award — that
+   distinction is the whole reason "asked to resign" is its own option. */
+function termAward(){
+  const h = termHow();
+  if (!h || h.award === "none") return 0;
+  const y = termServiceYears(), base = awardBase(y, termWage());
+  return h.award === "resign" ? base * resignFactor(y) : base;
+}
+
+function termRemainingMonths(){
+  if (!term || !term.termEnd || !term.end) return null;
+  return monthsBetween(new Date(term.end).getTime(), new Date(term.termEnd).getTime());
+}
+function termTermOdd(){
+  const m = termRemainingMonths();
+  return m != null && m > TERM_SANITY_MONTHS;
+}
+
+/* Article 77, only where the ending could put it in play at all. */
+function termComp(){
+  const h = termHow();
+  if (!h || !h.comp) return 0;
+  return compFor(termWage(), termServiceYears(),
+                 termCtype() === "fixed" ? "fixed" : "indef", termRemainingMonths());
+}
+
+/* Article 76. Indefinite contracts only — it is the remedy for breaching
+   Article 75, which never reaches a non-Saudi's always-fixed-term contract.
+   Showing it to the wrong person is the same error the log already records
+   once, so it is refused here rather than filtered later. */
+function termNoticeOwed(){
+  const h = termHow();
+  if (!h || !h.notice) return 0;
+  if (isNonSaudi() || termCtype() === "fixed") return 0;
+  return noticeFor(term.noticeDue, term.noticeGiven, termWage());
+}
+
+function termLeaveOwed(){ return leaveFor(term ? term.leaveDays : 0, termWage()); }
+function termUnpaidOwed(){
+  const m = term && term.unpaidMonths > 0 ? term.unpaidMonths : 0;
+  return m * termWage();
+}
+function termOtherOwed(){ return term && term.otherAmt > 0 ? term.otherAmt : 0; }
+
+/* The end-of-service award is only outstanding if it has not been paid. */
+function termAwardOwed(){ return term && term.gotEos === true ? 0 : termAward(); }
+
+function termLines(){
+  return [
+    { key:"tm_m_unpaid",  amt:termUnpaidOwed(), src:"tm_src_wage",   kind:"method" },
+    { key:"tm_m_leave",   amt:termLeaveOwed(),  src:"tm_src_111",    kind:"law" },
+    { key:"tm_m_eos",     amt:termAwardOwed(),  src:termHow() && termHow().award === "resign" ? "tm_src_8485" : "tm_src_84", kind:"law" },
+    { key:"tm_m_notice",  amt:termNoticeOwed(), src:"tm_src_76",     kind:"law" },
+    { key:"tm_m_comp",    amt:termComp(),       src:"tm_src_77",     kind:"law" },
+    { key:"tm_m_other",   amt:termOtherOwed(),  src:"tm_src_other",  kind:"method" }
+  ].filter(l => l.amt > 0);
+}
+function termTotal(){ return termLines().reduce((n, l) => n + l.amt, 0); }
+
+/* ---------------------------------------------------- the assessment
+   Three states only, and none of them is a verdict. "Potential issue" is the
+   strongest thing this screen is allowed to say. */
+function termSections(){
+  const h = termHow(), out = [];
+  const S = (k, state, why) => out.push({ k, state, why });
+
+  S("tm_s_contract",
+    h && h.art80 ? "issue" : h && h.prob ? "ok" : "review",
+    h && h.art80 ? "tm_s_contract_issue" : h && h.prob ? "tm_s_contract_prob" : "tm_s_contract_review");
+
+  if (h && h.notice && !isNonSaudi() && termCtype() !== "fixed"){
+    const owed = termNoticeOwed();
+    S("tm_s_notice", owed > 0 ? "issue" : term.noticeDue > 0 ? "ok" : "review",
+      owed > 0 ? "tm_s_notice_issue" : term.noticeDue > 0 ? "tm_s_notice_ok" : "tm_s_notice_review");
+  } else {
+    S("tm_s_notice", "ok",
+      isNonSaudi() || termCtype() === "fixed" ? "tm_s_notice_fixed" : "tm_s_notice_na");
+  }
+
+  S("tm_s_eos",
+    term.gotEos === true ? "ok" : termAward() > 0 ? "issue" : "review",
+    term.gotEos === true ? "tm_s_eos_paid"
+      : h && h.art81 ? "tm_s_eos_81"
+      : h && h.award === "resign" ? "tm_s_eos_resign"
+      : h && h.award === "none" ? "tm_s_eos_prob" : "tm_s_eos_due");
+
+  S("tm_s_unpaid", termUnpaidOwed() > 0 ? "issue" : "ok",
+    termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok");
+  S("tm_s_leave", termLeaveOwed() > 0 ? "issue" : "review",
+    termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review");
+  S("tm_s_other", termOtherOwed() > 0 ? "review" : "ok",
+    termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok");
+  if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review");
+  S("tm_s_settle", term.gotSettle === false ? "issue" : "ok",
+    term.gotSettle === false ? "tm_s_settle_issue" : "tm_s_settle_ok");
+  return out;
+}
+
+/* Overall strength: what is on the table, how much paper backs it, and how
+   much we were told. Never a prediction of the outcome. */
+function termStrength(){
+  const issues = termSections().filter(s => s.state === "issue").length;
+  const ev = evidenceScore();
+  if (issues >= 2 && ev >= 6) return { cls:"ok",     key:"tm_cs_strong",  why:"tm_cs_strong_w" };
+  if (issues >= 1)            return { cls:"review", key:"tm_cs_possible",why:"tm_cs_possible_w" };
+  return { cls:"issue", key:"tm_cs_limited", why:"tm_cs_limited_w" };
+}
+
+function termConfidence(){
+  const known = ["start","end","wage"].every(k => term[k]) ? 1 : 0;
+  const detail = [term.noticeDue, term.gotSettle, term.gotEos, term.reason]
+    .filter(x => x !== null && x !== "" && x !== undefined).length;
+  const ev = evidenceScore();
+  if (!known) return "tm_conf_low";
+  if (detail >= 3 && ev >= 6) return "tm_conf_high";
+  if (detail >= 2 || ev >= 4) return "tm_conf_mod";
+  return "tm_conf_low";
+}
+
+function openTermResult(){
+  if (!termPaid){ pwMode = "term"; pwPlan = 0; renderPaywall(); show("paywall"); return; }
+  renderTermResult();
+  show("termres");
+}
+
+function renderTermResult(){
+  if (!term) return;
+  const st = termStrength();
+  document.getElementById("termVerdict").innerHTML =
+    `<div class="tm-sec">
+       <div class="hd"><b>${t(st.key)}</b><span class="tm-tag ${st.cls}">${t("tm_cs_label")}</span></div>
+       <p>${t(st.why)}</p>
+       <p>${t("tm_r_notfinal")}</p>
+     </div>`;
+
+  document.getElementById("termSections").innerHTML = termSections().map(s =>
+    `<div class="tm-sec">
+       <div class="hd"><b>${t(s.k)}</b><span class="tm-tag ${s.state}">${t("tm_st_" + s.state)}</span></div>
+       <p>${t(s.why)}</p>
+     </div>`).join("");
+
+  const cur = t("eos_sar"), lines = termLines();
+  document.getElementById("termMoney").innerHTML =
+    `<div class="tm-money">
+       ${lines.length ? lines.map(l =>
+         `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
+          <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("")
+        : `<p class="cap">${t("tm_m_none")}</p>`}
+       ${lines.length ? `<div class="r tot"><span>${t("tm_m_total")}</span><b>${money(termTotal())} ${cur}</b></div>` : ""}
+       ${termTermOdd() ? `<p class="cap">${t("cf_term_odd")}</p>` : ""}
+       <p class="cap">${t("tm_m_caveat")}</p>
+     </div>`;
+
+  document.getElementById("termClaims").innerHTML = lines.length
+    ? lines.map(l =>
+        `<div class="tm-claim">
+           <b>${t(l.key)}</b>
+           <dl>
+             <dt>${t("tm_c_why")}</dt><dd>${t(l.key + "_why")}</dd>
+             <dt>${t("tm_c_amt")}</dt><dd>${money(l.amt)} ${cur}</dd>
+             <dt>${t("tm_c_ev")}</dt><dd>${t(l.key + "_ev")}</dd>
+             <dt>${t("tm_c_conf")}</dt><dd>${t(termConfidence())}</dd>
+           </dl>
+           <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>
+         </div>`).join("")
+    : `<p class="tq-skip">${t("tm_c_none")}</p>`;
+
+  const ev = evidenceStrength();
+  document.getElementById("termHowFactors").innerHTML = [
+    ["tm_hw_answers", t("tm_hw_answers_b").replace("{h}", t(termHow() ? termHow().label : "th_other"))],
+    ["tm_hw_service", t("tm_hw_service_b")
+      .replace("{y}", fmtNum(termParts().y)).replace("{m}", fmtNum(termParts().m))],
+    ["tm_hw_track", t(isNonSaudi() ? "tm_hw_track_nonsa" : "tm_hw_track_sa")],
+    ["tm_hw_docs", t("tm_hw_docs_b")
+      .replace("{n}", fmtNum(term.docs.length)).replace("{s}", t(ev.key))],
+    ["tm_hw_rules", t("tm_hw_rules_b")]
+  ].map(([k, body]) =>
+    `<details><summary>${t(k)}</summary><p>${body}</p></details>`).join("");
+
+  renderTermSteps();
+}
+
+function renderTermSteps(){
+  const steps = [
+    ["tm_n1", "tm_n1_b", null],
+    ["tm_n2", "tm_n2_b", ["tm_n2_cta", () => { renderTermEv(); show("termev"); }]],
+    ["tm_n3", "tm_n3_b", ["tm_n3_cta", () => { renderTermLtr(); show("termltr"); }]],
+    ["tm_n4", "tm_n4_b", ["tm_n4_cta", () => { renderTermDoc(); show("termdoc"); }]],
+    ["tm_n5", "tm_n5_b", null]
+  ];
+  const host = document.getElementById("termSteps");
+  host.innerHTML = steps.map(([k, b, cta], i) =>
+    `<div class="tm-step">
+       <span class="n">${pointNum(i)}</span>
+       <b>${t(k)}</b><p>${t(b)}</p>
+       ${cta ? `<button class="ghost wide" data-step="${i}">${t(cta[0])}</button>` : ""}
+     </div>`).join("");
+  host.querySelectorAll("[data-step]").forEach(btn => {
+    btn.onclick = steps[+btn.dataset.step][2][1];
+  });
+}
+
+/* ------------------------------------------------------- the documents
+   Both are factual and neutral on purpose. A case file that reads as an
+   accusation is worth less to the person carrying it into a settlement
+   meeting, not more. */
+
+function termFacts(){
+  const cur = t("eos_sar"), p = termParts();
+  const d = v => v ? fmtDate(new Date(v).getTime()) : t("tm_d_unknown");
+  return [
+    `${t("tm_d_start")}: ${d(term.start)}`,
+    `${t("tm_d_end")}: ${d(term.end)}`,
+    `${t("tm_d_service")}: ${t("eos_yrs").replace("{y}", fmtNum(p.y)).replace("{m}", fmtNum(p.m))}`,
+    `${t("tm_d_wage")}: ${termWage() ? money(termWage()) + " " + cur : t("tm_d_unknown")}`,
+    `${t("tm_d_how")}: ${t(termHow() ? termHow().label : "th_other")}`,
+    `${t("tm_d_ctype")}: ${t(termCtype() === "fixed" ? "tm_f_fixed" : termCtype() === "indef" ? "tm_f_indef" : "tm_d_unknown")}`,
+    `${t("tm_d_reason")}: ${term.reason || t("tm_d_none_given")}`
+  ];
+}
+
+function buildTermDoc(){
+  const cur = t("eos_sar"), lines = termLines();
+  const have = TERM_DOCS.filter(d => term.docs.indexOf(d) !== -1).map(d => "• " + t(d));
+  const missing = TERM_DOCS.filter(d => term.docs.indexOf(d) === -1).map(d => "• " + t(d));
+  const secs = termSections()
+    .filter(s => s.state !== "ok")
+    .map(s => `• ${t(s.k)} — ${t("tm_st_" + s.state)}: ${t(s.why)}`);
+  const money$ = lines.map(l => `• ${t(l.key)}: ${money(l.amt)} ${cur}`);
+
+  return [
+    t("tm_doc_title"),
+    "",
+    t("tm_d_h_facts"),
+    ...termFacts(),
+    "",
+    t("tm_d_h_issues"),
+    ...(secs.length ? secs : [t("tm_d_none")]),
+    "",
+    t("tm_d_h_money"),
+    ...(money$.length ? money$ : [t("tm_d_none")]),
+    ...(money$.length ? [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`] : []),
+    t("tm_m_caveat"),
+    "",
+    t("tm_d_h_have"),
+    ...(have.length ? have : [t("tm_d_none")]),
+    "",
+    t("tm_d_h_missing"),
+    ...(missing.length ? missing : [t("tm_d_none")]),
+    "",
+    t("tm_d_h_questions"),
+    t("tm_d_questions_b"),
+    "",
+    t("tm_d_h_next"),
+    t("tm_d_next_b")
+  ].join("\n");
+}
+
+/* What the paywall may show: the reader's own answers back to them, and
+   nothing computed. No amount, no section state, no strength rating. */
+function buildTermPreview(){
+  return [t("tm_d_h_facts"), ...termFacts()].join("\n");
+}
+
+function renderTermDoc(){
+  if (!term) return;
+  document.getElementById("termDocBody").textContent = buildTermDoc();
+  document.getElementById("termDocFoot").textContent = t("lt_foot");
+  document.getElementById("termDocCopy").textContent = t("cf_copy");
+}
+function copyTermDoc(){ copyInto("termDocCopy", "termDocBody", "cf_copy"); }
+function copyTermLtr(){ copyInto("termLtrCopy", "termLtrBody", "copy_btn"); }
+
+/* One clipboard path for both, so the "copied" feedback cannot drift. */
+function copyInto(btnId, bodyId, restoreKey){
+  const btn = document.getElementById(btnId);
+  const done = () => {
+    btn.textContent = t("copied"); toast(t("copied"));
+    setTimeout(() => { btn.textContent = t(restoreKey); }, 1600);
+  };
+  const text = document.getElementById(bodyId).textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
+  else done();
+}
+
+/* Four registers of the same letter. Only the framing moves — the facts, the
+   amounts and the citations are identical in all four, and none of them
+   threatens anything. A letter that makes a threat the reader cannot back is
+   worse than no letter. */
+const TERM_TONES = ["friendly","professional","firm","formal"];
+
+function renderTermTone(){
+  const wrap = document.getElementById("termTone");
+  wrap.innerHTML = "";
+  TERM_TONES.forEach(id => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = termTone === id ? "on" : "";
+    b.textContent = t("tm_tone_" + id);
+    b.onclick = () => { termTone = id; renderTermLtr(); };
+    wrap.appendChild(b);
+  });
+}
+
+function buildTermLtr(){
+  const cur = t("eos_sar"), lines = termLines();
+  const items = lines.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  const body = [
+    t("tm_l_open_" + termTone),
+    "",
+    ...termFacts(),
+    "",
+    items.length ? t("tm_l_items") : t("tm_l_noitems"),
+    ...items,
+    ...(items.length ? [`${t("tm_m_total")}: ${money(termTotal())} ${cur}`] : []),
+    "",
+    t("tm_l_ask_" + termTone),
+    "",
+    t("tm_l_close_" + termTone),
+    t("tm_l_sign")
+  ];
+  return body.join("\n");
+}
+
+function renderTermLtr(){
+  if (!term) return;
+  renderTermTone();
+  document.getElementById("termLtrBody").textContent =
+    t("tm_l_to") + "\n\n" + buildTermLtr();
+  document.getElementById("termLtrFoot").textContent = t("lt_foot");
+  document.getElementById("termLtrCopy").textContent = t("copy_btn");
 }
 
 /* ------------------------------------------------ plans & business tier */
@@ -4182,7 +5311,11 @@ function toast(msg){
    introduces no navigation path that did not already exist. */
 const BACK_OF = {
   result:()=>show("home",1), clauses:()=>show("result",1), letter:()=>show("result",1),
-  paywall:()=>show(pwMode==="case"?"case":"result",1), eos:()=>goTab("rights"),
+  paywall:()=>show(pwMode==="case"?"case":pwMode==="term"?"termev":"result",1),
+  eos:()=>goTab("rights"),
+  term:()=>show("home",1), termq:()=>termQBack(), termev:()=>show("termq",1),
+  termres:()=>show("termev",1), termnext:()=>show("termres",1),
+  termdoc:()=>show("termnext",1), termltr:()=>show("termnext",1),
   case:()=>show("eos",1), casedoc:()=>show("case",1), plans:()=>show(planBack,1),
   biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
   photo:()=>show("home",1), timeline:()=>tlBack()
@@ -4335,6 +5468,7 @@ function saveState(){
       nat,
       timelyOff,
       usedCodes,
+      term,
       contracts: myContracts.slice(0,8),
       tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
     }));
@@ -4356,6 +5490,30 @@ function loadState(){
     timelyOff = d.timelyOff === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
+
+    /* A stored answer set is untrusted like everything else here: it outlives
+       versions and can be hand-edited. Rebuild it field by field onto a blank
+       shape so a payload missing half its keys cannot reach the money. */
+    term = null;
+    if (d.term && typeof d.term === "object"){
+      const b = blankTerm(), src = d.term;
+      const str = k => typeof src[k] === "string" ? src[k].slice(0, 200) : b[k];
+      const num = (k, max) => (typeof src[k] === "number" && isFinite(src[k]) && src[k] > 0)
+        ? Math.min(src[k], max) : b[k];
+      const tri = k => src[k] === true || src[k] === false ? src[k] : null;
+      b.how = TERM_HOW.some(x => x.id === src.how) ? src.how : null;
+      b.start = str("start"); b.end = str("end"); b.termEnd = str("termEnd");
+      b.reason = str("reason");
+      b.ctype = (src.ctype === "fixed" || src.ctype === "indef") ? src.ctype : null;
+      b.wage = num("wage", 1e7); b.basic = num("basic", 1e7);
+      b.noticeDue = num("noticeDue", 365); b.noticeGiven = num("noticeGiven", 365);
+      b.unpaidMonths = num("unpaidMonths", 60); b.leaveDays = num("leaveDays", 365);
+      b.otherAmt = num("otherAmt", 1e7);
+      b.probation = tri("probation"); b.gotSettle = tri("gotSettle"); b.gotEos = tri("gotEos");
+      b.docs = Array.isArray(src.docs)
+        ? src.docs.filter(x => TERM_DOCS.indexOf(x) !== -1).slice(0, TERM_DOCS.length) : [];
+      if (b.how) term = b;
+    }
 
     myContracts = (Array.isArray(d.contracts) ? d.contracts : [])
       .filter(c => c && typeof c === "object"
@@ -4836,7 +5994,15 @@ const PLANS_CASE = [
   { name:"plan_case", desc:"plan_case_d", price:{ar:"٣٢٥ ر.س",en:"325 SAR"}, pop:false },
   { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", price:{ar:"٥٢٠ ر.س",en:"520 SAR"}, pop:true }
 ];
-function activePlans(){ return pwMode === "case" ? PLANS_CASE : PLANS; }
+/* The termination assessment is priced on its own: it is the only paid thing
+   in the app that gates a result rather than a document. */
+const PLANS_TERM = [
+  { name:"plan_term", desc:"plan_term_d", price:{ar:"١٤٥ ر.س",en:"145 SAR"}, pop:false },
+  { name:"plan_term_full", desc:"plan_term_full_d", price:{ar:"٢٩٥ ر.س",en:"295 SAR"}, pop:true }
+];
+function activePlans(){
+  return pwMode === "case" ? PLANS_CASE : pwMode === "term" ? PLANS_TERM : PLANS;
+}
 const LETTER_TO = {
   doc_emp:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
   doc_rent:{ar:"إلى: المؤجّر الكريم",en:"To: The landlord"},
@@ -4883,25 +6049,32 @@ function openPaywall(){
 function renderPaywall(){
   /* Only the revealed portion is rendered; the withheld points never enter
      the DOM before payment. */
-  const isCase = pwMode === "case";
+  const isCase = pwMode === "case", isTerm = pwMode === "term";
   /* The two modes have different plan lists — three for the letter, two for the
      case file — so an index carried across a mode switch can point past the end
      and leave the pay button reading "Pay undefined". Every entry point happens
      to reset it today; clamping here, above the guard, makes that a property of
      the paywall rather than of the callers remembering. */
   pwPlan = Math.max(0, Math.min(pwPlan, activePlans().length - 1));
-  if (isCase ? !eosData : (!current || !selected().length)) return;
-  document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(isCase ? "pw_case_title" : "pw_title");
-  document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(isCase ? "pw_case_free" : "pw_free_note");
+  if (isTerm ? !term : isCase ? !eosData : (!current || !selected().length)) return;
+  const titleKey = isTerm ? "pw_term_title" : isCase ? "pw_case_title" : "pw_title";
+  const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"  : "pw_free_note";
+  document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(titleKey);
+  document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(freeKey);
   /* Show one complete point rather than blurring everything: concealment reads
      as evasion, while real withheld value reads as value. It also means no
      unpaid text is sitting in the DOM behind a CSS filter. */
-  const full = isCase ? buildCaseDoc() : buildLetter();
+  const full = isTerm ? buildTermPreview() : isCase ? buildCaseDoc() : buildLetter();
   const lines = full.split("\n");
   document.getElementById("pwPreviewHead").textContent =
-    isCase ? t("cf_title") : LETTER_TO[current.doc][lang];
+    isTerm ? t("tm_r_title") : isCase ? t("cf_title") : LETTER_TO[current.doc][lang];
   let shown, rest;
-  if (isCase){
+  if (isTerm){
+    /* The facts they gave us are theirs to see. Not one riyal figure and not
+       one assessment reaches the DOM before payment. */
+    shown = lines.join("\n");
+    rest = t("pw_term_more");
+  } else if (isCase){
     shown = lines.slice(0, 5).join("\n");
     rest = t("pw_more_case");
   } else {
@@ -5008,6 +6181,7 @@ async function redeem(){
   /* Land in exactly the same place a payment does, so there is one route to
      the paid state rather than two that can drift apart. */
   setTimeout(()=>{
+    if (pwMode === "term"){ termPaid = true; renderTermResult(); show("termres"); return; }
     if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
     pwPaid = true;
     renderLetter();
@@ -5021,6 +6195,7 @@ function pwPay(){
   pay.textContent = t("pw_paying");
   setTimeout(()=>{
     buzz([12,50,20]);
+    if (pwMode === "term"){ termPaid = true; renderTermResult(); show("termres"); return; }
     if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
     pwPaid = true;
     renderLetter();
