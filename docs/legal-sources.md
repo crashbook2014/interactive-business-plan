@@ -56,7 +56,7 @@ never with a Labor Law article number, because it is a different statute.
 | Claim as stated in the app | Article | Status | Checked against |
 |---|---|---|---|
 | End-of-service: half-month wage per year for the first five years, full month per year thereafter, on the last wage, pro-rata for partial years | **84** | ✅ verified | [HRSD](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [WIPO Lex](https://www.wipo.int/wipolex/en/legislation/details/14685) |
-| Resignation tiers: under 2 years none; 2–5 one third; 5–10 two thirds; 10+ full | **85** | ✅ verified | [Etqan Law](https://etqanlawfirm-sa.com/en/article-85-saudi-labor-law/), [Shangiti Law](https://law.shangiti.com/en/blogs/end-of-service-benefits-calculation-saudi-article-84-85) |
+| Resignation reduction, in the statute's own boundaries: **under 2 years** none; **2 years up to and including 5** one third; **in excess of 5 and under 10** two thirds; **10 or more** the full award. Five years exactly takes one third | **85** | ✅ verified | **Official:** [HRSD — end-of-service award regulations](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf) |
 | Probation up to 90 days, extendable by written agreement to 180 total | **53** | ✅ verified | [DLA Piper](https://www.dlapiper.com/en/insights/publications/2024/08/amendments-to-the-ksa-labour-law) |
 | Overtime paid at the hourly wage plus 50% of the basic wage. Since the 2025 amendment an employer may offer compensatory paid leave instead of payment, **but only with the worker's consent** | **107** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
 | Annual leave at least 21 days, rising to at least 30 after five consecutive years with the same employer | **109** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
@@ -79,10 +79,13 @@ never with a Labor Law article number, because it is a different statute.
 | GOSI and the end-of-service award are **separate entitlements**. The award under Articles 84 and 85 is paid by the employer and is not reduced by, offset against, or replaced by GOSI pension contributions | — (Social Insurance Law read with Labor Law arts. 84–85) | ✅ verified | [HRSD — end of service](https://www.hrsd.gov.sa/en/%D9%85%D9%83%D8%A7%D9%81%D8%A3%D8%A9-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AE%D8%AF%D9%85%D8%A9), [Cercli](https://www.cercli.com/resources/saudi-labor-law-end-of-service) |
 | **Saudi only.** SANED unemployment insurance: available to Saudi nationals who lost work **involuntarily**, are actively seeking work, have contributed for at least **12 months in the past 36**, and are registered with Taqat (HRDF). Pays **60%** of the average covered monthly wage over the previous two years for the first three months, capped at **SAR 9,000**, then **50%**, for up to **12 months**. Funded 0.75% employer and 0.75% employee | — (Social Insurance Law; SANED programme) | ✅ verified | [GOSI — SANED](https://www.gosi.gov.sa/GOSIOnline/Unemployment_Insurance_(SANED)&locale=en_US), [ISSA](https://www.issa.int/gp/173467) |
 | The wage clause in a Qiwa contract carries direct enforcement: unpaid wages can be pursued through the Ministry of Justice's Najiz portal without first going through MHRSD or the labour courts | — (contract-transition programme) | ✅ verified | [Pinsent Masons](https://www.pinsentmasons.com/out-law/news/saudi-arabia-salary-protection-unified-employment-contract), [BCLP](https://www.bclplaw.com/en-US/events-insights-news/saudi-arabias-evolving-labor-landscape-a-consolidated-legal-update.html) |
-| A party who terminates without observing the Article 75 notice pays the other party compensation equal to the worker's wage for the notice period, or the balance of it, on the last wage. **Indefinite contracts only** — it is the remedy for breaching Article 75, which does not reach a non-Saudi's always-fixed-term contract (art. 37) | **76** | ✅ verified | [Al Othman Law — art. 76](https://alothmanlaw.sa/en/article-76/), [LEXIUM — termination, notice and compensation](https://lexium.sa/en/blog/termination-of-employment-contract) |
-| A worker may leave without notice, **without prejudice to all of his statutory rights**, where the employer fails essential contractual or statutory obligations, used fraud about the work conditions at contracting, or assigns essentially different work without consent (art. 60) — and where the employer or their representative commits a violent or immoral act against the worker or their family. A departure on these grounds keeps the **full** end-of-service award under art. 84 rather than the reduced resignation tiers of art. 85 | **81** | ✅ verified | [Al Tayyar Legal — art. 81](https://al-tayyar.com.sa/en/article-81-saudi-labor-law/), [Etqan Law — art. 81](https://etqanlawfirm-sa.com/en/saudi-labor-law-article-81/), [Lexology — arts. 80 and 81](https://www.lexology.com/library/detail.aspx?g=59579e41-74a2-40d0-aded-547f72fca893) |
-| Accrued annual leave not taken is paid on leaving, for the whole period in which it was not used, and pro-rata for the part-year worked. Calculated on the last wage. The right cannot be waived by either party | **111** | ✅ verified | [Al Othman Law — art. 111](https://alothmanlaw.sa/en/article-111/), [TASC Outsourcing — leave policies](https://tascoutsourcing.sa/en/insights/saudi-labour-law-navigating-private-sector-leave-policies-2) |
-| Final settlement is due within **one week** of the relationship ending where the employer terminated or the contract expired, and within **two weeks** where the worker resigned. It covers final wages, unused leave and the end-of-service award | **88** | ✅ verified | [Saudi Labor Law, unofficial translation (PDF)](https://www.cawtarclearinghouse.org/storage/AttachementGender/Saudi%20Labor%20Law.pdf), [CGI Jeddah — Labour Law of KSA](https://cgijeddah.gov.in/content-page-MzY=.html) |
+| A party who terminates without observing the Article 75 notice pays the other party compensation equal to the worker's wage for the notice period, or the balance of it, on the last wage. **Indefinite contracts only** — it is the remedy for breaching Article 75, which does not reach a non-Saudi's always-fixed-term contract (art. 37) | **76** | ✅ verified | **Official:** [HRSD — contract termination](https://www.hrsd.gov.sa/en/knowledge-centre/articles/306), [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf) |
+| A worker may leave without notice, **without prejudice to all of his statutory rights**, where the employer fails essential contractual or statutory obligations, used fraud about the work conditions at contracting, or assigns essentially different work without consent (art. 60) — and where the employer or their representative commits a violent or immoral act against the worker or their family. A departure on these grounds keeps the **full** end-of-service award under art. 84 rather than the reduced resignation tiers of art. 85 | **81** | ✅ verified as to the grounds; the award consequence is a **reading**, see below | **Official:** [HRSD — FAQs](https://www.hrsd.gov.sa/en/labour-education-faq), [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf), [Qiwa — work relations](https://www.qiwa.sa/en/labor-law/contracts/work-relations) |
+| Accrued annual leave not taken is paid on leaving, for the whole period in which it was not used, and pro-rata for the part-year worked. Calculated on the last wage. The right cannot be waived by either party | **111** | ✅ verified | **Official:** [HRSD — annual leave](https://www.hrsd.gov.sa/en/knowledge-centre/articles/321), [HRSD — regulations on leaves (PDF)](https://www.hrsd.gov.sa/sites/default/files/2023-03/Regulations%20on%20Leaves.pdf) |
+| **Exceptions to the resignation reduction.** The full award is due despite Article 85 where the worker leaves for a **force majeure beyond their control**; and a **female worker** is entitled to the full award if she ends her contract within **six months of marriage** or **three months of giving birth** | **87** | ✅ verified | [HRSD — end-of-service award regulations](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf) |
+| A labour dispute begins with **amicable settlement**, filed electronically with MHRSD; roughly a week is allowed for direct negotiation, followed by settlement sessions. If it fails, the case may be referred to the **labour court within 21 working days** of the first complaint | — (MHRSD friendly-settlement procedure) | ✅ verified | [HRSD — friendly settlement for labor disputes](https://www.hrsd.gov.sa/en/ministry-services/services/269970), [HRSD — steps to file](https://www.hrsd.gov.sa/en/media-center/documents-and-reports/1532852), [GOV.SA](https://my.gov.sa/en/wps/portal/snp/servicesDirectory/servicedetails/rs2924) |
+| During the notice period on an employer-initiated termination, the worker is entitled to **one full day or eight hours per week** of paid absence to look for other work, timed by the worker with a day's notice | **75** (notice-period provisions) | ✅ verified | [HRSD — contract termination](https://www.hrsd.gov.sa/en/knowledge-centre/articles/306) |
+| Final settlement is due within **one week** of the relationship ending where the employer terminated or the contract expired, and within **two weeks** where the worker resigned. It covers final wages, unused leave and the end-of-service award | **88** | ✅ verified | **Official:** [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf), [HRSD — end-of-service award regulations](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317) |
 
 ## Corrections log
 
@@ -175,6 +178,65 @@ from the official PDF. Article 81's text was returned verbatim and matched
 across sources; the others matched in substance across at least two. **This is
 a weaker standard than the rows above it**, and it raises rather than lowers
 the priority of the lawyer review.
+
+**9 August 2026 — official-source pass, and a second live understatement.**
+The August entry above admitted a weaker standard: the proxy refused direct
+fetches, so Articles 76, 81, 111 and 88 rested on commentary. That gap is now
+closed. Searching restricted to `hrsd.gov.sa`, `laboreducation.hrsd.gov.sa`,
+`qiwa.sa`, `gosi.gov.sa` and `my.gov.sa` returns official text, and **Articles
+53, 75, 76, 77, 80, 81, 84, 85, 87, 88, 109 and 111 are now confirmed against
+MHRSD's own pages and its published Labor Law PDF.** Direct page fetches of
+those domains remain blocked, so the reading is via official search results
+rather than a browser session — better than commentary, short of the gazette.
+
+**Article 87 was missing, and its absence understated real awards.** Two
+exceptions defeat the Article 85 resignation reduction:
+
+- a worker who leaves for a **force majeure beyond their control** keeps the
+  full award;
+- a **female worker** keeps the full award if she ends her contract within
+  **six months of marriage** or **three months of giving birth**.
+
+So a woman who resigned two months after giving birth was shown the reduced
+tiers — a third of the award at three years' service, and **nothing at all**
+under two years. That is the same class of defect as the Article 81 finding
+recorded above, found the same way, and it is the second one in this feature.
+The pattern is worth naming: *every rule that reduces an entitlement has
+exceptions, and a reduction shipped without its exceptions is a understatement
+waiting for the right user.*
+
+**One claim is deliberately downgraded.** Article 81's **grounds** are
+quoted verbatim by official sources. Its **award consequence** — that a
+departure on those grounds carries the full Article 84 award rather than the
+Article 85 tiers — rests on the statutory phrase *"without prejudice to all of
+his statutory rights"* plus consistent commentary. No official page states the
+award consequence in those words. It is therefore marked in the product as a
+reading, not as a bare citation, and it is the first question in the lawyer
+pack.
+
+Also added: the **MHRSD friendly-settlement procedure** (electronic filing,
+about a week for direct negotiation, settlement sessions, referral to the
+labour court within 21 working days), and the **notice-period job-search
+entitlement** of one day or eight hours a week.
+
+**9 August 2026 — the Article 85 boundary, and an overstatement.** The
+scenario suite exercised exactly five years of service on the resignation path
+and caught a boundary read the wrong way. Article 85 gives one third *"after
+service of not less than two consecutive years and **not more than five
+years**"* and two thirds *"if his service is **in excess of** five"*. Five
+years exactly therefore takes **one third**, and the code took two thirds —
+16,667 SAR where 8,333 was due on a 10,000 wage.
+
+**This one overstated**, which is the opposite failure from the Article 81 and
+87 findings and is its own kind of harm: an inflated figure is what somebody
+carries into a settlement meeting. The register row now states the boundaries
+in the statute's own words rather than the shorthand "2–5 / 5–10", which is
+what made the error easy to write and hard to see.
+
+Also changed, from the same suite: where the reader has not given us what a
+line needs, the app now **names the line as unassessed** rather than omitting
+it. Silence read as "nothing is owed here", which is an answer we had not
+earned.
 
 ## Before shipping to real users
 

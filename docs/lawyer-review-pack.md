@@ -10,7 +10,7 @@ Wodouh is a bilingual consumer app that reads a Saudi employment contract and
 tells the reader whether to sign, negotiate, or seek a lawyer. Every statement
 it makes carries a visible citation.
 
-**28 legal claims are listed below.** For each one we need one of three
+**29 legal claims are listed below.** For each one we need one of three
 answers:
 
 | Verdict | Meaning |
@@ -24,7 +24,7 @@ We would rather be told a claim is wrong now than have a user rely on it.
 ### What we are *not* asking
 
 We are not asking you to advise our users, take responsibility for their
-matters, or endorse the product. We are asking whether these 28 statements
+matters, or endorse the product. We are asking whether these 29 statements
 accurately describe Saudi law as at today.
 
 ---
@@ -37,13 +37,19 @@ employment and the contract-transition programme, GOSI for social insurance,
 and firm commentary (DLA Piper, Al Othman, Bird & Bird, Clyde & Co, Morgan
 Lewis, Al Tamimi and others) elsewhere.
 
-**Claims 25–28 were checked to a weaker standard than the rest**, and we would
-rather say so than let it pass. Our network could not reach hrsd.gov.sa,
-laws.boe.gov.sa or the firm sites directly, so those four were verified through
-search results quoting the statutory text and corroborated across independent
-sources, rather than read from the official PDF. Article 81's text came back
-verbatim and consistent; the other three matched in substance across at least
-two sources. Please treat them as the least settled in this pack.
+**Since the last revision these were re-checked against MHRSD's own pages**
+and its published Labor Law PDF: Articles 53, 75, 76, 77, 80, 81, 84, 85, 87,
+88, 109 and 111. Direct page fetches remain blocked from our environment, so
+this is official search results rather than a browser session on the gazette.
+
+**One claim is deliberately weaker than the rest.** Article 81's *grounds* are
+quoted verbatim by official sources. Its *award consequence* — that a departure
+on those grounds carries the full Article 84 award rather than the Article 85
+tiers — rests on the statutory phrase "without prejudice to all of his
+statutory rights" plus consistent commentary. **No official page states the
+consequence in those words.** It is claim 25, it is the first thing we would
+like checked, and the product labels it as a reading rather than a bare
+citation.
 
 **No qualified lawyer has reviewed any of it.** That is the gap this review
 exists to close.
@@ -74,7 +80,8 @@ one.**
 | # | Claim as the app states it | Cited as | Where it appears |
 |---|---|---|---|
 | 1 | End-of-service: half-month wage per year for the first five years, full month per year thereafter, on the last wage, pro-rata for partial years | Art. **84** | Calculator, rights library, assistant |
-| 2 | Resignation tiers: under 2 years none; 2–5 one third; 5–10 two thirds; 10+ full | Art. **85** | Calculator, rights library |
+| 2 | Resignation reduction: under 2 years none; **2 up to and including 5** one third; **in excess of 5, under 10** two thirds; 10+ full. **Five years exactly takes one third** | Art. **85** | Calculator, rights library, termination assessment |
+| 29 | The Article 85 reduction does not apply where the worker leaves for a **force majeure beyond their control**, or where a **female worker** ends her contract within **six months of marriage** or **three months of giving birth** — the full award is due | Art. **87** | Termination assessment |
 | 3 | Compensation for termination without valid reason, **indefinite** contract: 15 days' wages per year of service, floor two months | Art. **77** | Case file (Saudi track) |
 | 4 | Compensation for termination without valid reason, **fixed-term** contract: wages for the **remaining term**, floor two months | Art. **77** | Case file (resident track) |
 | 5 | A non-Saudi's contract must be **written and fixed-term**, never converts to indefinite even by agreement; where no term is stated it is one year from actual commencement | Art. **37** | Analyzer rule, rights library |
@@ -103,6 +110,15 @@ one.**
   in the most vulnerable user we have.
 - **Claim 26:** we treat Article 76 as inheriting Article 75's scope, so we
   never show notice compensation to a non-Saudi. Is that right?
+- **Claim 2, the five-year boundary.** We now read "not more than five years"
+  as inclusive, so five years exactly takes one third rather than two thirds.
+  We previously had this the other way and were **overstating** the award.
+  Please confirm the boundary, and tell us how the courts treat it in practice.
+- **Claim 29 (Article 87).** We ask the reader directly whether they left for a
+  force majeure, or within six months of marriage or three months of giving
+  birth, and give the full award if so. Is that the right test, and is
+  "force majeure beyond his control" as narrow in practice as the wording
+  suggests?
 
 ### Priority 2 — non-Saudi specific
 

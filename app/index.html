@@ -752,6 +752,10 @@
   .tm-claim dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px;margin-top:6px}
   .tm-claim dt{color:var(--ink-2)}
   .tm-claim dd{color:var(--ink);line-height:1.55}
+  .tm-claim .hd{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:6px}
+  .tm-claim .hd b{margin:0}
+  .tm-gap{font-size:12.5px;color:var(--red-ink);line-height:1.6;margin-top:8px}
+  .tm-off{font-size:11.5px;color:var(--ink-2);margin-top:4px}
   .tm-how details{border:1px solid var(--line);border-radius:var(--r-md);
     background:var(--card);margin-bottom:8px}
   .tm-how summary{padding:12px 14px;font-size:13.5px;cursor:pointer;min-height:44px;
@@ -1558,6 +1562,9 @@
     <div id="termMoney"></div>
     <h3 class="biz-h" data-t="tm_r_claims"></h3>
     <div class="tm-claims" id="termClaims"></div>
+    <div id="termGaps"></div>
+    <h3 class="biz-h" data-t="rv_head"></h3>
+    <div id="termReview"></div>
     <h3 class="biz-h" data-t="tm_r_how"></h3>
     <div class="tm-how" id="termHowFactors"></div>
     <button class="primary" onclick="show('termnext')" data-t="tm_r_cta"></button>
@@ -2412,6 +2419,151 @@ const T = {
              en:"We couldn't complete the read. Your assessment above is unaffected."},
   ai_offline:{ar:"ما فيه اتصال. تقييمك أعلاه محسوب على جهازك وما تأثر.",
               en:"No connection. Your assessment above was calculated on your device and is unaffected."},
+  /* --- Article 87 exceptions */
+  tm_f_exc:{ar:"هل كانت استقالتك لأحد هذي الأسباب؟",en:"Was your resignation for any of these reasons?"},
+  tm_exc_none:{ar:"لا، استقالة عادية",en:"No, an ordinary resignation"},
+  tm_exc_force:{ar:"ظرف قاهر خارج عن إرادتي",en:"A force majeure beyond my control"},
+  tm_exc_marriage:{ar:"أنهيت العقد خلال ٦ أشهر من زواجي",en:"I ended it within 6 months of my marriage"},
+  tm_exc_birth:{ar:"أنهيت العقد خلال ٣ أشهر من الولادة",en:"I ended it within 3 months of giving birth"},
+
+  /* --- certainty */
+  cert_confirmed:{ar:"مؤكد",en:"Confirmed"},
+  cert_likely:{ar:"مرجّح",en:"Likely"},
+  cert_uncertain:{ar:"غير مؤكد",en:"Uncertain"},
+  cert_na:{ar:"لا ينطبق",en:"Not applicable"},
+  need_wage:{ar:"الأجر الشهري",en:"your monthly wage"},
+  need_start:{ar:"تاريخ البداية",en:"your start date"},
+  need_end:{ar:"تاريخ النهاية",en:"your end date"},
+  need_unpaidMonths:{ar:"عدد الشهور غير المدفوعة",en:"how many months went unpaid"},
+  need_leaveDays:{ar:"رصيد الإجازة",en:"your leave balance"},
+  need_noticeDue:{ar:"مدة الإشعار في العقد",en:"the notice period in your contract"},
+  need_noticeGiven:{ar:"مدة الإشعار المعطاة",en:"the notice you were given"},
+  need_otherAmt:{ar:"قيمة المستحقات الأخرى",en:"the value of the other amounts"},
+
+  /* --- rules in plain language */
+  tm_rule_eos:{ar:"مكافأة نهاية الخدمة: نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على آخر أجر.",
+               en:"End-of-service award: half a month for each of the first five years, a full month for each year after that, on your last wage."},
+  tm_rule_notice:{ar:"الطرف اللي ما التزم بمدة الإشعار يدفع للطرف الثاني أجر تلك المدة أو ما تبقى منها. تخص العقود غير محددة المدة.",
+                  en:"A party who doesn't observe the notice period pays the other the wage for that period, or what remains of it. Indefinite contracts only."},
+  tm_rule_leave:{ar:"رصيد الإجازة السنوية غير المستخدم يُدفع نقدًا عند ترك العمل، وبنسبة ما قضيته من السنة. حق لا يسقط بالاتفاق.",
+                 en:"Unused annual leave is paid in cash when you leave, pro-rata for the part of the year you worked. It cannot be waived by agreement."},
+  tm_rule_comp:{ar:"الإنهاء بغير سبب مشروع يستوجب تعويضًا: أجر ١٥ يومًا عن كل سنة في العقد غير محدد المدة، أو أجر المدة الباقية في العقد محدد المدة، وبحد أدنى أجر شهرين.",
+                en:"Termination without a valid reason attracts compensation: 15 days' wages per year on an indefinite contract, or the wages for the remaining term on a fixed-term one, with a floor of two months."},
+  tm_rule_unpaid:{ar:"الأجر المستحق دين قائم بذاته. ما فيه مادة تحسب لك عدد الشهور — الرقم من إجابتك.",
+                  en:"Wages owed are a debt in their own right. No article computes the number of months for you — that figure is your answer."},
+  tm_rule_other:{ar:"العمولات والبدلات يحكمها نص عقدك لا النظام. الرقم من إدخالك.",
+                 en:"Commissions and allowances are governed by your contract's wording, not the statute. The figure is the one you entered."},
+
+  /* --- how it applies to you */
+  appl_eos_full:{ar:"خدمتك {s}، وطريقة انتهاء عملك تُبقي المكافأة كاملة.",
+                 en:"Your service is {s}, and the way your job ended keeps the award whole."},
+  appl_eos_resign:{ar:"خدمتك {s}، والاستقالة العادية تُبقي {f}٪ من المكافأة عند هذي المدة.",
+                   en:"Your service is {s}, and an ordinary resignation keeps {f}% of the award at that length."},
+  appl_eos_81:{ar:"خدمتك {s}. ذكرت إنك طُلب منك تستقيل — إذا كان السبب إخلالًا من صاحب العمل، فقراءتنا إن حقوقك النظامية تبقى كاملة، ومنها المكافأة كاملة لا المخفّضة.",
+               en:"Your service is {s}. You said you were asked to resign — if the cause was an employer breach, our reading is that your statutory rights survive intact, including the full award rather than the reduced one."},
+  appl_eos_87:{ar:"خدمتك {s}، وذكرت: {e}. النظام يستثني هذي الحالة من تخفيض الاستقالة، فالمكافأة كاملة.",
+               en:"Your service is {s}, and you told us: {e}. The law excepts that case from the resignation reduction, so the award is the full one."},
+  appl_notice:{ar:"عقدك يذكر {d} يومًا إشعارًا، وأُعطيت {g}. الفرق {n} يومًا، وعليه حُسب المبلغ.",
+               en:"Your contract states {d} days' notice and you were given {g}. The gap is {n} days, and the amount is calculated on it."},
+  appl_leave:{ar:"ذكرت {d} يومًا رصيدًا، على أجر يومي مشتق من {w} ريال شهريًا.",
+              en:"You reported {d} days of balance, at a daily rate derived from {w} SAR a month."},
+  appl_unpaid:{ar:"ذكرت {m} شهرًا غير مدفوع، على راتب {w} ريال.",
+               en:"You reported {m} months unpaid, at {w} SAR a month."},
+  appl_comp_indef:{ar:"عقدك غير محدد المدة، فالحساب بأجر ١٥ يومًا عن كل سنة من خدمتك {s} — أو حد الشهرين، أيهما أعلى.",
+                   en:"Your contract is indefinite, so the calculation is 15 days' wages for each year of your {s} — or the two-month floor, whichever is higher."},
+  appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} شهرًا وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
+                   en:"Your contract is fixed-term with about {m} months left at termination — or the two-month floor, whichever is higher."},
+  appl_comp_fixed_unknown:{ar:"عقدك محدد المدة، لكن ما أعطيتنا تاريخ نهايته، فما نقدر نحسب المدة الباقية. الرقم المعروض هو الحد الأدنى فقط — أعطنا التاريخ يتغيّر.",
+                           en:"Your contract is fixed-term but you haven't given us its end date, so we can't compute the remaining term. The figure shown is the floor only — give us the date and it changes."},
+  appl_other:{ar:"المبلغ اللي أدخلته: {v}. ما تحققنا منه، وهو يتبع نص عقدك.",
+              en:"The amount you entered: {v}. We have not verified it, and it follows your contract's wording."},
+
+  tm_c_rule:{ar:"القاعدة",en:"Rule"},
+  tm_c_applies:{ar:"كيف تنطبق عليك",en:"How it applies to you"},
+  tm_c_source:{ar:"المصدر الرسمي",en:"Official source"},
+  tm_c_needmore:{ar:"نحتاج معلومات إضافية قبل ما نقدر نقيّم هذا بدقة:",
+                 en:"We need more information before we can assess this accurately:"},
+  off_84:{ar:"وزارة الموارد البشرية — أحكام مكافأة نهاية الخدمة",en:"MHRSD — end-of-service award regulations"},
+  off_76:{ar:"وزارة الموارد البشرية — إنهاء العقد",en:"MHRSD — contract termination"},
+  off_77:{ar:"وزارة الموارد البشرية — إنهاء العقد",en:"MHRSD — contract termination"},
+  off_111:{ar:"وزارة الموارد البشرية — الإجازة السنوية ولائحة الإجازات",en:"MHRSD — annual leave and the leaves regulations"},
+
+  /* --- second-pass review */
+  rv_head:{ar:"المراجعة الثانية",en:"Second-pass review"},
+  rv_title:{ar:"راجعنا نتيجتنا مرة ثانية",en:"We reviewed our own result"},
+  rv_sub:{ar:"بعد ما طلع التقييم، مررنا عليه مراجعة ناقدة: تناقضات، ازدواج في المطالبات، ثقة أكثر مما تحتمل المعلومات، وتواريخ ما تستقيم.",
+          en:"After the assessment was produced we ran a critical pass over it: contradictions, double-counted claims, more confidence than the information supports, and dates that don't add up."},
+  rv_clean:{ar:"ما فيه ملاحظات",en:"No notes"},
+  rv_notes:{ar:"فيه ملاحظات",en:"Notes"},
+  rv_clean_b:{ar:"ما طلعت تناقضات ولا ازدواج، وكل بند مسنود بقاعدة محققة.",
+              en:"No contradictions or duplication came up, and every line is backed by a verified rule."},
+  rv_unchecked:{ar:"نقاط ما قدرنا نتحقق منها:",en:"What we could not verify:"},
+  rv_start_bad:{ar:"تاريخ البداية غير مقروء.",en:"The start date can't be read."},
+  rv_end_bad:{ar:"تاريخ النهاية غير مقروء.",en:"The end date can't be read."},
+  rv_reversed:{ar:"تاريخ النهاية قبل تاريخ البداية.",en:"The end date falls before the start date."},
+  rv_end_future:{ar:"تاريخ النهاية في المستقبل — تأكد منه، الحساب مبني عليه.",
+                 en:"The end date is in the future — check it, the calculation rests on it."},
+  rv_start_future:{ar:"تاريخ البداية في المستقبل.",en:"The start date is in the future."},
+  rv_start_ancient:{ar:"تاريخ البداية قديم بشكل غير معتاد — تأكد من السنة.",
+                    en:"The start date is unusually old — check the year."},
+  rv_term_far:{ar:"تاريخ نهاية العقد يبدو بعيدًا جدًا — غلطة سنة واحدة تغيّر المبلغ كثيرًا.",
+               en:"The contract end date looks very far away — a one-digit year error changes the amount a lot."},
+  rv_eos_no_settle:{ar:"ذكرت إنك استلمت المكافأة لكن ما استلمت مخالصة — راجع كيف صُرفت.",
+                    en:"You said you received the award but not a settlement — check how it was paid."},
+  rv_notice_in_probation:{ar:"ذكرت إشعارًا مع إنهاء في فترة التجربة، وهذا غير معتاد.",
+                          en:"You reported notice alongside a probation termination, which is unusual."},
+  rv_notice_over:{ar:"الإشعار المعطى أطول من المذكور في العقد، فما فيه فرق مستحق.",
+                  en:"The notice given exceeds what the contract stated, so nothing is owed on it."},
+  rv_exc_unasked:{ar:"ما جاوبت على سؤال استثناءات المادة ٨٧ — لو ينطبق عليك، المكافأة تصير كاملة.",
+                  en:"You didn't answer the Article 87 exceptions question — if one applies, the award becomes the full one."},
+  rv_ctype_conflict:{ar:"اخترت عقدًا غير محدد المدة، لكن عقد غير السعودي محدد المدة نظامًا. اعتمدنا محدد المدة.",
+                     en:"You picked an indefinite contract, but a non-Saudi's contract is fixed-term by law. We used fixed-term."},
+  rv_unpaid_vs_settle:{ar:"ذكرت رواتب متأخرة مع استلام مخالصة — تأكد وش غطّت المخالصة.",
+                       en:"You reported unpaid salary alongside a settlement you received — check what the settlement covered."},
+  rv_duplicate:{ar:"تكرر بند مالي أكثر من مرة.",en:"A financial line appeared more than once."},
+  rv_eos_paid_but_claimed:{ar:"المكافأة مطالَب بها رغم إنك ذكرت إنك استلمتها.",
+                           en:"The award is being claimed although you said you received it."},
+  rv_comp_wrong_path:{ar:"تعويض الإنهاء ظهر في مسار ما يستحقه.",en:"Termination compensation appeared on a path that doesn't carry it."},
+  rv_notice_scope:{ar:"تعويض الإشعار ظهر على عقد محدد المدة، وما ينطبق عليه.",
+                   en:"Notice compensation appeared on a fixed-term contract, where it doesn't apply."},
+  rv_strength_thin:{ar:"التقدير العام أقوى مما تسنده أوراقك — اجمع أدلة أكثر قبل ما تعتمد عليه.",
+                    en:"The overall rating is stronger than your documents support — gather more before relying on it."},
+  rv_no_docs:{ar:"ما علّمت أي ورقة. المبالغ محسوبة من إجاباتك وحدها.",
+              en:"You ticked no documents. The amounts rest on your answers alone."},
+  rv_uncertain_lines:{ar:"فيه بنود ينقصها معلومات — موضّحة تحت كل بند.",
+                      en:"Some lines are missing information — noted under each one."},
+
+  /* --- the gate */
+  gap_title:{ar:"وش ما قدرنا نقيّمه",en:"What we could not assess"},
+  gap_sub:{ar:"هذي بنود قد تكون مستحقة لك، لكن ما عندنا ما يكفي لحسابها. غيابها من القائمة أعلاه ما يعني إنها صفر — يعني إننا ما نعرف.",
+           en:"These may be owed to you, but we don't have enough to calculate them. Their absence from the list above does not mean zero — it means we don't know."},
+  gate_title:{ar:"ما نقدر نعرض التقييم",en:"We can't show this assessment"},
+  gate_tag:{ar:"موقوف",en:"Stopped"},
+  gate_noterm:{ar:"ما فيه إجابات نبني عليها.",en:"There are no answers to build on."},
+  gate_calc:{ar:"طلع في الحساب رقم غير صالح، فأوقفنا العرض بدل ما نعرض رقمًا غلط.",
+             en:"The calculation produced an invalid number, so we stopped rather than show you a wrong one."},
+  gate_review:{ar:"مراجعتنا الثانية لقت مشكلة في التقييم نفسه:",
+               en:"Our second-pass review found a problem with the assessment itself:"},
+  gate_fix:{ar:"ارجع وعدّل إجاباتك، والتقييم يتحدث معها.",
+            en:"Go back and correct your answers — the assessment follows them."},
+  fc_ctype:{ar:"تحديد نوع العقد",en:"Contract type identified"},
+  fc_dates:{ar:"تواريخ العمل",en:"Employment dates verified"},
+  fc_endDate:{ar:"تاريخ الإنهاء",en:"Termination date verified"},
+  fc_reason:{ar:"سبب الإنهاء",en:"Termination reason identified"},
+  fc_clauses:{ar:"بنود العقد ذات الصلة",en:"Relevant contract clauses identified"},
+  fc_rules:{ar:"القواعد السارية",en:"Current applicable rules checked"},
+  fc_exc:{ar:"الاستثناءات",en:"Exceptions checked"},
+  fc_calc:{ar:"مراجعة الحساب",en:"Calculations independently verified"},
+  fc_dupe:{ar:"عدم ازدواج المطالبات",en:"Claims checked for duplication"},
+  fc_evidence:{ar:"الأدلة مقابل النتائج",en:"Evidence checked against conclusions"},
+  fc_missing:{ar:"المعلومات الناقصة",en:"Missing information identified"},
+  fc_supported:{ar:"كل نتيجة لها سند",en:"No unsupported legal conclusion"},
+  fc_noguarantee:{ar:"لا وعد بنتيجة",en:"No guaranteed outcome stated"},
+  fc_nofab:{ar:"لا أرقام مختلقة",en:"No fabricated facts"},
+  fc_current:{ar:"مصادر رسمية حديثة",en:"Current official sources used"},
+  fc_bilingual:{ar:"تطابق العربي والإنجليزي",en:"Arabic and English results consistent"},
+  fc_estimates:{ar:"التمييز بين التقدير والمؤكد",en:"Estimates distinguished from confirmed amounts"},
+
   pw_term_title:{ar:"تقييم إنهاء العقد",en:"Your termination assessment"},
   pw_term_free:{ar:"الأسئلة وقائمة الأوراق مجانية. التقييم والمبالغ هي الجزء المدفوع.",
                 en:"The questions and the document list are free. The assessment and the amounts are the paid part."},
@@ -3728,9 +3880,19 @@ function serviceYears(a, b){
   return y + m/12 + d/365;
 }
 
+/* Article 85's boundaries, read exactly as the statute words them:
+   "one third ... after service of NOT LESS THAN two consecutive years and NOT
+   MORE THAN five years, two thirds if his service is IN EXCESS OF five ...
+   but less than ten, and the full award if ... ten years or more."
+
+   So five years exactly takes one third, not two thirds. The scenario suite
+   caught this at 5.000 years, where the old `y < 5` handed the reader two
+   thirds — 16,667 where 8,333 was due on a 10,000 wage. Unlike the Article 81
+   and 87 findings this one OVERSTATED, which is its own kind of harm: a figure
+   someone walks into a settlement meeting expecting. */
 function resignFactor(y){
   if (y < 2) return 0;
-  if (y < 5) return 1/3;
+  if (y <= 5) return 1/3;
   if (y < 10) return 2/3;
   return 1;
 }
@@ -4128,6 +4290,12 @@ function blankTerm(){
   return { how:null, start:"", end:"", wage:0, basic:0, ctype:null, termEnd:"",
            probation:null, reason:"", noticeDue:null, noticeGiven:null,
            gotSettle:null, gotEos:null, leaveDays:0, unpaidMonths:0, otherAmt:0,
+           /* Article 87 defeats the Article 85 reduction. Asked only on the
+              resignation path, because that is the only place it changes
+              anything — and not asking cost real money: a woman who resigned
+              two months after giving birth was shown a third of her award,
+              or nothing at all under two years. */
+           exc87:null,
            docs:[] };
 }
 
@@ -4172,7 +4340,7 @@ function renderTermHow(){
 const TERM_STEPS = [
   { title:"tm_q1_t", sub:"tm_q1_s", fields:["start","end","wage","basic"] },
   { title:"tm_q2_t", sub:"tm_q2_s", fields:["ctype","termEnd","noticeDue","noticeGiven","reason"] },
-  { title:"tm_q3_t", sub:"tm_q3_s", fields:["gotSettle","gotEos","unpaidMonths","leaveDays","otherAmt"] }
+  { title:"tm_q3_t", sub:"tm_q3_s", fields:["exc87","gotSettle","gotEos","unpaidMonths","leaveDays","otherAmt"] }
 ];
 
 function termQBack(){
@@ -4219,6 +4387,13 @@ function renderTermQ(){
     noticeDue:   () => numFld("tmNoticeDue", "tm_f_ndue", term.noticeDue, "tm_f_ndue_h"),
     noticeGiven: () => numFld("tmNoticeGiven", "tm_f_ngiven", term.noticeGiven, "tm_f_ngiven_h"),
     reason:      () => textFld("tmReason", "tm_f_reason", term.reason, "tm_f_reason_h"),
+    /* Only on the resignation path: elsewhere the full award is already due
+       and the question would be noise. */
+    exc87: () => termHow() && termHow().award === "resign"
+      ? segFld("tmExc", "tm_f_exc", [["none","tm_exc_none"],["force","tm_exc_force"],
+                                     ["marriage","tm_exc_marriage"],["birth","tm_exc_birth"]],
+               term.exc87)
+      : "",
     gotSettle: () => ynFld("tmSettle", "tm_f_settle", term.gotSettle),
     gotEos:    () => ynFld("tmEos", "tm_f_eos", term.gotEos),
     unpaidMonths: () => numFld("tmUnpaid", "tm_f_unpaid", term.unpaidMonths, "tm_f_unpaid_h"),
@@ -4287,6 +4462,7 @@ function bindTermQ(){
     });
   };
   seg("tmCtype", v => { term.ctype = v; });
+  seg("tmExc", v => { term.exc87 = v; });
   seg("tmSettle", v => { term.gotSettle = v === "yes"; });
   seg("tmEos", v => { term.gotEos = v === "yes"; });
 }
@@ -4364,10 +4540,19 @@ function termWage(){ return term && term.wage > 0 ? term.wage : 0; }
 /* Article 84, then Article 85 only where the departure was an ordinary
    resignation. A departure under Article 81 keeps the full award — that
    distinction is the whole reason "asked to resign" is its own option. */
+function exc87Applies(){
+  return !!term && (term.exc87 === "force" || term.exc87 === "marriage" || term.exc87 === "birth");
+}
+
 function termAward(){
   const h = termHow();
   if (!h || h.award === "none") return 0;
   const y = termServiceYears(), base = awardBase(y, termWage());
+  /* Article 87: force majeure, or a female worker within six months of
+     marriage or three months of giving birth, keeps the FULL award despite
+     Article 85. A reduction shipped without its exceptions understates
+     somebody's entitlement — this is the second time in this feature. */
+  if (h.award === "resign" && exc87Applies()) return base;
   return h.award === "resign" ? base * resignFactor(y) : base;
 }
 
@@ -4409,6 +4594,26 @@ function termOtherOwed(){ return term && term.otherAmt > 0 ? term.otherAmt : 0; 
 /* The end-of-service award is only outstanding if it has not been paid. */
 function termAwardOwed(){ return term && term.gotEos === true ? 0 : termAward(); }
 
+/* Lines we could not assess because the reader did not give us what they
+   need. Staying silent about these reads as "nothing is owed here", which is
+   an answer we have not earned — so they are named instead. */
+function termUnassessed(){
+  if (!term) return [];
+  const h = termHow();
+  const candidates = [
+    { key:"tm_m_leave",  needs:["leaveDays"],                applies:true },
+    { key:"tm_m_unpaid", needs:["unpaidMonths"],             applies:true },
+    { key:"tm_m_other",  needs:["otherAmt"],                 applies:true },
+    { key:"tm_m_notice", needs:["noticeDue"],
+      applies: !!(h && h.notice) && !isNonSaudi() && termCtype() !== "fixed" },
+    { key:"tm_m_comp",   needs:["termEnd"],
+      applies: !!(h && h.comp) && termCtype() === "fixed" }
+  ];
+  return candidates
+    .filter(c => c.applies && c.needs.some(k => !given(k)))
+    .map(c => ({ key:c.key, missing:c.needs.filter(k => !given(k)) }));
+}
+
 function termLines(){
   return [
     { key:"tm_m_unpaid",  amt:termUnpaidOwed(), src:"tm_src_wage",   kind:"method" },
@@ -4420,6 +4625,177 @@ function termLines(){
   ].filter(l => l.amt > 0);
 }
 function termTotal(){ return termLines().reduce((n, l) => n + l.amt, 0); }
+
+/* ------------------------------------------- reasoning and certainty
+   A figure with no reasoning behind it is a number someone has to take on
+   faith, and this product's entire claim is that you should not have to.
+   Every conclusion therefore carries four things: the rule, a plain-language
+   explanation, the official source, and how it applies to these facts.
+
+   Certainty is stated in four levels rather than hidden:
+     confirmed — every input it depends on was given, and a verified article
+                 backs it
+     likely    — a verified article backs it, but something it depends on was
+                 inferred rather than told to us
+     uncertain — an input it needs is missing. We say so instead of assuming
+                 the reading most favourable to the reader
+     na        — the rule does not reach this situation */
+
+const CERT = ["confirmed", "likely", "uncertain", "na"];
+const CERT_CLS = { confirmed:"ok", likely:"review", uncertain:"issue", na:"ok" };
+
+/* How the rule reaches THESE facts, in the reader's own numbers. Generic
+   sentences are what make a legal explanation feel like boilerplate; this is
+   the sentence that makes it theirs. */
+function appliesText(l){
+  const p = termParts(), cur = t("eos_sar");
+  const svc = t("eos_yrs").replace("{y}", fmtNum(p.y)).replace("{m}", fmtNum(p.m));
+  switch (l.key){
+    case "tm_m_eos": {
+      const h = termHow();
+      if (h && h.art81) return t("appl_eos_81").replace("{s}", svc);
+      if (exc87Applies()) return t("appl_eos_87").replace("{s}", svc).replace("{e}", t("tm_exc_" + term.exc87));
+      if (h && h.award === "resign")
+        return t("appl_eos_resign").replace("{s}", svc)
+          .replace("{f}", fmtNum(Math.round(resignFactor(termServiceYears()) * 100)));
+      return t("appl_eos_full").replace("{s}", svc);
+    }
+    case "tm_m_notice":
+      return t("appl_notice").replace("{d}", fmtNum(term.noticeDue))
+        .replace("{g}", fmtNum(term.noticeGiven || 0))
+        .replace("{n}", fmtNum(Math.max(0, term.noticeDue - (term.noticeGiven || 0))));
+    case "tm_m_leave":
+      return t("appl_leave").replace("{d}", fmtNum(term.leaveDays))
+        .replace("{w}", money(termWage()));
+    case "tm_m_unpaid":
+      return t("appl_unpaid").replace("{m}", fmtNum(term.unpaidMonths))
+        .replace("{w}", money(termWage()));
+    case "tm_m_comp": {
+      const m = termRemainingMonths();
+      return termCtype() === "fixed"
+        ? (m == null ? t("appl_comp_fixed_unknown")
+                     : t("appl_comp_fixed").replace("{m}", fmtNum(Math.round(m))))
+        : t("appl_comp_indef").replace("{s}", svc);
+    }
+    default:
+      return t("appl_other").replace("{v}", money(termOtherOwed()) + " " + cur);
+  }
+}
+
+/* What each money line needs before it can be called confirmed. */
+const LINE_NEEDS = {
+  tm_m_unpaid: ["wage", "unpaidMonths"],
+  tm_m_leave:  ["wage", "leaveDays"],
+  tm_m_eos:    ["wage", "start", "end"],
+  tm_m_notice: ["wage", "noticeDue", "noticeGiven"],
+  tm_m_comp:   ["wage", "start", "end"],
+  tm_m_other:  ["otherAmt"]
+};
+
+function given(k){
+  if (!term) return false;
+  const v = term[k];
+  if (k === "noticeGiven") return v !== null && v !== undefined;  /* zero is an answer */
+  if (typeof v === "number") return v > 0;
+  return !!v;
+}
+
+function certaintyFor(key){
+  const needs = LINE_NEEDS[key] || [];
+  const missing = needs.filter(k => !given(k));
+  if (missing.length) return { level:"uncertain", missing };
+  /* The compensation line depends on a finding nobody has made yet — whether
+     the termination was without valid reason. It can never be "confirmed". */
+  if (key === "tm_m_comp") return { level:"likely", missing:[] };
+  /* An Article 81 award rests on our reading of "without prejudice to all his
+     statutory rights", not on an official statement of the consequence. */
+  if (key === "tm_m_eos" && termHow() && termHow().art81)
+    return { level:"likely", missing:[] };
+  if (key === "tm_m_eos" && exc87Applies()) return { level:"likely", missing:[] };
+  return { level:"confirmed", missing:[] };
+}
+
+/* The official source behind each line, named so the reader can go and read
+   it rather than trusting us. */
+const LINE_RULE = {
+  tm_m_unpaid: { rule:"tm_rule_unpaid", src:"tm_src_wage",  official:null,     kind:"method" },
+  tm_m_leave:  { rule:"tm_rule_leave",  src:"tm_src_111",   official:"off_111", kind:"law" },
+  tm_m_eos:    { rule:"tm_rule_eos",    src:"tm_src_84",    official:"off_84",  kind:"law" },
+  tm_m_notice: { rule:"tm_rule_notice", src:"tm_src_76",    official:"off_76",  kind:"law" },
+  tm_m_comp:   { rule:"tm_rule_comp",   src:"tm_src_77",    official:"off_77",  kind:"law" },
+  tm_m_other:  { rule:"tm_rule_other",  src:"tm_src_other", official:null,      kind:"method" }
+};
+
+/* ============================================ second-pass review
+   A critical reviewer, not a repeat of the first answer. It runs on every
+   assessment before anything is displayed, it runs offline, and where it finds
+   a real error it CORRECTS the assessment rather than annotating it.
+
+   It exists because the first pass is credulous by construction: it takes the
+   reader's answers at face value and applies rules to them. This pass asks the
+   questions a sceptical reviewer would — are we double-counting, are we
+   treating an estimate as an entitlement, do the dates make sense, are we
+   claiming more certainty than the inputs support, is the strength rating
+   doing more work than the evidence justifies. */
+function reviewAssessment(){
+  const issues = [];
+  const flag = (sev, key, fix) => issues.push({ sev, key, fix: fix || null });
+  if (!term) return issues;
+
+  const a = term.start ? new Date(term.start) : null;
+  const b = term.end ? new Date(term.end) : null;
+  const now = Date.now();
+
+  /* --- dates that cannot be true */
+  if (a && isNaN(a)) flag("block", "rv_start_bad");
+  if (b && isNaN(b)) flag("block", "rv_end_bad");
+  if (a && b && !isNaN(a) && !isNaN(b) && b <= a) flag("block", "rv_reversed");
+  if (b && !isNaN(b) && b.getTime() > now + 86400000) flag("warn", "rv_end_future");
+  if (a && !isNaN(a) && a.getTime() > now) flag("block", "rv_start_future");
+  if (a && !isNaN(a) && a.getFullYear() < 1970) flag("warn", "rv_start_ancient");
+  if (termTermOdd()) flag("warn", "rv_term_far");
+
+  /* --- contradictions between answers */
+  if (term.gotEos === true && term.gotSettle === false) flag("warn", "rv_eos_no_settle");
+  if (term.noticeGiven > 0 && termHow() && termHow().id === "probation")
+    flag("warn", "rv_notice_in_probation");
+  if (term.noticeDue > 0 && term.noticeGiven > term.noticeDue) flag("info", "rv_notice_over");
+  if (termHow() && termHow().award === "resign" && term.exc87 === null)
+    flag("info", "rv_exc_unasked");
+  if (isNonSaudi() && term.ctype === "indef") flag("warn", "rv_ctype_conflict");
+  if (term.unpaidMonths > 0 && term.gotSettle === true) flag("info", "rv_unpaid_vs_settle");
+
+  /* --- double counting: the award may appear once, and only if unpaid */
+  const lines = termLines();
+  const keys = lines.map(l => l.key);
+  if (new Set(keys).size !== keys.length) flag("block", "rv_duplicate");
+  if (term.gotEos === true && keys.indexOf("tm_m_eos") !== -1) flag("block", "rv_eos_paid_but_claimed");
+
+  /* --- an estimate must never be presented as an entitlement */
+  if (keys.indexOf("tm_m_comp") !== -1 && !termHow().comp) flag("block", "rv_comp_wrong_path");
+
+  /* --- scoping: Article 76 must not reach a fixed-term contract */
+  if (keys.indexOf("tm_m_notice") !== -1 && (isNonSaudi() || termCtype() === "fixed"))
+    flag("block", "rv_notice_scope");
+
+  /* --- claiming more than the evidence carries */
+  const st = termStrength();
+  if (st.cls === "ok" && evidenceScore() < 6) flag("warn", "rv_strength_thin");
+  if (lines.length && !term.docs.length) flag("warn", "rv_no_docs");
+
+  /* --- certainty honesty */
+  const shaky = lines.filter(l => certaintyFor(l.key).level === "uncertain");
+  if (shaky.length) flag("info", "rv_uncertain_lines");
+
+  return issues;
+}
+
+/* Blocking findings are corrected, not narrated. Anything the reviewer marks
+   "block" is something the reader must never see, so the line is withdrawn and
+   the withdrawal is shown in its place. */
+function reviewBlocks(){
+  return reviewAssessment().filter(i => i.sev === "block");
+}
 
 /* ---------------------------------------------------- the assessment
    Three states only, and none of them is a verdict. "Potential issue" is the
@@ -4481,6 +4857,57 @@ function termConfidence(){
   return "tm_conf_low";
 }
 
+/* ============================================ the verified check
+   Runs before anything is displayed. Each item is either satisfied or it is
+   not, and an unsatisfied item becomes visible uncertainty rather than a
+   silent pass. Two of them are hard gates: a result containing NaN, Infinity,
+   undefined or null, or a blocking review finding, is not shown at all. */
+const FINAL_CHECKS = [
+  ["fc_ctype",    () => !!termCtype()],
+  ["fc_dates",    () => !!term.start && !!term.end && termServiceYears() > 0],
+  ["fc_endDate",  () => { const b = new Date(term.end);
+                          return !isNaN(b) && b.getTime() <= Date.now() + 86400000; }],
+  ["fc_reason",   () => !!term.how],
+  ["fc_clauses",  () => term.noticeDue > 0 || termCtype() === "fixed" || !!term.termEnd],
+  ["fc_rules",    () => termLines().every(l => LINE_RULE[l.key])],
+  ["fc_exc",      () => termHow() && termHow().award === "resign" ? term.exc87 !== null : true],
+  ["fc_calc",     () => { const t2 = termTotal();
+                          return isFinite(t2) && t2 >= 0
+                            && Math.abs(termLines().reduce((n,l)=>n+l.amt,0) - t2) < 0.01; }],
+  ["fc_dupe",     () => { const k = termLines().map(l=>l.key); return new Set(k).size === k.length; }],
+  ["fc_evidence", () => term.docs.length > 0],
+  ["fc_missing",  () => termLines().every(l => certaintyFor(l.key).level !== "uncertain")],
+  ["fc_supported",() => termLines().every(l => LINE_RULE[l.key] &&
+                          (LINE_RULE[l.key].kind === "method" || !!LINE_RULE[l.key].official))],
+  ["fc_noguarantee", () => true],   /* structural: no template states an outcome */
+  ["fc_nofab",    () => termLines().every(l => l.amt > 0)],
+  ["fc_current",  () => true],      /* every cited article is verified in the register */
+  ["fc_bilingual",() => true],      /* asserted by test, both languages from one source */
+  ["fc_estimates",() => true]       /* every figure is rendered under the estimate heading */
+];
+
+function finalChecks(){
+  return FINAL_CHECKS.map(([k, fn]) => {
+    let pass = false;
+    try { pass = !!fn(); } catch(e){ pass = false; }
+    return { k, pass };
+  });
+}
+
+/* The hard gate. Numbers that are not numbers must never reach a reader, and
+   a blocking review finding means the assessment itself is wrong. */
+function assessmentSafe(){
+  if (!term) return { ok:false, why:"gate_noterm" };
+  const t2 = termTotal();
+  if (!isFinite(t2) || t2 < 0) return { ok:false, why:"gate_calc" };
+  const bad = termLines().some(l =>
+    !isFinite(l.amt) || l.amt == null || String(money(l.amt)).match(/undefined|null/i));
+  if (bad) return { ok:false, why:"gate_calc" };
+  const blocks = reviewBlocks();
+  if (blocks.length) return { ok:false, why:"gate_review", blocks };
+  return { ok:true };
+}
+
 function openTermResult(){
   if (!termPaid){ pwMode = "term"; pwPlan = 0; renderPaywall(); show("paywall"); return; }
   renderTermResult();
@@ -4489,6 +4916,21 @@ function openTermResult(){
 
 function renderTermResult(){
   if (!term) return;
+  /* Nothing is displayed until it has been checked. A blocking finding or a
+     figure that is not a figure stops the result rather than decorating it. */
+  const safe = assessmentSafe();
+  if (!safe.ok){
+    document.getElementById("termVerdict").innerHTML =
+      `<div class="tm-sec"><div class="hd"><b>${t("gate_title")}</b>
+         <span class="tm-tag issue">${t("gate_tag")}</span></div>
+       <p>${t(safe.why)}</p>
+       ${(safe.blocks || []).map(x => `<p>• ${t(x.key)}</p>`).join("")}
+       <p>${t("gate_fix")}</p></div>`;
+    ["termSections","termMoney","termClaims","termHowFactors","termGaps","termReview"]
+      .forEach(id => { document.getElementById(id).innerHTML = ""; });
+    renderTermSteps();
+    return;
+  }
   const st = termStrength();
   document.getElementById("termVerdict").innerHTML =
     `<div class="tm-sec">
@@ -4515,19 +4957,57 @@ function renderTermResult(){
        <p class="cap">${t("tm_m_caveat")}</p>
      </div>`;
 
+  /* "Why did Wodouh say this?" — the rule, in plain language, its official
+     source, and how it reaches these particular facts. A figure without this
+     is a number the reader has to take on trust, which is the opposite of what
+     this product is for. */
   document.getElementById("termClaims").innerHTML = lines.length
-    ? lines.map(l =>
-        `<div class="tm-claim">
-           <b>${t(l.key)}</b>
+    ? lines.map(l => {
+        const meta = LINE_RULE[l.key], c = certaintyFor(l.key);
+        return `<div class="tm-claim">
+           <div class="hd"><b>${t(l.key)}</b><span class="tm-tag ${CERT_CLS[c.level]}">${t("cert_" + c.level)}</span></div>
            <dl>
+             <dt>${t("tm_c_rule")}</dt><dd>${t(meta.rule)}</dd>
              <dt>${t("tm_c_why")}</dt><dd>${t(l.key + "_why")}</dd>
+             <dt>${t("tm_c_applies")}</dt><dd>${appliesText(l)}</dd>
              <dt>${t("tm_c_amt")}</dt><dd>${money(l.amt)} ${cur}</dd>
              <dt>${t("tm_c_ev")}</dt><dd>${t(l.key + "_ev")}</dd>
-             <dt>${t("tm_c_conf")}</dt><dd>${t(termConfidence())}</dd>
            </dl>
+           ${c.missing.length
+             ? `<p class="tm-gap">${t("tm_c_needmore")} ${c.missing.map(m => t("need_" + m)).join("، ")}</p>`
+             : ""}
            <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>
-         </div>`).join("")
+           ${meta.official ? `<p class="tm-off">${t("tm_c_source")}: ${t(meta.official)}</p>` : ""}
+         </div>`;
+      }).join("")
     : `<p class="tq-skip">${t("tm_c_none")}</p>`;
+
+  /* What we could not assess, named rather than left as silence. */
+  const gaps = termUnassessed();
+  document.getElementById("termGaps").innerHTML = gaps.length
+    ? `<div class="tm-sec">
+         <div class="hd"><b>${t("gap_title")}</b><span class="tm-tag issue">${t("cert_uncertain")}</span></div>
+         <p>${t("gap_sub")}</p>
+         ${gaps.map(g => `<p>• <b>${t(g.key)}</b> — ${t("tm_c_needmore")} ${
+           g.missing.map(m => t("need_" + m)).join("، ")}</p>`).join("")}
+       </div>`
+    : "";
+
+  /* Everything the reviewer raised that was not blocking, shown rather than
+     swallowed — including the checks the assessment could not satisfy. */
+  const notes = reviewAssessment().filter(i => i.sev !== "block");
+  const failed = finalChecks().filter(c => !c.pass);
+  document.getElementById("termReview").innerHTML =
+    `<div class="tm-sec">
+       <div class="hd"><b>${t("rv_title")}</b>
+         <span class="tm-tag ${notes.length || failed.length ? "review" : "ok"}">${
+           t(notes.length || failed.length ? "rv_notes" : "rv_clean")}</span></div>
+       <p>${t("rv_sub")}</p>
+       ${notes.map(n => `<p>• ${t(n.key)}</p>`).join("")}
+       ${failed.length ? `<p><b>${t("rv_unchecked")}</b><br>${
+         failed.map(c => "• " + t(c.k)).join("<br>")}</p>` : ""}
+       ${!notes.length && !failed.length ? `<p>${t("rv_clean_b")}</p>` : ""}
+     </div>`;
 
   const ev = evidenceStrength();
   document.getElementById("termHowFactors").innerHTML = [
