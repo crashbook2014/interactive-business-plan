@@ -79,6 +79,10 @@ never with a Labor Law article number, because it is a different statute.
 | GOSI and the end-of-service award are **separate entitlements**. The award under Articles 84 and 85 is paid by the employer and is not reduced by, offset against, or replaced by GOSI pension contributions | — (Social Insurance Law read with Labor Law arts. 84–85) | ✅ verified | [HRSD — end of service](https://www.hrsd.gov.sa/en/%D9%85%D9%83%D8%A7%D9%81%D8%A3%D8%A9-%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AE%D8%AF%D9%85%D8%A9), [Cercli](https://www.cercli.com/resources/saudi-labor-law-end-of-service) |
 | **Saudi only.** SANED unemployment insurance: available to Saudi nationals who lost work **involuntarily**, are actively seeking work, have contributed for at least **12 months in the past 36**, and are registered with Taqat (HRDF). Pays **60%** of the average covered monthly wage over the previous two years for the first three months, capped at **SAR 9,000**, then **50%**, for up to **12 months**. Funded 0.75% employer and 0.75% employee | — (Social Insurance Law; SANED programme) | ✅ verified | [GOSI — SANED](https://www.gosi.gov.sa/GOSIOnline/Unemployment_Insurance_(SANED)&locale=en_US), [ISSA](https://www.issa.int/gp/173467) |
 | The wage clause in a Qiwa contract carries direct enforcement: unpaid wages can be pursued through the Ministry of Justice's Najiz portal without first going through MHRSD or the labour courts | — (contract-transition programme) | ✅ verified | [Pinsent Masons](https://www.pinsentmasons.com/out-law/news/saudi-arabia-salary-protection-unified-employment-contract), [BCLP](https://www.bclplaw.com/en-US/events-insights-news/saudi-arabias-evolving-labor-landscape-a-consolidated-legal-update.html) |
+| A party who terminates without observing the Article 75 notice pays the other party compensation equal to the worker's wage for the notice period, or the balance of it, on the last wage. **Indefinite contracts only** — it is the remedy for breaching Article 75, which does not reach a non-Saudi's always-fixed-term contract (art. 37) | **76** | ✅ verified | [Al Othman Law — art. 76](https://alothmanlaw.sa/en/article-76/), [LEXIUM — termination, notice and compensation](https://lexium.sa/en/blog/termination-of-employment-contract) |
+| A worker may leave without notice, **without prejudice to all of his statutory rights**, where the employer fails essential contractual or statutory obligations, used fraud about the work conditions at contracting, or assigns essentially different work without consent (art. 60) — and where the employer or their representative commits a violent or immoral act against the worker or their family. A departure on these grounds keeps the **full** end-of-service award under art. 84 rather than the reduced resignation tiers of art. 85 | **81** | ✅ verified | [Al Tayyar Legal — art. 81](https://al-tayyar.com.sa/en/article-81-saudi-labor-law/), [Etqan Law — art. 81](https://etqanlawfirm-sa.com/en/saudi-labor-law-article-81/), [Lexology — arts. 80 and 81](https://www.lexology.com/library/detail.aspx?g=59579e41-74a2-40d0-aded-547f72fca893) |
+| Accrued annual leave not taken is paid on leaving, for the whole period in which it was not used, and pro-rata for the part-year worked. Calculated on the last wage. The right cannot be waived by either party | **111** | ✅ verified | [Al Othman Law — art. 111](https://alothmanlaw.sa/en/article-111/), [TASC Outsourcing — leave policies](https://tascoutsourcing.sa/en/insights/saudi-labour-law-navigating-private-sector-leave-policies-2) |
+| Final settlement is due within **one week** of the relationship ending where the employer terminated or the contract expired, and within **two weeks** where the worker resigned. It covers final wages, unused leave and the end-of-service award | **88** | ✅ verified | [Saudi Labor Law, unofficial translation (PDF)](https://www.cawtarclearinghouse.org/storage/AttachementGender/Saudi%20Labor%20Law.pdf), [CGI Jeddah — Labour Law of KSA](https://cgijeddah.gov.in/content-page-MzY=.html) |
 
 ## Corrections log
 
@@ -133,6 +137,44 @@ this review.
 The lesson is the cadence, not the content. This was found by asking whether
 the register was still true, which is the only question that keeps one
 honest.
+
+**August 2026 — Articles 76, 81, 111 and 88, and a live understatement.**
+Added for the termination assessment. One of them corrects a figure the app
+was already showing.
+
+**Article 81 is the finding that matters.** The end-of-service calculator
+applies the Article 85 resignation tiers to anyone who says they resigned —
+which is **nothing at all** under two years' service. But Article 81 lets a
+worker leave without notice, *"without prejudice to all of his statutory
+rights"*, where the employer breached essential obligations, used fraud at
+contracting, assigned essentially different work without consent, or committed
+a violent or immoral act. A departure on those grounds keeps the **full**
+award under Article 84.
+
+So a person pushed out by an employer who stopped paying them, who told Wodouh
+"I resigned", was shown zero where the full award may have been due. The
+termination flow now separates *"I was asked to resign"* from *"I resigned"*
+for exactly this reason, and names Article 81 where it applies.
+
+Article **76** completes Article 75: the party who ignores the notice period
+pays the wage for it. It inherits Article 75's scope — indefinite contracts —
+so like Articles 75 and 40 it must not be shown to non-Saudis, whose contracts
+are always fixed-term under Article 37. That scoping is the same trap that
+produced the Article 77 error above, recorded here so the next reader sees the
+pattern rather than the instance.
+
+Article **111** (accrued leave paid on leaving, un-waivable) and Article **88**
+(settlement within one week if the employer ended it, two if the worker
+resigned) were both absent, and both are money the reader can act on.
+
+**A limitation in how these four were checked.** The sandbox's network proxy
+refused direct fetches of `hrsd.gov.sa`, `laws.boe.gov.sa` and the firm sites,
+so unlike earlier rounds these were verified through search results that quote
+the statutory text, corroborated across independent sources rather than read
+from the official PDF. Article 81's text was returned verbatim and matched
+across sources; the others matched in substance across at least two. **This is
+a weaker standard than the rows above it**, and it raises rather than lowers
+the priority of the lawyer review.
 
 ## Before shipping to real users
 

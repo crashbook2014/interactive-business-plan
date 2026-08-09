@@ -10,7 +10,7 @@ Wodouh is a bilingual consumer app that reads a Saudi employment contract and
 tells the reader whether to sign, negotiate, or seek a lawyer. Every statement
 it makes carries a visible citation.
 
-**24 legal claims are listed below.** For each one we need one of three
+**28 legal claims are listed below.** For each one we need one of three
 answers:
 
 | Verdict | Meaning |
@@ -24,7 +24,7 @@ We would rather be told a claim is wrong now than have a user rely on it.
 ### What we are *not* asking
 
 We are not asking you to advise our users, take responsibility for their
-matters, or endorse the product. We are asking whether these 24 statements
+matters, or endorse the product. We are asking whether these 28 statements
 accurately describe Saudi law as at today.
 
 ---
@@ -36,6 +36,14 @@ text on laws.boe.gov.sa where they cover the point, Qiwa for non-Saudi
 employment and the contract-transition programme, GOSI for social insurance,
 and firm commentary (DLA Piper, Al Othman, Bird & Bird, Clyde & Co, Morgan
 Lewis, Al Tamimi and others) elsewhere.
+
+**Claims 25–28 were checked to a weaker standard than the rest**, and we would
+rather say so than let it pass. Our network could not reach hrsd.gov.sa,
+laws.boe.gov.sa or the firm sites directly, so those four were verified through
+search results quoting the statutory text and corroborated across independent
+sources, rather than read from the official PDF. Article 81's text came back
+verbatim and consistent; the other three matched in substance across at least
+two sources. Please treat them as the least settled in this pack.
 
 **No qualified lawyer has reviewed any of it.** That is the gap this review
 exists to close.
@@ -71,6 +79,8 @@ one.**
 | 4 | Compensation for termination without valid reason, **fixed-term** contract: wages for the **remaining term**, floor two months | Art. **77** | Case file (resident track) |
 | 5 | A non-Saudi's contract must be **written and fixed-term**, never converts to indefinite even by agreement; where no term is stated it is one year from actual commencement | Art. **37** | Analyzer rule, rights library |
 | 6 | Notice on a monthly-paid **indefinite** contract: employer 60 days, worker 30. Does **not** reach non-Saudis, whose contracts are always fixed-term | Art. **75** | Analyzer rule (Saudi only), library, assistant |
+| 25 | A worker who leaves under Article 81 — employer breach of essential obligations, fraud at contracting, essentially different work without consent, or a violent or immoral act — keeps the **full** end-of-service award under Article 84, **not** the reduced resignation tiers of Article 85 | Art. **81** | Termination assessment, rights library |
+| 26 | A party terminating without observing the Article 75 notice pays the other the wage for the notice period or its balance, on the last wage. **Indefinite contracts only**, so it does not reach non-Saudis | Art. **76** | Termination assessment (Saudi track only) |
 
 **Specific questions on this section:**
 
@@ -83,6 +93,16 @@ one.**
   application to a fixed-term contract, so a resident should not be given them?
 - **Claim 1:** "last wage" — should this be the full wage, or basic only?
   We state the last wage and would like that confirmed.
+- **Claim 25 is the one we are least willing to be wrong about.** We were
+  showing a worker who said "I resigned" the Article 85 tiers unconditionally —
+  which is nothing at all under two years. If someone was pushed out by an
+  employer who had stopped paying them, we showed them zero. We now separate
+  "I was asked to resign" from "I resigned" and point at Article 81. **Is that
+  separation sound, and does an Article 81 departure really carry the full
+  Article 84 award?** If the answer is no, we are creating a false expectation
+  in the most vulnerable user we have.
+- **Claim 26:** we treat Article 76 as inheriting Article 75's scope, so we
+  never show notice compensation to a non-Saudi. Is that right?
 
 ### Priority 2 — non-Saudi specific
 
@@ -141,6 +161,8 @@ matches their copy. Please confirm that framing is accurate.
 | 22 | Annual leave at least 21 days, rising to at least 30 after five consecutive years with the same employer | Art. **109** |
 | 23 | Non-compete must be written and define duration, area and type of activity. Two years is a **maximum**, not a norm, and agreement cannot extend it | Art. **83** |
 | 24 | Labour claims not heard after 12 months from the end of the relationship, unless the court accepts an excuse or the defendant acknowledges the right | Art. **222** |
+| 27 | Accrued annual leave not taken is paid on leaving, for the whole unused period and pro-rata for the part-year, on the last wage. The right cannot be waived by either party | Art. **111** |
+| 28 | Final settlement is due within **one week** where the employer terminated or the contract expired, and within **two weeks** where the worker resigned | Art. **88** |
 
 ---
 
