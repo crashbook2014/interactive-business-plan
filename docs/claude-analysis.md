@@ -73,15 +73,51 @@ window.WODOUH_CONFIG = {
 
 No CSP change is needed: `connect-src` already allows `https://*.supabase.co`.
 
-**4. Verify before anyone uses it**
+**4. Prove the connection is live**
+
+```
+node test/verify-claude-live.mjs https://YOUR-REF.supabase.co/functions/v1/analyze
+```
+
+This is the only test that talks to your real endpoint. It sends a short
+**specimen** contract, never a real one, and tells you which link is broken
+rather than just failing:
+
+| What comes back | What it means |
+|---|---|
+| `fetch failed` | Wrong URL, or `supabase functions deploy analyze` didn't run |
+| `503 not_configured` | Deployed, but `ANTHROPIC_API_KEY` isn't set |
+| `502 upstream 401` | The API key is wrong or revoked |
+| `502 upstream 400` | `ANTHROPIC_MODEL` is probably a bad model name |
+| `429` | Rate limited — wait a minute |
+| Findings printed | Connected |
+
+It also reports two things worth watching: whether the model used outcome or
+legality language it was told to avoid, and whether it invented an article
+number. Neither is fatal — the panel is labelled as a reading and sits below
+the verified sources — but a model that cites articles at you needs checking
+against `docs/legal-sources.md`.
+
+**5. Verify the guardrails still hold**
 
 ```
 node test/claude-path.test.js
 ```
 
-It proves the unconfigured build makes zero off-origin requests, that consent
-gates the send, that only `kind` and `text` are transmitted, and that markup
-returned by the model renders as text rather than DOM.
+Runs against a stub, so it needs no credentials. It proves the unconfigured
+build makes zero off-origin requests, that consent gates the send, that only
+`kind` and `text` are transmitted, and that markup returned by the model
+renders as text rather than DOM.
+
+### What has and has not been proven here
+
+The function **type-checks clean under `--strict`**, and the whole client path
+is verified against a stub: consent gating, the request body, response
+handling, injection rendering, and the privacy copy switching.
+
+**It has never run against the real Anthropic API**, because that needs a
+Supabase project and an API key that this environment does not have. Step 4 is
+the step that closes that gap, and it is yours to run.
 
 ---
 
