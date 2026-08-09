@@ -171,7 +171,13 @@ node test/routing.test.js
 node test/routing-shadowing.test.js
 node test/calc-fuzz.test.js
 node test/surfaces.test.js
+node test/termination.test.js
+node test/termination-ui.test.js
+node test/claude-path.test.js
 ```
+
+`claude-path` is the one to run before every deploy regardless of what you
+changed: it proves the shipping build still makes zero off-origin requests.
 
 **4. One human pass on a phone.** Paste a contract, reach a decision, open the
 letter, switch language. Programmatic checks have never caught a layout that is

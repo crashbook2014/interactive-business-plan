@@ -694,7 +694,8 @@
   html[lang="ar"] .mini-cta{font-weight:400;font-size:14.5px}
   .acc-sec{border-top:1px solid var(--line);padding:16px 2px}
   .acc-sec h3{font-size:15px;color:var(--teal-ink);margin-bottom:8px}
-  .acc-sec p{font-size:13.5px;color:var(--ink-2);line-height:1.8;margin-bottom:8px}
+  .acc-sec p{font-size:13.5px;color:var(--ink-2);line-height:1.8;margin-bottom:8px;
+    white-space:pre-line}
   .acc-sec p.free{color:var(--green);}
   .acc-sec p.anchor{font-size:12.5px;color:var(--ink);background:var(--teal-soft);
       border-radius:var(--r-sm);padding:10px 12px;margin-top:4px}
@@ -759,6 +760,15 @@
   .tm-how summary::after{content:"+";margin-inline-start:auto;color:var(--ink-2);font-size:17px}
   .tm-how details[open] summary::after{content:"−"}
   .tm-how p{padding:0 14px 12px;font-size:13px;color:var(--ink-2);line-height:1.65}
+  .ai-agree{display:flex;gap:9px;align-items:flex-start;margin:10px 0;
+    font-size:13px;line-height:1.6;min-height:44px}
+  .ai-agree input{margin-top:3px;width:18px;height:18px;accent-color:var(--teal);flex:none}
+  .ai-find{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+  .ai-find b{display:block;font-size:13.5px;margin-bottom:4px}
+  .ai-find p{font-size:13px;color:var(--ink-2);line-height:1.65}
+  .ai-find.attention b{color:var(--red-ink)}
+  .ai-find.review b{color:var(--amber-ink)}
+  .ai-summary{font-size:13px;color:var(--ink-2);line-height:1.65;margin:6px 0}
   .tm-steps{display:grid;gap:10px}
   .tm-step{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
   .tm-step .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
@@ -1532,6 +1542,7 @@
     <div class="ready" id="termReady"></div>
     <div id="termEvOut"></div>
     <p class="ev-honest" data-t="tm_ev_honest"></p>
+    <div id="termAi" hidden></div>
     <button class="primary" onclick="openTermResult()" data-t="tm_ev_cta"></button>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
@@ -1837,6 +1848,12 @@ const T = {
   privacy_line:{ar:"يُحلَّل النص على جهازك — لا يغادر ولا نحتفظ به.",
                 en:"Your text is analyzed on your device — it never leaves it and we don't keep it."},
   privacy_more:{ar:"اعرف أكثر",en:"Learn more"},
+  /* The unconditional promise above is true of the build that ships, and stays
+     true for anyone who does not opt in. It stops being true the moment the
+     optional Claude read is both configured and accepted, so these variants
+     replace it rather than the promise being quietly softened for everyone. */
+  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. القراءة الأعمق للعقد هي الاستثناء الوحيد، وما تصير إلا بموافقتك.",
+                   en:"Your text is analyzed on your device. The closer contract read is the one exception, and only with your consent."},
   my_contracts:{ar:"عقودي",en:"My contracts"},
   mc_empty:{ar:"ما حلّلت أي عقد بعد.",en:"You haven't analyzed a contract yet."},
   mc_open:{ar:"افتحه",en:"Open"},
@@ -1859,6 +1876,8 @@ const T = {
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، ويبقى فيه: التقييم والمبالغ والتواريخ وكل إجاباتك ما تغادر جهازك أبدًا.\n\nفيه استثناء واحد: «قراءة أعمق لعقدك». لو وافقت عليها صراحةً، يُرسل نص العقد وحده — بدون اسمك ولا أرقامك ولا إجاباتك — إلى خادم وضوح ومنه إلى نموذج Claude من Anthropic، ولا يُحفظ في أي مرحلة. ما تشتغل إلا لو ضغطتها بنفسك، وتقدر تتجاهلها والتقييم كامل بدونها.",
+                    en:"Your contract is analyzed inside the app on your device, and stays there: the assessment, the amounts, the dates and every answer you give never leave it.\n\nThere is one exception: \"a closer read of your contract\". If you explicitly agree to it, the contract text alone — not your name, your figures or your answers — is sent to Wodouh's server and from there to Anthropic's Claude model, and is not stored at any point. It only runs if you press it yourself, and the assessment is complete without it."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -2369,6 +2388,30 @@ const T = {
   tm_l_close_formal:{ar:"وتفضلوا بقبول فائق الاحترام،",en:"Yours faithfully,"},
   tm_l_sign:{ar:"[اسمك]",en:"[Your name]"},
 
+  ai_title:{ar:"قراءة أعمق لعقدك",en:"A closer read of your contract"},
+  ai_tag:{ar:"اختياري",en:"Optional"},
+  ai_offer:{ar:"بقية وضوح يشتغل على جهازك بالكامل. هذي الخطوة الوحيدة اللي ما تشتغل كذا: عشان نقرأ نص عقدك قراءة أعمق، لازم النص يطلع من جهازك.",
+            en:"The rest of Wodouh runs entirely on your device. This is the one step that doesn't: to read your contract more closely, the text has to leave your device."},
+  ai_consent_h:{ar:"وش يطلع بالضبط؟",en:"Exactly what leaves"},
+  ai_consent_b:{ar:"نص العقد اللي لصقته، ولا شيء غيره — لا اسمك ولا أرقامك ولا إجاباتك ولا الأوراق اللي علّمتها. يُرسل لخادم وضوح ومنه لنموذج Claude من Anthropic، ولا يُحفظ في أي مرحلة. الردّ اللي يرجع قراءة مساعدة، مو نصًا نظاميًا، وما يدخل في حساب أي مبلغ فوق.",
+                en:"The contract text you pasted, and nothing else — not your name, your figures, your answers, or the documents you ticked. It goes to Wodouh's server and from there to Anthropic's Claude model, and is not stored at any point. What comes back is a helping read, not a statement of law, and it does not feed into any amount above."},
+  ai_agree:{ar:"فاهم، وأوافق على إرسال نص العقد",en:"I understand, and I agree to send the contract text"},
+  ai_go:{ar:"اقرأ عقدي",en:"Read my contract"},
+  ai_decline:{ar:"لو ما وافقت، ما ينقص من تقييمك شيء — التقييم كله محسوب على جهازك أصلًا.",
+              en:"If you decline, nothing is missing from your assessment — all of it was calculated on your device anyway."},
+  ai_working:{ar:"نقرأ العقد… يمكن تاخذ نص دقيقة.",en:"Reading the contract… this can take up to half a minute."},
+  ai_nothing:{ar:"ما طلع شيء إضافي يستاهل الوقوف عنده في نص العقد.",
+              en:"Nothing further in the contract text stood out."},
+  ai_src:{ar:"قراءة آلية لنص عقدك — تساعد على الفهم ولا تُغني عن المصادر أعلاه.",
+          en:"An automated read of your contract text — a help to understanding, not a substitute for the sources above."},
+  ai_retry:{ar:"حاول مرة ثانية",en:"Try again"},
+  ai_notext:{ar:"ما لقينا نص عقد. الصق عقدك في الشاشة الرئيسية أول.",
+             en:"We don't have contract text. Paste your contract on the home screen first."},
+  ai_busy:{ar:"الخدمة مزدحمة حاليًا. جرّب بعد دقيقة.",en:"The service is busy right now. Try again in a minute."},
+  ai_failed:{ar:"ما قدرنا نكمل القراءة. تقييمك أعلاه ما تأثر.",
+             en:"We couldn't complete the read. Your assessment above is unaffected."},
+  ai_offline:{ar:"ما فيه اتصال. تقييمك أعلاه محسوب على جهازك وما تأثر.",
+              en:"No connection. Your assessment above was calculated on your device and is unaffected."},
   pw_term_title:{ar:"تقييم إنهاء العقد",en:"Your termination assessment"},
   pw_term_free:{ar:"الأسئلة وقائمة الأوراق مجانية. التقييم والمبالغ هي الجزء المدفوع.",
                 en:"The questions and the document list are free. The assessment and the amounts are the paid part."},
@@ -2974,6 +3017,7 @@ function applyLang(){
   renderMode();
   renderHomeReminders();
   renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
+  renderPrivacyCopy();
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -2982,7 +3026,7 @@ function applyLang(){
   /* Language is a pure re-render, so every live termination screen redraws
      from the same state rather than keeping stale strings. */
   if (term){
-    renderTermHow(); renderTermQ(); renderTermEv();
+    renderTermHow(); renderTermQ(); renderTermEv(); renderAiPanel();
     if (termPaid){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
   }
   if (current){
@@ -4269,6 +4313,7 @@ function renderTermEv(){
        <p>${t(ev.why)}</p>
        ${missing.length ? `<p><b>${t("tm_ev_missing")}</b><br>${missing.map(m => "• " + t(m)).join("<br>")}</p>` : ""}
      </div>`;
+  renderAiPanel();
 }
 
 /* Weighted, not counted: the contract and the termination letter carry the
@@ -4506,6 +4551,148 @@ function renderTermSteps(){
   host.querySelectorAll("[data-step]").forEach(btn => {
     btn.onclick = steps[+btn.dataset.step][2][1];
   });
+}
+
+/* =============================================== optional Claude analysis
+   Everything else in Wodouh runs on the device. This one feature does not,
+   and that is the whole reason it is built the way it is.
+
+   THREE PROPERTIES, IN ORDER OF IMPORTANCE
+
+   1. It ships inert. No ANALYZE_URL configured means the entry point does not
+      render and no request is ever attempted — the same discipline as
+      REDEEM_HASHES shipping empty. A build nobody configured cannot leak a
+      document, and a test asserts zero network calls in that state.
+   2. Consent is per document and explicit. The reader is told what leaves the
+      device before anything does, and refusing keeps the entire assessment,
+      which never needed the network. This is not a dark pattern to work
+      around: the offline flow is the default, not a degraded mode.
+   3. Model output is untrusted. It reaches the DOM through textContent only,
+      it is length-capped, and a completion talked out of its format is
+      dropped rather than shown. A contract can contain text aimed at the
+      analyser; the server treats the document as data, and this side assumes
+      the server failed to. */
+
+/* The privacy claim has to match the build it ships in. With no ANALYZE_URL
+   the unconditional promise is simply true and is left alone; with one, both
+   places that make the promise state the exception instead. A privacy claim
+   that is true of the code but false of the deployment is the kind of thing
+   that costs a product its reason to exist. */
+function renderPrivacyCopy(){
+  const on = aiAvailable();
+  const line = document.querySelector('#screen-home [data-t="privacy_line"]');
+  if (line) line.textContent = t(on ? "privacy_line_ai" : "privacy_line");
+  const body = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
+  if (body) body.textContent = t(on ? "acc_privacy_b_ai" : "acc_privacy_b");
+}
+
+function analyzeUrl(){
+  const c = window.WODOUH_CONFIG;
+  return c && typeof c.ANALYZE_URL === "string" && /^https:\/\//.test(c.ANALYZE_URL)
+    ? c.ANALYZE_URL : null;
+}
+function aiAvailable(){ return !!analyzeUrl(); }
+
+let aiConsent = false, aiBusy = false, aiFindings = null, aiError = null;
+
+function renderAiPanel(){
+  const host = document.getElementById("termAi");
+  if (!host) return;
+  /* Not configured: render nothing at all. No teaser, no "coming soon" — an
+     invisible feature cannot mislead anyone about where their contract goes. */
+  if (!aiAvailable()){ host.hidden = true; host.innerHTML = ""; return; }
+  host.hidden = false;
+
+  if (aiBusy){
+    host.innerHTML = `<div class="tm-sec"><b>${t("ai_title")}</b><p>${t("ai_working")}</p></div>`;
+    return;
+  }
+  if (aiFindings){
+    const rows = aiFindings.findings.map(f =>
+      `<div class="ai-find ${esc(f.severity)}"><b></b><p></p></div>`).join("");
+    host.innerHTML =
+      `<div class="tm-sec">
+         <div class="hd"><b>${t("ai_title")}</b><span class="tm-tag review">${t("ai_tag")}</span></div>
+         <p class="ai-summary"></p>
+         ${rows || `<p>${t("ai_nothing")}</p>`}
+         <p class="src-line method">${t("src_method")} — ${t("ai_src")}</p>
+       </div>`;
+    /* textContent, never innerHTML: this string came from a model that read an
+       attacker-supplied document. */
+    host.querySelector(".ai-summary").textContent = aiFindings.summary || "";
+    host.querySelectorAll(".ai-find").forEach((el, i) => {
+      el.querySelector("b").textContent = aiFindings.findings[i].title;
+      el.querySelector("p").textContent = aiFindings.findings[i].detail;
+    });
+    return;
+  }
+  if (aiError){
+    host.innerHTML =
+      `<div class="tm-sec"><b>${t("ai_title")}</b><p>${t(aiError)}</p>
+         <button class="ghost wide" onclick="aiRun()">${t("ai_retry")}</button></div>`;
+    return;
+  }
+
+  host.innerHTML =
+    `<div class="tm-sec">
+       <div class="hd"><b>${t("ai_title")}</b></div>
+       <p>${t("ai_offer")}</p>
+       <p><b>${t("ai_consent_h")}</b></p>
+       <p>${t("ai_consent_b")}</p>
+       <label class="ai-agree"><input type="checkbox" id="aiAgree"${aiConsent ? " checked" : ""}/>
+         <span>${t("ai_agree")}</span></label>
+       <button class="ghost wide" id="aiGo" disabled>${t("ai_go")}</button>
+       <p class="tq-skip">${t("ai_decline")}</p>
+     </div>`;
+  const box = document.getElementById("aiAgree"), go = document.getElementById("aiGo");
+  go.disabled = !box.checked;
+  box.onchange = () => { aiConsent = box.checked; go.disabled = !box.checked; };
+  go.onclick = aiRun;
+}
+
+/* The document text comes from whatever the reader already pasted into the
+   contract review. We never reach for anything they did not hand us. */
+function aiSourceText(){
+  const box = document.getElementById("pasteBox");
+  const v = box ? box.value.trim() : "";
+  return v.length >= 200 ? v : "";
+}
+
+async function aiRun(){
+  const url = analyzeUrl();
+  if (!url || !aiConsent) return;
+  const text = aiSourceText();
+  if (!text){ aiError = "ai_notext"; renderAiPanel(); return; }
+
+  aiBusy = true; aiError = null; renderAiPanel();
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind: "contract", text: text.slice(0, 40000) })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !Array.isArray(data.findings)){
+      aiError = res.status === 429 ? "ai_busy" : "ai_failed";
+    } else {
+      /* Cap and coerce again on this side. The server already did, and doing
+         it twice costs nothing against the one class of bug that would put
+         attacker text on screen. */
+      aiFindings = {
+        summary: String(data.summary || "").slice(0, 600),
+        findings: data.findings.slice(0, 8).map(f => ({
+          title: String(f && f.title || "").slice(0, 120),
+          detail: String(f && f.detail || "").slice(0, 800),
+          severity: f && (f.severity === "attention" || f.severity === "review")
+            ? f.severity : "info"
+        })).filter(f => f.title && f.detail)
+      };
+    }
+  } catch(e){
+    aiError = "ai_offline";
+  }
+  aiBusy = false;
+  renderAiPanel();
 }
 
 /* ------------------------------------------------------- the documents
