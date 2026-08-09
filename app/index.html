@@ -3745,6 +3745,7 @@ function resignFactor(y){
 /* Article 84: half a month per year for the first five, a full month per year
    after that, on the last wage, pro-rata. */
 function awardBase(y, wage){
+  if (!(wage > 0) || !isFinite(wage) || !(y > 0) || !isFinite(y)) return 0;
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
   return first * 0.5 * wage + after * wage;
 }
@@ -3766,20 +3767,26 @@ function monthsBetween(fromMs, toMs){
    `branch` is "fixed" or "indef". Getting this wrong understated a resident's
    figure by about five months' wages once already — see the corrections log. */
 function compFor(wage, years, branch, remainingMonths){
-  if (!(wage > 0)) return 0;
+  /* Non-finite guards, not just positivity. Infinity passes `> 0` and then
+     propagates: the fuzzer found NaN and Infinity reaching the output through
+     wage, years and an unparsed remaining term. None of it is reachable
+     through the inputs today — every field is clamped — but a money function
+     that can return NaN is one refactor away from showing it to someone. */
+  if (!(wage > 0) || !isFinite(wage)) return 0;
   const floor = wage * 2;
   if (branch === "fixed"){
     /* Without the contract's end date the remaining term is unknown. Return
        the floor and say so, rather than quietly using the wrong branch. */
-    if (remainingMonths == null) return floor;
+    if (remainingMonths == null || !isFinite(remainingMonths)) return floor;
     return Math.max(floor, remainingMonths * wage);
   }
-  return Math.max(floor, (years > 0 ? years : 0) * 15 * (wage / 30));
+  const y = (isFinite(years) && years > 0) ? years : 0;
+  return Math.max(floor, y * 15 * (wage / 30));
 }
 
 /* Article 111: accrued leave not taken, paid on the last wage. */
 function leaveFor(days, wage){
-  if (!(wage > 0) || !(days > 0)) return 0;
+  if (!(wage > 0) || !isFinite(wage) || !(days > 0) || !isFinite(days)) return 0;
   return days * (wage / 30);
 }
 
@@ -3787,8 +3794,12 @@ function leaveFor(days, wage){
    or for the balance of it. Indefinite contracts only — it is the remedy for
    breaching Article 75, which does not reach an always-fixed-term contract. */
 function noticeFor(dueDays, givenDays, wage){
-  if (!(wage > 0) || !(dueDays > 0)) return 0;
-  const short = Math.max(0, dueDays - Math.max(0, givenDays || 0));
+  if (!(wage > 0) || !isFinite(wage) || !(dueDays > 0) || !isFinite(dueDays)) return 0;
+  const given = (isFinite(givenDays) && givenDays > 0) ? givenDays : 0;
+  const short = Math.max(0, dueDays - given);
+  /* Fully served notice owes nothing. Written as an early return because
+     0 * (wage/30) is NaN once wage is non-finite, which the fuzzer caught. */
+  if (short <= 0) return 0;
   return short * (wage / 30);
 }
 

@@ -165,6 +165,127 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
       bad('money', `money(${r.v}) = ${r.money}`);
   });
 
+  // ---------- the shared money core ----------
+  // These are pure and used by BOTH the calculator and the termination
+  // assessment, so a broken invariant here is broken in two places at once.
+  const core = await p.evaluate(() => {
+    const out = { bad: [] };
+    const WAGES = [0, -1, 0.5, 1, 1000, 12000, 1e7, 1e15, NaN, Infinity, -Infinity];
+    const YEARS = [-5, 0, 0.001, 1, 1.99, 2, 5, 5.001, 10, 40, 201, NaN, Infinity];
+
+    // awardBase: never negative, never decreases with service, and the
+    // Article 84 shape holds — the rate doubles after year five.
+    for (const w of WAGES){
+      let prev = -Infinity;
+      for (const y of YEARS){
+        const v = awardBase(y, w);
+        if (w > 0 && y >= 0 && isFinite(y) && isFinite(w)){
+          if (!(v >= 0)) out.bad.push(`awardBase(${y},${w}) = ${v} is negative`);
+          if (v < prev) out.bad.push(`awardBase not monotonic at y=${y}, w=${w}`);
+          prev = v;
+        }
+      }
+    }
+    // The post-five rate is exactly double the first-five rate.
+    const w = 12000;
+    const five = awardBase(5, w), six = awardBase(6, w);
+    if (Math.abs(five - 2.5 * w) > 0.01) out.bad.push(`awardBase(5) = ${five}, expected ${2.5 * w}`);
+    if (Math.abs((six - five) - w) > 0.01) out.bad.push(`year six should add one full month, added ${six - five}`);
+
+    // monthsBetween: never negative, null where unknown, symmetric-safe.
+    const MB = [
+      [null, 1, null], [1, null, null], [NaN, 1, null], [1, NaN, null],
+      [Date.UTC(2026,0,1), Date.UTC(2025,0,1), 0],       // already past its term
+      [Date.UTC(2026,0,1), Date.UTC(2026,0,1), 0],
+      [Date.UTC(2026,0,1), Date.UTC(2027,0,1), 12]
+    ];
+    for (const [a, b, want] of MB){
+      const v = monthsBetween(a, b);
+      if (want === null ? v !== null : Math.abs(v - want) > 0.05)
+        out.bad.push(`monthsBetween(${a},${b}) = ${v}, expected ${want}`);
+      if (v !== null && v < 0) out.bad.push(`monthsBetween(${a},${b}) went negative`);
+    }
+
+    // compFor: the Article 77 floor of two months' wages must ALWAYS hold on
+    // both branches, and no input may produce a negative or NaN.
+    for (const wage of WAGES){
+      for (const y of YEARS){
+        for (const branch of ["fixed", "indef"]){
+          for (const rem of [null, 0, 1, 12, 600, NaN]){
+            const v = compFor(wage, y, branch, rem);
+            if (!isFinite(v) && isFinite(wage)) out.bad.push(`compFor(${wage},${y},${branch},${rem}) = ${v}`);
+            if (isFinite(wage) && wage > 0 && v < wage * 2 - 0.01)
+              out.bad.push(`Article 77 floor broken: compFor(${wage},${y},${branch},${rem}) = ${v} < ${wage*2}`);
+            if (v < 0) out.bad.push(`compFor(${wage},${y},${branch},${rem}) is negative`);
+          }
+        }
+      }
+    }
+    // A fixed-term contract with an unknown remaining term returns the floor,
+    // never a guess from the other branch.
+    if (compFor(10000, 20, "fixed", null) !== 20000)
+      out.bad.push(`fixed branch with unknown term should be the floor, got ${compFor(10000,20,"fixed",null)}`);
+
+    // leaveFor and noticeFor: zero or positive, never NaN, and shorter notice
+    // can never owe less than longer notice.
+    for (const wage of WAGES){
+      for (const d of [-5, 0, 1, 21, 365, 1e6, NaN]){
+        const l = leaveFor(d, wage), n = noticeFor(60, d, wage);
+        if (!isFinite(l) || l < 0) out.bad.push(`leaveFor(${d},${wage}) = ${l}`);
+        if (!isFinite(n) || n < 0) out.bad.push(`noticeFor(60,${d},${wage}) = ${n}`);
+      }
+      if (isFinite(wage) && wage > 0){
+        if (noticeFor(60, 0, wage) < noticeFor(60, 30, wage))
+          out.bad.push(`less notice given should owe more, wage=${wage}`);
+        if (noticeFor(60, 90, wage) !== 0)
+          out.bad.push(`over-served notice should owe nothing, wage=${wage}`);
+      }
+    }
+    return out;
+  });
+  core.bad.forEach(m => bad('money core', m));
+
+  // ---------- termination award: the Article 81 distinction ----------
+  const term81 = await p.evaluate(() => {
+    const out = { bad: [], rows: [] };
+    const base = { start:"2020-01-01", end:"2026-01-01", wage:10000 };
+    for (const nation of ["sa", "nonsa"]){
+      nat = nation;
+      const seen = {};
+      for (const h of TERM_HOW.map(x => x.id)){
+        term = Object.assign(blankTerm(), base, { how:h, ctype:"indef",
+          noticeDue:60, noticeGiven:0 });
+        seen[h] = { award: termAward(), notice: termNoticeOwed(), comp: termComp() };
+        if (!(seen[h].award >= 0)) out.bad.push(`${nation}/${h} award ${seen[h].award}`);
+        if (!isFinite(seen[h].notice) || seen[h].notice < 0)
+          out.bad.push(`${nation}/${h} notice ${seen[h].notice}`);
+      }
+      // The distinction this whole feature exists for.
+      if (seen.forced.award !== seen.employer.award)
+        out.bad.push(`${nation}: Article 81 award should equal a termination award`);
+      if (!(seen.resigned.award < seen.forced.award))
+        out.bad.push(`${nation}: ordinary resignation should be less than an Article 81 departure`);
+      if (seen.probation.award !== 0)
+        out.bad.push(`${nation}: probation should carry no award`);
+      // Article 76 must never reach the resident track.
+      if (nation === "nonsa" && Object.values(seen).some(v => v.notice > 0))
+        out.bad.push(`Article 76 notice compensation leaked onto the resident track`);
+      out.rows.push({ nation, seen });
+    }
+    // Under two years an ordinary resignation is zero, and Article 81 is not.
+    nat = "sa";
+    const short = { start:"2025-01-01", end:"2026-01-01", wage:10000, ctype:"indef" };
+    term = Object.assign(blankTerm(), short, { how:"resigned" });
+    const quitShort = termAward();
+    term = Object.assign(blankTerm(), short, { how:"forced" });
+    const forcedShort = termAward();
+    if (quitShort !== 0) out.bad.push(`under 2 years an ordinary resignation should be 0, got ${quitShort}`);
+    if (!(forcedShort > 0)) out.bad.push(`under 2 years an Article 81 departure should still pay, got ${forcedShort}`);
+    out.shortCase = { quitShort, forcedShort };
+    return out;
+  });
+  term81.bad.forEach(m => bad('termination', m));
+
   // ---------- report ----------
   console.log('serviceParts cases:'); sp.forEach(r=>console.log(`   ${r.a} -> ${r.b}  =  ${r.got}${r.ok?'':'   <-- MISMATCH'}`));
   console.log('\nresignFactor:', rf.map(r=>`${r.y}:${typeof r.f==='number'?r.f.toFixed(2):r.f}`).join('  '));
@@ -174,6 +295,13 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
   console.log('\ncompEstimate:', JSON.stringify(comp));
   console.log('\ndecide states seen:', dec.states.join(','), '| confidence:', dec.conf.join(','), '| bands:', dec.band.join(','));
   console.log('\nmoney/fmtNum:'); fmt.forEach(r=>console.log(`   ${r.v.padEnd(20)} money="${r.money}" num="${r.num}"`));
+  console.log('\nmoney core: awardBase / monthsBetween / compFor / leaveFor / noticeFor —',
+    core.bad.length ? `${core.bad.length} broken invariants` : 'all invariants hold');
+  console.log('termination awards, 6 years, 10,000 SAR:');
+  term81.rows.forEach(r => console.log('   ' + r.nation.padEnd(6) +
+    Object.entries(r.seen).map(([k,v]) => `${k}=${Math.round(v.award)}`).join('  ')));
+  console.log(`   under 2 years: ordinary resignation ${term81.shortCase.quitShort}, ` +
+              `Article 81 departure ${Math.round(term81.shortCase.forcedShort)}`);
   console.log('\nJS errors during fuzz:', jsErr.length ? jsErr.slice(0,3) : 'none');
   console.log(fails.length ? `\n${fails.length} FAILURES:\n  ` + fails.join('\n  ') : '\nALL INVARIANTS HOLD');
   await br.close();
