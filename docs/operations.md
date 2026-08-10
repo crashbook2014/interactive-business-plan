@@ -6,16 +6,33 @@ different failures.
 
 | | What it proves | When | Where it tells you |
 |---|---|---|---|
-| **`npm test`** | The code is correct | Every push, and whenever you run it | The CI tab, red or green |
-| **`test/watchdog.js`** | The *deployment* is working | Every 6 hours | Opens a GitHub issue |
+| **`.githooks/pre-push`** | Nothing broken leaves the machine | Every push | Refuses the push |
+| **`npm test`** | The code is correct | On demand, and inside the hook | Your terminal |
+| **`test/watchdog.js`** | The *deployment* is working | Every 6 hours *(needs Actions)* | Opens a GitHub issue |
 | **`wodouh-engineer`** | The product is still *good* | When you ask | In conversation |
 
-The distinction between the first two matters. The suites run against a local
-copy — they can be perfectly green while the live site serves a stale page, a
-404ing font, or nothing at all. The watchdog is the one that loads what a real
-person loads.
+**The pre-push hook is the one that actually protects you**, and it is the only
+layer that depends on nothing but this repository. Pages deploys whatever lands
+on `main`, so CI can only tell you `main` is broken *after* it is broken; the
+hook stops the commit leaving at all.
+
+The distinction between the suites and the watchdog matters too. The suites run
+against a local copy — they can be perfectly green while the live site serves a
+stale page, a 404ing font, or nothing at all. The watchdog is the one that loads
+what a real person loads.
 
 ---
+
+## First time on a machine
+
+```
+npm install
+npm run setup               # arms the pre-push gate
+```
+
+`npm run setup` sets `core.hooksPath` to `.githooks`. Without it the hook file
+is just a file — git will not run it. Confirm with
+`git config --get core.hooksPath`.
 
 ## Day to day
 
@@ -59,14 +76,39 @@ It is an **account-level setting**, and only you can clear it:
 3. Re-run the latest run from the Actions tab and confirm it gets a runner.
 
 Until that clears, **CI is not protecting `main` and the watchdog is not
-running.** `npm test` locally still works and is unaffected — it is the only
-one of the three that does not depend on Actions.
+running.**
+
+This is why the pre-push hook exists and why it is listed first. It runs the
+same eight suites, refuses the push when they are red, and needs no runner, no
+minutes and no account. **You are not unprotected while Actions is down** —
+you are only missing the live-deployment check, which is the one thing the hook
+cannot do from here.
+
+---
+
+## The pre-push gate
+
+`.githooks/pre-push` — every push, from any machine where `npm run setup` has
+been run.
+
+It runs `npm test` and exits non-zero if anything is red, which aborts the push.
+Skipped deliberately with `git push --no-verify` — that override is intentional,
+because a gate with no way out gets worked around in worse ways than one that
+leaves a trace in your shell history.
+
+Verified in both directions: a clean tree pushes normally; a deliberately broken
+`awardBase` refused the push and named the three wrong figures.
+
+It does **not** skip docs-only pushes. Thirty seconds is cheap, and "it's only
+docs" is exactly the assumption that left a stale test list in
+`docs/deployment.md` for weeks.
 
 ---
 
 ## CI
 
-`.github/workflows/ci.yml` — every push, every PR to `main`.
+`.github/workflows/ci.yml` — every push, every PR to `main`. **The backstop,
+not the primary gate** — the hook has already run by the time this does.
 
 Runs the suites, then type-checks `supabase/functions/analyze/index.ts` under
 `--strict`. That last step exists because the Edge Function is deployed by hand

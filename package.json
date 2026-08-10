@@ -5,6 +5,7 @@
   "description": "Wodouh — a bilingual Saudi employment companion. The app itself has no dependencies and no build step; this file exists only so the test suites can run anywhere.",
   "type": "commonjs",
   "scripts": {
+    "setup": "git config core.hooksPath .githooks && echo 'pre-push gate armed: the suites now run before every push'",
     "test": "node test/run.js",
     "test:live": "WODOUH_URL=https://crashbook2014.github.io/interactive-business-plan node test/run.js --no-server",
     "serve": "node test/serve.js"

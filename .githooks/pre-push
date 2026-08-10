@@ -1,0 +1,55 @@
+#!/bin/sh
+# Runs the suites before anything leaves this machine, and refuses the push if
+# they are red.
+#
+# WHY THIS EXISTS RATHER THAN JUST CI
+#
+# GitHub Pages deploys whatever lands on `main`. CI can only tell you `main` is
+# broken *after* it is broken — this stops the commit leaving at all. And it
+# keeps working when Actions does not, which at the time of writing it does not:
+# see docs/operations.md.
+#
+# Roughly 30 seconds. No network, no account, no runner.
+#
+# To skip deliberately:  git push --no-verify
+# That escape hatch is intentional. A gate with no override gets worked around
+# in worse ways than an override that leaves a trace in your shell history.
+
+set -e
+
+# Nothing to check when the push only deletes a branch and carries no commits.
+have_commits=0
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+  [ "$local_sha" = "0000000000000000000000000000000000000000" ] || have_commits=1
+done
+[ "$have_commits" = "1" ] || exit 0
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+# Deliberately not skipped for docs-only pushes. It is 30 seconds, and "it's
+# only docs" is exactly the assumption that let a stale test list sit in
+# deployment.md for weeks.
+if [ ! -d node_modules ]; then
+  printf '\npre-push: dependencies are missing. Run `npm install` first,\n'
+  printf 'or `git push --no-verify` if you know what you are doing.\n\n'
+  exit 1
+fi
+
+printf '\npre-push: running the suites before this leaves the machine\n'
+
+if npm test --silent; then
+  printf 'pre-push: green. Pushing.\n\n'
+  exit 0
+fi
+
+printf '\n'
+printf 'pre-push: PUSH REFUSED — the suites above are red.\n'
+printf '\n'
+printf '  Fix them, or push anyway with:  git push --no-verify\n'
+printf '\n'
+printf '  Pages deploys whatever reaches main, so a red push goes straight\n'
+printf '  in front of readers. If the failures are in the money, that is a\n'
+printf '  wrong riyal figure shown to someone who just lost their job.\n'
+printf '\n'
+exit 1
