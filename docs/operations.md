@@ -38,6 +38,32 @@ node test/watchdog.js https://crashbook2014.github.io/interactive-business-plan
 
 ---
 
+## ⚠ Actions is not currently executing on this account
+
+**Read this before trusting anything below.** Both workflows are registered and
+active, and GitHub creates a job for every push — but the job is never given a
+runner. It dies in about two seconds with no steps, no log, no annotation and
+`runner_id: 0`.
+
+That is not a problem with the workflow files. A broken workflow reports
+`startup_failure` with an error; a failing test reports which test failed. This
+reports neither, because nothing ever ran.
+
+It is an **account-level setting**, and only you can clear it:
+
+1. **Repository → Settings → Actions → General.** Confirm "Allow all actions
+   and reusable workflows" is selected.
+2. **Account → Settings → Billing → Spending limit.** A limit reached on
+   private-repo minutes can block workflow runs across the whole account, even
+   on a public repo where the minutes are free.
+3. Re-run the latest run from the Actions tab and confirm it gets a runner.
+
+Until that clears, **CI is not protecting `main` and the watchdog is not
+running.** `npm test` locally still works and is unaffected — it is the only
+one of the three that does not depend on Actions.
+
+---
+
 ## CI
 
 `.github/workflows/ci.yml` — every push, every PR to `main`.
