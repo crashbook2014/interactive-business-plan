@@ -163,21 +163,28 @@ curl -s "https://<host>/app/" | grep -c '<a string unique to this change>'
 Non-zero. This is how you tell "the build succeeded" apart from "the build
 succeeded and shipped your change".
 
-**3. The suites pass against the deployed copy**, not just your working tree.
-Serve locally from a clean checkout of the deployed SHA and run:
+**3. The suites pass against the deployed copy**, not just your working tree:
 
 ```
-node test/routing.test.js
-node test/routing-shadowing.test.js
-node test/calc-fuzz.test.js
-node test/surfaces.test.js
-node test/termination.test.js
-node test/termination-ui.test.js
-node test/claude-path.test.js
+npm run test:live
 ```
 
-`claude-path` is the one to run before every deploy regardless of what you
-changed: it proves the shipping build still makes zero off-origin requests.
+That runs all eight suites against the live URL rather than localhost. CI
+already ran them against the working tree on push — this is the one that proves
+the thing actually serving to people is right.
+
+**3b. Walk the deployment.**
+
+```
+node test/watchdog.js https://<host>
+```
+
+Different job from the suites: they prove the code is correct, this proves the
+deployment is. It checks the app's JavaScript actually initialised, that no
+request failed, that there are **zero off-origin requests**, and that a known
+worked example still produces the exact figure it should — recomputed inside
+the watchdog rather than agreed with. It runs on a schedule anyway; running it
+by hand after a deploy just means you find out now instead of within six hours.
 
 **4. One human pass on a phone.** Paste a contract, reach a decision, open the
 letter, switch language. Programmatic checks have never caught a layout that is
