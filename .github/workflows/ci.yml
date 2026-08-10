@@ -28,7 +28,7 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci || npm install
+        run: npm ci
 
       # Playwright needs its browser and the system libraries behind it. The
       # sandbox this was written in has both preinstalled; a runner does not.
