@@ -13,10 +13,11 @@
  *                        and the same facts produce the same figures in Arabic
  *                        and English
  *
- * Run against a local server on :8099 from the repo root:
- *   node test/scenarios.test.js
+ * Run with `npm test`, which starts the server for you. Set WODOUH_URL
+ * to point the same assertions at the deployed site.
  */
-const { chromium } = require("/opt/node22/lib/node_modules/playwright");
+const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { chromium } = playwright();
 
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); return c; };
@@ -127,10 +128,10 @@ const SCENARIOS = [
 ];
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+  const b = await chromium.launch(launchOpts());
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
-  await p.goto("http://127.0.0.1:8099/app/");
+  await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
 
   for (const sc of SCENARIOS) {
@@ -289,7 +290,7 @@ const SCENARIOS = [
   await p2.addInitScript(() => {
     window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
   });
-  await p2.goto("http://127.0.0.1:8099/app/");
+  await p2.goto(APP);
   await p2.waitForFunction(() => typeof window.show === "function");
 
   let moved = 0;

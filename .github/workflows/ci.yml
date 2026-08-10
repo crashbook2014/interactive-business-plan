@@ -1,0 +1,57 @@
+# Nothing stood between a broken commit and the live app before this: Pages
+# deploys whatever lands on main. This runs every suite on every push, so a
+# regression fails here rather than in front of a reader.
+name: tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push makes an older run pointless.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci || npm install
+
+      # Playwright needs its browser and the system libraries behind it. The
+      # sandbox this was written in has both preinstalled; a runner does not.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Starts its own server on a free port and tears it down after.
+      - name: Run the suites
+        run: npm test
+
+      # The Edge Function is deployed by hand, so nothing else would catch a
+      # type error in it until it was already live.
+      - name: Type-check the Claude proxy
+        run: |
+          npm install --no-save typescript
+          mkdir -p .tscheck
+          cat > .tscheck/deno.d.ts <<'EOF'
+          declare const Deno: {
+            env: { get(k: string): string | undefined };
+            serve(h: (req: Request) => Response | Promise<Response>): void;
+          };
+          EOF
+          npx tsc --noEmit --strict --skipLibCheck \
+            --target es2022 --lib es2022,dom \
+            --module esnext --moduleResolution bundler --types "" \
+            .tscheck/deno.d.ts supabase/functions/analyze/index.ts

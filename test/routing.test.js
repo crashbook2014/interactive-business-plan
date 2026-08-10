@@ -9,9 +9,11 @@
  *   routing.test.js    — real questions reach the right verified answer
  *   routing-shadowing  — widening a pattern did not swallow its neighbours
  *
- * Run against a local server on :8099 from the repo root.
+ * Run with `npm test`, which starts the server for you. Set WODOUH_URL
+ * to point the same assertions at the deployed site.
  */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { chromium } = playwright();
 // Realistic questions -> the reference the correct answer must carry.
 const CASES = [
   // [question, track, expected substring of r.en]
@@ -51,8 +53,8 @@ const CASES = [
   ['non-compete clause','sa','83'],
 ];
 (async()=>{
-  const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
-  const p=await br.newPage(); await p.goto('http://127.0.0.1:8099/app/'); await p.waitForTimeout(800);
+  const br=await chromium.launch(launchOpts());
+  const p=await br.newPage(); await p.goto(APP); await p.waitForTimeout(800);
   let fail=0;
   for(const [q,tr,want] of CASES){
     const r=await p.evaluate(a=>{ nat=a.tr;

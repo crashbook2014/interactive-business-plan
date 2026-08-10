@@ -5,20 +5,22 @@
  * money, so this asserts properties that must hold for ALL inputs rather than
  * outputs for a handful.
  *
- * Run against a local server on :8099 from the repo root.
+ * Run with `npm test`, which starts the server for you. Set WODOUH_URL
+ * to point the same assertions at the deployed site.
  */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
-const B = 'http://127.0.0.1:8099';
+const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { chromium } = playwright();
+const B = BASE;
 
 const fails = [];
 const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
 
 (async () => {
-  const br = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const br = await chromium.launch(launchOpts());
   const p = await br.newPage();
   const jsErr = [];
   p.on('pageerror', e => jsErr.push(e.message));
-  await p.goto(B + '/app/'); await p.waitForTimeout(800);
+  await p.goto(APP); await p.waitForTimeout(800);
 
   // ---------- serviceParts: calendar arithmetic ----------
   const sp = await p.evaluate(() => {

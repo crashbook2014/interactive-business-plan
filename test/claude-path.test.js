@@ -13,22 +13,23 @@
  *   - markup returned by the model becomes visible text, never DOM
  *   - nothing the model says moves a single riyal figure
  *
- * Run against a local server on :8099 from the repo root:
- *   node test/claude-path.test.js
+ * Run with `npm test`, which starts the server for you. Set WODOUH_URL
+ * to point the same assertions at the deployed site.
  */
-const { chromium } = require("/opt/node22/lib/node_modules/playwright");
+const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+  const b = await chromium.launch(launchOpts());
 
   /* ---- 1. shipping default: no config at all */
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
   const reqs = [];
   p.on("request", r => reqs.push(r.url()));
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
-  await p.goto("http://127.0.0.1:8099/app/");
+  await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
 
   console.log("— unconfigured (what ships today)");
@@ -61,7 +62,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   });
   ok(forced.findings === null, "forcing aiRun() produces no findings");
 
-  const offsite = reqs.filter(u => !u.startsWith("http://127.0.0.1:8099"));
+  const offsite = reqs.filter(u => !u.startsWith(BASE));
   ok(offsite.length === 0,
      `zero off-origin requests in the shipping default (${offsite.length})`);
   offsite.forEach(u => console.log("   leaked: " + u));
@@ -84,7 +85,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p2.addInitScript(() => {
     window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
   });
-  await p2.goto("http://127.0.0.1:8099/app/");
+  await p2.goto(APP);
   await p2.waitForFunction(() => typeof window.show === "function");
 
   const on = await p2.evaluate(() => {
@@ -178,7 +179,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   p3.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   const reqs3 = [];
   p3.on("request", r => reqs3.push(r.url()));
-  await p3.goto("http://127.0.0.1:8099/app/");
+  await p3.goto(APP);
   await p3.waitForFunction(() => typeof window.show === "function");
   const un = await p3.evaluate(async () => {
     nat = "sa"; lang = "en"; applyLang();
@@ -194,7 +195,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(un.on === false, "unconfigured: aiReviewOn() is false even with consent set");
   ok(un.ms < 1000, `unconfigured: no waiting (${un.ms} ms)`);
   ok(un.hasMoney && un.screen === "screen-termres", "unconfigured: the assessment renders as normal");
-  ok(reqs3.filter(u => !u.startsWith("http://127.0.0.1:8099")).length === 0,
+  ok(reqs3.filter(u => !u.startsWith(BASE)).length === 0,
      "unconfigured: still zero off-origin requests");
   await p3.close();
 
@@ -220,7 +221,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p4.addInitScript(() => {
     window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
   });
-  await p4.goto("http://127.0.0.1:8099/app/");
+  await p4.goto(APP);
   await p4.waitForFunction(() => typeof window.show === "function");
 
   const setup = () => p4.evaluate(() => {

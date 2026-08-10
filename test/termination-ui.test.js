@@ -5,18 +5,19 @@
  * that reaches it is unreachable, mis-sized on a phone, or silently English
  * in an Arabic session.
  *
- * Run against a local server on :8099 from the repo root:
- *   node test/termination-ui.test.js
+ * Run with `npm test`, which starts the server for you. Set WODOUH_URL
+ * to point the same assertions at the deployed site.
  */
-const { chromium } = require("/opt/node22/lib/node_modules/playwright");
+const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+  const b = await chromium.launch(launchOpts());
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
-  await p.goto("http://127.0.0.1:8099/app/");
+  await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
 
   /* Clear onboarding and pick a track the way a first-time reader would. */
