@@ -1,7 +1,7 @@
 # Audit — production readiness, trust and conversion
 
 **Date:** 10 August 2026. **Scope:** `app/index.html` (25 screens), `web/`,
-`brand/`, `supabase/functions/analyze`, the eight suites, and the docs.
+`brand/`, `supabase/functions/analyze`, the test suites, and the docs.
 
 This is step 1 of the overhaul brief: *inspect before changing.* Nothing here
 is a fix. Every item below was traced through the code rather than judged by
@@ -212,7 +212,86 @@ Recorded so the list is not mistaken for the whole picture:
   I traced it.
 - Zero off-origin requests; the CSP is tight; no plaintext codes and no
   service-role key anywhere in the repo.
-- The pre-push gate runs all eight suites and refuses a red push.
+- The pre-push gate runs every suite and refuses a red push.
+
+---
+
+## Step 2 — what changed, and what risk is left
+
+Every row below states what was wrong, what was changed, how it was tested, and
+what remains. All nine suites are green.
+
+### C1 — Every paid tier delivered the same thing → **fixed**
+
+Three booleans became one entitlement record, `owned = { letter, case, term }`,
+holding a plan id rather than a flag. `grantAndGo()` is now the only route to
+the paid state — both the pay button and code redemption land there — and
+`has(mode, tier)` is the only question anyone asks about entitlement.
+
+- The employer letter and the case file now sit behind `plan_term_full`.
+  Holding only `plan_term`, the buttons become an upgrade priced at the
+  difference (150 SAR) rather than dead controls or a silent handover.
+- The pack's description was a false statement attached to a price: reminders
+  and the assistant are free to every reader and always have been. It now sells
+  a further letter for any new contract for six months — withheld, delivered,
+  and stored as a real expiry rather than a flag.
+- The lawyer tiers do not render at all while `LAWYER_DESK.live` is false. The
+  request desk exists and is tested; nothing states a turnaround until one is
+  set.
+
+**Tested:** `test/commerce.test.js` buys the cheaper tier and asserts the letter
+does *not* open, that the upgrade is priced at the difference, that paying it
+returns the reader to the step they were on, and that the higher tier then
+delivers. Entitlement is asserted to survive a reload, and a hand-edited
+`localStorage` payload is asserted not to mint an unknown tier.
+
+**Remaining risk:** entitlement is still enforced in the reader's own browser.
+Anyone opening the developer tools can set `owned` themselves. That is
+unchanged by this work and documented where the redemption codes are — it is
+acceptable for a test of tens of buyers and not for launch.
+
+### C2 — A 295 SAR bundle contained a 325 SAR product → **fixed**
+
+Prices became numbers rather than two hand-written strings each, and the
+containment rule became `ladderBreaks()`, which returns every pair where a
+bundle costs no more than something it contains. Case file 325 → 245, case file
++ lawyer 520 → 395.
+
+**Tested:** the suite asserts `ladderBreaks()` is empty, so any future price
+edit that reintroduces the collision fails the build.
+
+**Remaining risk:** none of these prices has met a paying customer. The ladder
+is coherent; whether it is *right* is still unvalidated, as `docs/pricing.md`
+has always said.
+
+### C3 — The paywall showed the reader their own answers → **fixed**
+
+The rule it was protecting was correct and survives: no computed figure reaches
+the DOM before payment. What was missing is that the *shape* of the work is not
+the work. The paywall now states how many entitlements were found and names
+them, how many cite a verified article versus Wodouh's own reading, how many
+items could not be assessed and what each one needs, and that every amount
+carries a rule, a source and a certainty.
+
+**Tested:** the suite asserts that none of the case's computed amounts appear
+anywhere in the paywall's text or markup, in Latin or Arabic-Indic numerals,
+while the shape block is present and populated.
+
+**Remaining risk:** for a reader with very few entitlements the shape block is
+thin. That is honest rather than a bug — but it means the paywall is least
+persuasive exactly where the claim is smallest, which is worth watching once
+there is conversion data to watch it with.
+
+### H1–H4 → **fixed**
+
+| ID | Change |
+|---|---|
+| H1 | `pw_pay_case` and `pw_pay_term` added; the button names what it sells |
+| H2 | The paywall's back label is set per destination — `back_case`, `back_ev` |
+| H3 | `.preview .body` gained `white-space:pre-line`, matching `.letter .body` |
+| H4 | One `PAYMENT_LIVE` flag drives both the prototype note and the refund promise, asserted mutually exclusive |
+
+### H5 → **still blocked.** See below.
 
 ---
 

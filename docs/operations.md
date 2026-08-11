@@ -37,7 +37,7 @@ is just a file — git will not run it. Confirm with
 ## Day to day
 
 ```
-npm test                    # all eight suites, ~30s, starts its own server
+npm test                    # every suite, ~30s, starts its own server
 npm test routing            # only suites matching "routing"
 node test/serve.js 8099     # just a server, for poking at it yourself
 ```
@@ -79,7 +79,7 @@ Until that clears, **CI is not protecting `main` and the watchdog is not
 running.**
 
 This is why the pre-push hook exists and why it is listed first. It runs the
-same eight suites, refuses the push when they are red, and needs no runner, no
+same suites, refuses the push when they are red, and needs no runner, no
 minutes and no account. **You are not unprotected while Actions is down** —
 you are only missing the live-deployment check, which is the one thing the hook
 cannot do from here.
@@ -165,9 +165,15 @@ rather than a pass/fail.
 It exists because of a specific gap. Everything the last review found by
 walking the app — a buy button reading *"Get my letter"* on a case file,
 *"Back to score"* on a screen with no score, a paywall showing nothing but the
-reader's own answers, a 295 SAR bundle worth more than a 325 SAR product —
-**passed all eight suites.** Tests catch regressions. They do not catch a
+reader's own answers, a 295 SAR bundle worth more than a 325 SAR product, and
+worst of all three payment tiers that all delivered the same thing —
+**passed every suite there was.** Tests catch regressions. They do not catch a
 product quietly getting worse.
+
+Those particular defects are fixed and `test/commerce.test.js` now guards them,
+which is the point: the reviewer finds the class of problem, and a suite is
+written so that instance can never come back. The gap it covers is permanent
+even when today's findings are closed.
 
 Worth running before a launch, after a large change, or every few weeks.
 

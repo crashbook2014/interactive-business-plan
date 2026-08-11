@@ -169,7 +169,7 @@ succeeded and shipped your change".
 npm run test:live
 ```
 
-That runs all eight suites against the live URL rather than localhost. CI
+That runs every suite against the live URL rather than localhost. CI
 already ran them against the working tree on push — this is the one that proves
 the thing actually serving to people is right.
 

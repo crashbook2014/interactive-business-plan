@@ -185,7 +185,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     nat = "sa"; lang = "en"; applyLang();
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01",
       end:"2026-01-01", wage:10000, ctype:"indef", leaveDays:10, docs:["d_contract"] });
-    termPaid = true; aiRvConsent = true;      /* consent alone must not be enough */
+    owned.term = "plan_term_full"; aiRvConsent = true;      /* consent alone must not be enough */
     const t0 = Date.now();
     await openTermResult();
     return { ms: Date.now() - t0, on: aiReviewOn(), state: aiRvState,
@@ -231,7 +231,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       leaveDays:14, unpaidMonths:2, otherAmt:3000, gotEos:false, gotSettle:false,
       reason:"Restructuring, per Mr Alharbi at ACME Ltd",
       docs:["d_contract","d_letter"] });
-    termPaid = true; aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
+    owned.term = "plan_term_full"; aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
     return JSON.stringify(termLines().map(l => [l.key, l.amt]));
   });
 

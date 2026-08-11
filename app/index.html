@@ -337,7 +337,21 @@
   html[lang="ar"] .pw-note{font-weight:400;font-size:14px}
   .preview{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:22px;overflow:hidden;box-shadow:var(--e2),var(--edge)}
   .preview .ltr-head{font-size:13px;color:var(--ink-2);margin-bottom:10px}
-  .preview .body{font-size:14px;line-height:1.9;color:var(--ink)}
+  /* pre-line, like .letter .body below. Without it the preview — the one
+     screen whose job is to make the document look worth buying — collapsed
+     every line break and rendered as one run-on paragraph. */
+  .preview .body{font-size:14px;line-height:1.9;color:var(--ink);white-space:pre-line}
+  /* What the assessment contains, shown before payment: counts and names, no
+     computed figure. Real withheld value described honestly. */
+  .pw-shape{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .pw-shape h4{font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:9px}
+  .pw-shape ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .pw-shape li{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--ink);line-height:1.65}
+  .pw-shape li>span:first-child{flex:none;width:18px;height:18px;margin-top:2px;border-radius:999px;
+      background:var(--teal-soft);color:var(--teal-ink);font-size:10.5px;font-weight:800;
+      display:flex;align-items:center;justify-content:center;font-family:var(--en)}
+  .pw-shape li.dim{color:var(--ink-2)}
+  .pw-shape li.dim>span:first-child{background:var(--sand);color:var(--ink-2)}
   .locked-row{display:flex;align-items:center;gap:11px;margin-top:16px;padding-top:15px;
       border-top:1px dashed var(--line);color:var(--ink-2);font-size:13.5px}
   .locked-row .lk{flex:none;width:32px;height:32px;border-radius:999px;background:var(--teal);
@@ -725,7 +739,7 @@
     transition:background var(--t) var(--ease-out)}
   .tq-steps i.on{background:var(--teal)}
   .tq-skip{font-size:12px;color:var(--ink-2);text-align:center;margin-top:10px}
-  .ev-honest{font-size:12px;color:var(--ink-2);line-height:1.6;margin:12px 0 4px}
+  .ev-honest,.ld-honest{font-size:12px;color:var(--ink-2);line-height:1.6;margin:12px 0 4px}
   .tm-secs{display:grid;gap:10px;margin-bottom:6px}
   .tm-sec{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:12px 14px}
   .tm-sec .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
@@ -1345,7 +1359,7 @@
 
   <!-- PAYWALL -->
   <section class="screen" id="screen-paywall">
-    <button class="back" onclick="show(pwMode==='case'?'case':pwMode==='term'?'termev':'result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
+    <button class="back" onclick="show(pwBack(),1)"><span class="bk" aria-hidden="true">‹</span><span id="pwBackLabel"></span></button>
     <h2 class="section-title" data-t="pw_title"></h2>
     <p class="pw-note" data-t="pw_free_note"></p>
     <div class="preview">
@@ -1355,8 +1369,12 @@
         <span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
         <span id="pwLockLine"></span>
       </div>
+      <!-- What is behind the lock, in counts and names. Never an amount: the
+           promise is that no computed figure reaches the DOM before payment,
+           and describing the shape of the work does not break it. -->
+      <div class="pw-shape" id="pwShape" hidden></div>
     </div>
-    <p class="guarantee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg><span data-t="guarantee"></span></p>
+    <p class="guarantee" id="pwGuarantee" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg><span data-t="guarantee"></span></p>
     <div class="plans" id="plans"></div>
     <button class="primary" id="payBtn" onclick="pwPay()"></button>
     <div class="redeem" id="redeem" hidden>
@@ -1375,7 +1393,7 @@
     </div>
     <p class="demo-tag" data-t="vat_line"></p>
     <p class="acc-anchor" data-t="anchor_price"></p>
-    <p class="demo-tag" data-t="pw_demo"></p>
+    <p class="demo-tag" id="pwDemo" data-t="pw_demo"></p>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -1392,6 +1410,34 @@
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <button class="track-tease" id="lawyerTease" hidden onclick="openDesk('letter')">
+      <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg></span>
+      <span><b data-t="ld_open"></b><span data-t="ld_open_sub"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- LAWYER REVIEW DESK
+       Reachable only by a reader holding a lawyer tier, and those tiers do not
+       render while LAWYER_DESK.live is false. The handoff is buildable here;
+       the arrangement with a licensed lawyer is not, and nothing on this screen
+       states a turnaround unless one has been set. -->
+  <section class="screen" id="screen-lawyerdesk">
+    <button class="back" onclick="show(deskBack,1)"><span class="bk" aria-hidden="true">‹</span><span id="ldBackLabel"></span></button>
+    <h2 class="section-title" data-t="ld_title"></h2>
+    <p class="pw-note" data-t="ld_sub"></p>
+    <p class="ld-turn" id="ldTurn" hidden></p>
+    <div class="form">
+      <label class="sr-only" for="ldContact" data-t="ld_contact"></label>
+      <input id="ldContact" type="text" inputmode="email" autocomplete="off" spellcheck="false"/>
+      <label class="sr-only" for="ldAsk" data-t="ld_ask"></label>
+      <textarea id="ldAsk" rows="4"></textarea>
+    </div>
+    <div class="letter-actions">
+      <button class="primary" id="ldCopy" onclick="copyDeskRequest()"></button>
+    </div>
+    <p class="ld-honest" data-t="ld_honest"></p>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -1984,15 +2030,59 @@ const T = {
   pw_title:{ar:"خطاب التفاوض",en:"The negotiation letter"},
   pw_free_note:{ar:"تقييمك والتنبيهات مجانية دائمًا — الخطاب إضافة اختيارية.",en:"Your score and flags are always free — the letter is an optional extra."},
   pw_lock:{ar:"النص الكامل يفتح بعد الدفع — جاهز للإرسال",en:"The full text unlocks after payment — ready to send"},
+  /* One key for all three modes asked a reader buying a 325 SAR case file to
+     confirm a purchase of a letter. The most consequential button in the
+     product now names the product it is selling. */
   pw_pay:{ar:"احصل على خطابي",en:"Get my letter"},
+  pw_pay_case:{ar:"احصل على ملفي",en:"Get my case file"},
+  pw_pay_term:{ar:"اعرض تقييمي",en:"Show my assessment"},
+  pw_pay_up:{ar:"أضف الملف والخطاب",en:"Add the file and letter"},
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
+  /* Back labels that name where the button actually goes. "Back to score" sat
+     on a paywall that returns to the evidence step or the calculator. */
+  back_case:{ar:"الحاسبة",en:"Back to calculator"},
+  back_ev:{ar:"المستندات",en:"Back to documents"},
+  pw_up_title:{ar:"أضف الملف والخطاب",en:"Add the case file and letter"},
+  /* The lawyer desk. Not one of these strings names a turnaround: the app
+     states one only when LAWYER_DESK.turnaround has been set to something we
+     can actually meet. */
+  ld_open:{ar:"أرسل للمحامي",en:"Send it to the lawyer"},
+  ld_open_sub:{ar:"مراجعة مرخّصة — مشمولة في باقتك",en:"Licensed review — included in your plan"},
+  ld_title:{ar:"طلب مراجعة محامٍ",en:"Request a lawyer review"},
+  ld_sub:{ar:"نجهّز طلبك كاملًا، وأنت من يرسله — لا يغادر جهازك قبل ذلك.",
+          en:"We assemble the request; you send it. Nothing leaves your device until you do."},
+  ld_contact:{ar:"كيف نتواصل معك",en:"How to reach you"},
+  ld_ask:{ar:"ما الذي تريد من المحامي أن ينظر فيه",en:"What you want the lawyer to look at"},
+  ld_copy:{ar:"انسخ الطلب",en:"Copy the request"},
+  ld_turn:{ar:"المهلة المعتادة: {v}",en:"Usual turnaround: {v}"},
+  ld_honest:{ar:"وضوح لا يقدّم استشارة قانونية. المحامي المرخّص هو من يراجع، وهو المسؤول عن رأيه.",
+             en:"Wodouh does not give legal advice. The licensed lawyer reviews it, and the opinion is theirs."},
+  /* The shape of the work, shown before payment. Counts and names only — no
+     amount appears in any of these strings, and none may be added. */
+  pw_sh_head:{ar:"ما الذي يفتحه الدفع",en:"What paying unlocks"},
+  pw_sh_found:{ar:"‏{n} استحقاقات وجدناها في حالتك: {list}",
+               en:"{n} entitlements found in your situation: {list}"},
+  pw_sh_law:{ar:"‏{n} منها مسندة إلى مادة موثّقة، و{m} اجتهاد وضوح — كلٌّ منها موسوم بمصدره",
+             en:"{n} of them cite a verified article, {m} are Wodouh's own reading — each one labelled"},
+  pw_sh_gaps:{ar:"‏{n} بنود لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
+              en:"{n} items we could not assess, and what each one needs: {list}"},
+  pw_sh_each:{ar:"كل مبلغ يذكر القاعدة، وكيف تنطبق على أرقامك، ومصدرها، ودرجة اليقين",
+              en:"Every amount states its rule, how it applies to your numbers, its source, and how certain it is"},
+  pw_sh_case_claim:{ar:"مطالبتك بالأرقام، كل بند بمصدره",
+                    en:"Your claim in figures, each line with its source"},
+  pw_sh_case_docs:{ar:"قائمة مستنداتك: ما لديك وما ينقصك",
+                   en:"Your document list: what you have and what is missing"},
   pw_demo:{ar:"نموذج تجريبي — لا يوجد دفع حقيقي.",en:"Prototype — no real payment happens."},
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   plan_letter_d:{ar:"نص كامل قابل للتعديل، بالعربي والإنجليزي، مبني على البنود التي اخترتها",
                  en:"Full editable text in Arabic and English, built from the points you chose"},
   plan_pack:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"},
-  plan_pack_d:{ar:"الخطاب + تذكيرات مواعيد هذا العقد ٦ أشهر + أسئلة بلا حدود عنه",
-               en:"The letter + 6 months of deadline reminders for this contract + unlimited questions about it"},
+  /* This used to sell "6 months of reminders + unlimited questions". Both are
+     free to every reader and always have been — trackOrView and openAssist
+     have no payment check. It now names something that is genuinely withheld
+     and genuinely delivered: further letters for further contracts. */
+  plan_pack_d:{ar:"هذا الخطاب، وأي خطاب لعقد جديد خلال ٦ أشهر",
+               en:"This letter, plus a letter for any new contract for 6 months"},
   plan_best:{ar:"الأفضل قيمة",en:"Best value"},
   cost_note:{ar:"يعني ما تقدر تترك خلال {m} — أي ما يعادل {v}.",
              en:"That's {m} you can't leave during — about {v}."},
@@ -2346,6 +2436,7 @@ const T = {
   tm_n4_b:{ar:"ملخّص واحد منظّم فيه الوقائع والمبالغ والأوراق وما ينقصك — تاخذه معك لأي جهة أو محامٍ.",
            en:"One structured summary of the facts, the amounts, the documents and the gaps — to take with you to any authority or lawyer."},
   tm_n4_cta:{ar:"ابنِ ملف الحالة",en:"Build my case file"},
+  tm_n_locked:{ar:"أضفه — {p}",en:"Add it — {p}"},
   tm_n5:{ar:"الطريق النظامي",en:"The formal route"},
   tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية عادة ما تُسمع بعد اثني عشر شهرًا من نهاية العلاقة. وضوح ما يرفع الدعوى نيابة عنك.",
            en:"If nothing is resolved, the route begins with amicable settlement through the Ministry of Human Resources platform, before the labour court. Watch the clock: a labour claim is generally not heard after twelve months from the end of the relationship. Wodouh does not file anything on your behalf."},
@@ -3233,15 +3324,19 @@ function applyLang(){
   renderPlans(); renderBiz();
   renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
   if (eosData){ renderCase(); renderCaseDoc(); }
+  /* Unconditional: the paywall serves three flows, and two of them have no
+     `current` contract. It guards its own missing state. */
+  renderPaywall();
+  renderDesk(); renderLawyerTease();
   /* Language is a pure re-render, so every live termination screen redraws
      from the same state rather than keeping stale strings. */
   if (term){
     renderTermHow(); renderTermQ(); renderTermEv(); renderAiPanel();
-    if (termPaid && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
+    if (has("term") && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
   }
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
-    renderPaywall(); renderLetter(); renderTimeline();
+    renderLetter(); renderTimeline();
     syncAddButtons(); renderBuilder();
   }
 }
@@ -3407,7 +3502,11 @@ function analyze(kind){
      authored, not matched, so switching track must not rewrite them. */
   current.srcText = pastedText;
   fbState = "ask";
-  pwPaid = false; pwPlan = 0;
+  /* A new contract is a new letter, so the single-letter tier is spent. The
+     pack was sold as covering further contracts for six months, so it is the
+     one thing that survives this reset — that is what was bought. */
+  if (!packLive()) owned.letter = null;
+  pwPlan = 0;
   letterSet = new Set();
   runLoading(()=>{
     renderResult(true); renderClauses(); renderFeedback();
@@ -4300,7 +4399,7 @@ function copyCase(){
 }
 
 function openCasePaywall(){
-  if (casePaid){ renderCaseDoc(); show("casedoc"); return; }
+  if (has("case")){ renderCaseDoc(); show("casedoc"); return; }
   pwMode = "case"; pwPlan = 0; renderPaywall(); show("paywall");
 }
 
@@ -4320,7 +4419,6 @@ function openCasePaywall(){
 
 let term = null;              /* the answers; null until the flow starts */
 let termStep = 0;
-let termPaid = false;
 let termTone = "professional";
 
 /* What happened, and what each answer means legally. The seven options are not
@@ -4967,7 +5065,7 @@ function assessmentSafe(){
 }
 
 async function openTermResult(){
-  if (!termPaid){ pwMode = "term"; pwPlan = 0; renderPaywall(); show("paywall"); return; }
+  if (!has("term")){ pwMode = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); return; }
 
   /* The brief asks for the second pass to run before the result is presented,
      so it does — but never at the cost of the reader seeing their assessment.
@@ -5110,11 +5208,20 @@ function renderTermResult(){
 }
 
 function renderTermSteps(){
+  /* The employer letter and the case file are what separates the 145 SAR tier
+     from the 295 SAR one. They used to be wired unconditionally, which is why
+     the two tiers delivered the same thing. Where the reader holds only the
+     assessment, the button becomes an honest upgrade priced at the difference
+     — never a dead control, and never a silent downgrade. */
+  const full = has("term", "plan_term_full");
+  const up = upgradeCost("term", "plan_term_full");
+  const gate = go => full ? go : () => openUpgrade("term", "plan_term_full", "termnext");
+  const label = k => full ? t(k) : t("tm_n_locked").replace("{p}", priceLabel(up));
   const steps = [
     ["tm_n1", "tm_n1_b", null],
-    ["tm_n2", "tm_n2_b", ["tm_n2_cta", () => { renderTermEv(); show("termev"); }]],
-    ["tm_n3", "tm_n3_b", ["tm_n3_cta", () => { renderTermLtr(); show("termltr"); }]],
-    ["tm_n4", "tm_n4_b", ["tm_n4_cta", () => { renderTermDoc(); show("termdoc"); }]],
+    ["tm_n2", "tm_n2_b", [t("tm_n2_cta"), () => { renderTermEv(); show("termev"); }]],
+    ["tm_n3", "tm_n3_b", [label("tm_n3_cta"), gate(() => { renderTermLtr(); show("termltr"); })]],
+    ["tm_n4", "tm_n4_b", [label("tm_n4_cta"), gate(() => { renderTermDoc(); show("termdoc"); })]],
     ["tm_n5", "tm_n5_b", null]
   ];
   const host = document.getElementById("termSteps");
@@ -5122,7 +5229,7 @@ function renderTermSteps(){
     `<div class="tm-step">
        <span class="n">${pointNum(i)}</span>
        <b>${t(k)}</b><p>${t(b)}</p>
-       ${cta ? `<button class="ghost wide" data-step="${i}">${t(cta[0])}</button>` : ""}
+       ${cta ? `<button class="ghost wide" data-step="${i}">${cta[0]}</button>` : ""}
      </div>`).join("");
   host.querySelectorAll("[data-step]").forEach(btn => {
     btn.onclick = steps[+btn.dataset.step][2][1];
@@ -5527,7 +5634,9 @@ function buildTermPreview(){
 }
 
 function renderTermDoc(){
-  if (!term) return;
+  /* Entitlement is checked at the renderer as well as at the button, so a
+     route added later cannot quietly hand out a tier that was not bought. */
+  if (!term || !has("term", "plan_term_full")) return;
   document.getElementById("termDocBody").textContent = buildTermDoc();
   document.getElementById("termDocFoot").textContent = t("lt_foot");
   document.getElementById("termDocCopy").textContent = t("cf_copy");
@@ -5587,7 +5696,7 @@ function buildTermLtr(){
 }
 
 function renderTermLtr(){
-  if (!term) return;
+  if (!term || !has("term", "plan_term_full")) return;
   renderTermTone();
   document.getElementById("termLtrBody").textContent =
     t("tm_l_to") + "\n\n" + buildTermLtr();
@@ -5597,7 +5706,10 @@ function renderTermLtr(){
 
 /* ------------------------------------------------ plans & business tier */
 let billing = "month", planBack = "home", plan = "free";
-let pwMode = "letter", casePaid = false;
+let pwMode = "letter";
+/* Set to a plan id when the paywall is opened to sell a step up rather than a
+   first purchase. Null on every ordinary entry. */
+let pwUpgrade = null;
 
 const PLANS_T = [
   { id:"free", name:"pl_basic", desc:"pl_free_d", m:0, y:0,
@@ -6267,12 +6379,13 @@ function toast(msg){
    introduces no navigation path that did not already exist. */
 const BACK_OF = {
   result:()=>show("home",1), clauses:()=>show("result",1), letter:()=>show("result",1),
-  paywall:()=>show(pwMode==="case"?"case":pwMode==="term"?"termev":"result",1),
+  paywall:()=>show(pwBack(),1),
   eos:()=>goTab("rights"),
   term:()=>show("home",1), termq:()=>termQBack(), termev:()=>show("termq",1),
   termres:()=>show("termev",1), termnext:()=>show("termres",1),
   termdoc:()=>show("termnext",1), termltr:()=>show("termnext",1),
   case:()=>show("eos",1), casedoc:()=>show("case",1), plans:()=>show(planBack,1),
+  lawyerdesk:()=>show(deskBack,1),
   biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
   photo:()=>show("home",1), timeline:()=>tlBack()
 };
@@ -6424,6 +6537,7 @@ function saveState(){
       nat,
       timelyOff,
       usedCodes,
+      owned, packUntil,
       term,
       contracts: myContracts.slice(0,8),
       tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
@@ -6446,6 +6560,21 @@ function loadState(){
     timelyOff = d.timelyOff === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
+
+    /* Entitlement read back from storage is untrusted like everything else
+       here. A value survives only if it names a plan that exists in that
+       flow's own list, so a hand-edited payload cannot mint a tier the code
+       has never heard of. It can still grant itself a real one — that is the
+       documented client-side limitation, unchanged by this. */
+    owned = { letter:null, case:null, term:null };
+    if (d.owned && typeof d.owned === "object"){
+      Object.keys(owned).forEach(mode => {
+        const id = d.owned[mode];
+        if (typeof id === "string" && planIndex(mode, id) >= 0) owned[mode] = id;
+      });
+    }
+    packUntil = (typeof d.packUntil === "number" && isFinite(d.packUntil) && d.packUntil > 0)
+      ? Math.min(d.packUntil, Date.now() + PACK_DAYS * 86400000) : 0;
 
     /* A stored answer set is untrusted like everything else here: it outlives
        versions and can be hand-edited. Rebuild it field by field onto a blank
@@ -6936,28 +7065,115 @@ function openLetterFlow(){
 }
 
 /* ------------------------------------- negotiation letter + paywall */
-let pwPlan = 0, pwPaid = false;
+let pwPlan = 0;
+
+/* WHAT THE READER HAS ACTUALLY BOUGHT.
+   This was three booleans — pwPaid, casePaid, termPaid — and a boolean is
+   precisely what allowed three tiers to deliver the same thing. The selected
+   tier was drawn on the radio, printed on the pay button, and then never read
+   again, so 65 SAR and 195 SAR bought identical output.
+
+   The value stored here is a plan id, checked against the flow's own plan
+   list on the way in and on the way out of localStorage. */
+let owned = { letter:null, case:null, term:null };
+/* The pack's six-month window for further contracts. A timestamp rather than a
+   flag, because "for 6 months" is a promise with an end date. */
+let packUntil = 0;
+
+/* THE LAWYER TIERS.
+   They promise a licensed Saudi lawyer reviewing the output within 24 hours.
+   Nothing in this repository can deliver that — the arrangement lives outside
+   it and cannot be verified from here. The tiers, the request desk and their
+   tests all exist and are exercised; they simply do not render to a reader
+   until `live` is true and `turnaround` states something we can meet.
+
+   Shipping the promise dark is the only version of "we built it" that does not
+   put an unbacked guarantee in front of someone who has just lost their job. */
+const LAWYER_DESK = { live:false, turnaround:null };
+
+/* Payments are not live. One flag drives both the prototype note and the
+   refund promise, so the two can never contradict each other on the same
+   screen again — which they did, four lines apart. */
+const PAYMENT_LIVE = false;
+
+/* Prices are numbers, not two hand-written strings per plan. Two strings drift;
+   a number can be checked. See ladderBreaks() below, and the invariant it
+   enforces: no bundle may ever cost less than something it contains. */
+function priceLabel(amt){ return fmtNum(amt) + " " + t("eos_sar"); }
+
 /* Consumers sign contracts episodically, so a monthly plan fights the usage
    pattern. The middle option is sold at the life event instead, and sits
    between an anchor above and a bare minimum below. */
 const PLANS = [
-  { name:"plan_letter", desc:"plan_letter_d", price:{ar:"٦٥ ر.س",en:"65 SAR"}, pop:false },
-  { name:"plan_pack",   desc:"plan_pack_d",   price:{ar:"١٣٠ ر.س",en:"130 SAR"}, pop:true, tag:"plan_best" },
-  { name:"plan_lawyer", desc:"plan_lawyer_d", price:{ar:"١٩٥ ر.س",en:"195 SAR"}, pop:false }
+  { name:"plan_letter", desc:"plan_letter_d", amt:65,  pop:false },
+  { name:"plan_pack",   desc:"plan_pack_d",   amt:130, pop:true, tag:"plan_best",
+    contains:["plan_letter"] },
+  { name:"plan_lawyer", desc:"plan_lawyer_d", amt:195, pop:false,
+    contains:["plan_letter"], lawyer:true }
 ];
-/* A claim has money on the table, so the file prices well above the letter. */
+/* A claim has money on the table, so the file prices well above the letter.
+   It was 325, which put it above the 295 termination bundle that contains a
+   case file — the cheaper item strictly containing the dearer one. */
 const PLANS_CASE = [
-  { name:"plan_case", desc:"plan_case_d", price:{ar:"٣٢٥ ر.س",en:"325 SAR"}, pop:false },
-  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", price:{ar:"٥٢٠ ر.س",en:"520 SAR"}, pop:true }
+  { name:"plan_case", desc:"plan_case_d", amt:245, pop:false },
+  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", amt:395, pop:true,
+    contains:["plan_case"], lawyer:true }
 ];
 /* The termination assessment is priced on its own: it is the only paid thing
    in the app that gates a result rather than a document. */
 const PLANS_TERM = [
-  { name:"plan_term", desc:"plan_term_d", price:{ar:"١٤٥ ر.س",en:"145 SAR"}, pop:false },
-  { name:"plan_term_full", desc:"plan_term_full_d", price:{ar:"٢٩٥ ر.س",en:"295 SAR"}, pop:true }
+  { name:"plan_term", desc:"plan_term_d", amt:145, pop:false },
+  { name:"plan_term_full", desc:"plan_term_full_d", amt:295, pop:true,
+    contains:["plan_term"] }
 ];
+const PLAN_SETS = { letter:PLANS, case:PLANS_CASE, term:PLANS_TERM };
+
+/* The containment invariant, in code rather than in a document nobody rereads.
+   docs/pricing.md justified each price alone and never checked one against
+   another, which is how a 295 bundle came to contain a 325 product. Returns
+   the offending pairs; the tests assert it is empty. */
+function ladderBreaks(){
+  const all = [].concat(PLANS, PLANS_CASE, PLANS_TERM);
+  const by = Object.create(null);
+  all.forEach(p => { by[p.name] = p; });
+  const bad = [];
+  all.forEach(p => (p.contains || []).forEach(inner => {
+    const c = by[inner];
+    if (c && p.amt <= c.amt) bad.push(p.name + " (" + p.amt + ") ≤ " + inner + " (" + c.amt + ")");
+  }));
+  return bad;
+}
+
+/* A tier the reader can never be sold is not offered. */
+function sellable(p){ return !p.lawyer || LAWYER_DESK.live; }
 function activePlans(){
-  return pwMode === "case" ? PLANS_CASE : pwMode === "term" ? PLANS_TERM : PLANS;
+  const set = (PLAN_SETS[pwMode] || PLANS).filter(sellable);
+  if (!pwUpgrade) return set;
+  /* An upgrade offers one thing at the difference, never the full price a
+     second time and never a tier already held. */
+  const want = set.filter(p => p.name === pwUpgrade);
+  if (!want.length) return set;
+  return [Object.assign({}, want[0], { amt: upgradeCost(pwMode, pwUpgrade), up:true })];
+}
+/* Entitlement, asked as a question rather than read as a flag.
+   `tier` names the least tier that unlocks the thing being asked about. */
+function planIndex(mode, id){
+  return (PLAN_SETS[mode] || PLANS).findIndex(p => p.name === id);
+}
+function has(mode, tier){
+  const held = owned[mode];
+  if (!held) return false;
+  if (!tier) return true;
+  const i = planIndex(mode, held), need = planIndex(mode, tier);
+  return i >= 0 && need >= 0 && i >= need;
+}
+/* What it costs to move up, so the reader is shown the difference rather than
+   the full price a second time. */
+function upgradeCost(mode, tier){
+  const held = owned[mode] ? (PLAN_SETS[mode] || PLANS)[planIndex(mode, owned[mode])] : null;
+  const want = (PLAN_SETS[mode] || PLANS)[planIndex(mode, tier)];
+  if (!want) return 0;
+  return Math.max(0, want.amt - (held ? held.amt : 0));
 }
 const LETTER_TO = {
   doc_emp:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
@@ -6995,12 +7211,33 @@ function buildLetter(){
   return `Dear Sir or Madam,\n\n${openEn}\n\n${list}\n\nI'm confident we can reach wording that is fair to both sides, and I'm happy to talk any of this through.\n\nBest regards,\n[Your name]`;
 }
 
+/* The pack was sold as "your letter, plus further letters for new contracts for
+   six months". That is a promise with an end date, so it is stored as one. */
+function packLive(){ return owned.letter === "plan_pack" && Date.now() < packUntil; }
+const PACK_DAYS = 182;
+
+/* Where the paywall's back button goes. An upgrade is entered from wherever the
+   reader already was, so it returns there rather than to the flow's start. */
+function pwBack(){
+  if (pwUpgrade && pwUpBack) return pwUpBack;
+  return pwMode === "case" ? "case" : pwMode === "term" ? "termev" : "result";
+}
+
 function openPaywall(){
-  pwMode = "letter";
-  if (!pwPaid) pwPlan = 1;   /* the pack is the intended choice */
-  if (pwPaid){ renderLetter(); show("letter"); return; }
+  pwMode = "letter"; pwUpgrade = null; pwUpBack = null;
+  if (has("letter")){ renderLetter(); show("letter"); return; }
+  pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));   /* the intended choice */
   renderPaywall(); show("paywall");
 }
+
+/* Opening the paywall to sell a step up. The reader is shown the difference,
+   not the full price a second time, and only the tier they do not yet hold. */
+function openUpgrade(mode, tier, back){
+  pwMode = mode; pwUpgrade = tier; pwPlan = 0;
+  if (back) pwUpBack = back;
+  renderPaywall(); show("paywall");
+}
+let pwUpBack = null;
 
 function renderPaywall(){
   /* Only the revealed portion is rendered; the withheld points never enter
@@ -7013,10 +7250,17 @@ function renderPaywall(){
      the paywall rather than of the callers remembering. */
   pwPlan = Math.max(0, Math.min(pwPlan, activePlans().length - 1));
   if (isTerm ? !term : isCase ? !eosData : (!current || !selected().length)) return;
-  const titleKey = isTerm ? "pw_term_title" : isCase ? "pw_case_title" : "pw_title";
+  const titleKey = pwUpgrade ? "pw_up_title" : isTerm ? "pw_term_title" : isCase ? "pw_case_title" : "pw_title";
   const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"  : "pw_free_note";
   document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(titleKey);
   document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(freeKey);
+  /* "Back to score" sat here regardless of where the button actually went. */
+  document.getElementById("pwBackLabel").textContent =
+    t(isCase ? "back_case" : isTerm ? "back_ev" : "back_score");
+  /* A refund promise and "no real payment happens" were rendering four lines
+     apart. One flag, so only the true one can appear. */
+  document.getElementById("pwGuarantee").hidden = !PAYMENT_LIVE;
+  document.getElementById("pwDemo").hidden = PAYMENT_LIVE;
   /* Show one complete point rather than blurring everything: concealment reads
      as evasion, while real withheld value reads as value. It also means no
      unpaid text is sitting in the DOM behind a CSS filter. */
@@ -7046,6 +7290,7 @@ function renderPaywall(){
   }
   document.getElementById("pwPreviewIntro").textContent = shown;
   document.getElementById("pwLockLine").textContent = rest;
+  renderPwShape(isTerm, isCase);
   const wrap = document.getElementById("plans");
   wrap.innerHTML = "";
   activePlans().forEach((pl,i)=>{
@@ -7054,14 +7299,54 @@ function renderPaywall(){
     b.innerHTML =
       `<span class="radio"></span>
        <span style="flex:1"><b>${t(pl.name)}${pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}</b><span>${t(pl.desc)}</span></span>
-       <span class="price">${pl.price[lang]}</span>`;
+       <span class="price">${priceLabel(pl.amt)}</span>`;
     b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
     wrap.appendChild(b);
   });
   renderRedeem();
   const pay = document.getElementById("payBtn");
+  const chosen = activePlans()[pwPlan];
   pay.disabled = false;
-  pay.textContent = `${t("pw_pay")} ${activePlans()[pwPlan].price[lang]}`;
+  /* One key here read "Get my letter" on a 245 SAR case file and on a
+     termination assessment. The button now names what it sells. */
+  pay.textContent = t(pwUpgrade ? "pw_pay_up" : isCase ? "pw_pay_case" : isTerm ? "pw_pay_term" : "pw_pay")
+    + " " + priceLabel(chosen ? chosen.amt : 0);
+}
+
+/* WHAT THE READER IS BUYING, BEFORE THEY BUY IT.
+   The termination paywall used to show the reader their own answers read back
+   and ask 145 SAR for it. The rule it was protecting is right and survives —
+   no riyal figure and no assessment reaches the DOM before payment — but the
+   shape of the work is not the work. Counts and names only. */
+function renderPwShape(isTerm, isCase){
+  const host = document.getElementById("pwShape");
+  if (!host) return;
+  if (!isTerm && !isCase){ host.hidden = true; host.innerHTML = ""; return; }
+  const items = [];
+  if (isTerm){
+    const lines = termLines(), gaps = termUnassessed();
+    const law = lines.filter(l => l.kind === "law").length;
+    const method = lines.length - law;
+    const sep = lang === "ar" ? "، " : ", ";
+    items.push([fmtNum(lines.length), t("pw_sh_found")
+      .replace("{n}", fmtNum(lines.length))
+      .replace("{list}", lines.map(l => t(l.key)).join(sep)), false]);
+    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law)).replace("{m}", fmtNum(method)), false]);
+    if (gaps.length)
+      items.push([fmtNum(gaps.length), t("pw_sh_gaps")
+        .replace("{n}", fmtNum(gaps.length))
+        .replace("{list}", gaps.map(g => t(g.key)).join(sep)), true]);
+    items.push(["✓", t("pw_sh_each"), false]);
+  } else {
+    items.push(["✓", t("pw_sh_case_claim"), false]);
+    items.push(["✓", t("pw_sh_case_docs"), false]);
+    items.push(["✓", t("pw_sh_each"), false]);
+  }
+  host.hidden = false;
+  host.innerHTML = `<h4>${t("pw_sh_head")}</h4><ul>` +
+    items.map(([n, text, dim]) =>
+      `<li class="${dim ? "dim" : ""}"><span>${n}</span><span>${text}</span></li>`).join("") +
+    `</ul>`;
 }
 
 /* ---------------------------------------------- redemption codes
@@ -7069,7 +7354,7 @@ function renderPaywall(){
    receives a code, and enters it here.
 
    WHAT THIS IS NOT: security. Every check below happens in the reader's own
-   browser, so anyone willing to open the developer tools can set pwPaid
+   browser, so anyone willing to open the developer tools can set `owned`
    themselves and skip the paywall entirely. Storing hashes rather than
    plaintext only means the page does not simply list working codes; it does
    not make the gate hold. That is an acceptable trade for a test of tens of
@@ -7098,7 +7383,7 @@ async function hashCode(norm){
 function renderRedeem(){
   const box = document.getElementById("redeem");
   if (!box) return;
-  box.hidden = !redeemArmed() || pwPaid;
+  box.hidden = !redeemArmed() || has(pwMode);
   const open = document.getElementById("rdOpen");
   if (open) open.textContent = t("rd_have");
 }
@@ -7136,27 +7421,38 @@ async function redeem(){
   buzz([12,50,20]);
   /* Land in exactly the same place a payment does, so there is one route to
      the paid state rather than two that can drift apart. */
-  setTimeout(()=>{
-    if (pwMode === "term"){ termPaid = true; renderTermResult(); show("termres"); return; }
-    if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
-    pwPaid = true;
-    renderLetter();
-    show("letter");
-  }, 600);
+  setTimeout(grantAndGo, 600);
+}
+
+/* The single route to the paid state. Both the payment button and the code
+   redemption land here, so entitlement cannot be granted two different ways
+   that drift apart — which is how the tier came to be recorded in one place
+   and never read in another. */
+function grantAndGo(){
+  const chosen = activePlans()[pwPlan];
+  if (chosen) owned[pwMode] = chosen.up ? pwUpgrade : chosen.name;
+  if (owned.letter === "plan_pack" && !packUntil) packUntil = Date.now() + PACK_DAYS * 86400000;
+  const wasUpgrade = !!pwUpgrade, backTo = pwUpBack;
+  pwUpgrade = null; pwUpBack = null;
+  saveState();
+  /* An upgrade returns the reader to the step they were on, now unlocked,
+     rather than dropping them back at the top of a result they have read. */
+  if (wasUpgrade && backTo){
+    if (pwMode === "term") renderTermResult();
+    show(backTo);
+    return;
+  }
+  if (pwMode === "term"){ renderTermResult(); show("termres"); return; }
+  if (pwMode === "case"){ renderCaseDoc(); show("casedoc"); return; }
+  renderLetter();
+  show("letter");
 }
 
 function pwPay(){
   const pay = document.getElementById("payBtn");
   pay.disabled = true;
   pay.textContent = t("pw_paying");
-  setTimeout(()=>{
-    buzz([12,50,20]);
-    if (pwMode === "term"){ termPaid = true; renderTermResult(); show("termres"); return; }
-    if (pwMode === "case"){ casePaid = true; renderCaseDoc(); show("casedoc"); return; }
-    pwPaid = true;
-    renderLetter();
-    show("letter");
-  }, 900);
+  setTimeout(()=>{ buzz([12,50,20]); grantAndGo(); }, 900);
 }
 
 function renderLetter(){
@@ -7165,6 +7461,60 @@ function renderLetter(){
     LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
   document.getElementById("copyBtn").textContent = t("copy_btn");
   document.getElementById("letterFoot").textContent = t("lt_foot");
+  renderLawyerTease();
+}
+
+/* ------------------------------------------------ lawyer review desk
+   A handoff, not a service. It assembles a complete request the reader sends
+   themselves, which keeps the zero-dependency architecture and the privacy
+   promise intact: nothing is transmitted from here. */
+let deskBack = "letter";
+function holdsLawyerTier(mode){
+  const id = owned[mode];
+  if (!id) return false;
+  const p = (PLAN_SETS[mode] || PLANS).find(x => x.name === id);
+  return !!(p && p.lawyer);
+}
+function renderLawyerTease(){
+  const el = document.getElementById("lawyerTease");
+  if (el) el.hidden = !(LAWYER_DESK.live && holdsLawyerTier("letter"));
+}
+function openDesk(origin){
+  deskBack = origin;
+  renderDesk();
+  show("lawyerdesk");
+}
+function renderDesk(){
+  document.getElementById("ldBackLabel").textContent =
+    t(deskBack === "casedoc" ? "cf_title" : "lt_ready");
+  document.getElementById("ldContact").placeholder = t("ld_contact");
+  document.getElementById("ldAsk").placeholder = t("ld_ask");
+  document.getElementById("ldCopy").textContent = t("ld_copy");
+  const turn = document.getElementById("ldTurn");
+  /* No turnaround is stated unless one has been set. An unbacked "within 24
+     hours" is exactly the promise this build exists to stop making. */
+  turn.hidden = !LAWYER_DESK.turnaround;
+  if (LAWYER_DESK.turnaround)
+    turn.textContent = t("ld_turn").replace("{v}", LAWYER_DESK.turnaround);
+}
+function buildDeskRequest(){
+  const doc = deskBack === "casedoc"
+    ? document.getElementById("caseBody").textContent
+    : document.getElementById("letterBody").textContent;
+  return [
+    t("ld_title"),
+    t("ld_contact") + ": " + (document.getElementById("ldContact").value || "—"),
+    t("ld_ask") + ": " + (document.getElementById("ldAsk").value || "—"),
+    "",
+    doc
+  ].join("\n");
+}
+function copyDeskRequest(){
+  const btn = document.getElementById("ldCopy");
+  const done = ()=>{ btn.textContent = t("copied"); toast(t("copied"));
+                     setTimeout(()=>{ btn.textContent = t("ld_copy"); }, 1600); };
+  if (navigator.clipboard) navigator.clipboard.writeText(buildDeskRequest()).then(done, done);
+  else done();
 }
 
 function copyLetter(){

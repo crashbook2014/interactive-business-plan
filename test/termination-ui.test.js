@@ -100,6 +100,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(gate === "screen-paywall", "the assessment is gated");
 
   const paid = await p.evaluate(() => {
+    /* The full tier, because this walk goes on to open the case file and the
+       letter. The cheaper tier deliberately does not include them — that
+       separation is exercised in commerce.test.js. */
+    document.querySelectorAll("#plans .plan")[1].click();
     document.getElementById("payBtn").click();
     return new Promise(r => setTimeout(() => r(document.querySelector(".screen.active").id), 1200));
   });

@@ -73,11 +73,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   const pw = await p.evaluate(() => {
     letterSet = new Set([0, 1, 2]);
-    pwPaid = false; openPaywall();
+    owned.letter = null; openPaywall();
     const btns = [...document.querySelectorAll("#plans .plan")];
     const label = document.getElementById("payBtn").textContent;
     return { n: btns.length, plan: pwPlan, sel: btns.filter(x => x.classList.contains("sel")).length,
-             label, price: activePlans()[pwPlan].price[lang] };
+             label, price: priceLabel(activePlans()[pwPlan].amt) };
   });
   ok(pw.n >= 2, `paywall renders ${pw.n} plans`);
   ok(pw.sel === 1, "exactly one plan is marked selected");
@@ -86,7 +86,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const swap = await p.evaluate(() => {
     document.querySelectorAll("#plans .plan")[0].click();
     return { plan: pwPlan, label: document.getElementById("payBtn").textContent,
-             price: activePlans()[0].price[lang],
+             price: priceLabel(activePlans()[0].amt),
              sel: [...document.querySelectorAll("#plans .plan")].findIndex(x => x.classList.contains("sel")) };
   });
   ok(swap.plan === 0 && swap.sel === 0, "clicking a plan moves the selection");

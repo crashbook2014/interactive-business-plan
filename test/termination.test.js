@@ -39,7 +39,7 @@ const fill = (how, nat, extra) => ({ how, nat, extra: extra || {} });
     term = blankTerm();
     term.how = how;
     Object.assign(term, extra);
-    termPaid = true;
+    owned.term = "plan_term_full";
     renderTermHow(); renderTermQ(); renderTermEv(); renderTermResult();
     renderTermDoc(); renderTermLtr();
     return {
@@ -87,7 +87,7 @@ const fill = (how, nat, extra) => ({ how, nat, extra: extra || {} });
         for (const L of ["ar","en"]){
           lang = L; nat = track;
           term = Object.assign(blankTerm(), base, { how:h });
-          termPaid = true;
+          owned.term = "plan_term_full";
           let err = null;
           try { renderTermResult(); renderTermDoc(); renderTermLtr(); }
           catch(e){ err = e.message; }
@@ -141,7 +141,7 @@ const fill = (how, nat, extra) => ({ how, nat, extra: extra || {} });
     nat = "sa"; lang = "en";
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01", end:"2026-01-01",
       wage:10000, leaveDays:10, unpaidMonths:1, ctype:"indef", docs:["d_contract"] });
-    termPaid = false;
+    owned.term = null;
     openTermResult();
     const html = document.getElementById("screen-paywall").innerHTML;
     return { onPaywall: document.getElementById("screen-paywall").classList.contains("active"),
