@@ -4,7 +4,12 @@
 <link rel="preload" href="../assets/fonts/noto-naskh-arabic-var.woff2" as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href="../assets/fonts/nunito-var.woff2" as="font" type="font/woff2" crossorigin/>
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://esm.sh; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://esm.sh; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'"/>
+<!-- esm.sh was allowed in script-src and connect-src and nothing ever loaded
+     from it. An allowance nobody uses is an allowance nobody notices being
+     used. manifest-src and worker-src move from 'none' to 'self' because the
+     app is now installable and works offline — both stay same-origin, so the
+     policy is one host narrower overall than it was. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 
@@ -14,6 +19,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="theme-color" content="#F7F1E6" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
+
+<!-- Home-screen install. iOS reads almost none of the manifest, so the Apple
+     tags below are not duplication — they are the only thing Safari honours. -->
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png"/>
+<link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon-152.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="وضوح"/>
+<!-- default-translucent lets the page's own background reach under the status
+     bar, which is what makes viewport-fit=cover above worth having. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+
 <title>Wodouh — وضوح</title>
 <style>
   /* Self-hosted brand faces (SIL Open Font License 1.1), served from
@@ -914,6 +932,22 @@
   .tm-x{background:none;color:var(--ink-2);border:1px solid var(--line)}
   .tm-go:active,.tm-x:active{transform:scale(.97)}
 
+  /* Install hint. Quieter than .timely on purpose — it is an offer, not news. */
+  .install{display:flex;align-items:flex-start;gap:12px;background:var(--card);
+    border:1px solid var(--line);border-radius:var(--r-lg);padding:13px 15px;margin:0 0 16px;
+    box-shadow:var(--e1)}
+  .install[hidden]{display:none}
+  .ih-ic{flex:none;width:34px;height:34px;border-radius:999px;background:var(--teal-soft);
+    display:flex;align-items:center;justify-content:center}
+  .ih-ic svg{width:19px;height:19px}
+  .ih-t{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .ih-t b{font-size:13.5px;color:var(--ink);line-height:1.5}
+  html[lang="ar"] .ih-t b{font-weight:600;font-size:14.5px}
+  .ih-b{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+  .ih-x{flex:none;align-self:center;min-height:44px;padding:0 10px;background:none;
+    color:var(--ink-2);font-size:12.5px;font-weight:700}
+  .ih-x:active{transform:scale(.97)}
+
   .nat-chip{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;
     padding:6px 2px;margin:0 0 10px;background:none;border:0;text-align:start;
     font-size:12.5px;color:var(--ink-2);line-height:1.6}
@@ -1212,6 +1246,14 @@
     <h1 class="hello" id="helloLine"></h1>
     <p class="sub" id="subLine"></p>
     <div class="notice" id="offlineNotice" role="status" aria-live="polite" hidden></div>
+    <!-- iOS Safari has no install prompt of its own, so this is the only way a
+         reader learns the app can live on their home screen. Hidden everywhere
+         it would be untrue: already installed, another browser, dismissed. -->
+    <div class="install" id="installHint" hidden>
+      <span class="ih-ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8.5 7.5L12 4l3.5 3.5"/><rect x="4" y="13" width="16" height="7.5" rx="2"/></svg></span>
+      <span class="ih-t"><b></b><span class="ih-b"></span></span>
+      <button type="button" class="ih-x" onclick="dismissInstall()"></button>
+    </div>
     <div class="timely" id="timely" hidden>
       <div class="tm-txt"><b data-t="tm_qiwa_h"></b><span data-t="tm_qiwa_b"></span></div>
       <div class="tm-act">
@@ -1854,6 +1896,12 @@ const T = {
              en:"Migrating it is your employer's job, and you lose nothing on that date. Your part is simply to check your contract is on Qiwa and that your copy matches the registered one."},
   tm_more:{ar:"كيف أتحقق؟",en:"How do I check?"},
   tm_dismiss:{ar:"فهمت",en:"Got it"},
+  /* iOS gives no install prompt, so the instruction has to be literal — the
+     share button, then Add to Home Screen. Naming the buttons is the
+     difference between a hint that works and one that gets dismissed. */
+  inst_h:{ar:"ضِف وضوح إلى شاشتك الرئيسية",en:"Add Wodouh to your home screen"},
+  inst_b:{ar:"اضغط زر المشاركة ⬆︎ ثم «إضافة إلى الشاشة الرئيسية». يفتح بدون متصفح، ويشتغل بدون إنترنت.",
+          en:"Tap the share button ⬆︎, then “Add to Home Screen”. It opens without a browser bar and works with no connection."},
   rd_have:{ar:"اشتريت من المتجر؟ أدخل رمزك",en:"Bought from the store? Enter your code"},
   rd_label:{ar:"رمز الشراء",en:"Purchase code"},
   rd_go:{ar:"تفعيل",en:"Activate"},
@@ -3328,6 +3376,7 @@ function applyLang(){
      `current` contract. It guards its own missing state. */
   renderPaywall();
   renderDesk(); renderLawyerTease();
+  renderInstallHint();
   /* Language is a pure re-render, so every live termination screen redraws
      from the same state rather than keeping stale strings. */
   if (term){
@@ -6535,7 +6584,7 @@ function saveState(){
   try {
     localStorage.setItem(STORE, JSON.stringify({
       nat,
-      timelyOff,
+      timelyOff, installOff,
       usedCodes,
       owned, packUntil,
       term,
@@ -6558,6 +6607,7 @@ function loadState(){
        so the reader is asked rather than assumed. */
     nat = (d.nat === "sa" || d.nat === "nonsa") ? d.nat : null;
     timelyOff = d.timelyOff === true;
+    installOff = d.installOff === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
 
@@ -6618,7 +6668,7 @@ function loadState(){
     tracked.forEach(x => TRACKED.push(x));
   } catch(e){
     /* Corrupt or foreign payload: start clean rather than render partial state. */
-    myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false; usedCodes = [];
+    myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false; installOff = false; usedCodes = [];
   }
 }
 function recordContract(){
@@ -6771,6 +6821,9 @@ function toggleNat(){ setNat(nat === "sa" ? "nonsa" : "sa"); }
    stops rendering a week after the date regardless of anything else. */
 const TIMELY = { id:"qiwa2026", until:Date.UTC(2026, 7, 13) };  /* 13 Aug 2026 */
 let timelyOff = false;
+/* The install hint is dismissed for good once dismissed. A banner that comes
+   back is an advert. */
+let installOff = false;
 
 function renderTimely(){
   const el = document.getElementById("timely");
@@ -7624,10 +7677,51 @@ function renderClauses(){
   });
 }
 
+/* ------------------------------------------------ offline shell
+   Registered late and failure-tolerant. The app has always worked without it
+   and must keep working if registration is refused — private browsing, an
+   unsupported browser, a `file://` open. Nothing above this line depends on
+   it, which is the point. */
+function initOffline(){
+  if (!("serviceWorker" in navigator)) return;
+  if (location.protocol !== "https:" && location.hostname !== "localhost"
+      && location.hostname !== "127.0.0.1") return;
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+
+/* Whether we are already running as an installed app. iOS answers with its own
+   non-standard property; everyone else with the media query. */
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches
+      || navigator.standalone === true;
+}
+
+/* The install hint. Shown only where it is actionable and true: an iPhone or
+   iPad in Safari, not already installed, and not dismissed. Android and
+   desktop Chrome offer their own install affordance and do not need telling.
+   Dismissal is remembered, because a banner that returns is an advert. */
+function renderInstallHint(){
+  const el = document.getElementById("installHint");
+  if (!el) return;
+  const ua = navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const safari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  el.hidden = !(iOS && safari) || isStandalone() || installOff;
+  if (el.hidden) return;
+  el.querySelector("b").textContent = t("inst_h");
+  el.querySelector(".ih-b").textContent = t("inst_b");
+  el.querySelector(".ih-x").textContent = t("tm_dismiss");
+}
+function dismissInstall(){ installOff = true; saveState(); renderInstallHint(); }
+
 loadState();
 applyLang();
 initIntake();
 initGestures();
+initOffline();
 window.addEventListener("scroll", onScroll, { passive:true });
 window.addEventListener("resize", moveTabIndicator, { passive:true });
 requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); });

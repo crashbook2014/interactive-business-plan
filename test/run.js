@@ -24,6 +24,7 @@ const ORDER = [
   "calc-fuzz.test.js",
   "routing.test.js",
   "routing-shadowing.test.js",
+  "pwa.test.js",
   "surfaces.test.js",
   "commerce.test.js",
   "termination.test.js",

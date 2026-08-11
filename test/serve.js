@@ -17,6 +17,10 @@ const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  /* Chrome refuses a manifest served as anything else, and GitHub Pages sends
+     this type too — so the local server has to match or the install check
+     passes here and fails in production. */
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",

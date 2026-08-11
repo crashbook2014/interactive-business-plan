@@ -188,7 +188,9 @@ the privacy promise. That is a product decision, not a default, so it has been
 left alone.
 
 **Real Safari and iOS.** Everything above runs headless Chromium. PDF intake
-needs Safari 16.4+ and has never run on Apple hardware.
+needs Safari 16.4+ and has never run on Apple hardware. `docs/ios-test-runbook.md`
+is the scripted pass to run on a real iPhone — it exists because I cannot run
+it, and a checklist you actually perform beats a check I claim to have done.
 
 **Screen readers.** Programmatic accessibility checks pass. That is necessary,
 not sufficient.
