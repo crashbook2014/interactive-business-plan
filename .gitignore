@@ -1,4 +1,13 @@
 node_modules/
+
+# Agent and human scratch. Playwright drivers have to sit inside the repo to
+# reach test/_env.js and the installed playwright, so a review pass leaves
+# throwaway .mjs files behind. They were showing up as uncommitted product
+# changes, which is how real uncommitted work gets lost in the noise.
+.walk/
+scratch/
+_*.mjs
+
 supabase/config.js
 supabase/.env
 .env
