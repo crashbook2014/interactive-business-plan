@@ -4508,7 +4508,14 @@ function copyCase(){
 
 function openCasePaywall(){
   if (has("case")){ renderCaseDoc(); show("casedoc"); return; }
-  pwMode = "case"; pwPlan = 0; renderPaywall(); show("paywall");
+  /* pwUpgrade and pwUpBack cleared, like the other two entry points. Without
+     it, a reader who had opened the termination upgrade and backed out arrived
+     here to a case-file paywall wearing the upgrade's title, its "pay the
+     difference" button, and a back control that said "calculator" while
+     pointing at the termination flow. The price and the entitlement were both
+     right; every word around them was wrong. */
+  pwMode = "case"; pwPlan = 0; pwUpgrade = null; pwUpBack = null;
+  renderPaywall(); show("paywall");
 }
 
 /* ================================================ termination assessment
@@ -7543,7 +7550,15 @@ async function redeem(){
 function grantAndGo(){
   const chosen = activePlans()[pwPlan];
   if (chosen) owned[pwMode] = chosen.up ? pwUpgrade : chosen.name;
-  if (owned.letter === "plan_pack" && !packUntil) packUntil = Date.now() + PACK_DAYS * 86400000;
+  /* `< Date.now()`, not `!packUntil`. The original guard was protecting an
+     ACTIVE window from being extended on a re-render, and it did that — but it
+     also refused to refresh an EXPIRED one, so buying the pack a second time
+     granted a window that had already lapsed. The repeat buyer paid 130 SAR
+     and received the 65 SAR product, and the only customer who ever repurchases
+     the pack is the one it was built for. Comparing to now preserves the
+     original protection and fixes the case it never considered. */
+  if (owned.letter === "plan_pack" && packUntil < Date.now())
+    packUntil = Date.now() + PACK_DAYS * 86400000;
   const wasUpgrade = !!pwUpgrade, backTo = pwUpBack;
   pwUpgrade = null; pwUpBack = null;
   saveState();

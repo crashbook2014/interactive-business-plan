@@ -214,6 +214,67 @@ async function seedTermination(p){
   ok(lawyer.turnHiddenAgain,
      "and states none when none has been set — no unbacked \"within 24 hours\"");
 
+  /* ------------------------------------------- the pack, bought twice */
+  console.log("\n— repurchasing the pack grants a live window, not a dead one");
+
+  /* The engineer's pass found that `!packUntil` refused to refresh an EXPIRED
+     window, so the second purchase of the 130 SAR pack granted a lapsed one and
+     the buyer received the 65 SAR product. The only customer who repurchases
+     the pack is the one it was built for. */
+  const pack = await p.evaluate(() => {
+    letterSet = new Set([0]);
+    current = { doc:"doc_emp", score:40,
+                clauses:[{ id:"x", s:"amber", q:null, t:{ar:"بند",en:"Clause"},
+                           p:{ar:"وصف",en:"desc"}, a:{ar:"نصيحة",en:"Advice"} }],
+                verdict:{ ar:"تحقق", en:"Check" } };
+    owned = { letter:null, case:null, term:null }; packUntil = 0;
+    pwMode = "letter"; pwUpgrade = null;
+    pwPlan = PLANS.findIndex(x => x.name === "plan_pack");
+    grantAndGo();
+    const first = { held: owned.letter, live: packLive(), until: packUntil };
+
+    /* Six months pass and the window lapses — exactly what the copy promises
+       will happen. Then they come back with a new contract and buy again. */
+    packUntil = Date.now() - 86400000;
+    owned.letter = null;
+    pwPlan = PLANS.findIndex(x => x.name === "plan_pack");
+    grantAndGo();
+    return { first, second: { held: owned.letter, live: packLive(),
+                              days: Math.round((packUntil - Date.now()) / 86400000) } };
+  });
+  ok(pack.first.held === "plan_pack" && pack.first.live,
+     "the first purchase grants a live six-month window");
+  ok(pack.second.held === "plan_pack", "the second purchase records the pack");
+  ok(pack.second.live === true,
+     "and the window it grants is actually live — not one that already expired");
+  ok(pack.second.days > 175,
+     `the repurchased window is a full term (${pack.second.days} days)`);
+
+  /* ------------------------------- a paywall must not wear another's clothes */
+  console.log("\n— one paywall does not inherit another's title and button");
+
+  const inherited = await p.evaluate(() => {
+    eosData = { start: Date.parse("2018-01-01"), end: Date.parse("2026-01-01"),
+                wage: 12000, total: 66000, parts: { y: 8, m: 0 } };
+    owned = { letter:null, case:null, term:"plan_term" };
+    /* Open the termination upgrade, then leave it — which is what a reader does
+       when they decide 150 SAR is not for them today. */
+    openUpgrade("term", "plan_term_full", "termnext");
+    show(pwBack());
+    /* Later, from the calculator, they ask for the case file. */
+    openCasePaywall();
+    return { upgrade: pwUpgrade, mode: pwMode, back: pwBack(),
+             pay: document.getElementById("payBtn").textContent.trim(),
+             title: document.querySelector('#screen-paywall [data-t="pw_title"]').textContent.trim() };
+  });
+  ok(inherited.upgrade === null, "the case-file paywall is not left in an upgrade state");
+  ok(inherited.back === "case",
+     `its back control points at the calculator it came from (${inherited.back})`);
+  ok(/case file/i.test(inherited.pay),
+     `the pay button names the case file (${inherited.pay})`);
+  ok(!/add the case file and letter/i.test(inherited.title),
+     `and the heading is not the upgrade's (${inherited.title})`);
+
   /* ------------------------------------------------- entitlement storage */
   console.log("\n— entitlement survives a reload, and only in a shape we know");
 
