@@ -2196,7 +2196,12 @@ const T = {
   cost_months2:{ar:"شهرين",en:"two months"},
   plan_lawyer:{ar:"خطاب + مراجعة محامٍ",en:"Letter + lawyer review"},
   plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
-  plan_pop:{ar:"الأكثر طلبًا",en:"Popular"},
+  /* Not "Popular" / «الأكثر طلبًا». There are no paying customers and payments
+     are a prototype, so that was social proof for a number nobody measured —
+     on a screen whose own footer says no real payment happens. The skeptical
+     reader is exactly the one who notices. A recommendation is honest, does the
+     same job, and needs no data to be true. */
+  plan_pop:{ar:"نوصي به",en:"We recommend this"},
   copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
   lt_foot:{ar:"أُعدّ بمساعدة وضوح",en:"Prepared with Wodouh"},
   copied:{ar:"نُسخ ✓",en:"Copied ✓"},
@@ -2545,7 +2550,14 @@ const T = {
   tm_n4_cta:{ar:"ابنِ ملف الحالة",en:"Build my case file"},
   tm_n_locked:{ar:"أضفه — {p}",en:"Add it — {p}"},
   tm_n5:{ar:"الطريق النظامي",en:"The formal route"},
-  tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية عادة ما تُسمع بعد اثني عشر شهرًا من نهاية العلاقة. وضوح ما يرفع الدعوى نيابة عنك.",
+  /* «لا تُسمع»، not «عادة ما تُسمع». The negation was missing, and «عادة ما»
+     is a standard idiom for "usually" — so the sentence read as "a labour
+     claim is usually heard after twelve months", the exact inverse of the bar
+     in Article 222. A reader taking the natural reading waits a year and loses
+     the claim. The same fact is stated correctly twice elsewhere in this file
+     (tr_clock and the rights entry); this was the third copy, and the one on
+     the screen a terminated reader actually lands on. */
+  tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية لا تُسمع عادةً بعد مضي اثني عشر شهرًا من نهاية العلاقة. وضوح ما يرفع الدعوى نيابة عنك.",
            en:"If nothing is resolved, the route begins with amicable settlement through the Ministry of Human Resources platform, before the labour court. Watch the clock: a labour claim is generally not heard after twelve months from the end of the relationship. Wodouh does not file anything on your behalf."},
 
   tm_doc_title:{ar:"ملف الحالة",en:"Case file"},
@@ -2823,8 +2835,14 @@ const T = {
   pw_term_title:{ar:"تقييم إنهاء العقد",en:"Your termination assessment"},
   pw_term_free:{ar:"الأسئلة وقائمة الأوراق مجانية. التقييم والمبالغ هي الجزء المدفوع.",
                 en:"The questions and the document list are free. The assessment and the amounts are the paid part."},
-  pw_term_more:{ar:"يفتح التقييم كامل: كل بند وحالته، والمبالغ المحتملة بمصادرها، والمطالبات، وملف الحالة، والخطاب.",
-                en:"Unlocks the full assessment: every section and its state, the potential amounts with their sources, the claims, the case file and the letter."},
+  /* The case file and the letter are deliberately NOT named here. They belong
+     to the higher tier only, and this strip renders above a card that sells the
+     lower one — so a reader who read the strip bought 145 believing they were
+     included. A trap sprung on the buying screen, in writing. The strip now
+     describes only what both tiers share; the cards describe what separates
+     them. */
+  pw_term_more:{ar:"يفتح التقييم كامل: كل بند وحالته، والمبالغ المحتملة بمصادرها، والمطالبات.",
+                en:"Unlocks the full assessment: every section and its state, the potential amounts with their sources, and the claims."},
   plan_term:{ar:"التقييم",en:"The assessment"},
   plan_term_d:{ar:"التقييم كامل بالمبالغ ومصادرها",en:"The full assessment with amounts and sources"},
   plan_term_full:{ar:"التقييم مع الملف والخطاب",en:"Assessment, case file and letter"},

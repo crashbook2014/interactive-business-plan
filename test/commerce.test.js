@@ -214,6 +214,43 @@ async function seedTermination(p){
   ok(lawyer.turnHiddenAgain,
      "and states none when none has been set — no unbacked \"within 24 hours\"");
 
+  /* ------------------------------- the lock strip must not oversell the tier */
+  console.log("\n— the lock strip promises only what the selected tier delivers");
+
+  const strip = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", ctype:"indef", wage:12000, basic:12000 });
+    owned = { letter:null, case:null, term:null };
+    pwMode = "term"; pwUpgrade = null; pwPlan = 0; renderPaywall();
+    return { lock: document.getElementById("pwLockLine").textContent,
+             lowTier: t("plan_term_d"), highTier: t("plan_term_full_d") };
+  });
+  /* The strip renders above a card selling the cheaper tier. Naming the case
+     file and the letter there sold them as included when they are not — a trap
+     sprung on the buying screen. */
+  ok(!/case file/i.test(strip.lock),
+     "the lock strip does not promise the case file, which is the higher tier");
+  ok(!/letter/i.test(strip.lock),
+     "nor the employer letter");
+  ok(/case file/i.test(strip.highTier) && /letter/i.test(strip.highTier),
+     "the higher tier's own description still names both");
+
+  /* ------------------------------------- no unmeasurable social proof */
+  console.log("\n— nothing claims a popularity nobody measured");
+
+  const badges = await p.evaluate(() => {
+    const out = [];
+    ["letter", "case", "term"].forEach(mode => {
+      pwMode = mode; pwUpgrade = null;
+      (PLAN_SETS[mode] || []).forEach(pl => { if (pl.pop) out.push(t(pl.tag || "plan_pop")); });
+    });
+    return out;
+  });
+  ok(badges.length > 0, `${badges.length} plan badges render`);
+  ok(!badges.some(b => /popular|most|الأكثر|الأشهر/i.test(b)),
+     `no badge claims popularity with no customers to count (${badges.join(", ")})`);
+
   /* ------------------------------------------- the pack, bought twice */
   console.log("\n— repurchasing the pack grants a live window, not a dead one");
 
