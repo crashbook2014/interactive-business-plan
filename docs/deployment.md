@@ -31,7 +31,7 @@ the two. The same is true of Salla.
 | | |
 |---|---|
 | App | `https://crashbook2014.github.io/interactive-business-plan/app/` |
-| Landing | `.../web/` |
+| Landing | `.../` |
 | Brand | `.../brand/` |
 | Root `/` | The unrelated PULSE business plan — see the audit, L4 |
 

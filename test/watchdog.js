@@ -51,7 +51,7 @@ const CASE = {
 
   /* ---- 1. the pages are actually being served */
   console.log("1. Pages served");
-  for (const path of ["/app/", "/web/", "/brand/"]) {
+  for (const path of ["/app/", "/", "/brand/"]) {
     let status = 0;
     try {
       const res = await page.request.get(BASE + path);

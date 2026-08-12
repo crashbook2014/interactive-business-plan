@@ -28,6 +28,47 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
 
+  /* --------------------------------------------------------- the front door */
+  console.log("\n— the site root actually serves Wodouh");
+
+  /* This is here because the root served a different product entirely — an
+     older business plan, `PULSE — Resident Experience Co.` — for weeks, while
+     every suite tested `/app/` and never once loaded `/`. Nobody noticed until
+     the founder clicked the link. A domain pointed at Pages would have served
+     that page to every visitor who typed the bare address. */
+  const root = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const rootFails = [];
+  root.on("requestfailed", r => rootFails.push(r.url()));
+  root.on("pageerror", e => rootFails.push("pageerror: " + e.message));
+  await root.goto(BASE + "/");
+  await root.waitForTimeout(400);
+
+  const front = await root.evaluate(() => ({
+    title: document.title,
+    lang: document.documentElement.lang,
+    dir: document.documentElement.dir,
+    text: document.body.textContent.slice(0, 4000),
+    ctas: [...document.querySelectorAll("a[href]")]
+      .map(a => a.getAttribute("href"))
+      .filter(h => h && !h.startsWith("#") && !h.startsWith("data:")),
+  }));
+  ok(/وضوح|Wodouh/i.test(front.title), `the root page is Wodouh (${front.title})`);
+  ok(!/PULSE|Resident Experience/i.test(front.text),
+     "no trace of the old business plan remains at the front door");
+  ok(front.lang === "ar" && front.dir === "rtl",
+     `the landing page is Arabic and RTL (${front.lang}/${front.dir})`);
+  ok(rootFails.length === 0,
+     `nothing on the landing page fails to load${rootFails.length ? " — " + rootFails.join(", ") : ""}`);
+
+  /* Every link off the front door must resolve. Moving this file up a
+     directory rewrote all of them at once, which is exactly the change that
+     silently 404s. */
+  for (const href of [...new Set(front.ctas)]) {
+    const r = await root.request.get(new URL(href, BASE + "/").href);
+    ok(r.status() === 200, `landing link resolves: ${href} (${r.status()})`);
+  }
+  await root.close();
+
   /* ------------------------------------------------------- the manifest */
   console.log("\n— the manifest");
 

@@ -24,7 +24,7 @@ would elsewhere.
 | Layer | State |
 |---|---|
 | Frontend | `app/index.html`, live |
-| Landing / brand | `web/index.html`, `brand/index.html`, live |
+| Landing / brand | `index.html` (root), `brand/index.html`, live |
 | Home-screen install + offline | `app/manifest.webmanifest`, `app/sw.js`, live |
 | Backend | **None in the request path.** Supabase code exists, is deployed nowhere |
 | Auth | **None.** No sign-in exists in the app at all |
