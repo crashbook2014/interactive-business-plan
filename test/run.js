@@ -25,6 +25,7 @@ const ORDER = [
   "routing.test.js",
   "routing-shadowing.test.js",
   "pwa.test.js",
+  "layout.test.js",
   "surfaces.test.js",
   "commerce.test.js",
   "termination.test.js",

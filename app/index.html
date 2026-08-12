@@ -158,18 +158,60 @@
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
       transition-duration:.01ms !important;scroll-behavior:auto !important}
   }
+  /* Between a phone and a laptop: still one column, but framed, so a tablet or
+     a narrow window reads as deliberate rather than as a stranded phone page.
+     No aside here — there is not room for it beside a 440px column. */
+  @media (min-width:600px){
+    body{padding:28px 0}
+    /* padding-bottom:0 for the same reason as the desktop rule below: once
+       there is a visible frame edge, the 28px of padding under the sticky tab
+       bar becomes a strip that scrolling content passes through. On a phone
+       that strip is below the viewport and nobody ever sees it. */
+    .app{min-height:calc(100vh - 56px);border-radius:32px;border:1px solid var(--line);
+         box-shadow:var(--e3),var(--edge);padding-bottom:0}
+  }
+
   /* Desktop: the phone column becomes a framed device on a warm backdrop,
      with the brand promise alongside, so a laptop demo reads as intentional. */
   .desk-aside{display:none}
   @media (min-width:900px){
     body{display:flex;align-items:center;justify-content:center;gap:56px;padding:40px}
-    .app{min-height:auto;height:min(880px,92vh);border-radius:38px;border:1px solid var(--line);
-         box-shadow:var(--e3),var(--edge);overflow-y:auto;padding-bottom:20px;flex:none}
+    /* margin:0 — NOT the inherited `margin:0 auto`. An auto margin on a flex
+       item swallows the free space before justify-content ever runs, so the
+       56px gap above rendered as 323px and shoved the panel to the far edge
+       while the phone floated left of centre. One word, and it was the whole
+       "desktop looks broken" complaint. */
+    /* padding-bottom:0, not 20px. The tab bar is sticky to the frame's bottom
+       edge; with padding under it, 20px of whatever you were scrolling showed
+       through the gap between the bar and the rounded frame edge — a teal
+       sliver of the primary button, which reads as a rendering fault rather
+       than as content continuing below. Flush, and it reads as a phone. */
+    .app{margin:0;min-height:auto;border-radius:38px;border:1px solid var(--line);
+         box-shadow:var(--e3),var(--edge);padding-bottom:0;flex:none}
     .desk-aside{display:block;max-width:330px}
     .desk-aside .mk{width:58px;height:58px;margin-bottom:18px}
     .desk-aside h1{font-size:34px;color:var(--teal-ink);line-height:1.45;text-wrap:balance}
     .desk-aside p{margin-top:12px;color:var(--ink-2);font-size:15.5px}
     .desk-aside .meta{margin-top:20px;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px}
+  }
+
+  /* The frame only becomes a fixed-height scroll box when the window is tall
+     enough to hold a usable one. It used to do this at any height: on a
+     1280×720 or 1024×768 laptop the home screen's 1329px squeezed into a 660px
+     box, and "paste your contract text" — the primary action — sat behind the
+     tab bar and was clipped by the frame edge, inside a container that gives no
+     hint it scrolls. Below this height the frame grows and the *page* scrolls,
+     which every reader already knows how to do. */
+  @media (min-width:900px) and (min-height:860px){
+    body{align-items:center}
+    /* 100vh minus the body's own 40px top and bottom padding. 92vh was close
+       enough to look right and still left the page scrolling by 8px at
+       1440×900, which makes a "framed device" wobble under the trackpad. */
+    .app{height:min(880px,calc(100vh - 80px));overflow-y:auto}
+  }
+  @media (min-width:900px) and (max-height:859px){
+    body{align-items:flex-start}
+    .app{height:auto}
   }
 
   /* top bar */
