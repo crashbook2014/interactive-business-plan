@@ -7,7 +7,7 @@
   "scripts": {
     "setup": "git config core.hooksPath .githooks && echo 'pre-push gate armed: the suites now run before every push'",
     "test": "node test/run.js",
-    "test:live": "WODOUH_URL=https://crashbook2014.github.io/interactive-business-plan node test/run.js --no-server",
+    "test:live": "WODOUH_URL=https://alwodouh.com node test/run.js --no-server",
     "serve": "node test/serve.js"
   },
   "devDependencies": {

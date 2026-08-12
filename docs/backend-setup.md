@@ -71,7 +71,7 @@ In **Authentication → URL Configuration**, add the app URL to **Redirect
 URLs**, matching `REDIRECT_URL` in `config.js` verbatim:
 
 ```
-https://crashbook2014.github.io/interactive-business-plan/app/index.html
+https://alwodouh.com/app/index.html
 ```
 
 A mismatch here is the single most common cause of "the login popup succeeds
@@ -89,7 +89,7 @@ Set the secrets (never commit these):
 ```
 supabase secrets set \
   OAUTH_STATE_SECRET="$(openssl rand -hex 32)" \
-  APP_URL="https://crashbook2014.github.io/interactive-business-plan/app/index.html" \
+  APP_URL="https://alwodouh.com/app/index.html" \
   FUNCTION_BASE_URL="https://YOUR-REF.supabase.co/functions/v1" \
   SALLA_CLIENT_ID=... SALLA_CLIENT_SECRET=... SALLA_WEBHOOK_SECRET=... \
   ZID_CLIENT_ID=...   ZID_CLIENT_SECRET=...   ZID_WEBHOOK_SECRET=... ZID_API_TOKEN=...

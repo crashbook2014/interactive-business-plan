@@ -212,7 +212,7 @@ change is recorded in our public corrections log.
 
 ## Product context you may want
 
-- Live: https://crashbook2014.github.io/interactive-business-plan/app/
+- Live: https://alwodouh.com/app/
 - Register with sources and corrections log: `docs/legal-sources.md`
 - Standing rule: an article number appears in the product **only** if it is
   marked verified in that register. Everything else is labelled

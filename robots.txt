@@ -9,4 +9,4 @@ User-agent: *
 Allow: /
 Disallow: /brand/
 
-Sitemap: https://crashbook2014.github.io/interactive-business-plan/sitemap.xml
+Sitemap: https://alwodouh.com/sitemap.xml

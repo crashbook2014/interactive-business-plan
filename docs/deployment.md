@@ -30,7 +30,7 @@ the two. The same is true of Salla.
 
 | | |
 |---|---|
-| App | `https://crashbook2014.github.io/interactive-business-plan/app/` |
+| App | `https://alwodouh.com/app/` |
 | Landing | `.../` |
 | Brand | `.../brand/` |
 | Root `/` | The unrelated PULSE business plan — see the audit, L4 |
@@ -70,24 +70,54 @@ Until then, migrating costs a day and buys nothing a user would notice.
 
 ---
 
-## Custom domain and SSL
+## Custom domain — alwodouh.com
 
-Pages issues and renews a certificate automatically for a custom domain, so
-SSL is not a separate task. The sequence:
+**Done in the repository, on 12 August 2026.** `CNAME` holds `alwodouh.com`,
+and every absolute URL in the product — canonical, `og:url`, `og:image`,
+`twitter:image`, `robots.txt`, `sitemap.xml`, `REDIRECT_URL`, `test:live` —
+points at it. `test/pwa.test.js` asserts they all share one origin **and that
+the origin matches the CNAME file**, so the next domain move cannot leave a
+forgotten URL pointing at an address the site no longer answers on.
 
-1. Buy the domain. `wodouh.sa` requires a Saudi commercial registration;
-   `wodouh.com` does not.
-2. DNS: an `ALIAS`/`ANAME` at the apex to `crashbook2014.github.io`, or a
-   `CNAME` for `www`. **Do not point A records at hard-coded GitHub IPs** —
-   they have changed before.
-3. Repository → Settings → Pages → Custom domain. This writes a `CNAME` file
-   to the repository root; leave it committed.
-4. Wait for the certificate, then tick **Enforce HTTPS**.
+### What is left, and only you can do it
 
-**Before you switch, decide what sits at `/`.** Today it is the PULSE business
-plan. A custom domain makes that decision visible to every visitor who types
-the bare domain, which is the real reason the audit leaves it open rather than
-a technical one.
+**1. DNS.** At the registrar for `alwodouh.com`:
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `crashbook2014.github.io` |
+
+Those four addresses are GitHub's published Pages anycast set. An earlier
+version of this file said not to use A records because "they have changed
+before" — that advice was wrong for an apex domain, which cannot hold a CNAME
+at all. If your registrar offers `ALIAS`/`ANAME` at the apex, that is the
+better option and points at `crashbook2014.github.io`.
+
+**2. Repository → Settings → Pages → Custom domain.** Enter `alwodouh.com`.
+GitHub verifies DNS and may rewrite the `CNAME` file — that is expected and it
+already holds the right value.
+
+**3. Wait for the certificate**, then tick **Enforce HTTPS**. Provisioning is
+usually minutes and can take up to 24 hours. Until it completes the site is
+reachable over HTTP and the padlock is missing; that is normal and not a
+failure.
+
+### What breaks the moment the domain switches
+
+- **Installed home-screen apps are tied to the old origin.** Anyone who added
+  Wodouh to their home screen from `crashbook2014.github.io` keeps pointing
+  there. There are none yet beyond your own test, but there will be after
+  launch — so switch domains before anyone installs it, not after.
+- **`localStorage` does not follow.** Entitlements, saved contracts and tracked
+  deadlines are per-origin. Again: no real users yet, which is the whole reason
+  to do this now.
+- **The old URL keeps working.** `crashbook2014.github.io/interactive-business-plan`
+  continues to serve until Pages redirects it to the custom domain, which it
+  does automatically once the domain is verified.
 
 ---
 

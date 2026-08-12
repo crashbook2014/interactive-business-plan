@@ -1,6 +1,6 @@
 /* Walks the LIVE app and reports whether it is actually working.
  *
- *   node test/watchdog.js https://crashbook2014.github.io/interactive-business-plan
+ *   node test/watchdog.js https://alwodouh.com
  *
  * Different job from the suites. They prove the code is correct; this proves
  * the deployment is. Those fail apart more often than people expect — a build

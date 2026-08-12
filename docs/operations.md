@@ -50,7 +50,7 @@ anything failed. That exit code is what makes it usable as a gate.
 
 ```
 npm run test:live
-node test/watchdog.js https://crashbook2014.github.io/interactive-business-plan
+node test/watchdog.js https://alwodouh.com
 ```
 
 ---

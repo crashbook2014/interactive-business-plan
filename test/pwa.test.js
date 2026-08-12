@@ -96,8 +96,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!!share.canonical, "a canonical URL is declared");
   /* The image is the whole point of a large-image card, and a 404 here is
      invisible until someone shares it. */
+  /* Rewrite the declared URL onto whatever host we are testing, by pathname.
+     The first version of this stripped the host and one path segment, which
+     worked only while the site lived under /interactive-business-plan/ and
+     silently pointed at the wrong file the moment it moved to a bare domain. */
+  const onThisHost = u => BASE + new URL(u).pathname;
   if (share.ogImage) {
-    const img = await root.request.get(share.ogImage.replace(/^https?:\/\/[^/]+\/[^/]*\//, BASE + "/"));
+    const img = await root.request.get(onThisHost(share.ogImage));
     ok(img.status() === 200, `the preview image exists (${img.status()})`);
     ok(/image\/png/.test(img.headers()["content-type"] || ""), "and it is a PNG");
   } else {
@@ -127,8 +132,20 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
   ok(locs.length >= 2, `the sitemap lists ${locs.length} URLs`);
   for (const loc of locs) {
-    const r = await root.request.get(loc.replace(/^https?:\/\/[^/]+\/[^/]*\//, BASE + "/"));
+    const r = await root.request.get(onThisHost(loc));
     ok(r.status() === 200, `sitemap URL resolves: ${new URL(loc).pathname} (${r.status()})`);
+  }
+
+  /* The CNAME is what actually points the domain here, and it must agree with
+     every absolute URL above. Disagreement means previews and search engines
+     point at an address the site no longer answers on. */
+  const cname = await root.request.get(BASE + "/CNAME");
+  ok(cname.status() === 200, `CNAME is present (${cname.status()})`);
+  if (cname.status() === 200) {
+    const host = (await cname.text()).trim();
+    ok(/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(host), `CNAME holds one bare hostname (${host})`);
+    ok([...shareOrigins][0] === "https://" + host,
+       `the declared origin matches the CNAME (${[...shareOrigins][0]} vs ${host})`);
   }
 
   await root.close();

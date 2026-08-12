@@ -35,7 +35,7 @@ for subtleties while something is actually broken.
 Then, optionally:
 
 ```
-node test/watchdog.js https://crashbook2014.github.io/interactive-business-plan
+node test/watchdog.js https://alwodouh.com
 ```
 
 **This sandbox's proxy blocks `github.io`, so this will usually fail with 403s

@@ -16,7 +16,7 @@ window.WODOUH_CONFIG = {
 
   /* Where OAuth sends the user back. Must be listed verbatim in
      Supabase → Authentication → URL Configuration → Redirect URLs. */
-  REDIRECT_URL: "https://crashbook2014.github.io/interactive-business-plan/app/index.html"
+  REDIRECT_URL: "https://alwodouh.com/app/index.html"
 
   /* OPTIONAL — Claude document analysis.
    *
