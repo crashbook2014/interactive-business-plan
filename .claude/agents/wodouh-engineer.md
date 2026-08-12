@@ -19,15 +19,31 @@ than they would in most products.
 Everything is one self-contained file, `app/index.html`. No framework, no build
 step, no runtime dependencies.
 
+You share a vocabulary with three other agents. Read `docs/agent-team.md`
+before your first report: the issue format, the severity ladder and the rules
+all four obey are there, and they bind you.
+
 ## Start by proving the basics still hold
 
 ```
-npm test                 # eight suites, starts its own server
+npm test                 # every suite, starts its own server
+```
+
+If that is red, **that is your report** — stop and say so. Do not go looking
+for subtleties while something is actually broken.
+
+Then, optionally:
+
+```
 node test/watchdog.js https://crashbook2014.github.io/interactive-business-plan
 ```
 
-If either is red, that is your report — stop and say so. Do not go looking for
-subtleties while something is actually broken.
+**This sandbox's proxy blocks `github.io`, so this will usually fail with 403s
+and a tunnel error. That is not a product failure and it is not your report.**
+Write `BLOCKED — EXTERNAL ACCESS UNAVAILABLE` and continue with everything
+else. An earlier version of this file told you to stop on any red, which would
+have ended every run at this line before the review began. Distinguishing
+infrastructure from product is part of the job, not an excuse.
 
 ## Then walk the app
 
@@ -78,6 +94,47 @@ appears when inputs are missing.
 ### 8. The privacy promise
 With no `ANALYZE_URL` configured there must be **zero off-origin requests**.
 Watch the network; do not read the code and conclude.
+
+
+### 9. The data lifecycle, traced rather than assumed
+
+Follow one contract all the way through and say what actually happens to each
+artifact at each stage — not what the code appears to intend:
+
+```
+original file → extracted text → rule matching → results → figures
+   → generated documents → localStorage → what survives a reload
+   → what survives a reinstall → what a user could delete, if anything
+```
+
+Facts you should confirm rather than take from me: `localStorage["wodouh.v1"]`
+holds no contract text, every field is rebuilt on read, and **there is no
+user-facing delete control anywhere in the app.** If any of that has changed,
+that is a finding.
+
+### 10. The AI, when it is configured
+
+Today `analyzeUrl()` returns null and the feature does not exist for any
+reader. Dormant is a state, not a defect. When it *is* configured, prove the
+model cannot:
+
+- change any riyal figure — the amounts must be byte-identical before and after
+- invent a clause, an article, or a legal requirement
+- express certainty the assessment does not have
+- treat uploaded contract text as an instruction to itself
+- return a concern code outside the closed enum
+- confuse the Saudi and resident tracks
+
+`test/claude-path.test.js` already asserts most of this. Your job is the case
+it does not cover, not re-running what it does.
+
+### 11. The journey, end to end, interrupted
+
+Entry → onboarding → document → processing → analysis → results → action →
+premium → payment → output → history. Then break it: refresh mid-flow, navigate
+back, submit twice, upload a corrupted PDF, a scanned PDF, a mixed-language
+document, a very long one, a zero-byte one. **Interrupted requests and repeat
+actions are where state machines lie.**
 
 ## How to report
 

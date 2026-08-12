@@ -9,7 +9,7 @@ different failures.
 | **`.githooks/pre-push`** | Nothing broken leaves the machine | Every push | Refuses the push |
 | **`npm test`** | The code is correct | On demand, and inside the hook | Your terminal |
 | **`test/watchdog.js`** | The *deployment* is working | Every 6 hours *(needs Actions)* | Opens a GitHub issue |
-| **`wodouh-engineer`** | The product is still *good* | When you ask | In conversation |
+| **The four agents** | The product is still *good* | When you ask | In conversation |
 
 **The pre-push hook is the one that actually protects you**, and it is the only
 layer that depends on nothing but this repository. Pages deploys whatever lands
@@ -157,12 +157,14 @@ that floods the inbox stops being read, which is the same as not having one.
 
 ---
 
-## The engineer
+## The agent team
 
-`.claude/agents/wodouh-engineer.md` — invoke it when you want a real inspection
-rather than a pass/fail.
+Four of them now — `wodouh-engineer`, `wodouh-experience`, `wodouh-redteam`,
+`wodouh-growth`. `docs/agent-team.md` is the shared contract: issue format,
+severity ladder, what they may and may not decide, and how often to run them.
+Invoke one when you want a real inspection rather than a pass/fail.
 
-It exists because of a specific gap. Everything the last review found by
+They exist because of a specific gap. Everything the last review found by
 walking the app — a buy button reading *"Get my letter"* on a case file,
 *"Back to score"* on a screen with no score, a paywall showing nothing but the
 reader's own answers, a 295 SAR bundle worth more than a 325 SAR product, and
@@ -175,7 +177,9 @@ which is the point: the reviewer finds the class of problem, and a suite is
 written so that instance can never come back. The gap it covers is permanent
 even when today's findings are closed.
 
-Worth running before a launch, after a large change, or every few weeks.
+Cadence is in `docs/agent-team.md` — engineer after a change, experience before
+anything user-facing ships, red team before money moves, growth weekly. Not all
+four on the same day: four reports at once is a stack nobody reads.
 
 ---
 
