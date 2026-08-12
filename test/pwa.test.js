@@ -67,6 +67,70 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const r = await root.request.get(new URL(href, BASE + "/").href);
     ok(r.status() === 200, `landing link resolves: ${href} (${r.status()})`);
   }
+
+  /* ------------------------------------------------------ link previews */
+  console.log("\n— a forwarded link renders as something, not a grey URL");
+
+  /* Wodouh spreads by one person sending it to a colleague, if it spreads at
+     all. Without these the forward is a bare URL on WhatsApp, X and LinkedIn. */
+  const share = await root.evaluate(() => {
+    const m = (sel, attr) => {
+      const el = document.querySelector(sel);
+      return el ? el.getAttribute(attr) : null;
+    };
+    return {
+      canonical: m('link[rel="canonical"]', "href"),
+      ogTitle: m('meta[property="og:title"]', "content"),
+      ogDesc: m('meta[property="og:description"]', "content"),
+      ogImage: m('meta[property="og:image"]', "content"),
+      ogUrl: m('meta[property="og:url"]', "content"),
+      twCard: m('meta[name="twitter:card"]', "content"),
+      hreflang: document.querySelectorAll("link[hreflang]").length,
+      absolutes: [...document.querySelectorAll('meta[property^="og:"], link[rel="canonical"]')]
+        .map(e => e.getAttribute("content") || e.getAttribute("href"))
+        .filter(v => v && /^https?:\/\//.test(v)),
+    };
+  });
+  ok(!!share.ogTitle && !!share.ogDesc, "og:title and og:description are set");
+  ok(share.twCard === "summary_large_image", `twitter card is a large image (${share.twCard})`);
+  ok(!!share.canonical, "a canonical URL is declared");
+  /* The image is the whole point of a large-image card, and a 404 here is
+     invisible until someone shares it. */
+  if (share.ogImage) {
+    const img = await root.request.get(share.ogImage.replace(/^https?:\/\/[^/]+\/[^/]*\//, BASE + "/"));
+    ok(img.status() === 200, `the preview image exists (${img.status()})`);
+    ok(/image\/png/.test(img.headers()["content-type"] || ""), "and it is a PNG");
+  } else {
+    ok(false, "og:image is declared");
+  }
+  /* Every absolute URL must agree with every other. When the domain changes,
+     a forgotten one points previews and search engines at the old address —
+     and nothing else would notice. */
+  const shareOrigins = new Set(share.absolutes.map(u => new URL(u).origin));
+  ok(shareOrigins.size === 1,
+     `every absolute URL shares one origin${shareOrigins.size > 1 ? " — " + [...shareOrigins].join(", ") : ""}`);
+
+  /* hreflang needs one URL per language. This page serves both from one URL
+     with a JS toggle, so declaring it would be a claim we cannot honour. */
+  ok(share.hreflang === 0,
+     "no hreflang, because one URL serves both languages and the tag would lie");
+
+  console.log("\n— robots and sitemap");
+  const robots = await root.request.get(BASE + "/robots.txt");
+  ok(robots.status() === 200, `robots.txt is served (${robots.status()})`);
+  const robotsText = await robots.text();
+  ok(/Sitemap:/i.test(robotsText), "robots.txt points at the sitemap");
+
+  const sitemap = await root.request.get(BASE + "/sitemap.xml");
+  ok(sitemap.status() === 200, `sitemap.xml is served (${sitemap.status()})`);
+  const sm = await sitemap.text();
+  const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+  ok(locs.length >= 2, `the sitemap lists ${locs.length} URLs`);
+  for (const loc of locs) {
+    const r = await root.request.get(loc.replace(/^https?:\/\/[^/]+\/[^/]*\//, BASE + "/"));
+    ok(r.status() === 200, `sitemap URL resolves: ${new URL(loc).pathname} (${r.status()})`);
+  }
+
   await root.close();
 
   /* ------------------------------------------------------- the manifest */

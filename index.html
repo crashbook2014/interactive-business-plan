@@ -16,6 +16,37 @@
 <meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
 <meta name="description" content="وضوح — اقرأ عقدك بوضوح قبل ما توقّع. تقييم فوري، تنبيهات للمخاطر، وخطاب تفاوض جاهز."/>
 <title>وضوح — اقرأ عقدك قبل ما توقّع</title>
+
+<!-- LINK PREVIEWS.
+     Wodouh's realistic distribution is one person forwarding it to a colleague
+     in the same company. Without these, that forward rendered as a bare grey
+     URL on WhatsApp, X and LinkedIn — which is the difference between "look at
+     this" and a link nobody taps.
+
+     WHEN THE DOMAIN CHANGES, every absolute URL below changes with it. There
+     are four here and two in app/index.html; test/pwa.test.js asserts they all
+     point at the same origin the page is served from, so a forgotten one fails
+     the build rather than silently pointing at the old address.
+
+     No hreflang: it needs one URL per language, and this page serves both from
+     a single URL with a JavaScript toggle. Declaring it would be a lie that
+     search engines act on. og:locale:alternate is the honest version. -->
+<link rel="canonical" href="https://crashbook2014.github.io/interactive-business-plan/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="وضوح — Wodouh"/>
+<meta property="og:title" content="اقرأ عقدك بوضوح — قبل ما توقّع"/>
+<meta property="og:description" content="تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى — مع مصدر كل رقم. يشتغل على جهازك."/>
+<meta property="og:url" content="https://crashbook2014.github.io/interactive-business-plan/"/>
+<meta property="og:image" content="https://crashbook2014.github.io/interactive-business-plan/assets/og-cover.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="وضوح — اقرأ عقدك بوضوح قبل ما توقّع"/>
+<meta property="og:locale" content="ar_SA"/>
+<meta property="og:locale:alternate" content="en_US"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="اقرأ عقدك بوضوح — قبل ما توقّع"/>
+<meta name="twitter:description" content="تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى — مع مصدر كل رقم."/>
+<meta name="twitter:image" content="https://crashbook2014.github.io/interactive-business-plan/assets/og-cover.png"/>
 <style>
   /* Self-hosted brand faces (SIL Open Font License 1.1), served from
      /assets/fonts so all three pages share one cached copy. Nothing is

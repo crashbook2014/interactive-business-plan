@@ -1,0 +1,12 @@
+# Wodouh — وضوح
+#
+# Everything here is public and meant to be found. The one thing deliberately
+# kept out of search results is the brand page: it is an internal reference for
+# how the identity is used, not something a person looking for help with an
+# employment contract should ever land on.
+
+User-agent: *
+Allow: /
+Disallow: /brand/
+
+Sitemap: https://crashbook2014.github.io/interactive-business-plan/sitemap.xml
