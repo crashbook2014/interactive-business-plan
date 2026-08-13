@@ -278,6 +278,51 @@ async function art87Certainty(p){
   ok(rise.ar.has && /المادة ٨٧/.test(rise.ar.text),
      "and it renders in Arabic too");
 
+  /* EVERY answer must survive a reload, not just the ones someone remembered.
+     exc87 was written by saveState and dropped by loadState, so a woman who
+     answered "within three months of giving birth" saw 55,000 SAR, reopened the
+     app — which is built to be reopened, offline, on a metro — and was shown
+     36,667 and told she had never answered. Generic on purpose: this fails for
+     the next field added to the questions and forgotten in the rebuild. */
+  console.log("\n— every answer survives a reload, including the next one someone adds");
+  const allFields = await p.evaluate(() => {
+    const filled = Object.assign(blankTerm(), {
+      how:"resigned", start:"2018-01-01", end:"2026-01-01", termEnd:"2027-01-01",
+      ctype:"indef", wage:10000, basic:9000, noticeDue:60, noticeGiven:15,
+      unpaidMonths:2, leaveDays:20, otherAmt:500, reason:"a stated reason",
+      exc87:"birth", probation:false, gotSettle:true, gotEos:false,
+      docs:["d_contract"]
+    });
+    term = filled; saveState();
+    const before = { award: Math.round(termAward()), cert: certaintyFor("tm_m_eos").level,
+                     snapshot: JSON.stringify(term) };
+    term = null; loadState();
+    const after = { award: Math.round(termAward()), cert: certaintyFor("tm_m_eos").level,
+                    snapshot: JSON.stringify(term) };
+    const dropped = Object.keys(filled).filter(k =>
+      JSON.stringify(filled[k]) !== JSON.stringify(term ? term[k] : undefined));
+    return { before, after, dropped };
+  });
+  ok(allFields.dropped.length === 0,
+     `every answered field survives save→load${allFields.dropped.length ? " — dropped: " + allFields.dropped.join(", ") : ""}`);
+  ok(allFields.before.award === allFields.after.award,
+     `and the award is unchanged by a reload (${allFields.before.award} → ${allFields.after.award})`);
+  ok(allFields.before.cert === allFields.after.cert,
+     `as is its certainty (${allFields.before.cert} → ${allFields.after.cert})`);
+
+  /* A forged value must not read as an answer — that would restore exactly the
+     false confidence the required input exists to end. */
+  const forgedExc = await p.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem(STORE));
+    raw.term.exc87 = "BOGUS";
+    localStorage.setItem(STORE, JSON.stringify(raw));
+    term = null; loadState();
+    return { exc87: term.exc87, cert: certaintyFor("tm_m_eos").level };
+  });
+  ok(forgedExc.exc87 === null, "an unrecognised exception value is dropped, not trusted");
+  ok(forgedExc.cert !== "confirmed",
+     `and it does not read as confirmed (${forgedExc.cert})`);
+
   console.log("\n— every input the app can ask for has a label in both languages");
   const labels = await p.evaluate(() => {
     const keys = new Set();

@@ -2674,8 +2674,17 @@ const T = {
   tm_f_exc:{ar:"هل كانت استقالتك لأحد هذي الأسباب؟",en:"Was your resignation for any of these reasons?"},
   tm_exc_none:{ar:"لا، استقالة عادية",en:"No, an ordinary resignation"},
   tm_exc_force:{ar:"ظرف قاهر خارج عن إرادتي",en:"A force majeure beyond my control"},
-  tm_exc_marriage:{ar:"أنهيت العقد خلال ٦ أشهر من زواجي",en:"I ended it within 6 months of my marriage"},
-  tm_exc_birth:{ar:"أنهيت العقد خلال ٣ أشهر من الولادة",en:"I ended it within 3 months of giving birth"},
+  /* The register's verified row for Article 87 scopes these two to a FEMALE
+     WORKER — "a female worker is entitled to the full award if she ends her
+     contract within six months of marriage or three months of giving birth".
+     The labels carried no such condition, so any reader could select them and
+     be shown the full award: an 18,333 SAR overstatement on the test case, in
+     the direction that costs a reader credibility in front of the authority
+     rather than only money. Force majeure is unscoped and stays unscoped. */
+  tm_exc_marriage:{ar:"عاملة، وأنهيت العقد خلال ٦ أشهر من زواجي",
+                   en:"I am a female worker and ended it within 6 months of my marriage"},
+  tm_exc_birth:{ar:"عاملة، وأنهيت العقد خلال ٣ أشهر من ولادتي",
+                en:"I am a female worker and ended it within 3 months of giving birth"},
 
   /* --- certainty */
   cert_confirmed:{ar:"مؤكد",en:"Confirmed"},
@@ -3096,12 +3105,18 @@ const SAMPLES = {
            en:"The employee is entitled to thirty days of paid annual leave."},
         p:{ar:"٣٠ يومًا مدفوعة — مطابقة للمعيار المعتاد.",en:"Thirty paid days — matches the standard."},
         a:null },
-      { s:"green",
+      /* Amber for the same reason as the live rule: this cites Article 53,
+         which the register marks disputed. Ninety days is inside the ceiling on
+         either reading, so the sample says so — and still names the point we
+         could not confirm, because the sample is what a first-time reader uses
+         to decide whether to trust the product. */
+      { s:"amber",
         src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"يخضع الموظف لفترة تجربة مدتها تسعون يومًا من تاريخ مباشرة العمل.",
            en:"The employee is subject to a probation period of ninety days from the start date."},
-        p:{ar:"٩٠ يومًا فترة تجربة معتادة وموثّقة بوضوح.",en:"Ninety days is a normal, clearly documented probation period."},
+        p:{ar:"٩٠ يومًا داخل الحد الأقصى (١٨٠ يومًا) على أي قراءة، وموثّقة بوضوح. ملاحظة: هل يجوز النص على ١٨٠ من البداية أو لازم تمديد مكتوب؟ لم نتحقق من الصياغة الحالية بعد تعديلات ٢٠٢٥.",
+           en:"Ninety days sits inside the 180-day ceiling on either reading, and it is clearly documented. Note: whether 180 may be stated from the outset or needs a written extension is something we have not confirmed against the current text after the 2025 amendments."},
         a:null }
     ]},
   clean: { score:92, doc:"doc_clean",
@@ -3298,11 +3313,24 @@ const RULES = [
     a:{ar:"احصر النقل في مخرجات المشروع فقط.",en:"Limit the transfer to project deliverables only."},
     r:{ar:"اطلب ملحقًا يحصر النقل في مخرجات هذا الاتفاق دون أعمالك السابقة.",
        en:"Ask for an addendum limiting the transfer to this agreement's deliverables, excluding your prior work."} },
-  { re:/(probation|فترة\s*التجربة)/i, s:"green",
+  /* Amber, not green, and the reason is the register. Article 53 is marked
+     ⚠️ DISPUTED in docs/legal-sources.md: the readings differ on whether an
+     employer may state 180 days from the outset or must set 90 and extend by
+     written agreement. Green with "normal — just check it doesn't exceed the
+     usual limits" resolved that dispute in the employer's favour, silently,
+     and cited the disputed article as the authority — while the rights library
+     two taps away says we could not verify the point. A reader shown "all
+     clear" does not negotiate the clause.
+     The guard written for this in surfaces.test.js covered the two stores that
+     were wrong that day. This was a third surface, and the one a reader acts
+     on. The test now enumerates by citation instead. */
+  { re:/(probation|فترة\s*التجربة)/i, s:"amber",
     t:{ar:"فترة التجربة",en:"Probation period"},
     src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
-    p:{ar:"فترة تجربة موثقة — أمر طبيعي. تأكد فقط ألا تتجاوز المدد المعتادة.",
-       en:"A documented probation period — normal. Just check it doesn't exceed the usual limits."}, a:null },
+    p:{ar:"فيه فترة تجربة منصوصة، وهذا طبيعي. الحد الأقصى ١٨٠ يومًا. لكن هل يجوز النص على ١٨٠ من البداية أو لازم ٩٠ ثم تمديد مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نتحقق منها من النص الرسمي — راجع المدة المكتوبة عندك.",
+       en:"A probation period is stated, which is normal. The ceiling is 180 days. But whether an employer may state 180 from the outset, or must set 90 and extend it in writing, changed with the 2025 amendments and we have not confirmed the current text — check the period written in yours."},
+    a:{ar:"تأكد أن المدة المكتوبة في عقدك ضمن الحد، واسأل عن أساسها إذا تجاوزت ٩٠ يومًا.",
+       en:"Check the period written in your contract is within the limit, and ask what it rests on if it is longer than 90 days."} },
   { re:/(annual\s*leave|إجازة\s*سنوية)/i, s:"green",
     t:{ar:"الإجازة السنوية",en:"Annual leave"},
     src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
@@ -4883,7 +4911,14 @@ function termWage(){ return term && term.wage > 0 ? term.wage : 0; }
    applied without its exception being ruled out. */
 function termCouldRise(){
   const h = termHow(), out = [];
-  if (h && h.award === "resign" && term && term.exc87 === null) out.push("rv_exc_unasked");
+  /* The award line has to actually BE in the total. A reader who already
+     received their end-of-service award has it filtered out of termLines(),
+     and the notice then promised an increase to a total that contains no
+     award — an upward arrow over a figure that cannot move. A notice that
+     cries rise where no rise is possible spends the credibility the true
+     instances need. */
+  if (h && h.award === "resign" && term && term.exc87 === null
+      && termLines().some(l => l.key === "tm_m_eos")) out.push("rv_exc_unasked");
   return out;
 }
 
@@ -6882,6 +6917,14 @@ function loadState(){
       b.unpaidMonths = num("unpaidMonths", 60); b.leaveDays = num("leaveDays", 365);
       b.otherAmt = num("otherAmt", 1e7);
       b.probation = tri("probation"); b.gotSettle = tri("gotSettle"); b.gotEos = tri("gotEos");
+      /* exc87 was saved and then dropped on the way back in — every other field
+         is rebuilt here and this one was missed when it became a required
+         input. A woman who answered "within three months of giving birth" saw
+         55,000 SAR, reopened the app, and was shown 36,667 and told she had
+         never answered. Reload, PWA relaunch and tab eviction all reach it.
+         Whitelisted rather than string-copied: an unrecognised value would read
+         as answered and restore the false confidence this input exists to end. */
+      b.exc87 = ["none","force","marriage","birth"].indexOf(src.exc87) >= 0 ? src.exc87 : null;
       b.docs = Array.isArray(src.docs)
         ? src.docs.filter(x => TERM_DOCS.indexOf(x) !== -1).slice(0, TERM_DOCS.length) : [];
       if (b.how) term = b;

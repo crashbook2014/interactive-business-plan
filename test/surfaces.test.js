@@ -75,34 +75,54 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      KB (what the assistant retrieves). Article 53's answer was corrected in one
      and left asserting a disputed legal mechanism in the other — and the commit
      message said it was fixed. Two stores, one subject, no check between them. */
+  /* Enumerated BY CITATION, not by store. The first version of this checked the
+     two stores that happened to be wrong that day — and a third surface, the
+     clause matcher a reader actually acts on, kept marking a 180-day probation
+     "green, normal" on the same disputed article. Anything that cites 53 has to
+     answer for it, wherever it lives. */
   const dual = await p.evaluate(() => {
-    const probeKB = q => {
-      const hit = KB.find(e => e.k.test(q));
-      return hit ? { ar: hit.a.ar, en: hit.a.en, src: hit.r ? hit.r.en : null } : null;
-    };
+    const CITES = /Article 53|المادة ٥٣/;
+    const out = {};
+    const kbHit = KB.find(e => e.k.test("probation"));
+    if (kbHit) out.kb = { ar: kbHit.a.ar, en: kbHit.a.en };
     const libItem = LIB.flatMap(g => g.items)
       .find(i => /probation|التجربة/i.test(i.q.en + i.q.ar));
-    return { kb: probeKB("probation"), lib: libItem ? { ar: libItem.a.ar, en: libItem.a.en } : null };
+    if (libItem) out.lib = { ar: libItem.a.ar, en: libItem.a.en };
+    /* Every heuristic clause rule and every authored sample clause citing 53. */
+    RULES.forEach((r, i) => {
+      if (r.src && CITES.test(r.src.en + r.src.ar))
+        out["rule" + i] = { ar: r.p.ar, en: r.p.en, severity: r.s };
+    });
+    Object.keys(SAMPLES).forEach(k => (SAMPLES[k].clauses || []).forEach((c, i) => {
+      if (c.src && CITES.test(c.src.en + c.src.ar))
+        out["sample_" + k + "_" + i] = { ar: c.p.ar, en: c.p.en, severity: c.s };
+    }));
+    return out;
   });
-  ok(!!dual.kb && !!dual.lib, "both stores answer the probation question");
+  const surfaces = Object.keys(dual);
+  ok(surfaces.length >= 3,
+     `every surface citing Article 53 is enumerated (${surfaces.length}: ${surfaces.join(", ")})`);
 
   /* Article 53 is DISPUTED in docs/legal-sources.md. Neither surface may state
      the 90-then-extend mechanism as settled while that is true. */
   const assertsMechanism = s =>
     /extendable to 180 by written agreement|extendable by written agreement to 180/i.test(s) ||
     /ويمكن تمديدها باتفاق مكتوب إلى ١٨٠|وتُمدّد باتفاق مكتوب إلى ١٨٠/.test(s);
-  ["kb", "lib"].forEach(which => {
+  surfaces.forEach(which => {
     ["ar", "en"].forEach(l => {
       ok(!assertsMechanism(dual[which][l]),
          `${which}.${l} does not assert the disputed Article 53 mechanism`);
     });
-  });
-  /* And both must name the uncertainty rather than going quietly vague. */
-  ["kb", "lib"].forEach(which => {
-    ok(/have not confirmed|could not verify/i.test(dual[which].en),
+    ok(/have not confirmed|could not verify|not confirmed/i.test(dual[which].en),
        `${which}.en names the uncertainty explicitly`);
     ok(/لم نتحقق|لم نستطع/.test(dual[which].ar),
        `${which}.ar names the uncertainty explicitly`);
+    /* And a clause citing a disputed article may not be waved through green.
+       "Normal, nothing to check" is a resolution of the dispute, in the
+       employer's favour, made silently. */
+    if (dual[which].severity)
+      ok(dual[which].severity !== "green",
+         `${which} is not marked green while the article it cites is disputed`);
   });
 
   /* ---------------------------------------------- paywall */
