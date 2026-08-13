@@ -888,6 +888,28 @@
   .ai-agree{display:flex;gap:9px;align-items:flex-start;margin:10px 0;
     font-size:13px;line-height:1.6;min-height:44px}
   .ai-agree input{margin-top:3px;width:18px;height:18px;accent-color:var(--teal);flex:none}
+  /* ASK. The two tiers must not be able to be mistaken for each other at a
+     glance, so they differ in edge colour, header colour and the presence of
+     a source block — not in one subtle word. A verified answer earns the same
+     teal-edged treatment every other sourced claim in the app gets; an
+     unverified one is amber-edged and carries its warning below the text
+     rather than above it, where it would be scrolled past. */
+  .ask-q{width:100%;min-height:88px;padding:11px 12px;border:1px solid var(--line);
+    border-radius:var(--r-sm);background:var(--bg);color:var(--ink);font:inherit;
+    font-size:14px;line-height:1.6;resize:vertical}
+  .ask-q:focus{outline:2px solid var(--teal);outline-offset:1px}
+  .ask-ctx{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+  .ask-ans{margin-bottom:12px}
+  .ask-ans.verified{border-inline-start:3px solid var(--teal)}
+  .ask-ans.verified .hd b{color:var(--teal-ink)}
+  .ask-ans.unverified{border-inline-start:3px solid var(--amber-ink);background:var(--amber-bg)}
+  .ask-ans.unverified .hd b{color:var(--amber-ink)}
+  .ask-body{font-size:14px !important;color:var(--ink) !important;margin-top:8px !important}
+  .ask-src-h{font-size:11.5px !important;font-weight:700;margin-top:12px !important;
+    text-transform:uppercase;letter-spacing:.04em}
+  html[lang="ar"] .ask-src-h{text-transform:none;letter-spacing:0;font-weight:400}
+  .ask-unv{font-size:12.5px !important;margin-top:10px !important;color:var(--amber-ink) !important}
+  .ask-ref{border-inline-start:3px solid var(--ink-2);margin-bottom:12px}
   .ai-find{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
   .ai-find b{display:block;font-size:13.5px;margin-bottom:4px}
   .ai-find p{font-size:13px;color:var(--ink-2);line-height:1.65}
@@ -1603,6 +1625,13 @@
       <span><b data-t="r_know"></b><span data-t="r_know_d"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
     </button>
+    <!-- Hidden unless an endpoint is configured. The build on disk has none,
+         so this button does not exist for anyone reading the shipped app. -->
+    <button class="assist-entry" id="askEntry" hidden onclick="openAsk()">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18h.01"/><path d="M9.5 8.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><circle cx="12" cy="12" r="9"/></svg></span>
+      <span><b data-t="r_ask"></b><span data-t="r_ask_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
     <button class="assist-entry" onclick="openRightsCase()">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
       <span><b data-t="r_case"></b><span data-t="r_case_d"></span></span>
@@ -1612,6 +1641,15 @@
     <p class="lib-sub" data-t="lib_sub"></p>
     <div class="lib" id="rightsLib"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- ASK -->
+  <section class="screen" id="screen-ask">
+    <button class="back" onclick="show('rights',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_rights"></span></button>
+    <h2 class="section-title" data-t="ask_title"></h2>
+    <p class="pw-note" data-t="ask_sub"></p>
+    <div id="askBody"></div>
+    <p class="disclaimer" data-t="ask_disc"></p>
   </section>
 
   <!-- ACCOUNT (tab root) -->
@@ -2053,8 +2091,8 @@ const T = {
      true for anyone who does not opt in. It stops being true the moment the
      optional Claude read is both configured and accepted, so these variants
      replace it rather than the promise being quietly softened for everyone. */
-  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. القراءة الأعمق للعقد هي الاستثناء الوحيد، وما تصير إلا بموافقتك.",
-                   en:"Your text is analyzed on your device. The closer contract read is the one exception, and only with your consent."},
+  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك.",
+                   en:"Your text is analyzed on your device. The only exceptions are optional, and happen only with your consent."},
   my_contracts:{ar:"عقودي",en:"My contracts"},
   mc_empty:{ar:"ما حلّلت أي عقد بعد.",en:"You haven't analyzed a contract yet."},
   mc_open:{ar:"افتحه",en:"Open"},
@@ -2065,6 +2103,9 @@ const T = {
   r_eos_d:{ar:"رقم دقيق بالحساب خطوة بخطوة — مجانًا",en:"An exact figure with the arithmetic shown — free"},
   r_know:{ar:"اعرف حقوقك في عقد وقّعته",en:"Know your rights in a signed contract"},
   r_know_d:{ar:"نقرأه ونوضّح وش ملزم ووش قابل للاعتراض",en:"We read it and show what binds you and what's contestable"},
+  r_ask:{ar:"اسأل سؤالك",en:"Ask a question"},
+  r_ask_d:{ar:"جواب من نظام العمل، ومعه مصدره — أو اعتراف بأننا ما تحققنا",
+           en:"An answer from the labour law with its source — or an admission we haven't verified it"},
   r_case:{ar:"جهّز ملف قضيتك",en:"Build a case file"},
   r_case_d:{ar:"احسب مستحقك أولًا، وبعدها نجمع الملف",en:"Calculate what you're owed first, then we assemble the file"},
   acc_title:{ar:"حسابك",en:"Your account"},
@@ -2077,8 +2118,8 @@ const T = {
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه استثناءان، كلاهما اختياري وكلاهما يحتاج موافقتك الصريحة. وهما منفصلان عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\nالاثنان يمرّان بخادم وضوح إلى نموذج Claude من Anthropic، ولا يُحفظ شيء في أي مرحلة. ولا واحد منهما يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتهما، التقييم يشتغل كامل.",
-                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are two exceptions. Both are optional, both need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\nBoth go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. Neither can change any amount — all the arithmetic stays on your device. Decline both and the assessment works in full."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n٣ — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، ولا يُحفظ شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
+                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -2645,6 +2686,51 @@ const T = {
   tm_l_close_firm:{ar:"شاكرًا لكم، وفي انتظار ردّكم.",en:"Thank you — I look forward to your response."},
   tm_l_close_formal:{ar:"وتفضلوا بقبول فائق الاحترام،",en:"Yours faithfully,"},
   tm_l_sign:{ar:"[اسمك]",en:"[Your name]"},
+
+  /* ---- ask: a question the app was not built to answer.
+     Every line here is written to make one distinction impossible to miss —
+     an answer we verified against a source, and an answer we did not. The
+     second is still offered, because "we can't help you" is worse than a
+     labelled best effort. It is never dressed as the first. */
+  ask_title:{ar:"اسأل سؤالك",en:"Ask a question"},
+  ask_sub:{ar:"نجاوبك من نظام العمل السعودي على قدر ما تحققنا منه — ونقول لك بصراحة متى ما تحققنا.",
+           en:"We answer from the Saudi Labor Law as far as we have verified it — and we say plainly when we haven't."},
+  ask_ph:{ar:"مثال: متى المفروض توصلني مستحقاتي بعد ما طلعت من الشركة؟",
+          en:"Example: when should my final settlement reach me after I leave?"},
+  ask_go:{ar:"اسأل",en:"Ask"},
+  ask_again:{ar:"اسأل سؤالًا ثانيًا",en:"Ask another question"},
+  ask_consent_h:{ar:"وش يطلع من جهازك؟",en:"What leaves your device"},
+  ask_consent_b:{ar:"سؤالك كما كتبته، ولا شيء غيره. يُرسل لخادم وضوح ومنه لنموذج Claude من Anthropic، ولا يُحفظ في أي مرحلة. ما نرسل اسمك ولا راتبك ولا تواريخك ولا إجاباتك إلا إذا علّمت الخيار الثاني تحت.",
+                 en:"Your question, exactly as you typed it, and nothing else. It goes to Wodouh's server and from there to Anthropic's Claude model, and is not stored at any stage. Your name, wage, dates and answers do not go unless you tick the second box below."},
+  ask_agree:{ar:"فاهم، وأوافق على إرسال سؤالي",en:"I understand, and I agree to send my question"},
+  ask_ctx_h:{ar:"تبي الجواب يكون على حالتك أنت؟",en:"Want the answer to be about your case?"},
+  ask_ctx_b:{ar:"لو علّمت هنا، نرسل معه إجاباتك في حاسبة نهاية الخدمة: تواريخ عملك، أجرك، نوع عقدك، وكيف انتهت العلاقة. هذا أكثر بكثير من السؤال وحده، وقرارك أنت. الجواب يصير مرتبط بوضعك، لكن الأرقام تظل محسوبة على جهازك — النموذج ما يحسب لك ريالًا واحدًا.",
+             en:"Tick this and we also send your answers from the end-of-service calculator: your dates, your wage, your contract type, and how the relationship ended. That is materially more than the question alone, and it is your call. The answer becomes about your situation — but the figures stay computed on your device. The model never calculates a riyal for you."},
+  ask_ctx_agree:{ar:"أرسل تفاصيل حالتي مع السؤال",en:"Send my case details with the question"},
+  ask_ctx_none:{ar:"ما عندك تفاصيل محفوظة بعد — جاوب أسئلة حاسبة نهاية الخدمة أول عشان يصير فيه شي نرسله.",
+                en:"You have no saved details yet — answer the end-of-service questions first and there will be something to send."},
+  ask_left_one:{ar:"باقي لك سؤال واحد اليوم",en:"One question left today"},
+  ask_left_n:{ar:"باقي لك {n} أسئلة اليوم",en:"{n} questions left today"},
+  ask_none_left:{ar:"خلصت أسئلة اليوم. ترجع بكرة — وكل شي ثاني في وضوح شغّال زي ما هو.",
+                 en:"That's today's questions. Come back tomorrow — everything else in Wodouh still works as normal."},
+  ask_busy:{ar:"نقرأ سؤالك…",en:"Reading your question…"},
+
+  /* The two tiers, named on screen in the reader's own terms. */
+  ask_tier_v:{ar:"جواب مبني على مصدر تحققنا منه",en:"Answered from a source we verified"},
+  ask_tier_u:{ar:"⚠ معلومة عامة — ما تحققنا منها",en:"⚠ General knowledge — not verified by us"},
+  ask_unv_b:{ar:"هذا السؤال ما يغطيه أي مصدر تحققنا منه، فالجواب فوق معرفة عامة عن نظام العمل السعودي، وضوح ما راجعها ولا تحمل رقم مادة. لا تبني عليها قرارًا نهائيًا — استخدمها عشان تعرف وش تسأل عنه بعدين.",
+             en:"No source we have verified covers this question, so the answer above is general knowledge about Saudi labour law. Wodouh has not checked it, and it carries no article number. Don't make a final decision on it — use it to know what to ask about next."},
+  ask_src_h:{ar:"المصادر اللي بنينا عليها",en:"What this is built on"},
+  ask_ref:{ar:"ما نقدر نجاوب على هذا السؤال بثقة، وما راح نخمّن. جرّب تصيغه بشكل ثاني، أو ارفعه لمكتب محاماة.",
+           en:"We can't answer this one with confidence, and we won't guess. Try rephrasing it, or take it to a lawyer."},
+  ask_ref_citation:{ar:"الجواب اللي رجع ذكر رقم مادة ما نقدر نأكده، فحجبناه بالكامل. حذف الرقم وحده كان بيخلي الجملة تبين كأنها ما ادّعت شي — وهذي كذبة أكبر.",
+                    en:"The answer that came back named an article we cannot confirm, so we withheld all of it. Removing just the number would have left a sentence that looks like it never made a legal claim — a bigger lie than the one we removed."},
+  ask_ref_money:{ar:"الجواب اللي رجع ذكر مبلغًا بالريال، والنموذج عندنا ما يحسب فلوس أبدًا. الأرقام كلها تطلع من حاسبتك على جهازك.",
+                 en:"The answer that came back stated a riyal amount. The model here never computes money — every figure in Wodouh comes from your own calculator, on your device."},
+  ask_err:{ar:"ما قدرنا نوصل للخدمة. جرّب بعد شوي.",en:"We couldn't reach the service. Try again shortly."},
+  ask_empty:{ar:"اكتب سؤالك أول.",en:"Type your question first."},
+  ask_disc:{ar:"وضوح ما هو مكتب محاماة، وهذا الجواب ما هو استشارة قانونية.",
+            en:"Wodouh is not a law firm and this answer is not legal advice."},
 
   ai_title:{ar:"قراءة أعمق لعقدك",en:"A closer read of your contract"},
   ai_tag:{ar:"اختياري",en:"Optional"},
@@ -3553,6 +3639,7 @@ function show(name, back){
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
+  if (typeof renderAskEntry === "function") renderAskEntry();
   if (typeof armReveals === "function") requestAnimationFrame(()=>armReveals(el));
 }
 
@@ -5607,6 +5694,202 @@ function renderAiPanel(){
   bindReviewConsent();
 }
 
+/* ============================================================ ask
+ *
+ * A question box, which is the most dangerous thing in this app.
+ *
+ * Everything else here answers from rules a human verified, or refuses. This
+ * answers open questions, and the honest position is that most of them fall
+ * outside what we have verified. Two decisions follow from that, and they are
+ * the whole design:
+ *
+ *   1. AN UNVERIFIED ANSWER IS STILL OFFERED. "We can't help you" is worse
+ *      for someone who has just lost their income than a clearly labelled
+ *      best effort. But it is labelled by the SERVER, on the evidence of what
+ *      the answer actually cited — never by the model's own say-so, and never
+ *      by this file, which cannot check anything.
+ *
+ *   2. THE LABEL IS THE PRODUCT. A verified answer carries the register rows
+ *      it stands on, in the same .src-line.law style every other legal claim
+ *      in Wodouh uses. An unverified answer gets a visually distinct block
+ *      that says, in the reader's own language, that we have not checked it
+ *      and it carries no article number. If those two ever start looking
+ *      alike, this feature has become the thing the rest of the app exists to
+ *      avoid.
+ *
+ * The daily cap is per device and lives with the rest of the saved state. It
+ * exists because this costs real money per question, and because a reader who
+ * asks forty questions in an evening is not being helped by the fortieth.
+ */
+const ASK_PER_DAY = 5;
+let askUsed = { day:"", n:0 };
+let askConsent = false, askCtxConsent = false;
+let askBusy = false, askAnswer = null, askError = null, askText = "";
+
+function askAvailable(){ return aiAvailable(); }
+function askToday(){ return new Date().toISOString().slice(0,10); }
+function askLeft(){
+  if (askUsed.day !== askToday()) return ASK_PER_DAY;
+  return Math.max(0, ASK_PER_DAY - askUsed.n);
+}
+function askSpend(){
+  const d = askToday();
+  askUsed = askUsed.day === d ? { day:d, n:askUsed.n + 1 } : { day:d, n:1 };
+  saveState();
+}
+
+/* The entry only exists in a build that can actually answer. */
+function renderAskEntry(){
+  const b = document.getElementById("askEntry");
+  if (b) b.hidden = !askAvailable();
+}
+
+function openAsk(){ askAnswer = null; askError = null; renderAsk(); show("ask"); }
+
+/* What we would send if the reader ticks the second box — and the same object
+   is what the panel describes, so the copy cannot drift from the payload. */
+function askCtx(){
+  if (!term) return null;
+  const h = termHow();
+  const out = {
+    track: nat, how: term.how, contract: term.ctype,
+    start: term.start, end: term.end,
+    wage: term.wage, basic: term.basic
+  };
+  if (h && h.award === "resign") out.article87 = term.exc87;
+  return Object.keys(out).some(k => out[k] !== null && out[k] !== undefined && out[k] !== "")
+    ? out : null;
+}
+
+function renderAsk(){
+  const host = document.getElementById("askBody");
+  if (!host) return;
+  const left = askLeft(), ctx = askCtx();
+
+  if (askBusy){
+    host.innerHTML = `<div class="tm-sec"><p>${t("ask_busy")}</p></div>`;
+    return;
+  }
+
+  let out = "";
+
+  if (askAnswer) out += askAnswerHtml(askAnswer);
+  if (askError) out += `<div class="tm-sec"><p>${t(askError)}</p></div>`;
+
+  if (left <= 0){
+    out += `<div class="tm-sec"><p>${t("ask_none_left")}</p></div>`;
+    host.innerHTML = out;
+    return;
+  }
+
+  out +=
+    `<div class="tm-sec">
+       <textarea id="askQ" class="ask-q" rows="3" placeholder="${esc(t("ask_ph"))}">${esc(askText)}</textarea>
+       <p><b>${t("ask_consent_h")}</b></p>
+       <p>${t("ask_consent_b")}</p>
+       <label class="ai-agree"><input type="checkbox" id="askAgree"${askConsent ? " checked" : ""}/>
+         <span>${t("ask_agree")}</span></label>
+       <div class="ask-ctx">
+         <p><b>${t("ask_ctx_h")}</b></p>
+         ${ctx
+           ? `<p>${t("ask_ctx_b")}</p>
+              <label class="ai-agree"><input type="checkbox" id="askCtxAgree"${askCtxConsent ? " checked" : ""}/>
+                <span>${t("ask_ctx_agree")}</span></label>`
+           : `<p class="tq-skip">${t("ask_ctx_none")}</p>`}
+       </div>
+       <button class="ghost wide" id="askGo" disabled>${askAnswer ? t("ask_again") : t("ask_go")}</button>
+       <p class="tq-skip">${left === 1 ? t("ask_left_one") : t("ask_left_n").replace("{n}", fmtNum(left))}</p>
+     </div>`;
+
+  host.innerHTML = out;
+
+  const box = document.getElementById("askAgree"), go = document.getElementById("askGo"),
+        q = document.getElementById("askQ"), ctxBox = document.getElementById("askCtxAgree");
+  const sync = () => { go.disabled = !(box.checked && q.value.trim()); };
+  box.onchange = () => { askConsent = box.checked; sync(); };
+  q.oninput = () => { askText = q.value; sync(); };
+  if (ctxBox) ctxBox.onchange = () => { askCtxConsent = ctxBox.checked; };
+  go.onclick = askRun;
+  sync();
+}
+
+/* Every field rendered with textContent-equivalent escaping. The answer is
+   model output and the claims are our own file, but both go through esc()
+   because the day one of them doesn't is the day this stops being true. */
+function askAnswerHtml(a){
+  if (a.tier === "refused"){
+    const why = a.reason === "citation" ? "ask_ref_citation"
+              : a.reason === "money" ? "ask_ref_money" : "ask_ref";
+    return `<div class="tm-sec ask-ref"><p>${t(why)}</p></div>`;
+  }
+  if (a.tier === "verified"){
+    return `<div class="tm-sec ask-ans verified">
+       <div class="hd"><b>${t("ask_tier_v")}</b></div>
+       <p class="ask-body">${esc(a.answer)}</p>
+       <p class="ask-src-h">${t("ask_src_h")}</p>
+       ${a.cites.map(c => `<div class="src-line law">${c.article ? "§ " + esc(String(c.article)) + " — " : ""}${esc(c.claim)}</div>`).join("")}
+     </div>`;
+  }
+  return `<div class="tm-sec ask-ans unverified">
+     <div class="hd"><b>${t("ask_tier_u")}</b></div>
+     <p class="ask-body">${esc(a.answer)}</p>
+     <p class="ask-unv">${t("ask_unv_b")}</p>
+   </div>`;
+}
+
+async function askRun(){
+  const url = analyzeUrl();
+  const q = (document.getElementById("askQ") || {}).value || "";
+  if (!url || !askConsent) return;
+  if (!q.trim()){ askError = "ask_empty"; renderAsk(); return; }
+  if (askLeft() <= 0){ renderAsk(); return; }
+
+  askText = ""; askBusy = true; askError = null; askAnswer = null; renderAsk();
+  /* Spent on the attempt, not on the answer. A cap that only counts successes
+     is a cap a retry loop walks straight through. */
+  askSpend();
+
+  try {
+    const body = { kind:"ask", q: q.trim().slice(0, 600), lang };
+    /* Sent only on an explicit, separate tick — and read fresh here rather
+       than trusted from a flag set earlier in the session. */
+    if (askCtxConsent && askCtx()) body.ctx = askCtx();
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const d = await res.json().catch(() => null);
+    if (!res.ok || !d || typeof d.tier !== "string"){
+      askError = res.status === 429 ? "ai_busy" : "ask_err";
+    } else {
+      /* Coerced again on this side. The server already graded it; this guards
+         the one class of bug that would put unlabelled text on screen — a
+         tier we do not recognise must never render as the verified one. */
+      const tier = d.tier === "verified" || d.tier === "refused" ? d.tier : "unverified";
+      askAnswer = {
+        tier,
+        reason: typeof d.reason === "string" ? d.reason : null,
+        answer: String(d.answer || "").slice(0, 1500),
+        cites: tier === "verified" && Array.isArray(d.cites)
+          ? d.cites.slice(0, 6).map(c => ({
+              article: c && c.article ? String(c.article).slice(0, 60) : null,
+              claim: String(c && c.claim || "").slice(0, 600)
+            })).filter(c => c.claim)
+          : []
+      };
+      /* A verified answer with nothing under it is not a verified answer.
+         The server enforces this too; disagreeing with it here means
+         something is wrong, and the safe reading is the weaker one. */
+      if (askAnswer.tier === "verified" && !askAnswer.cites.length) askAnswer.tier = "unverified";
+    }
+  } catch(e){
+    askError = "ai_offline";
+  }
+  askBusy = false;
+  renderAsk();
+}
+
 /* A separate opt-in, because it sends something different. Folding it into the
    contract-read consent would make that consent's own promise — "not your
    figures, your answers" — a lie. */
@@ -6865,6 +7148,7 @@ function saveState(){
       timelyOff, installOff,
       usedCodes,
       owned, packUntil,
+      askUsed,
       term,
       contracts: myContracts.slice(0,8),
       tracked: TRACKED.map(x=>({ doc:x.doc, events:x.events.map(e=>({ ...e })) }))
@@ -6888,6 +7172,18 @@ function loadState(){
     installOff = d.installOff === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
+
+    /* The daily question cap. Rebuilt with the same suspicion as everything
+       else read back from storage — a hand-edited count is the obvious way to
+       walk through it, and a NaN would make askLeft() return NaN and disable
+       the button forever, which is a worse failure than a free question. */
+    askUsed = { day:"", n:0 };
+    if (d.askUsed && typeof d.askUsed === "object"){
+      const day = typeof d.askUsed.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.askUsed.day)
+        ? d.askUsed.day : "";
+      const n = Number(d.askUsed.n);
+      if (day) askUsed = { day, n: Number.isFinite(n) ? Math.min(Math.max(0, Math.floor(n)), 999) : 0 };
+    }
 
     /* Entitlement read back from storage is untrusted like everything else
        here. A value survives only if it names a plan that exists in that

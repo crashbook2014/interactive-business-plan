@@ -141,6 +141,186 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(articlesIn("she is 84 years old").length === 0,
      "a bare number that is not a citation is not treated as one");
 
+  /* ======================================================================
+     The other half: what a reader actually sees.
+     The grader above decides the tier; these assertions are about whether the
+     screen makes that decision legible — and about the promise the consent
+     text makes, which is checked against the bytes on the wire rather than
+     against the copy. */
+  const { playwright, launchOpts, APP } = require("./_env.js");
+  const { chromium } = playwright();
+  const AI_HOST = "https://stub.supabase.co";
+  const b = await chromium.launch(launchOpts());
+
+  /* ---- 7. what ships today */
+  console.log("\n— the shipped build cannot ask anything");
+  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const off = [];
+  p0.on("request", r => { if (!r.url().startsWith("http://127.") && !r.url().startsWith("http://localhost")) off.push(r.url()); });
+  p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p0.goto(APP);
+  await p0.waitForFunction(() => typeof window.show === "function");
+  const shipped = await p0.evaluate(() => {
+    show("rights");
+    return { hidden: document.getElementById("askEntry").hidden, avail: askAvailable() };
+  });
+  ok(shipped.hidden === true, "with no endpoint configured, the ask entry does not exist for a reader");
+  ok(shipped.avail === false, "and the app knows it cannot answer");
+  ok(off.length === 0, `and the page makes no off-origin request${off.length ? ": " + off.join(", ") : ""}`);
+  await p0.close();
+
+  /* ---- 8. configured: consent gates the send */
+  console.log("\n— consent gates the send, and the payload matches what the consent promised");
+  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  /* The shipped CSP is closed to everything, so the AI-enabled policy is
+     served here — the same single-host grant a real deployment would make. */
+  await p.route("**/app/", async route => {
+    const res = await route.fetch();
+    const body = (await res.text()).replace("connect-src 'none'", `connect-src ${AI_HOST}`);
+    await route.fulfill({ response: res, body });
+  });
+  let sent = [], reply = null;
+  await p.route(`${AI_HOST}/**`, async route => {
+    sent.push(JSON.parse(route.request().postData() || "{}"));
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(reply) });
+  });
+  await p.addInitScript(() => {
+    window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
+  });
+  await p.goto(APP);
+  await p.waitForFunction(() => typeof window.show === "function");
+
+  const opened = await p.evaluate(() => {
+    lang = "en"; applyLang(); nat = "sa";
+    term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01", end:"2026-01-01", wage:10000 });
+    show("rights");
+    const entry = document.getElementById("askEntry").hidden;
+    openAsk();
+    document.getElementById("askQ").value = "When is my final settlement due?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    return { entry, goDisabled: document.getElementById("askGo").disabled };
+  });
+  ok(opened.entry === false, "configured: the ask entry appears");
+  ok(opened.goDisabled === true, "typing a question is not enough — the button stays disabled until consent");
+  ok(sent.length === 0, "and opening the screen and typing has sent nothing");
+
+  reply = { tier:"verified", answer:"Within one week where the employer ended it.",
+            cites:[{ id:"art-88", article:"88", claim:"Final settlement is due within one week…" }] };
+  await p.evaluate(async () => {
+    const box = document.getElementById("askAgree");
+    box.checked = true; box.dispatchEvent(new Event("change"));
+    await askRun();
+  });
+  ok(sent.length === 1, "ticking the box and pressing ask sends exactly one request");
+  ok(sent[0].kind === "ask" && typeof sent[0].q === "string", "the request is an ask");
+  /* The consent says the wage, dates and answers do not go. This is that
+     sentence, checked against the wire. */
+  ok(!("ctx" in sent[0]), "and it carries NO case details, because the second box was not ticked");
+  const wire = JSON.stringify(sent[0]);
+  ok(!/10000|2020-01-01|2026-01-01/.test(wire),
+     "no wage and no date appear anywhere in the payload");
+
+  /* The privacy copy has to track the build. A third thing can now leave the
+     device, and a page that still says "two exceptions" is false. */
+  console.log("\n— the privacy copy counts the exceptions this build actually has");
+  const priv = await p.evaluate(() => {
+    renderPrivacyCopy();
+    return { acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent,
+             home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent };
+  });
+  ok(/three exceptions/i.test(priv.acc), "the account page says three exceptions, not two");
+  ok(/Ask a question/i.test(priv.acc), "and names the question box as one of them");
+  ok(!/the one exception/i.test(priv.home), "and the home line no longer claims a single exception");
+
+  /* ---- 9. the two tiers are not mistakable for each other */
+  console.log("\n— a verified answer and an unverified one do not look alike");
+  const ver = await p.evaluate(() => {
+    const el = document.querySelector(".ask-ans");
+    return { cls: el.className, srcLines: el.querySelectorAll(".src-line.law").length,
+             text: el.textContent };
+  });
+  ok(/verified/.test(ver.cls) && !/unverified/.test(ver.cls), "the verified answer is marked verified");
+  ok(ver.srcLines === 1, "and carries its source row in the same style as every other legal claim");
+  ok(/§ 88/.test(ver.text), "with the article number shown");
+
+  reply = { tier:"unverified", answer:"Wages are generally paid monthly.", cites:[] };
+  const unv = await p.evaluate(async () => {
+    document.getElementById("askQ").value = "When is my wage due?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    const el = document.querySelector(".ask-ans");
+    return { cls: el.className, srcLines: el.querySelectorAll(".src-line.law").length,
+             text: el.textContent };
+  });
+  ok(/unverified/.test(unv.cls), "the unverified answer is marked unverified");
+  ok(unv.srcLines === 0, "and shows no source line, because it has no source");
+  ok(/not verified/i.test(unv.text) && /no article number/i.test(unv.text),
+     "and says in words that we have not checked it and it carries no article number");
+
+  /* ---- 10. the client demotes too, and renders model output as text */
+  console.log("\n— the browser never upgrades what the server sent");
+  reply = { tier:"verified", answer:"Trust me.", cites:[] };
+  const empty = await p.evaluate(async () => {
+    document.getElementById("askQ").value = "Anything?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    return document.querySelector(".ask-ans").className;
+  });
+  ok(/unverified/.test(empty),
+     "a reply claiming verified with no sources renders as unverified even if the server let it through");
+
+  reply = { tier:"unverified", answer:"<img src=x onerror=alert(1)> <b>bold</b>", cites:[] };
+  const markup = await p.evaluate(async () => {
+    document.getElementById("askQ").value = "Markup?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    const el = document.querySelector(".ask-body");
+    return { html: el.innerHTML, text: el.textContent, imgs: el.querySelectorAll("img,b").length };
+  });
+  ok(markup.imgs === 0, "markup returned by the model becomes visible text, never DOM");
+  ok(markup.text.includes("<img"), "and the reader sees exactly what was returned");
+
+  /* ---- 11. a refusal explains itself */
+  console.log("\n— a refusal says which rule refused it");
+  reply = { tier:"refused", reason:"money", answer:"", cites:[] };
+  const ref = await p.evaluate(async () => {
+    document.getElementById("askQ").value = "How much am I owed?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    return document.getElementById("askBody").textContent;
+  });
+  ok(/never computes money|riyal amount/i.test(ref),
+     "a money refusal tells the reader the model never computes money here");
+
+  /* ---- 12. the cap is real and survives a reload */
+  console.log("\n— the daily cap holds, and holds across a reload");
+  const capped = await p.evaluate(async () => {
+    askUsed = { day:new Date().toISOString().slice(0,10), n:99 }; saveState();
+    renderAsk();
+    return { left: askLeft(), hasBox: !!document.getElementById("askQ"),
+             text: document.getElementById("askBody").textContent };
+  });
+  ok(capped.left === 0 && !capped.hasBox, "at the cap the question box is gone, not merely disabled");
+  ok(/today/i.test(capped.text), "and the reader is told it resets");
+  await p.reload();
+  await p.waitForFunction(() => typeof window.show === "function");
+  const afterReload = await p.evaluate(() => { openAsk(); return askLeft(); });
+  ok(afterReload === 0, "and a reload does not hand out five more questions");
+
+  /* A hand-edited count must not be able to disable the feature permanently
+     either — the failure mode of a NaN is worse than a free question. */
+  const junk = await p.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem("wodouh.v1"));
+    raw.askUsed = { day:"not-a-day", n:"lots" };
+    localStorage.setItem("wodouh.v1", JSON.stringify(raw));
+    loadState();
+    return { left: askLeft(), finite: Number.isFinite(askLeft()) };
+  });
+  ok(junk.finite && junk.left > 0, "a corrupted count falls back to a working state rather than a locked one");
+
+  await b.close();
+
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nall grounded-answer checks passed");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

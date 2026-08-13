@@ -133,14 +133,25 @@ async function serveWithAiCsp(page){
     return { home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent,
              acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
   });
-  ok(!/never leaves it/i.test(claim2.home) && /one exception/i.test(claim2.home),
+  ok(!/never leaves it/i.test(claim2.home) && /exceptions? are optional|one exception/i.test(claim2.home),
      "configured: the home privacy line states the exception instead");
   ok(/Anthropic/.test(claim2.acc) && /explicit agreement/i.test(claim2.acc),
-     "configured: the account screen names Anthropic and says both flows are opt-in");
-  ok(/two exceptions/i.test(claim2.acc) && /reason field/i.test(claim2.acc),
-     "configured: it names both flows and says the reason text is sent by the review");
-  ok(/Neither can change any amount/i.test(claim2.acc),
-     "configured: it states that neither flow can move a figure");
+     "configured: the account screen names Anthropic and says the flows are opt-in");
+  /* Enumerated rather than counted. Every path that can send something off the
+     device must be named on this page — the failure this catches is a fourth
+     one being added and the copy still describing three. If you add a flow,
+     add it here; that is the point. */
+  const FLOWS = [/A closer read of your contract/i, /AI second-pass review/i, /Ask a question/i];
+  const named = FLOWS.filter(re => re.test(claim2.acc)).length;
+  ok(named === FLOWS.length,
+     `configured: every off-device flow is named on the privacy page (${named}/${FLOWS.length})`);
+  const count = (claim2.acc.match(/There are (\w+) exceptions?/i) || [])[1];
+  ok(({ one:1, two:2, three:3, four:4 })[String(count).toLowerCase()] === FLOWS.length,
+     `configured: and the number it claims matches the number there are (says "${count}")`);
+  ok(/reason field/i.test(claim2.acc),
+     "configured: it still says the reason text is sent by the review");
+  ok(/can change any amount/i.test(claim2.acc),
+     "configured: it states that no flow can move a figure");
   ok(!/We don't upload it, store it, or share it/.test(claim2.acc),
      "configured: the now-false unconditional sentence is gone");
   ok(on.goDisabled === true, "the send button starts disabled");

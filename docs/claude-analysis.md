@@ -1,17 +1,21 @@
 # Claude analysis — setup, and what it costs
 
-Two optional features, one endpoint. **Both are off in every build that
-ships**, and turning either on changes the most important thing about this
-product.
+Three optional features, one endpoint. **All are off in every build that
+ships**, and turning any of them on changes the most important thing about
+this product.
 
 | Mode | What it does | What leaves the device |
 |---|---|---|
 | `contract` | Reads the contract text more closely than 17 regular expressions can | The contract text alone |
 | `review` | A critical second pass over an assessment the app already produced | The whole assessment — dates, wage, every amount, and the free text the reader typed about why they were let go |
+| `ask` | Answers a question against the verified legal register | The question as typed. Dates, wage, contract type and how the job ended **only** if a second, separate box is ticked |
 
 They are **separate opt-ins** on purpose. Folding them into one would make the
 contract-read consent's own promise — *"not your figures, your answers"* — a
 lie.
+
+`ask` is the one that answers questions the product was not built to answer,
+so it carries a guarantee the other two do not need — see **Grounding** below.
 
 Read the trade before the setup.
 
@@ -226,3 +230,73 @@ budget someone else can consume.
 Remove `ANALYZE_URL` from `config.js`. The panel stops rendering, no request
 is made, and the app's unconditional privacy promise becomes true again on the
 next load. Nothing else needs undoing.
+
+
+---
+
+## Grounding — how `ask` avoids becoming the thing this app exists to avoid
+
+A question box attached to a legal product is the fastest way to destroy it.
+The rest of Wodouh answers from rules a human verified, or refuses. `ask`
+answers open questions, and most open questions fall outside what we verified.
+
+The design admits that rather than papering over it, in one decision and three
+mechanisms.
+
+**The decision: an unverified answer is still offered, and labelled.** "We
+can't help you" is worse for someone who has just lost their income than a
+clearly labelled best effort. So the reader gets one of two things, and they do
+not look alike on screen:
+
+| Tier | What the reader sees |
+|---|---|
+| **verified** | The answer, plus the register rows it stands on, in the same `.src-line.law` style every other legal claim in the app uses |
+| **unverified** | The answer in an amber-edged block, with a sentence saying Wodouh has not checked it and that it carries no article number |
+
+**Mechanism 1 — the model only ever sees verified rows.**
+`tools/make-corpus.mjs` reads `docs/legal-sources.md` and keeps only rows
+marked `✅ verified`. Today that is 29 of 31. Article 53 is excluded because it
+is under open dispute; Article 81 because its row is verified as to the grounds
+while its award consequence is a reading. **Neither has to be declined by the
+model — neither is ever received.**
+
+Regenerate and commit after any register change:
+
+```
+node tools/make-corpus.mjs
+```
+
+`test/ask.test.js` fails if the committed corpus and the register disagree, so
+the two cannot drift apart quietly.
+
+**Mechanism 2 — the server decides the tier, not the reply.** The model
+proposes a tier and the row ids it used. `gradeAnswer()` in
+`supabase/functions/_shared/grade.mjs` resolves those ids against the corpus
+and demotes anything that claims `verified` while citing nothing real.
+
+**Mechanism 3 — two things can never appear in an answer that a cited row does
+not contain: an article number, and a riyal figure.** Not stripped — the whole
+answer is refused, and the reader is told which rule refused it. Removing a
+citation from a sentence leaves a sentence that reads as though it never made a
+legal claim, which is a worse lie than the one being removed. Both checks
+handle Arabic text and Arabic-Indic digits, because a rule that only holds in
+English is not a rule in this app.
+
+The exception that proves the money rule is real: a verified row genuinely
+contains the SAR 45,000 GOSI contributable-wage cap, and quoting it is correct.
+Figures are compared as numbers against the cited rows, not as substrings.
+
+### Limits worth knowing before you switch it on
+
+- **The corpus is thin.** 29 rows is not a labour-law encyclopaedia. Expect a
+  high proportion of unverified answers in the first weeks. The fix is to
+  verify more rows into the register, not to loosen the grader.
+- **The unverified tier ships legal statements Wodouh has not checked**, under
+  Wodouh's name. That was a deliberate product decision. If it is ever
+  reversed, the change is one line in `gradeAnswer` — refuse instead of
+  returning the `unverified` tier — plus the copy that explains it.
+- **The cap is client-side.** `ASK_PER_DAY` is five questions per device per
+  day, stored in `localStorage` with the rest of the state and validated on
+  read. Someone who clears storage gets five more. The server's per-IP rate
+  limit is the real ceiling; the daily cap is there to keep an honest reader
+  from running up a bill by accident.
