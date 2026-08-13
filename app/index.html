@@ -5839,6 +5839,27 @@ function renderTermLtr(){
 
 /* ------------------------------------------------ plans & business tier */
 let billing = "month", planBack = "home", plan = "free";
+
+/* THE SUBSCRIPTION LADDER IS NOT BUILT, SO IT IS NOT SOLD.
+   Shipped dark for the same reason as the AI, the lawyer desk and the
+   redemption codes: what is behind it does not exist yet.
+
+   What was wrong with showing it: choosePlan() sets `plan` directly — no
+   paywall, no payment simulation, no PAYMENT_LIVE check — bypassing
+   grantAndGo(), which is documented as the single route to the paid state.
+   `plan` is then read in two places, both cosmetic, and gates nothing. So the
+   screen advertised "Unlimited assistant questions", "Letter drafting" and
+   "Deadline reminders" while delivering none of them, plus a discounted lawyer
+   review that no lawyer can perform and API access to an API that does not
+   exist. Its four prices were also invisible to ladderBreaks(), the invariant
+   that exists to stop exactly this.
+
+   Tolerable on a hobby URL. Not on a real domain, where it is a public claim.
+
+   Flip this to true only when: PLANS_T enters ladderBreaks(), the lawyer
+   features pass through sellable(), choosePlan() routes through the paywall
+   and grantAndGo(), and FREE_QUESTIONS is actually gated on `plan`. */
+const SUBSCRIPTIONS_LIVE = false;
 let pwMode = "letter";
 /* Set to a plan id when the paywall is opened to sell a step up rather than a
    first purchase. Null on every ordinary entry. */
@@ -5856,7 +5877,12 @@ const PLANS_T = [
 const TICK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>';
 const DASH = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h8"/></svg>';
 
-function openPlans(from){ planBack = from || "home"; renderPlans(); show("plans"); }
+/* Guarded at the door rather than only at the callers, so a route added later
+   cannot reopen a screen that sells things which do not exist. */
+function openPlans(from){
+  if (!SUBSCRIPTIONS_LIVE) return;
+  planBack = from || "home"; renderPlans(); show("plans");
+}
 
 function renderPlans(){
   document.getElementById("plBackLabel").textContent = t(planBack==="assist" ? "as_title" : "back_home");
@@ -6038,10 +6064,16 @@ function renderQuota(){
   q.innerHTML = "";
   const b = document.createElement("b"); b.textContent = t("as_quota_t");
   const p = document.createElement("span"); p.textContent = t("as_quota_b");
-  const cta = document.createElement("button");
-  cta.textContent = t("as_quota_cta");
-  cta.onclick = ()=>{ buzz(10); openPlans("assist"); };
-  q.append(b, p, cta);
+  q.append(b, p);
+  /* No "Subscribe — 50 SAR/month" while there is nothing to subscribe to. The
+     free questions still end here; the reader is simply not sold a way out
+     that does not exist. */
+  if (SUBSCRIPTIONS_LIVE){
+    const cta = document.createElement("button");
+    cta.textContent = t("as_quota_cta");
+    cta.onclick = ()=>{ buzz(10); openPlans("assist"); };
+    q.append(cta);
+  }
   bar.style.display = "none";
 }
 
@@ -6652,7 +6684,9 @@ function renderAccount(){
   document.getElementById("accPlan").innerHTML =
     `<div class="acc-plan-row">
        <span><small>${t("acc_plan")}</small><b>${cur}</b></span>
-       <button class="mini-cta" onclick="openPlans('account')">${t("pl_title")}</button>
+       ${SUBSCRIPTIONS_LIVE
+         ? `<button class="mini-cta" onclick="openPlans('account')">${t("pl_title")}</button>`
+         : ""}
      </div>`;
   document.getElementById("accNotLawyer").textContent = t("as_not_lawyer");
   document.getElementById("accLangLabel").textContent = t("acc_lang") + " · " + (lang==="ar" ? "English" : "عربي");

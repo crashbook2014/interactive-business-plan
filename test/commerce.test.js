@@ -214,6 +214,31 @@ async function seedTermination(p){
   ok(lawyer.turnHiddenAgain,
      "and states none when none has been set — no unbacked \"within 24 hours\"");
 
+  /* --------------------------------- the subscription ladder stays dark */
+  console.log("\n— nothing sells a subscription that does not exist");
+
+  const subs = await p.evaluate(() => {
+    const out = { live: SUBSCRIPTIONS_LIVE };
+    /* Every route in: the assistant's quota gate and the account screen. */
+    chat.length = 0; asked = FREE_QUESTIONS; openAssist("home"); renderQuota();
+    out.quotaHasCta = !!document.querySelector("#quota button");
+    out.quotaStillExplains = (document.getElementById("quota").textContent || "").length > 20;
+    renderAccount();
+    out.accountHasCta = !!document.querySelector("#accPlan button");
+    /* And the door itself, in case a future route calls it directly. */
+    openPlans("home");
+    out.screenAfterOpenPlans = document.querySelector(".screen.active").id;
+    return out;
+  });
+  ok(subs.live === false, "the app ships with subscriptions dark");
+  ok(!subs.quotaHasCta,
+     "the assistant's free-question gate offers no subscription to buy");
+  ok(subs.quotaStillExplains,
+     "but it still explains that the free questions have ended");
+  ok(!subs.accountHasCta, "the account screen offers no plan upgrade");
+  ok(subs.screenAfterOpenPlans !== "screen-plans",
+     `openPlans() refuses to open the screen (landed on ${subs.screenAfterOpenPlans})`);
+
   /* ------------------------------- the lock strip must not oversell the tier */
   console.log("\n— the lock strip promises only what the selected tier delivers");
 
