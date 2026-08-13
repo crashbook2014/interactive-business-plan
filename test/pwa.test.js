@@ -234,8 +234,18 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      screen in front of it. The privacy promise depends on it never doing so. */
   const hosts = (sw.match(/https?:\/\/[^\s"')]+/g) || [])
     .filter(u => !/^https?:\/\/(localhost|127\.)/.test(u));
+  /* Note what this asserts and what it does not. It reads the worker's SOURCE,
+     because source is the only thing holding it closed: a <meta> CSP governs
+     the document, not a worker, and a worker's policy comes from headers on its
+     own script which GitHub Pages does not send. A red-team pass proved a fetch
+     from the worker context reaches a foreign origin while the same request
+     from the page is blocked. So this is a code review expressed as a test, not
+     a proof of enforcement — and it is worth more here than elsewhere, because
+     there is no policy behind it to catch what it misses. */
   ok(hosts.length === 0,
-     `the worker contacts no third party${hosts.length ? " — " + hosts.join(", ") : ""}`);
+     `the worker's source contacts no third party${hosts.length ? " — " + hosts.join(", ") : ""}`);
+  ok(/NOT THE CSP/.test(sw),
+     "and the worker says plainly that the CSP does not cover it");
   /* Comments stripped first: the worker's own header explains that it does no
      background sync, and matching that sentence was the first version of this
      assertion failing on its own documentation. */

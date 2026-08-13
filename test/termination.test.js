@@ -257,6 +257,9 @@ async function art87Certainty(p){
       const tot = money.querySelector(".r.tot");
       return { total: Math.round(termTotal()), has: !!el,
                text: el ? el.textContent.trim() : "",
+               /* the screen is where the honesty lives; the document is what
+                  actually reaches the employer, so it must carry it too */
+               doc: buildTermDoc(),
                /* it must sit INSIDE the money card, after the total */
                afterTotal: !!(el && tot && (tot.compareDocumentPosition(el) & 4)) };
     };
@@ -277,6 +280,14 @@ async function art87Certainty(p){
      "once answered either way, the note is gone");
   ok(rise.ar.has && /المادة ٨٧/.test(rise.ar.text),
      "and it renders in Arabic too");
+  /* The screen is read once. The document is the thing that gets sent — to the
+     employer, to a lawyer, into a friendly-settlement filing — and it was
+     carrying the understated total with nothing beside it. */
+  ok(/becomes the full one/i.test(rise.skipped.doc),
+     "the case file the employer receives carries the same note as the screen");
+  ok(!/becomes the full one/i.test(rise.marriage.doc) &&
+     !/becomes the full one/i.test(rise.none.doc),
+     "and drops it once the question is answered");
 
   /* EVERY answer must survive a reload, not just the ones someone remembered.
      exc87 was written by saveState and dropped by loadState, so a woman who

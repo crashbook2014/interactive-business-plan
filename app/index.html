@@ -5884,6 +5884,12 @@ function buildTermDoc(){
     t("tm_d_h_money"),
     ...(money$.length ? money$ : [t("tm_d_none")]),
     ...(money$.length ? [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`] : []),
+    /* The screen is where the honesty lives; this document is what actually
+       goes to the employer, the lawyer and the friendly-settlement filing. It
+       was carrying the understated total with no mention that an unanswered
+       question could raise it — the fix that moved this sentence to where the
+       money is on screen stopped one surface short of where the money goes. */
+    ...(money$.length ? termCouldRise().map(k => `⚠ ${t(k)}`) : []),
     t("tm_m_caveat"),
     "",
     t("tm_d_h_have"),

@@ -16,6 +16,22 @@
  * anything anywhere. If you find yourself adding a `fetch` to a third party
  * here, the privacy copy in the app has stopped being true.
  *
+ * AND THIS FILE IS THE ONLY THING ENFORCING THAT — NOT THE CSP.
+ *
+ * A red-team pass proved it: a fetch issued from this worker's context reached
+ * a foreign origin while the page's `connect-src 'none'` blocked every
+ * equivalent request from the page. A `<meta>` CSP governs the document, not a
+ * worker; a worker's policy comes from the response headers on its own script,
+ * and GitHub Pages sends none.
+ *
+ * So there is no second line of defence here. The page has one — the app's meta
+ * CSP is closed to everything, and pwa.test.js proves it with a live violation
+ * event. The worker has this comment and the code below it.
+ *
+ * If the site ever moves somewhere that can set headers, send
+ * `Content-Security-Policy: connect-src 'none'` on this file and the claim
+ * becomes structural instead of editorial.
+ *
  * CACHE STRATEGY
  *
  * Stale-while-revalidate on the shell. The page is one 500 KB HTML file plus
