@@ -65,9 +65,14 @@ async function serveWithAiCsp(page){
     renderTermEv(); show("termev");
     const host = document.getElementById("termAi");
     return { available: aiAvailable(), hidden: host.hidden, html: host.innerHTML.length,
-             cfg: typeof window.WODOUH_CONFIG };
+             cfg: typeof window.WODOUH_CONFIG,
+             url: (window.WODOUH_CONFIG || {}).ANALYZE_URL };
   });
-  ok(off.cfg === "undefined", "no config object ships");
+  /* The config object now exists inline — it is the documented off switch,
+     and it sits beside the CSP that has to be edited with it. What must be
+     true of a shipping build is not that the object is absent but that it
+     names no endpoint, so that is what this asserts. */
+  ok(!off.url, "the shipping build configures no endpoint");
   ok(off.available === false, "aiAvailable() is false without a URL");
   ok(off.hidden === true && off.html === 0, "the panel renders nothing at all");
 

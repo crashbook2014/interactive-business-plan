@@ -1932,6 +1932,47 @@
 </div>
 
 <script>
+/* ============================================ RUNTIME CONFIGURATION
+ *
+ * THE OFF SWITCH FOR EVERYTHING THAT LEAVES THE DEVICE.
+ *
+ * Empty is the shipping state and the only state in which Wodouh's
+ * "nothing leaves your device" promise is true without qualification.
+ * With ANALYZE_URL unset, analyzeUrl() returns null, every AI surface
+ * renders nothing at all, and the app makes zero off-origin requests —
+ * asserted by watching the network in claude-path.test.js and
+ * ask.test.js, not by reading this comment.
+ *
+ * It lives inline, in this file, on purpose. An external config.js would
+ * make turning the AI on a one-file change that nobody reviews; here it
+ * sits three lines from the CSP that must be edited in the same breath,
+ * and both edits show up in the same diff.
+ *
+ * TO ENABLE — both steps, or neither works:
+ *
+ *   1. Set ANALYZE_URL to your deployed Edge Function:
+ *        ANALYZE_URL: "https://<your-project-ref>.supabase.co/functions/v1/analyze"
+ *
+ *   2. Edit the Content-Security-Policy meta tag at the top of this file:
+ *        connect-src 'none'   ->   connect-src https://<your-project-ref>.supabase.co
+ *
+ *      Name that one host. NEVER the *.supabase.co wildcard — it is a
+ *      shared multi-tenant domain that anyone can register a project
+ *      inside, and this policy is the only thing standing between a
+ *      future script injection and a reader's contract text. GitHub
+ *      Pages sets no response headers, so there is no second line.
+ *
+ * Step 1 without step 2 is the confusing failure: the buttons appear and
+ * every request is blocked by the browser. Do both.
+ *
+ * Nothing secret goes here. This file is served to every visitor. The
+ * Anthropic key lives only in Supabase Edge Function secrets — see
+ * docs/claude-analysis.md.
+ */
+window.WODOUH_CONFIG = Object.assign({
+  ANALYZE_URL: ""
+}, window.WODOUH_CONFIG || {});
+
 /* ------------------------------------------------------------------ i18n */
 const T = {
   ob_skip:{ar:"تخطّي",en:"Skip"},
