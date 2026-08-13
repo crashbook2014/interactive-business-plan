@@ -68,6 +68,43 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "selection renumbers from 1 rather than keeping clause index");
   ok(!/Clause 1:/.test(shrink.two), "deselected clauses are absent from the letter");
 
+  /* ------------------------------ one question, one answer, everywhere */
+  console.log("\n— the library and the assistant do not disagree with each other");
+
+  /* The same question is answered in two places: LIB (the rights library) and
+     KB (what the assistant retrieves). Article 53's answer was corrected in one
+     and left asserting a disputed legal mechanism in the other — and the commit
+     message said it was fixed. Two stores, one subject, no check between them. */
+  const dual = await p.evaluate(() => {
+    const probeKB = q => {
+      const hit = KB.find(e => e.k.test(q));
+      return hit ? { ar: hit.a.ar, en: hit.a.en, src: hit.r ? hit.r.en : null } : null;
+    };
+    const libItem = LIB.flatMap(g => g.items)
+      .find(i => /probation|التجربة/i.test(i.q.en + i.q.ar));
+    return { kb: probeKB("probation"), lib: libItem ? { ar: libItem.a.ar, en: libItem.a.en } : null };
+  });
+  ok(!!dual.kb && !!dual.lib, "both stores answer the probation question");
+
+  /* Article 53 is DISPUTED in docs/legal-sources.md. Neither surface may state
+     the 90-then-extend mechanism as settled while that is true. */
+  const assertsMechanism = s =>
+    /extendable to 180 by written agreement|extendable by written agreement to 180/i.test(s) ||
+    /ويمكن تمديدها باتفاق مكتوب إلى ١٨٠|وتُمدّد باتفاق مكتوب إلى ١٨٠/.test(s);
+  ["kb", "lib"].forEach(which => {
+    ["ar", "en"].forEach(l => {
+      ok(!assertsMechanism(dual[which][l]),
+         `${which}.${l} does not assert the disputed Article 53 mechanism`);
+    });
+  });
+  /* And both must name the uncertainty rather than going quietly vague. */
+  ["kb", "lib"].forEach(which => {
+    ok(/have not confirmed|could not verify/i.test(dual[which].en),
+       `${which}.en names the uncertainty explicitly`);
+    ok(/لم نتحقق|لم نستطع/.test(dual[which].ar),
+       `${which}.ar names the uncertainty explicitly`);
+  });
+
   /* ---------------------------------------------- paywall */
   console.log("\n— paywall plan selection");
 

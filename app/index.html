@@ -630,7 +630,11 @@
   .lib-item[open] summary::after{transform:rotate(-135deg)}
   .lib-item summary:hover{background:var(--teal-soft)}
   .lib-a{padding:0 16px 14px}
-  .lib-a p{font-size:14px;color:var(--ink-2);line-height:1.75}
+  /* pre-line: library answers are written with blank lines between paragraphs
+     (the Article 53 answer names an uncertainty in a second paragraph). The
+     assistant's .msg already honours them; this sink was collapsing them into
+     one run-on block. */
+  .lib-a p{font-size:14px;color:var(--ink-2);line-height:1.75;white-space:pre-line}
   .lib-go{margin-top:12px;min-height:44px;padding:10px 18px;border-radius:var(--r-md);
     background:var(--teal);color:var(--on-teal);font-size:14px;font-weight:700;
     transition:transform var(--t-fast) var(--ease-out)}
@@ -2678,6 +2682,11 @@ const T = {
   need_noticeDue:{ar:"مدة الإشعار في العقد",en:"the notice period in your contract"},
   need_noticeGiven:{ar:"مدة الإشعار المعطاة",en:"the notice you were given"},
   need_otherAmt:{ar:"قيمة المستحقات الأخرى",en:"the value of the other amounts"},
+  /* Added because certaintyFor() started requiring exc87 on the resignation
+     path without a label to name it, so the gap sentence ended at its colon
+     with nothing after it — in both languages. */
+  need_exc87:{ar:"سبب استقالتك — هل ينطبق أحد استثناءات المادة ٨٧",
+              en:"whether you resigned for one of the Article 87 reasons"},
 
   /* --- rules in plain language */
   tm_rule_eos:{ar:"مكافأة نهاية الخدمة: نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على آخر أجر.",
@@ -2941,8 +2950,14 @@ const T = {
   as_left:{ar:"باقي لك {n} أسئلة مجانية",en:"{n} free questions left"},
   as_left1:{ar:"باقي لك سؤال مجاني واحد",en:"1 free question left"},
   as_quota_t:{ar:"خلصت أسئلتك المجانية",en:"You've used your free questions"},
+  /* Two bodies, chosen by SUBSCRIPTIONS_LIVE. The live one sells the plan; the
+     dark one does not, because aef5b34 removed the button and left this string
+     telling the reader to subscribe with nothing on screen to subscribe with —
+     copy describing something that is not there. */
   as_quota_b:{ar:"اشترك في وضوح+ لأسئلة بلا حدود، وملخصات، وصياغة المستندات.",
               en:"Subscribe to Wodouh+ for unlimited questions, summaries, and document drafting."},
+  as_quota_b_dark:{ar:"خلصت أسئلتك المجانية عن هذا العقد. تقييمك وتنبيهاتك تبقى متاحة، ومكتبة الحقوق فيها إجابات مفصّلة بمصادرها.",
+                   en:"That's your free questions for this contract. Your score and flags stay available, and the rights library answers the common questions with their sources."},
   as_quota_cta:{ar:"اشترك — ٥٠ ر.س/شهر",en:"Subscribe — 50 SAR/month"},
   as_not_lawyer:{ar:"أنا لست محاميًا — أشرح لك النظام وأساعدك تفهم. للقضايا المعقدة، وصّلك بمحامٍ مرخّص.",
                  en:"I'm not a lawyer — I explain the law and help you understand. For complex matters, I'll connect you with a licensed one."},
@@ -4925,13 +4940,23 @@ function termUnassessed(){
     /* The end-of-service line reaches this list only on the resignation path,
        and only for the Article 87 exception. Everywhere else its inputs are
        dates and a wage, which the flow requires before it will compute at all.
+       NOTE: filtered out again below when the line did compute — see the
+       return. Its claim card carries its own gap sentence, so the reader is
+       still told what is missing.
        Here the missing input silently REDUCES the award — so it has to be named
        rather than assumed away, exactly like every other gap. */
     { key:"tm_m_eos",    needs:["exc87"],
       applies: !!(h && h.award === "resign") }
   ];
+  /* A line that DID compute does not belong under "what we could not assess" —
+     that section's own premise is "its absence from the list above does not
+     mean zero", which is false for something sitting in the list above with a
+     figure and an Uncertain tag beside it. Two true statements reading as a
+     contradiction costs the section its credibility for the entries that
+     genuinely were not assessed. */
+  const computed = new Set(termLines().map(l => l.key));
   return candidates
-    .filter(c => c.applies && c.needs.some(k => !given(k)))
+    .filter(c => c.applies && !computed.has(c.key) && c.needs.some(k => !given(k)))
     .map(c => ({ key:c.key, missing:c.needs.filter(k => !given(k)) }));
 }
 
@@ -5218,7 +5243,10 @@ const FINAL_CHECKS = [
                           (LINE_RULE[l.key].kind === "method" || !!LINE_RULE[l.key].official))],
   ["fc_noguarantee", () => true],   /* structural: no template states an outcome */
   ["fc_nofab",    () => termLines().every(l => l.amt > 0)],
-  ["fc_current",  () => true],      /* every cited article is verified in the register */
+  /* Scoped deliberately: the assessment's own lines cite 84, 85, 111, 76 and 77,
+     every one of them verified. It no longer claims that about the whole product
+     — Article 53 is DISPUTED in the register, and it is cited elsewhere. */
+  ["fc_current",  () => true],      /* every article THIS ASSESSMENT cites is verified */
   ["fc_bilingual",() => true],      /* asserted by test, both languages from one source */
   ["fc_estimates",() => true]       /* every figure is rendered under the estimate heading */
 ];
@@ -6111,7 +6139,8 @@ function renderQuota(){
   q.className = "quota gate";
   q.innerHTML = "";
   const b = document.createElement("b"); b.textContent = t("as_quota_t");
-  const p = document.createElement("span"); p.textContent = t("as_quota_b");
+  const p = document.createElement("span");
+  p.textContent = t(SUBSCRIPTIONS_LIVE ? "as_quota_b" : "as_quota_b_dark");
   q.append(b, p);
   /* No "Subscribe — 50 SAR/month" while there is nothing to subscribe to. The
      free questions still end here; the reader is simply not sold a way out
@@ -6184,8 +6213,12 @@ const KB = [
        en:"A non-compete is only valid if it's limited in duration, geography, and type of work — two years is the usual ceiling. Open-ended ones (the whole Kingdom, every field) are typically broader than necessary and negotiable."},
     r:{ar:"نظام العمل السعودي — المادة ٨٣",en:"Saudi Labor Law — Article 83"} },
   { k:/(فترة التجربة|تجربة|probation)/i,
-    a:{ar:"فترة التجربة لا تتجاوز ٩٠ يومًا، ويمكن تمديدها باتفاق مكتوب إلى ١٨٠ يومًا. يجب النص عليها صراحة في العقد، ولا تُحتسب إجازة العيد والمرضية ضمنها.",
-       en:"Probation cannot exceed 90 days, extendable to 180 by written agreement. It must be stated explicitly in the contract, and Eid and sick leave don't count toward it."},
+    /* Same answer as the rights library's, and for the same reason: Article 53
+       is DISPUTED in docs/legal-sources.md and the product may not assert a
+       mechanism the register cannot confirm. This copy was missed when the
+       library's was corrected — one question, two answers, in two places. */
+    a:{ar:"الحد الأقصى ١٨٠ يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على ١٨٠ يومًا من البداية، أو لازم ٩٠ يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
+       en:"The ceiling is 180 days, and probation has to be stated explicitly in your contract — if it isn't there, there is no probation. Eid holidays and sick leave don't count toward it, and either side may end the contract during it.\n\nOne thing we have not confirmed: whether an employer may state 180 days from the outset, or must set 90 and then extend by written agreement. The wording changed with the 2025 amendments and we could not verify the current text against an official source — check it before relying on that difference."},
     r:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
   { k:/(الإشعار|إشعار|notice period|notice)/i, nat:"sa",
     a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل ٦٠ يومًا، وأنت عليك إشعاره قبل ٣٠ يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",

@@ -218,8 +218,14 @@ async function art87Certainty(p){
      `unanswered: the award is not "confirmed" (${a87.unanswered.cert})`);
   ok(a87.unanswered.missing.indexOf("exc87") !== -1,
      "and the assessment names exc87 as what it is missing");
-  ok(a87.unanswered.unassessed.indexOf("tm_m_eos") !== -1,
-     "so the line appears under what we could not assess");
+  /* This assertion used to demand the opposite, and it was wrong. A line that
+     DID compute must not appear under "what we could not assess", whose own
+     wording is "its absence from the list above does not mean zero" — false for
+     an entry sitting in that list with a figure beside it. The reader is still
+     told what is missing: the line is tagged Uncertain and its claim card
+     carries the gap sentence naming exc87. */
+  ok(a87.unanswered.unassessed.indexOf("tm_m_eos") === -1,
+     "but the line is not listed as unassessed, because it did compute");
   ok(a87.answeredNone.cert === "confirmed",
      `answering "none of these" is a real answer and restores confidence (${a87.answeredNone.cert})`);
   ok(a87.answeredYes.award > a87.unanswered.award,
@@ -228,6 +234,26 @@ async function art87Certainty(p){
      `and that award is "likely", never "confirmed" (${a87.answeredYes.cert})`);
   ok(a87.employer.cert === "confirmed",
      "the employer path never asks the question, so it is not demanded there");
+
+  /* Every missing input the app can name must HAVE a name, in both languages.
+     The exc87 label shipped absent, so the sentence ended at its colon —
+     "We need more information before we can assess this accurately: " — twice
+     per assessment. The suite asserted the key was in `missing` and never that
+     it rendered, which is exactly how eleven green suites missed it. */
+  console.log("\n— every input the app can ask for has a label in both languages");
+  const labels = await p.evaluate(() => {
+    const keys = new Set();
+    Object.keys(LINE_NEEDS).forEach(k => LINE_NEEDS[k].forEach(n => keys.add(n)));
+    keys.add("exc87");   /* pushed dynamically on the resignation path */
+    const bad = [];
+    keys.forEach(k => {
+      const row = T["need_" + k];
+      if (!row || !row.ar || !row.en) bad.push(k);
+    });
+    return { checked: keys.size, bad };
+  });
+  ok(labels.bad.length === 0,
+     `all ${labels.checked} needed-input labels resolve in both languages${labels.bad.length ? " — missing: " + labels.bad.join(", ") : ""}`);
 
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all termination checks passed"));
