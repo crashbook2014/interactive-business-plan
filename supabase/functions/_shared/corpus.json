@@ -1,0 +1,152 @@
+{
+  "generated_from": "docs/legal-sources.md",
+  "verified": 29,
+  "excluded": 2,
+  "rows": [
+    {
+      "id": "art-84",
+      "article": "84",
+      "claim": "End-of-service: half-month wage per year for the first five years, full month per year thereafter, on the last wage, pro-rata for partial years"
+    },
+    {
+      "id": "art-85",
+      "article": "85",
+      "claim": "Resignation reduction, in the statute's own boundaries: under 2 years none; 2 years up to and including 5 one third; in excess of 5 and under 10 two thirds; 10 or more the full award. Five years exactly takes one third"
+    },
+    {
+      "id": "art-107",
+      "article": "107",
+      "claim": "Overtime paid at the hourly wage plus 50% of the basic wage. Since the 2025 amendment an employer may offer compensatory paid leave instead of payment, but only with the worker's consent"
+    },
+    {
+      "id": "art-109",
+      "article": "109",
+      "claim": "Annual leave at least 21 days, rising to at least 30 after five consecutive years with the same employer"
+    },
+    {
+      "id": "art-75",
+      "article": "75",
+      "claim": "Notice, monthly-paid indefinite contract: employer 60 days, employee 30 days. Applies to indefinite contracts only — a non-Saudi's contract is always fixed-term (art. 37), so this rule does not reach them"
+    },
+    {
+      "id": "art-222",
+      "article": "222",
+      "claim": "Labour claims not heard after 12 months from the end of the relationship, unless the court accepts an excuse or the defendant acknowledges the right"
+    },
+    {
+      "id": "art-40",
+      "article": "40",
+      "claim": "Non-Saudi only. Employer bears recruitment fees, Iqama and work permit issuance and renewal, fines for late renewal, profession-change fees, exit and re-entry visas, and the return ticket at the end of the relationship. Worker bears return cost only if unfit for work or leaving without legitimate reason. The employer receiving a transferred worker bears the transfer fee"
+    },
+    {
+      "id": "art-implementing-regulations-art-6",
+      "article": "Implementing Regulations, art. 6",
+      "claim": "Non-Saudi only. Employer may not withhold a non-Saudi worker's passport, residence permit (Iqama) or medical insurance card"
+    },
+    {
+      "id": "no-article",
+      "article": null,
+      "claim": "Since the 2021 Labor Reform Initiative a worker may transfer employer through Qiwa without the current employer's consent in defined cases, including contract expiry, three consecutive months of unpaid wages, and an expired Iqama"
+    },
+    {
+      "id": "art-83",
+      "article": "83",
+      "claim": "Non-compete must be in writing and define duration, geographic area and type of activity. Two years from the end of the relationship is a maximum, not a norm — a longer period is not made valid by agreement"
+    },
+    {
+      "id": "art-77",
+      "article": "77",
+      "claim": "Compensation for termination without valid reason, indefinite contract: 15 days' wages per year of service, floor of two months' wages"
+    },
+    {
+      "id": "art-77-2",
+      "article": "77",
+      "claim": "Compensation for termination without valid reason, fixed-term contract: the wages for the remaining term of the contract, floor of two months' wages. This is the branch that applies to every non-Saudi"
+    },
+    {
+      "id": "art-37",
+      "article": "37",
+      "claim": "A non-Saudi's contract must be written and fixed-term, and never converts to indefinite regardless of duration or renewal, even by agreement. Where no term is stated it is taken as one year from actual commencement"
+    },
+    {
+      "id": "art-80",
+      "article": "80",
+      "claim": "Termination without award or notice is confined to the specified cases in Article 80, treated by the labour courts as an exceptional disciplinary provision rather than a routine route. The employer must let the worker state their case, document the reason, and notify in writing"
+    },
+    {
+      "id": "art-79",
+      "article": "79",
+      "claim": "A resignation is deemed accepted if the employer does not respond within 30 days"
+    },
+    {
+      "id": "art-74",
+      "article": "74",
+      "claim": "Bankruptcy, and resignation as newly defined, are lawful grounds for ending a contract"
+    },
+    {
+      "id": "no-article-2",
+      "article": null,
+      "claim": "Contracts must be authenticated through Qiwa to be enforceable; unregistered or hand-signed contracts no longer carry enforceable status. Existing fixed-term contracts moved to the standard form from 6 March 2026, indefinite contracts from 6 August 2026"
+    },
+    {
+      "id": "no-article-3",
+      "article": null,
+      "claim": "Non-Saudi only. A non-Saudi employee contributes nothing to GOSI from salary. The employer pays 2% of the contributable wage for the occupational-hazards branch alone. Non-Saudis are not covered by the pension (annuities) branch or by SANED"
+    },
+    {
+      "id": "no-article-4",
+      "article": null,
+      "claim": "Saudi only. Saudi nationals registered before 3 July 2024 contribute under the legacy system: 21.5% total, employer 11.75% and employee 9.75%. Those registered on or after 3 July 2024 fall under the new system, which rose in July 2026 to 23.5% total, employer 12.75% and employee 10.75%"
+    },
+    {
+      "id": "no-article-5",
+      "article": null,
+      "claim": "GOSI contributions are calculated on basic wage plus housing allowance only, capped at a contributable wage of SAR 45,000 per month"
+    },
+    {
+      "id": "no-article-6",
+      "article": null,
+      "claim": "GOSI and the end-of-service award are separate entitlements. The award under Articles 84 and 85 is paid by the employer and is not reduced by, offset against, or replaced by GOSI pension contributions"
+    },
+    {
+      "id": "no-article-7",
+      "article": null,
+      "claim": "Saudi only. SANED unemployment insurance: available to Saudi nationals who lost work involuntarily, are actively seeking work, have contributed for at least 12 months in the past 36, and are registered with Taqat (HRDF). Pays 60% of the average covered monthly wage over the previous two years for the first three months, capped at SAR 9,000, then 50%, for up to 12 months. Funded 0.75% employer and 0.75% employee"
+    },
+    {
+      "id": "no-article-8",
+      "article": null,
+      "claim": "The wage clause in a Qiwa contract carries direct enforcement: unpaid wages can be pursued through the Ministry of Justice's Najiz portal without first going through MHRSD or the labour courts"
+    },
+    {
+      "id": "art-76",
+      "article": "76",
+      "claim": "A party who terminates without observing the Article 75 notice pays the other party compensation equal to the worker's wage for the notice period, or the balance of it, on the last wage. Indefinite contracts only — it is the remedy for breaching Article 75, which does not reach a non-Saudi's always-fixed-term contract (art. 37)"
+    },
+    {
+      "id": "art-111",
+      "article": "111",
+      "claim": "Accrued annual leave not taken is paid on leaving, for the whole period in which it was not used, and pro-rata for the part-year worked. Calculated on the last wage. The right cannot be waived by either party"
+    },
+    {
+      "id": "art-87",
+      "article": "87",
+      "claim": "Exceptions to the resignation reduction. The full award is due despite Article 85 where the worker leaves for a force majeure beyond their control; and a female worker is entitled to the full award if she ends her contract within six months of marriage or three months of giving birth"
+    },
+    {
+      "id": "no-article-9",
+      "article": null,
+      "claim": "A labour dispute begins with amicable settlement, filed electronically with MHRSD; roughly a week is allowed for direct negotiation, followed by settlement sessions. If it fails, the case may be referred to the labour court within 21 working days of the first complaint"
+    },
+    {
+      "id": "art-75-notice-period-provisions",
+      "article": "75 (notice-period provisions)",
+      "claim": "During the notice period on an employer-initiated termination, the worker is entitled to one full day or eight hours per week of paid absence to look for other work, timed by the worker with a day's notice"
+    },
+    {
+      "id": "art-88",
+      "article": "88",
+      "claim": "Final settlement is due within one week of the relationship ending where the employer terminated or the contract expired, and within two weeks where the worker resigned. It covers final wages, unused leave and the end-of-service award"
+    }
+  ]
+}
