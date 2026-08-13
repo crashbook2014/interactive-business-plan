@@ -240,6 +240,44 @@ async function art87Certainty(p){
      "We need more information before we can assess this accurately: " — twice
      per assessment. The suite asserted the key was in `missing` and never that
      it rendered, which is exactly how eleven green suites missed it. */
+  /* The reader has to learn the figure could go UP, next to the figure. Skipping
+     the Article 87 question showed 39,333 where 59,000 was possible, and the
+     only marker was an "Uncertain" pill in the product's warning colour — which
+     reads as "you may get less", the exact inverse. */
+  console.log("\n— an unanswered input that could raise the total says so, beside the total");
+  const rise = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    const base = { how:"resigned", start:"2019-03-01", end:"2026-08-01",
+                   ctype:"indef", wage:12000, basic:12000 };
+    const run = extra => {
+      term = Object.assign(blankTerm(), base, extra || {});
+      owned.term = "plan_term_full"; renderTermResult();
+      const el = document.querySelector("#termMoney .tm-rise");
+      const money = document.getElementById("termMoney");
+      const tot = money.querySelector(".r.tot");
+      return { total: Math.round(termTotal()), has: !!el,
+               text: el ? el.textContent.trim() : "",
+               /* it must sit INSIDE the money card, after the total */
+               afterTotal: !!(el && tot && (tot.compareDocumentPosition(el) & 4)) };
+    };
+    const out = { skipped: run(), marriage: run({ exc87:"marriage" }), none: run({ exc87:"none" }) };
+    if (lang === "en") toggleLang();
+    term = Object.assign(blankTerm(), base); owned.term = "plan_term_full"; renderTermResult();
+    const arEl = document.querySelector("#termMoney .tm-rise");
+    out.ar = { has: !!arEl, text: arEl ? arEl.textContent.trim() : "" };
+    return out;
+  });
+  ok(rise.skipped.has, "skipping the Article 87 question shows a note beside the total");
+  ok(rise.skipped.afterTotal, "and the note sits inside the money card, after the total");
+  ok(/becomes the full one/i.test(rise.skipped.text),
+     "the note says the award could become the full one, not merely that it is uncertain");
+  ok(rise.marriage.total > rise.skipped.total,
+     `answering raises the figure (${rise.marriage.total} vs ${rise.skipped.total})`);
+  ok(!rise.marriage.has && !rise.none.has,
+     "once answered either way, the note is gone");
+  ok(rise.ar.has && /المادة ٨٧/.test(rise.ar.text),
+     "and it renders in Arabic too");
+
   console.log("\n— every input the app can ask for has a label in both languages");
   const labels = await p.evaluate(() => {
     const keys = new Set();

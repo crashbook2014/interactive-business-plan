@@ -240,8 +240,9 @@ async function seedTermination(p){
     const out = { live: SUBSCRIPTIONS_LIVE };
     /* Every route in: the assistant's quota gate and the account screen. */
     chat.length = 0; asked = FREE_QUESTIONS; openAssist("home"); renderQuota();
-    out.quotaHasCta = !!document.querySelector("#quota button");
-    out.quotaStillExplains = (document.getElementById("quota").textContent || "").length > 20;
+    out.quotaBtns = [...document.querySelectorAll("#quota button")].map(x => x.textContent.trim());
+    out.quotaText = document.getElementById("quota").textContent || "";
+    out.quotaStillExplains = out.quotaText.length > 20;
     renderAccount();
     out.accountHasCta = !!document.querySelector("#accPlan button");
     /* And the door itself, in case a future route calls it directly. */
@@ -250,10 +251,18 @@ async function seedTermination(p){
     return out;
   });
   ok(subs.live === false, "the app ships with subscriptions dark");
-  ok(!subs.quotaHasCta,
-     "the assistant's free-question gate offers no subscription to buy");
+  /* This used to assert the gate had NO button, which was the wrong target: a
+     panel that names the rights library and offers no way to reach it is a
+     dead end wearing a signpost. What must be absent is a price, not a way
+     forward. */
+  ok(!subs.quotaBtns.some(b => /SAR|ر\.س|subscribe|اشترك/i.test(b)),
+     `the gate offers no subscription to buy (${subs.quotaBtns.join(", ") || "no buttons"})`);
+  ok(!/Wodouh\+|وضوح\+/.test(subs.quotaText),
+     "and its copy does not sell a product that is not on the screen");
+  ok(subs.quotaBtns.length === 1,
+     "but it does offer one way forward");
   ok(subs.quotaStillExplains,
-     "but it still explains that the free questions have ended");
+     "and it still explains that the free questions have ended");
   ok(!subs.accountHasCta, "the account screen offers no plan upgrade");
   ok(subs.screenAfterOpenPlans !== "screen-plans",
      `openPlans() refuses to open the screen (landed on ${subs.screenAfterOpenPlans})`);

@@ -855,6 +855,14 @@
   .tm-money .r:last-of-type{border-bottom:0}
   .tm-money .r>span{font-size:13.5px;color:var(--ink-2)}
   .tm-money .r>b{font-size:14px;white-space:nowrap}
+  /* Teal, not amber and not red. This says "the figure could be higher", and
+     the product's warning colours would say the opposite — which is exactly
+     the misreading it exists to prevent. Sits directly under the total. */
+  .tm-rise{display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:11px 13px;
+      background:var(--teal-soft);border-radius:var(--r-md);
+      font-size:13px;line-height:1.65;color:var(--teal-ink)}
+  .tm-rise .up{flex:none;width:18px;height:18px;margin-top:1px}
+  .tm-rise .up svg{width:18px;height:18px}
   .tm-money .r.tot{border-top:2px solid var(--line);margin-top:4px;padding-top:12px}
   .tm-money .r.tot>span,.tm-money .r.tot>b{color:var(--ink);font-size:15px}
   .tm-money .src-line{margin:2px 0 8px}
@@ -4869,6 +4877,16 @@ function termWage(){ return term && term.wage > 0 ? term.wage : 0; }
 /* Article 84, then Article 85 only where the departure was an ordinary
    resignation. A departure under Article 81 keeps the full award — that
    distinction is the whole reason "asked to resign" is its own option. */
+/* Unanswered inputs that can only move the total UP. Distinct from
+   termUnassessed(), which names what could not be computed at all: these lines
+   DID compute, and computed low, because a rule that reduces an entitlement was
+   applied without its exception being ruled out. */
+function termCouldRise(){
+  const h = termHow(), out = [];
+  if (h && h.award === "resign" && term && term.exc87 === null) out.push("rv_exc_unasked");
+  return out;
+}
+
 function exc87Applies(){
   return !!term && (term.exc87 === "force" || term.exc87 === "marriage" || term.exc87 === "birth");
 }
@@ -5330,6 +5348,15 @@ function renderTermResult(){
        <p>${t(s.why)}</p>
      </div>`).join("");
 
+  /* WHAT COULD STILL RAISE THIS FIGURE, BESIDE THE FIGURE.
+     A reader who skipped the Article 87 question saw 39,333 SAR where 59,000
+     was possible — a 19,667 gap — and the only signal was an "Uncertain" pill
+     on the card below, rendered in this product's warning colour. In its own
+     visual grammar that reads "this claim may not hold, you might get LESS",
+     which is the exact inverse of the truth: the figure is a floor.
+     The sentence that says so correctly already existed, in both languages, in
+     the second-pass review roughly 1,400px further down, under a heading that
+     reads as housekeeping. Same sentence, moved to where the money is. */
   const cur = t("eos_sar"), lines = termLines();
   document.getElementById("termMoney").innerHTML =
     `<div class="tm-money">
@@ -5338,6 +5365,8 @@ function renderTermResult(){
           <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("")
         : `<p class="cap">${t("tm_m_none")}</p>`}
        ${lines.length ? `<div class="r tot"><span>${t("tm_m_total")}</span><b>${money(termTotal())} ${cur}</b></div>` : ""}
+       ${lines.length ? termCouldRise().map(k =>
+         `<p class="tm-rise"><span class="up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M4 7l4-4 4 4"/></svg></span><span>${t(k)}</span></p>`).join("") : ""}
        ${termTermOdd() ? `<p class="cap">${t("cf_term_odd")}</p>` : ""}
        <p class="cap">${t("tm_m_caveat")}</p>
      </div>`;
@@ -6150,6 +6179,15 @@ function renderQuota(){
     cta.textContent = t("as_quota_cta");
     cta.onclick = ()=>{ buzz(10); openPlans("assist"); };
     q.append(cta);
+  } else {
+    /* The copy names the rights library, so the panel offers it. Without this
+       the reader is left on a screen with the input hidden and no forward
+       action at all — a handoff that names a destination and does not offer it
+       is a dead end wearing a signpost. */
+    const go = document.createElement("button");
+    go.textContent = t("tab_rights");
+    go.onclick = ()=>{ buzz(10); goTab("rights"); };
+    q.append(go);
   }
   bar.style.display = "none";
 }
