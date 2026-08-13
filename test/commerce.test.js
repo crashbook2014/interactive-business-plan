@@ -214,6 +214,25 @@ async function seedTermination(p){
   ok(lawyer.turnHiddenAgain,
      "and states none when none has been set — no unbacked \"within 24 hours\"");
 
+  /* ------------------------------------------- a grant may only move up */
+  console.log("\n— granting a cheaper tier never revokes a dearer one");
+
+  const monotonic = await p.evaluate(() => {
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", ctype:"indef", wage:12000, basic:12000 });
+    owned = { letter:null, case:null, term:"plan_term_full" };
+    /* The downgrade path: re-enter the paywall on the cheap tier while holding
+       the dear one. No route in the UI does this today; the point is that no
+       route added later can either. */
+    pwMode = "term"; pwUpgrade = null; pwPlan = 0;
+    grantAndGo();
+    return { held: owned.term, stillFull: has("term", "plan_term_full") };
+  });
+  ok(monotonic.held === "plan_term_full",
+     `a 295 holder stays a 295 holder (${monotonic.held})`);
+  ok(monotonic.stillFull === true,
+     "and the case file and letter stay unlocked");
+
   /* --------------------------------- the subscription ladder stays dark */
   console.log("\n— nothing sells a subscription that does not exist");
 

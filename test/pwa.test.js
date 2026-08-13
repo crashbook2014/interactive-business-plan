@@ -273,6 +273,30 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* esm.sh was allowed and never used. An unused allowance is the kind that
      nobody notices being used. */
   ok(!/esm\.sh/.test(csp), "the unused esm.sh allowance is gone");
+
+  /* `*.supabase.co` is a shared multi-tenant hostname — anyone can register a
+     free project and own an origin inside that wildcard. With no response
+     headers available on Pages, this policy is the only thing between a future
+     script injection and a reader's contract text leaving the device, and that
+     wildcard was the door it would have used. Enabling the AI means naming ONE
+     host here; the wildcard must never come back. */
+  ok(!/\*\.supabase\.co/.test(csp),
+     "no wildcard host in connect-src — a shared domain is not an allowlist");
+  ok(dir("connect-src") === "'none'",
+     `connect-src is closed while the AI is dormant (${dir("connect-src")})`);
+
+  /* Proven, not read: fetch from the page and watch for the violation event.
+     The throw looks identical whether the policy blocked it or DNS did. */
+  const blocked = await p.evaluate(() => new Promise(resolve => {
+    const hits = [];
+    document.addEventListener("securitypolicyviolation",
+      e => hits.push(e.violatedDirective), { once: false });
+    fetch("https://attacker.supabase.co/x").catch(() => {});
+    fetch("https://evil.example.com/x").catch(() => {});
+    setTimeout(() => resolve(hits), 400);
+  }));
+  ok(blocked.filter(d => /connect-src/.test(d)).length >= 2,
+     `the policy actually blocks both hosts, verified by violation event (${blocked.join(", ") || "none"})`);
   ok(!/script-src[^;]*https:/.test(csp), "no third-party script host is permitted");
 
   /* ------------------------------------------------------- install hint */

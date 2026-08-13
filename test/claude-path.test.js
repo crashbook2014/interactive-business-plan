@@ -21,6 +21,31 @@ const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
+/* THE SHIPPED APP HAS `connect-src 'none'` AND CANNOT TALK TO ANYTHING.
+ *
+ * That is deliberate: the AI is dormant, so the policy that protects a reader's
+ * contract text is closed, and app/index.html documents that enabling the AI
+ * means editing the CSP to name ONE project host — never the `*.supabase.co`
+ * wildcard, which is a shared multi-tenant domain anyone can register inside.
+ *
+ * These suites test the AI-ENABLED deployment, so they must serve the
+ * AI-enabled policy. This rewrites the meta CSP on the way to the browser to
+ * permit exactly the stub host the tests use — the same single-host grant a
+ * real deployment would make. Without it the CSP blocks the request before
+ * Playwright's route interception ever sees it, and every AI assertion fails
+ * for the wrong reason.
+ *
+ * The point: the tests exercise the configuration you would actually ship, and
+ * the file on disk stays closed. */
+const AI_HOST = "https://stub.supabase.co";
+async function serveWithAiCsp(page){
+  await page.route("**/app/", async route => {
+    const res = await route.fetch();
+    const body = (await res.text()).replace("connect-src 'none'", `connect-src ${AI_HOST}`);
+    await route.fulfill({ response: res, body });
+  });
+}
+
 (async () => {
   const b = await chromium.launch(launchOpts());
 
@@ -73,6 +98,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   console.log("\n— configured, with a stub endpoint");
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await serveWithAiCsp(p2);   /* the AI-enabled deployment's CSP */
   const sent = [];
   await p2.route("https://stub.supabase.co/**", async route => {
     sent.push(JSON.parse(route.request().postData() || "{}"));
@@ -177,6 +203,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* 3a. unconfigured: no review call, no waiting */
   const p3 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p3.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await serveWithAiCsp(p3);   /* the AI-enabled deployment's CSP */
   const reqs3 = [];
   p3.on("request", r => reqs3.push(r.url()));
   await p3.goto(APP);
@@ -202,6 +229,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* 3b. configured: consent gates it, and the payload is exactly what we declare */
   const p4 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p4.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await serveWithAiCsp(p4);   /* the AI-enabled deployment's CSP */
   const rvSent = [];
   let stall = false;
   await p4.route("https://stub.supabase.co/**", async route => {

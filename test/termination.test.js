@@ -25,6 +25,34 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
 const fill = (how, nat, extra) => ({ how, nat, extra: extra || {} });
 
+/* An unanswered Article 87 question must not produce a reduced award wearing
+   the product's highest certainty label. Article 85's reduction applies by
+   default and the exception has to be claimed, so silence used to mean "less
+   money, stated confidently" — the third appearance here of one rule shipped
+   without its exceptions. */
+async function art87Certainty(p){
+  return p.evaluate(() => {
+    const out = {};
+    const base = { how:"resigned", start:"2020-01-01", end:"2026-01-01",
+                   ctype:"indef", wage:10000, basic:10000 };
+    term = Object.assign(blankTerm(), base);               /* exc87 never answered */
+    out.unanswered = { award: Math.round(termAward()),
+                       cert: certaintyFor("tm_m_eos").level,
+                       missing: certaintyFor("tm_m_eos").missing,
+                       unassessed: termUnassessed().map(g => g.key) };
+    term = Object.assign(blankTerm(), base, { exc87:"none" });   /* answered: no */
+    out.answeredNone = { award: Math.round(termAward()),
+                         cert: certaintyFor("tm_m_eos").level };
+    term = Object.assign(blankTerm(), base, { exc87:"marriage" });
+    out.answeredYes = { award: Math.round(termAward()),
+                        cert: certaintyFor("tm_m_eos").level };
+    /* The employer path never asks the question, so it must not be demanded. */
+    term = Object.assign(blankTerm(), base, { how:"employer" });
+    out.employer = { cert: certaintyFor("tm_m_eos").level };
+    return out;
+  });
+}
+
 (async () => {
   const b = await chromium.launch(launchOpts());
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
@@ -183,6 +211,23 @@ const fill = (how, nat, extra) => ({ how, nat, extra: extra || {} });
   ok(junk2.leave === 0, "a negative stored leave balance floors at zero");
   ok(junk2.docs.length === 1 && junk2.docs[0] === "d_contract", "unknown document keys are dropped");
   ok(junk2.ctype === null, "an unknown contract type falls back to unset");
+
+  console.log("\n— an unanswered Article 87 question is a missing input, not a silent reduction");
+  const a87 = await art87Certainty(p);
+  ok(a87.unanswered.cert === "uncertain",
+     `unanswered: the award is not "confirmed" (${a87.unanswered.cert})`);
+  ok(a87.unanswered.missing.indexOf("exc87") !== -1,
+     "and the assessment names exc87 as what it is missing");
+  ok(a87.unanswered.unassessed.indexOf("tm_m_eos") !== -1,
+     "so the line appears under what we could not assess");
+  ok(a87.answeredNone.cert === "confirmed",
+     `answering "none of these" is a real answer and restores confidence (${a87.answeredNone.cert})`);
+  ok(a87.answeredYes.award > a87.unanswered.award,
+     `claiming the exception raises the award (${a87.answeredYes.award} vs ${a87.unanswered.award})`);
+  ok(a87.answeredYes.cert === "likely",
+     `and that award is "likely", never "confirmed" (${a87.answeredYes.cert})`);
+  ok(a87.employer.cert === "confirmed",
+     "the employer path never asks the question, so it is not demanded there");
 
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all termination checks passed"));

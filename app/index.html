@@ -7,9 +7,27 @@
 <!-- esm.sh was allowed in script-src and connect-src and nothing ever loaded
      from it. An allowance nobody uses is an allowance nobody notices being
      used. manifest-src and worker-src move from 'none' to 'self' because the
-     app is now installable and works offline — both stay same-origin, so the
-     policy is one host narrower overall than it was. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'"/>
+     app is now installable and works offline — both stay same-origin.
+
+     connect-src is 'none', not 'self https://*.supabase.co'.
+
+     `*.supabase.co` is a SHARED MULTI-TENANT HOSTNAME: anyone can register a
+     free project and own an origin inside that wildcard. Nothing in this build
+     used it — there is no config.js, so analyzeUrl() returns null and the AI
+     feature does not exist — but this policy is the only thing standing between
+     a future script injection and a reader's pasted employment contract leaving
+     the device. GitHub Pages sets no response headers, so there is no second
+     line. That wildcard was the exact door such an injection would have left by.
+
+     'self' went too: nothing in the app fetches same-origin. The service
+     worker's own fetches are governed by its own context, not by this tag.
+
+     ENABLING THE AI REQUIRES EDITING THIS LINE to name one project host
+     explicitly — connect-src https://<your-project-ref>.supabase.co — and
+     never the wildcard. That is deliberate friction: turning on the one feature
+     that sends contract text off the device should not be a config change
+     alone. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 
@@ -4896,7 +4914,14 @@ function termUnassessed(){
     { key:"tm_m_notice", needs:["noticeDue"],
       applies: !!(h && h.notice) && !isNonSaudi() && termCtype() !== "fixed" },
     { key:"tm_m_comp",   needs:["termEnd"],
-      applies: !!(h && h.comp) && termCtype() === "fixed" }
+      applies: !!(h && h.comp) && termCtype() === "fixed" },
+    /* The end-of-service line reaches this list only on the resignation path,
+       and only for the Article 87 exception. Everywhere else its inputs are
+       dates and a wage, which the flow requires before it will compute at all.
+       Here the missing input silently REDUCES the award — so it has to be named
+       rather than assumed away, exactly like every other gap. */
+    { key:"tm_m_eos",    needs:["exc87"],
+      applies: !!(h && h.award === "resign") }
   ];
   return candidates
     .filter(c => c.applies && c.needs.some(k => !given(k)))
@@ -4990,7 +5015,23 @@ function given(k){
 }
 
 function certaintyFor(key){
-  const needs = LINE_NEEDS[key] || [];
+  const needs = (LINE_NEEDS[key] || []).slice();
+  /* On the resignation path the Article 87 exception is a needed input like any
+     other, and it was the one input that never counted as missing.
+
+     Why that mattered: Article 85's reduction applies by default and Article 87
+     has to be affirmatively claimed. So an unanswered question silently
+     produced the LESS favourable figure — and then labelled it "confirmed",
+     the product's highest certainty. Same facts, one unanswered segmented
+     control, 11,667 SAR apart, with the lower number carrying the more
+     confident label.
+
+     This is the third appearance of one pattern here: a rule that reduces an
+     entitlement, shipped without its exceptions. The first two were Article 81
+     and Article 87 itself. Treating exc87 as an input means the line now says
+     "we could not assess this" and names what it needs, which is what every
+     other missing input already gets. */
+  if (key === "tm_m_eos" && termHow() && termHow().award === "resign") needs.push("exc87");
   const missing = needs.filter(k => !given(k));
   if (missing.length) return { level:"uncertain", missing };
   /* The compensation line depends on a finding nobody has made yet — whether
@@ -6780,8 +6821,25 @@ function loadState(){
       .filter(x => x && typeof x === "object"
                 && Object.prototype.hasOwnProperty.call(T, x.doc)
                 && Array.isArray(x.events))
-      .map(x => ({ doc:x.doc, events:x.events.filter(e => e && typeof e === "object")
-                                             .map(e => ({ ...e })) }));
+      /* Events are rebuilt field by field like every other stored value, rather
+         than spread wholesale. They were the one exception, and it showed in
+         two ways: HTML written into e.t/e.n rendered as live markup through
+         renderTimeline's innerHTML, and an event missing those fields threw and
+         blanked the reminder screen with no way back. Note that
+         reminderEvents() already defends the same array — `(e.t && e.t[lang])`
+         — so the two readers of it disagreed about whether it could be
+         trusted. Now neither has to. */
+      .map(x => ({ doc:x.doc, events:x.events
+        .filter(e => e && typeof e === "object")
+        .map(e => {
+          const str = v => typeof v === "string" ? v.slice(0, 200) : "";
+          const pair = o => (o && typeof o === "object")
+            ? { ar: str(o.ar), en: str(o.en) } : { ar:"", en:"" };
+          return { when: (typeof e.when === "number" && isFinite(e.when)) ? e.when : 0,
+                   d: (typeof e.d === "number" && isFinite(e.d)) ? e.d : 0,
+                   k: str(e.k), t: pair(e.t), n: pair(e.n) };
+        })
+        .slice(0, 40) }));
     TRACKED.length = 0;
     tracked.forEach(x => TRACKED.push(x));
   } catch(e){
@@ -7126,7 +7184,10 @@ function renderTimeline(){
            <span class="tl-rel">${t("tl_in").replace("{n}", fmtNum(days))}</span>
            <span class="tl-doc">${t(e.doc)}</span>
          </div>
-         <h4>${e.t[lang]}</h4><p>${e.n[lang]}</p>
+         <!-- esc(), belt and braces. loadState now rebuilds these, but this
+              is an innerHTML sink fed from storage and the escaping belongs
+              at the sink as well as at the door. -->
+         <h4>${esc((e.t && e.t[lang]) || "")}</h4><p>${esc((e.n && e.n[lang]) || "")}</p>
        </div>`;
     wrap.appendChild(item);
   });
@@ -7601,7 +7662,18 @@ async function redeem(){
    and never read in another. */
 function grantAndGo(){
   const chosen = activePlans()[pwPlan];
-  if (chosen) owned[pwMode] = chosen.up ? pwUpgrade : chosen.name;
+  /* Monotonic: a grant may only ever move a reader up. Writing unconditionally
+     meant granting a cheaper tier silently revoked a dearer one — a reader who
+     paid 295 could end up holding 145. No route in the shipped UI reaches that
+     today (all three paywall entries are guarded), but the guard was at three
+     call sites and the write was in one place. It belongs here, so a fourth
+     route — a payment provider's return URL, say — cannot downgrade someone
+     who has paid. */
+  if (chosen){
+    const want = chosen.up ? pwUpgrade : chosen.name;
+    const held = owned[pwMode];
+    if (!held || planIndex(pwMode, want) >= planIndex(pwMode, held)) owned[pwMode] = want;
+  }
   /* `< Date.now()`, not `!packUntil`. The original guard was protecting an
      ACTIVE window from being extended on a re-render, and it did that — but it
      also refused to refresh an EXPIRED one, so buying the pack a second time
