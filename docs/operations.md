@@ -55,6 +55,37 @@ node test/watchdog.js https://alwodouh.com
 
 ---
 
+## Live verification log
+
+Every automated check in this repository runs against a **local copy**. That is
+not the same as the deployed site, and the distinction has teeth: a manifest
+served with the wrong MIME type, a stale service-worker build, a CNAME that
+never took — none of those can fail locally. The suites can be perfectly green
+while the live site is broken.
+
+The sandbox this project is developed in cannot reach `alwodouh.com`; the
+network proxy answers 403 to CONNECT. So live runs happen on the founder's own
+machine, and they are recorded here rather than assumed.
+
+| Date | Commit | Run by | Result |
+|---|---|---|---|
+| 13 Aug 2026 | `dd07fb8` | Founder, unproxied machine | `npm run test:live` — all suites passed |
+
+**Read that table as what it says.** These are reported results, not results
+this repository observed. That is the honest status of any check nobody here
+can run, and it is better than the alternative, which was no live verification
+at all.
+
+Re-run after any deploy that changes the shell, the manifest, the service
+worker, or the domain:
+
+```
+npm run test:live
+node test/watchdog.js https://alwodouh.com
+```
+
+---
+
 ## ⚠ Actions is not currently executing on this account
 
 **Read this before trusting anything below.** Both workflows are registered and
