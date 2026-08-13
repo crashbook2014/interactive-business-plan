@@ -3948,8 +3948,15 @@ const EOS_HOW = [
 const LIB = [
   { g:"lib_g_before", items:[
     { q:{ar:"كم فترة التجربة النظامية؟",en:"How long can probation be?"},
-      a:{ar:"لا تتجاوز ٩٠ يومًا، وتُمدّد باتفاق مكتوب إلى ١٨٠ يومًا كحد أقصى. لازم تكون منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة.",
-         en:"Up to 90 days, extendable by written agreement to 180 at most. It has to be stated explicitly in the contract — if it isn't there, there's no probation."},
+      /* This used to assert "90 days, extendable by written agreement to 180".
+         Sources published after the February 2025 amendments disagree about
+         whether that is still the mechanism or whether 180 may now be stated in
+         the contract from the outset. We could not settle it against the
+         official text, so the answer states what both readings agree on and
+         says plainly that the rest is unconfirmed. Naming the uncertainty is
+         cheaper than being confidently wrong about which clause is lawful. */
+      a:{ar:"الحد الأقصى ١٨٠ يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على ١٨٠ يومًا من البداية، أو لازم ٩٠ يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
+         en:"The ceiling is 180 days, and probation has to be stated explicitly in your contract — if it isn't there, there is no probation. Eid holidays and sick leave don't count toward it, and either side may end the contract during it.\n\nOne thing we have not confirmed: whether an employer may state 180 days from the outset, or must set 90 and then extend by written agreement. The wording changed with the 2025 amendments and we could not verify the current text against an official source — check it before relying on that difference."},
       src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
     { q:{ar:"كم مدة الإشعار قبل إنهاء العقد؟",en:"How much notice is required?"}, nat:"sa",
       a:{ar:"في العقد غير محدد المدة والراتب شهري: ٦٠ يومًا إذا كان الإنهاء من صاحب العمل، و٣٠ يومًا إذا كان منك. المدة غير متساوية — انتبه لأي عقد يساوي بينهما لغير صالحك.",

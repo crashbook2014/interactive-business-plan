@@ -57,7 +57,7 @@ never with a Labor Law article number, because it is a different statute.
 |---|---|---|---|
 | End-of-service: half-month wage per year for the first five years, full month per year thereafter, on the last wage, pro-rata for partial years | **84** | ✅ verified | [HRSD](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [WIPO Lex](https://www.wipo.int/wipolex/en/legislation/details/14685) |
 | Resignation reduction, in the statute's own boundaries: **under 2 years** none; **2 years up to and including 5** one third; **in excess of 5 and under 10** two thirds; **10 or more** the full award. Five years exactly takes one third | **85** | ✅ verified | **Official:** [HRSD — end-of-service award regulations](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf) |
-| Probation up to 90 days, extendable by written agreement to 180 total | **53** | ✅ verified | [DLA Piper](https://www.dlapiper.com/en/insights/publications/2024/08/amendments-to-the-ksa-labour-law) |
+| Probation: **ceiling of 180 days**; must be stated expressly in the contract or there is no probation; Eid and sick leave excluded; either party may terminate during it | **53** | ⚠️ **DISPUTED — see below** | [DLA Piper](https://www.dlapiper.com/en/insights/publications/2024/08/amendments-to-the-ksa-labour-law) |
 | Overtime paid at the hourly wage plus 50% of the basic wage. Since the 2025 amendment an employer may offer compensatory paid leave instead of payment, **but only with the worker's consent** | **107** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
 | Annual leave at least 21 days, rising to at least 30 after five consecutive years with the same employer | **109** | ✅ verified | [Labour Law of KSA](https://www.eoiriyadh.gov.in/page/labour-law-of-ksa/) |
 | Notice, monthly-paid **indefinite** contract: **employer 60 days, employee 30 days**. Applies to indefinite contracts only — a non-Saudi's contract is always fixed-term (art. 37), so this rule does not reach them | **75** | ✅ verified | [Al Othman Law](https://alothmanlaw.sa/en/article-75/) |
@@ -86,6 +86,46 @@ never with a Labor Law article number, because it is a different statute.
 | A labour dispute begins with **amicable settlement**, filed electronically with MHRSD; roughly a week is allowed for direct negotiation, followed by settlement sessions. If it fails, the case may be referred to the **labour court within 21 working days** of the first complaint | — (MHRSD friendly-settlement procedure) | ✅ verified | [HRSD — friendly settlement for labor disputes](https://www.hrsd.gov.sa/en/ministry-services/services/269970), [HRSD — steps to file](https://www.hrsd.gov.sa/en/media-center/documents-and-reports/1532852), [GOV.SA](https://my.gov.sa/en/wps/portal/snp/servicesDirectory/servicedetails/rs2924) |
 | During the notice period on an employer-initiated termination, the worker is entitled to **one full day or eight hours per week** of paid absence to look for other work, timed by the worker with a day's notice | **75** (notice-period provisions) | ✅ verified | [HRSD — contract termination](https://www.hrsd.gov.sa/en/knowledge-centre/articles/306) |
 | Final settlement is due within **one week** of the relationship ending where the employer terminated or the contract expired, and within **two weeks** where the worker resigned. It covers final wages, unused leave and the end-of-service award | **88** | ✅ verified | **Official:** [HRSD — Labor Law PDF](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf), [HRSD — end-of-service award regulations](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317) |
+
+## ⚠️ Open dispute — Article 53, the probation mechanism
+
+**Raised 13 August 2026. Not resolved. Do not treat this row as verified.**
+
+**What is not in dispute**, and what the product therefore still says: the
+ceiling is **180 days**; probation must be stated expressly in the contract, and
+where it is not there is no probation; Eid al-Fitr, Eid al-Adha and sick leave
+do not count toward it; either party may terminate during it.
+
+**What is in dispute** is the mechanism to reach 180:
+
+| Reading | Claim | Where it comes from |
+|---|---|---|
+| **A** — the register's original row | 90 days initially, extendable **by separate written agreement** to 180 total | DLA Piper (Aug 2024); Saudi law-firm explainers still describing it this way in 2026 |
+| **B** — post-amendment | Up to **180 days stated in the contract from the outset**, with no separately agreed extension | Multiple summaries of the 19 February 2025 amendment package |
+
+**Why this was not settled.** The development sandbox's egress proxy blocked
+every authoritative source attempted: `laws.boe.gov.sa` (Bureau of Experts, the
+official text), `morganlewis.com`, `kslaw.com`, `knowledge.dlapiper.com`, and
+the Saudi firm pages `sgmtlaw.sa` and `etqanlawfirm-sa.com`. Search-result
+summaries are not a primary source and were not treated as one. **No article
+text was inferred, and the register was not "corrected" to the newer reading —
+an unverified change is not an improvement over an unverified row.**
+
+**Why it matters to a reader.** Under A, a contract stating 180 days from day
+one is defective. Under B, it is lawful. An employee told the wrong one either
+challenges a valid clause or accepts an invalid one.
+
+**How to settle it.** Read Article 53 in the current consolidated text at the
+Bureau of Experts (`laws.boe.gov.sa`) or the HRSD Labor Law PDF, from an
+unproxied machine, and check whether the 19 February 2025 package amended it.
+One reading of the official Arabic settles this in minutes.
+
+**Until then:** the app's assistant answer states the undisputed facts and names
+this specific uncertainty in both languages rather than asserting either
+reading. That is the only honest position available, and it is also the one
+this register exists to enforce.
+
+---
 
 ## Corrections log
 
