@@ -329,7 +329,57 @@
     text-underline-offset:3px;text-decoration-thickness:1px}
   .foot-links a:hover{color:var(--teal-ink)}
   .price-go{margin-top:26px;text-align:center}
+  /* THE CURTAIN — see the head script. `.launch-only` is everything that only
+     makes sense once people can actually use the thing; `.soon-only` is the
+     pre-launch framing. Exactly one of the two is visible, never both, and the
+     class is on <html> so it is decided before the first paint. */
+  .soon-only{display:none}
+  html.soon .soon-only{display:revert}
+  html.soon .launch-only{display:none}
+
+  /* Contact. Three ways to reach a human, sized for a thumb. WhatsApp leads
+     because in this market it is the one people actually use. */
+  .contact-acts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:26px}
+  .contact-acts .btn{min-height:52px;display:inline-flex;align-items:center;gap:10px;font-size:16px}
+  .contact-acts .btn svg{width:20px;height:20px;flex:none}
+  .btn.wa{background:#25D366;color:#06301A;border-color:#25D366}
+  .btn.wa:hover{background:#1FBF5B;border-color:#1FBF5B}
+  .contact-num{margin-top:18px;font-size:20px;font-weight:700;letter-spacing:.02em;direction:ltr;
+    display:block;text-align:center}
+  .contact-mail{margin-top:6px;font-size:15px;direction:ltr;display:block;text-align:center}
+  /* Scoped under html.soon deliberately. As a bare `.soon-badge` rule it has
+     the same specificity as `.soon-only{display:none}` and sits later in the
+     sheet, so it won — and the badge stayed on screen after launch. */
+  html.soon .soon-badge{display:inline-flex;align-items:center;gap:8px}
+  .soon-badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--teal);
+    animation:soonPulse 2.2s ease-in-out infinite}
+  @keyframes soonPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+  @media (prefers-reduced-motion:reduce){.soon-badge::before{animation:none}}
 </style>
+<script>
+/* ============================================================ THE CURTAIN
+ *
+ * ONE FLAG. Set it to true and the site is a launched product again — every
+ * section, every price, every link into the app. Set it to false and the same
+ * page becomes a pre-launch page: the same benefits, the same prices, but the
+ * calls to action become "talk to us" instead of "try it now", and the app
+ * itself is locked.
+ *
+ * NOTHING IS DELETED BY THIS. No section is removed, no copy is thrown away,
+ * no feature is disabled anywhere in app/. The product is complete and tested
+ * behind the curtain — twelve suites still run against it on every push, and
+ * they run through the lock rather than around it.
+ *
+ * TO LAUNCH: set this to true HERE and in app/index.html. Two lines, one
+ * commit. docs/launch-checklist.md is the full list.
+ *
+ * It lives in the head so the page never paints the wrong version first — a
+ * flash of "Try it now" before it turns into "Coming soon" would look broken
+ * on a slow connection, which is most connections.
+ */
+window.WODOUH_LAUNCHED = false;
+if (!window.WODOUH_LAUNCHED) document.documentElement.className += " soon";
+</script>
 </head>
 <body>
 
@@ -350,7 +400,8 @@
     <div class="nav-act">
       <button class="lang" id="langBtn" onclick="toggleLang()"></button>
       <a class="nav-link" href="#get" data-t="nav_price"></a>
-      <a class="btn" href="app/index.html" data-t="nav_cta"></a>
+      <a class="btn launch-only" href="app/index.html" data-t="nav_cta"></a>
+      <a class="btn soon-only" href="#contact" data-t="soon_nav_cta"></a>
     </div>
   </div>
 </header>
@@ -359,6 +410,7 @@
 <section class="hero">
   <div class="wrap">
     <div class="hero-seq">
+      <span class="eyebrow soon-only soon-badge" data-t="soon_eyebrow"></span>
       <span class="eyebrow">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/></svg>
         <span data-t="hero_eyebrow"></span>
@@ -366,10 +418,12 @@
       <h1 data-t="hero_h"></h1>
       <p class="lede" data-t="hero_p"></p>
       <div class="hero-cta">
-        <a class="btn" href="app/index.html" data-t="hero_cta"></a>
+        <a class="btn launch-only" href="app/index.html" data-t="hero_cta"></a>
+        <a class="btn soon-only" href="#contact" data-t="soon_cta"></a>
         <a class="btn ghost" href="#how" data-t="hero_cta2"></a>
       </div>
-      <p class="hero-note">
+      <p class="hero-note soon-only" data-t="soon_note"></p>
+      <p class="hero-note launch-only">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
         <span data-t="hero_note"></span>
       </p>
@@ -449,7 +503,9 @@
     </div>
     <p class="anchor" data-t="price_anchor"></p>
     <p class="vat" data-t="price_vat"></p>
-    <p class="price-go"><a class="btn" href="app/index.html" data-t="price_cta"></a></p>
+    <p class="anchor soon-only" data-t="soon_price_note"></p>
+    <p class="price-go"><a class="btn launch-only" href="app/index.html" data-t="price_cta"></a>
+       <a class="btn soon-only" href="#contact" data-t="soon_price_cta"></a></p>
   </div>
 </section>
 
@@ -473,11 +529,40 @@
   </div>
 </section>
 
+<section id="contact" class="soon-only trust">
+  <div class="wrap">
+    <p class="kicker" data-t="soon_k_contact"></p>
+    <h2 data-t="soon_contact_h"></h2>
+    <p class="sec-lede" data-t="soon_contact_p"></p>
+    <div class="contact-acts">
+      <!-- WhatsApp first: it is the channel this market actually answers on,
+           and the prefilled message means nobody has to decide what to say. -->
+      <a class="btn wa" href="https://wa.me/966563438351?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%A8%D9%8A%20%D8%A3%D8%B9%D8%B1%D9%81%20%D8%A3%D9%83%D8%AB%D8%B1%20%D8%B9%D9%86%20%D9%88%D8%B6%D9%88%D8%AD" rel="noopener" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.7 15L2 22l5.2-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.8c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-1.9-1.2 7.3 7.3 0 0 1-1.4-1.7c-.1-.3 0-.4.1-.5l.4-.5.3-.4v-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.7 11.5 11.5 0 0 0 4.4 3.9 14.8 14.8 0 0 0 1.5.5 3.5 3.5 0 0 0 1.6.1 2.7 2.7 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.2-.2-.5-.3z"/></svg>
+        <span data-t="soon_wa"></span>
+      </a>
+      <a class="btn" href="tel:+966563438351">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.7 2z"/></svg>
+        <span data-t="soon_call"></span>
+      </a>
+      <a class="btn ghost" href="mailto:Abdulelah@alwodouh.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <span data-t="soon_mail"></span>
+      </a>
+    </div>
+    <!-- Shown as text too. A number you can read and dial yourself is worth
+         more than a button that failed to open on someone's browser. -->
+    <a class="contact-num" href="tel:+966563438351" dir="ltr">0563438351</a>
+    <a class="contact-mail" href="mailto:Abdulelah@alwodouh.com" dir="ltr">Abdulelah@alwodouh.com</a>
+  </div>
+</section>
+
 <section class="close">
   <div class="wrap">
     <h2 data-t="close_h"></h2>
     <p data-t="close_p"></p>
-    <a class="btn" href="app/index.html" data-t="close_cta"></a>
+    <a class="btn launch-only" href="app/index.html" data-t="close_cta"></a>
+    <a class="btn soon-only" href="#contact" data-t="soon_cta"></a>
   </div>
 </section>
 </main>
@@ -486,11 +571,31 @@
   <div class="wrap">
     <div class="fb"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark"/></svg><span lang="ar">وضوح</span></div>
     <p data-t="foot"></p>
-    <p class="foot-links"><a href="app/index.html" data-t="foot_app"></a><a href="brand/index.html" data-t="foot_brand"></a></p>
+    <p class="foot-links"><a class="launch-only" href="app/index.html" data-t="foot_app"></a><a href="brand/index.html" data-t="foot_brand"></a></p>
   </div>
 </footer>
 <script>
 const T = {
+  /* ---- pre-launch copy. Every line here is written to do one job: make
+     someone who has a contract problem right now pick up the phone. The
+     product is described in the present tense because it exists and works —
+     what is "soon" is the day they can open it themselves, not the thing. */
+  soon_eyebrow:{ar:"قريبًا — وضوح يفتح أبوابه",en:"Launching soon"},
+  soon_cta:{ar:"كلّمنا الحين",en:"Talk to us now"},
+  soon_nav_cta:{ar:"تواصل",en:"Contact"},
+  soon_note:{ar:"جاهز، ونراجعه مراجعة أخيرة قبل ما نفتحه للكل. إذا عندك عقد أو مشكلة الحين — لا تنتظر، كلّمنا.",
+             en:"It's built, and getting its final review before we open it to everyone. If you have a contract or a problem right now, don't wait — talk to us."},
+  soon_k_contact:{ar:"تواصل",en:"Get in touch"},
+  soon_contact_h:{ar:"عندك سؤال، أو تبي تحجز مكانك؟",en:"Have a question, or want your place at launch?"},
+  soon_contact_p:{ar:"نرد بأنفسنا، مو بردود جاهزة. اسأل عن حالتك، أو احجز سعر الافتتاح، أو خذ رأينا في عقد قدّامك اليوم.",
+                  en:"You'll reach a person, not a form. Ask about your situation, lock in launch pricing, or get our read on a contract in front of you today."},
+  soon_wa:{ar:"واتساب",en:"WhatsApp"},
+  soon_call:{ar:"اتصل بنا",en:"Call us"},
+  soon_mail:{ar:"راسلنا",en:"Email us"},
+  soon_price_note:{ar:"هذي أسعار الافتتاح. من يحجز قبل الإطلاق يثبت له السعر.",
+                   en:"These are launch prices. Reserve before we open and yours is locked."},
+  soon_price_cta:{ar:"احجز سعر الافتتاح",en:"Reserve launch pricing"},
+
   nav_cta:{ar:"جرّبه الآن",en:"Try it now"},
   nav_price:{ar:"الأسعار",en:"Pricing"},
   price_cta:{ar:"ابدأ بالتقييم المجاني",en:"Start with the free score"},

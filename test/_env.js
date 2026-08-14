@@ -27,6 +27,15 @@ function launchOpts(){
 }
 
 const BASE = (process.env.WODOUH_URL || "http://127.0.0.1:8099").replace(/\/$/, "");
-const APP = BASE + "/app/";
+/* The app is behind the pre-launch curtain (see the head of app/index.html).
+   The suites run THROUGH the lock rather than around it, using the same
+   preview key a human would — so every assertion below also proves the lock
+   does not break the product it is hiding.
+
+   A fragment, not a query string: the document request is still exactly
+   "/app/", so every route glob in every suite keeps matching. Swap it for
+   "?preview" and page.route("**\/app\/") stops matching, and the failures
+   look like AI bugs rather than a URL change. */
+const APP = BASE + "/app/#preview";
 
 module.exports = { playwright, launchOpts, BASE, APP };

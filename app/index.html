@@ -1293,6 +1293,34 @@
   .clause.green .stripe{background:var(--green)} .clause.green .act{background:var(--green-bg);color:var(--green-ink)}
   .section-title{font-size:19px;color:var(--teal-ink);margin:6px 2px 14px}
 </style>
+<script>
+/* ============================================================ THE CURTAIN
+ *
+ * ONE FLAG, matching the one in the site root. False means the product is
+ * finished but not open: a visitor is sent to the pre-launch page instead.
+ *
+ * NOTHING HERE IS DELETED OR DISABLED. Every screen, every calculation, every
+ * paywall and every test is exactly as it was. Twelve suites still run against
+ * this file on every push — they run THROUGH this lock using the same key
+ * below, so the lock itself is proven not to break the app.
+ *
+ * THE KEY: alwodouh.com/app/#preview opens the full working app. Use it to
+ * demo to a lawyer, a partner, a buyer. It is a door the public will not find,
+ * not a security control — anyone told the URL can use it, and that is fine,
+ * because what is behind it is an unfinished product rather than anyone's
+ * data. A fragment rather than a query string on purpose: fragments are never
+ * sent to the server, so the link leaves no trace in any access log.
+ *
+ * TO LAUNCH: set this to true here and in the root index.html. Two lines.
+ * See docs/launch-checklist.md.
+ */
+window.WODOUH_LAUNCHED = false;
+if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
+  /* replace(), not assign(): the back button should not bounce a visitor
+     into a locked door they just left. */
+  location.replace("../");
+}
+</script>
 </head>
 <body>
 

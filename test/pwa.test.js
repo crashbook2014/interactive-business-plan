@@ -62,8 +62,24 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   /* Every link off the front door must resolve. Moving this file up a
      directory rewrote all of them at once, which is exactly the change that
-     silently 404s. */
+     silently 404s.
+
+     Only the site's own pages are fetched. A contact link is checked for
+     shape instead: tel: and mailto: are not HTTP at all, and fetching
+     wa.me would make this suite fail whenever WhatsApp is unreachable from
+     wherever it happens to be running — which says nothing about Wodouh. */
+  const CONTACT = /^(tel:|mailto:|https:\/\/wa\.me\/)/;
   for (const href of [...new Set(front.ctas)]) {
+    if (CONTACT.test(href)) {
+      /* One number, one address, everywhere. A second phone number that
+         nobody answers is the failure this catches. */
+      const okShape = /^tel:\+9665\d{8}$/.test(href)
+                   || /^mailto:[^@\s]+@alwodouh\.com$/i.test(href)
+                   || /^https:\/\/wa\.me\/9665\d{8}(\?|$)/.test(href);
+      ok(okShape, `contact link is well formed: ${href.slice(0, 48)}`);
+      continue;
+    }
+    if (/^https?:/i.test(href)) continue;   /* any other external link */
     const r = await root.request.get(new URL(href, BASE + "/").href);
     ok(r.status() === 200, `landing link resolves: ${href} (${r.status()})`);
   }
