@@ -899,6 +899,7 @@
     font-size:14px;line-height:1.6;resize:vertical}
   .ask-q:focus{outline:2px solid var(--teal);outline-offset:1px}
   .ask-ctx{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+  .ask-q:disabled,#askGo:disabled{opacity:.45;cursor:not-allowed}
   .ask-ans{margin-bottom:12px}
   .ask-ans.verified{border-inline-start:3px solid var(--teal)}
   .ask-ans.verified .hd b{color:var(--teal-ink)}
@@ -2776,9 +2777,10 @@ const T = {
   ask_ctx_b:{ar:"لو علّمت هنا، نرسل معه إجاباتك في حاسبة نهاية الخدمة: تواريخ عملك، أجرك، نوع عقدك، وكيف انتهت العلاقة. هذا أكثر بكثير من السؤال وحده، وقرارك أنت. الجواب يصير مرتبط بوضعك، لكن الأرقام تظل محسوبة على جهازك — النموذج ما يحسب لك ريالًا واحدًا.",
              en:"Tick this and we also send your answers from the end-of-service calculator: your dates, your wage, your contract type, and how the relationship ended. That is materially more than the question alone, and it is your call. The answer becomes about your situation — but the figures stay computed on your device. The model never calculates a riyal for you."},
   ask_ctx_agree:{ar:"أرسل تفاصيل حالتي مع السؤال",en:"Send my case details with the question"},
-  ask_ctx_none:{ar:"ما عندك تفاصيل محفوظة بعد — جاوب أسئلة حاسبة نهاية الخدمة أول عشان يصير فيه شي نرسله.",
-                en:"You have no saved details yet — answer the end-of-service questions first and there will be something to send."},
+  ask_ctx_none:{ar:"ما عندك تفاصيل محفوظة بعد — ابدأ من «تم إنهاء عقدي» في الصفحة الرئيسية، وبعدها يصير فيه شي نرسله.",
+                en:"You have no saved details yet — start from \"My contract was terminated\" on the home screen, and then there will be something to send."},
   ask_left_one:{ar:"باقي لك سؤال واحد اليوم",en:"One question left today"},
+  ask_left_two:{ar:"باقي لك سؤالان اليوم",en:"Two questions left today"},
   ask_left_n:{ar:"باقي لك {n} أسئلة اليوم",en:"{n} questions left today"},
   ask_none_left:{ar:"خلصت أسئلة اليوم. ترجع بكرة — وكل شي ثاني في وضوح شغّال زي ما هو.",
                  en:"That's today's questions. Come back tomorrow — everything else in Wodouh still works as normal."},
@@ -2797,6 +2799,16 @@ const T = {
   ask_ref_money:{ar:"الجواب اللي رجع ذكر مبلغًا بالريال، والنموذج عندنا ما يحسب فلوس أبدًا. الأرقام كلها تطلع من حاسبتك على جهازك.",
                  en:"The answer that came back stated a riyal amount. The model here never computes money — every figure in Wodouh comes from your own calculator, on your device."},
   ask_err:{ar:"ما قدرنا نوصل للخدمة. جرّب بعد شوي.",en:"We couldn't reach the service. Try again shortly."},
+  /* Its own string. The analysis screen's version reassures the reader that
+     "your score above" is unaffected — there is no score above here, and a
+     sentence about something that is not on screen reads as carelessness at
+     the exact moment the reader needs a clear one. */
+  ask_offline:{ar:"ما فيه اتصال، وما وصل سؤالك. باقي وضوح كله شغّال على جهازك.",
+               en:"No connection, and your question didn't get through. The rest of Wodouh still works on your device."},
+  /* And say plainly that the attempt counted. It is deliberate — a cap that
+     only counts successes is a cap a retry loop walks straight through — but
+     a meter that moves without explanation reads as rigged. */
+  ask_spent:{ar:"احتُسبت هذي المحاولة من رصيد اليوم.",en:"That attempt counted against today's allowance."},
   ask_empty:{ar:"اكتب سؤالك أول.",en:"Type your question first."},
   ask_disc:{ar:"وضوح ما هو مكتب محاماة، وهذا الجواب ما هو استشارة قانونية.",
             en:"Wodouh is not a law firm and this answer is not legal advice."},
@@ -5817,6 +5829,13 @@ function openAsk(){ askAnswer = null; askError = null; renderAsk(); show("ask");
 
 /* What we would send if the reader ticks the second box — and the same object
    is what the panel describes, so the copy cannot drift from the payload. */
+/* Article numbers in the reader's own digits. Any non-numeric part of the
+   citation — "Implementing Regulations, art. 6" — is left exactly as the
+   register wrote it; only the digits move. */
+function artNum(a){
+  return String(a).replace(/\d+/g, d => fmtNum(Number(d)));
+}
+
 function askCtx(){
   if (!term) return null;
   const h = termHow();
@@ -5843,7 +5862,8 @@ function renderAsk(){
   let out = "";
 
   if (askAnswer) out += askAnswerHtml(askAnswer);
-  if (askError) out += `<div class="tm-sec"><p>${t(askError)}</p></div>`;
+  if (askError) out += `<div class="tm-sec"><p>${t(askError)}</p>
+       ${askError === "ask_empty" ? "" : `<p class="tq-skip">${t("ask_spent")}</p>`}</div>`;
 
   if (left <= 0){
     out += `<div class="tm-sec"><p>${t("ask_none_left")}</p></div>`;
@@ -5867,7 +5887,9 @@ function renderAsk(){
            : `<p class="tq-skip">${t("ask_ctx_none")}</p>`}
        </div>
        <button class="ghost wide" id="askGo" disabled>${askAnswer ? t("ask_again") : t("ask_go")}</button>
-       <p class="tq-skip">${left === 1 ? t("ask_left_one") : t("ask_left_n").replace("{n}", fmtNum(left))}</p>
+       <p class="tq-skip">${left === 1 ? t("ask_left_one")
+          : left === 2 ? t("ask_left_two")
+          : t("ask_left_n").replace("{n}", fmtNum(left))}</p>
      </div>`;
 
   host.innerHTML = out;
@@ -5896,7 +5918,7 @@ function askAnswerHtml(a){
        <div class="hd"><b>${t("ask_tier_v")}</b></div>
        <p class="ask-body">${esc(a.answer)}</p>
        <p class="ask-src-h">${t("ask_src_h")}</p>
-       ${a.cites.map(c => `<div class="src-line law">${c.article ? "§ " + esc(String(c.article)) + " — " : ""}${esc(c.claim)}</div>`).join("")}
+       ${a.cites.map(c => `<div class="src-line law">${c.article ? esc(artNum(c.article)) + " — " : ""}${esc(c.claim)}</div>`).join("")}
      </div>`;
   }
   return `<div class="tm-sec ask-ans unverified">
@@ -5913,7 +5935,10 @@ async function askRun(){
   if (!q.trim()){ askError = "ask_empty"; renderAsk(); return; }
   if (askLeft() <= 0){ renderAsk(); return; }
 
-  askText = ""; askBusy = true; askError = null; askAnswer = null; renderAsk();
+  /* The question is KEPT until we actually have an answer. Clearing it up
+     front meant a failed send cost the reader their allowance and their typing
+     at the same time, and left them retyping from memory. */
+  askText = q; askBusy = true; askError = null; askAnswer = null; renderAsk();
   /* Spent on the attempt, not on the answer. A cap that only counts successes
      is a cap a retry loop walks straight through. */
   askSpend();
@@ -5951,9 +5976,10 @@ async function askRun(){
          The server enforces this too; disagreeing with it here means
          something is wrong, and the safe reading is the weaker one. */
       if (askAnswer.tier === "verified" && !askAnswer.cites.length) askAnswer.tier = "unverified";
+      askText = "";   /* answered — now the box can empty */
     }
   } catch(e){
-    askError = "ai_offline";
+    askError = "ask_offline";
   }
   askBusy = false;
   renderAsk();

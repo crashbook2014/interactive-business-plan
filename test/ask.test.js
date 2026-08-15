@@ -242,7 +242,28 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   });
   ok(/verified/.test(ver.cls) && !/unverified/.test(ver.cls), "the verified answer is marked verified");
   ok(ver.srcLines === 1, "and carries its source row in the same style as every other legal claim");
-  ok(/§ 88/.test(ver.text), "with the article number shown");
+  ok(/\b88\b/.test(ver.text), "with the article number shown");
+  /* The § is a CSS pseudo-element on .src-line.law, the same one every other
+     legal claim in the app uses. It was ALSO being emitted inline, so the
+     citation rendered "§  84 § —". Its absence from textContent is the proof
+     there is now exactly one. */
+  ok(!ver.text.includes("§"),
+     "and the section mark comes from the shared style, not printed twice");
+
+  /* An article number is a number, and this app writes numbers in the reader's
+     own digits everywhere else — including the counter directly below this. */
+  const arArt = await p.evaluate(async () => {
+    toggleLang();
+    document.getElementById("askQ").value = "متى تنزل مستحقاتي؟";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    const el = document.querySelector(".ask-ans .src-line.law");
+    const out = el.textContent;
+    toggleLang();
+    return out;
+  });
+  ok(/٨٨/.test(arArt) && !/88/.test(arArt),
+     `an Arabic session cites the article in Arabic-Indic digits (${arArt.slice(0, 12)})`);
 
   reply = { tier:"unverified", answer:"Wages are generally paid monthly.", cites:[] };
   const unv = await p.evaluate(async () => {
@@ -285,6 +306,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   console.log("\n— a refusal says which rule refused it");
   reply = { tier:"refused", reason:"money", answer:"", cites:[] };
   const ref = await p.evaluate(async () => {
+    /* Adding an assertion above spends a question and silently removes the box
+       from every block below. Reset where the box is needed. */
+    askUsed = { day:"", n:0 }; renderAsk();
     document.getElementById("askQ").value = "How much am I owed?";
     document.getElementById("askQ").dispatchEvent(new Event("input"));
     await askRun();
@@ -292,6 +316,29 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   });
   ok(/never computes money|riyal amount/i.test(ref),
      "a money refusal tells the reader the model never computes money here");
+
+  /* ---- 11b. a failed send must not cost the reader twice */
+  console.log("\n— a failed question keeps its text and says the attempt counted");
+  reply = null;   /* fulfil with null -> unusable shape -> error path */
+  const failed = await p.evaluate(async () => {
+    /* The assertions above have already spent the day's five, so the box is
+       gone. Reset before measuring the failure path. */
+    askUsed = { day:"", n:0 }; renderAsk();
+    const before = askLeft();
+    document.getElementById("askQ").value = "Will this survive a failure?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    return { before, after: askLeft(), kept: askText,
+             box: (document.getElementById("askQ") || {}).value,
+             text: document.getElementById("askBody").textContent };
+  });
+  ok(failed.after === failed.before - 1, "the attempt is deducted, as designed");
+  ok(/counted against today/i.test(failed.text),
+     "and the reader is TOLD it was deducted, rather than watching a meter move silently");
+  ok(/survive a failure/.test(failed.box || failed.kept),
+     "the question they typed is still there — they do not retype it from memory");
+  ok(!/score above/i.test(failed.text),
+     "and the failure message does not talk about a score that is not on this screen");
 
   /* ---- 12. the cap is real and survives a reload */
   console.log("\n— the daily cap holds, and holds across a reload");
