@@ -21,6 +21,7 @@ const filter = args.find((a) => !a.startsWith("--"));
 /* Ordered cheapest-first, so a broken build fails in seconds rather than
    minutes. The two heavy suites run last. */
 const ORDER = [
+  "headers.test.js",
   "calc-fuzz.test.js",
   "routing.test.js",
   "routing-shadowing.test.js",

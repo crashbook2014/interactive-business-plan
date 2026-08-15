@@ -1,0 +1,70 @@
+# Wodouh — response headers.
+#
+# THIS FILE DOES NOTHING ON GITHUB PAGES. It is read by Cloudflare Pages (and
+# Netlify) and ignored everywhere else, which is the point: GitHub Pages cannot
+# send a response header at all, and three separate security comments in this
+# repo have had to say so apologetically. Moving the site to Cloudflare Pages
+# turns each of those comments into an enforced policy.
+#
+# WHAT THIS BUYS THAT THE <meta> TAGS CANNOT
+#
+# 1. THE SERVICE WORKER. app/sw.js is currently held closed by its own source
+#    code and nothing else. A <meta> CSP governs the document, not a worker; a
+#    worker's policy comes from the response headers on its own script. A red
+#    team pass proved a fetch from the worker context reaches a foreign origin
+#    while the identical request from the page is blocked. The rule below is
+#    the second line of defence that does not exist today.
+#
+# 2. frame-ancestors. Ignored entirely in a <meta> tag. Without it, nothing
+#    stops someone framing Wodouh inside their own site and passing our
+#    assessment off as theirs — or worse, overlaying it.
+#
+# 3. HSTS. Header-only. Without it, a first visit over http:// is interceptable
+#    before the redirect happens.
+#
+# KEEPING IT HONEST: the CSPs below mirror the <meta> tags in index.html and
+# app/index.html directive for directive. test/headers.test.js fails if they
+# drift apart, so the header can never quietly become weaker than the tag it
+# is supposed to reinforce.
+#
+# WHEN THE AI IS ENABLED, connect-src changes HERE TOO — in this file and in
+# the meta tag, to name the one project host. See docs/enable-ai-runbook.md.
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()
+
+# The landing page. No worker, no manifest — it is a document and nothing else.
+/
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; frame-ancestors 'none'
+
+# The app. Installable and offline, so worker-src and manifest-src are 'self'.
+/app/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'
+
+# THE ONE THAT CANNOT BE DONE ANY OTHER WAY.
+#
+# This is the worker's own policy, and it is the only thing that can stop code
+# running in the worker context from reaching a third party. A reader's
+# contract text is what would leave if it ever did.
+/app/sw.js
+  Content-Security-Policy: default-src 'none'; connect-src 'none'
+  Cache-Control: no-cache
+
+# Fonts and icons never change within a build and are safe to cache hard.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/app/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The app is one 500 KB file that carries legal figures. A stale copy is not a
+# cosmetic problem, so it revalidates every time; the service worker is what
+# makes it feel instant, not the browser cache.
+/app/index.html
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
