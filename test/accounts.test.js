@@ -5,7 +5,7 @@
  * with a careless form in front of it produces exactly the outcome the
  * constraint was written to prevent: someone marketed to who never agreed.
  *
- * Four properties, in the order they matter:
+ * Five properties, in the order they matter:
  *
  *   1. The app still works signed out. No screen gates, no flow ends at
  *      "create an account". Unconfigured, accounts do not exist at all.
@@ -14,6 +14,11 @@
  *   3. Skipping is a real answer, and can never be recorded as consent.
  *   4. The exact sentence shown is what gets stored — not a key, not a
  *      paraphrase. A year later "what did they agree to?" has one answer.
+ *   5. Sync uploads OUTCOMES and nothing else. Not the contract text, not the
+ *      file name, not the sentence someone typed about why they were let go.
+ *      This is the only place in the app where that promise is a decision
+ *      rather than a fact about the architecture, so it is tested by planting
+ *      a canary in every leakable field and searching the whole payload.
  *
  * The Supabase calls are stubbed. What is under test is this app's behaviour,
  * not Supabase's.
@@ -31,6 +36,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
    Replaces WodouhAuth with a recorder. Everything the app sends is captured
    verbatim so the assertions read the real arguments. */
 const STUB = (apple) => {
+  /* The genuine client, captured before it is replaced. shape() is the
+     allow-list that decides what leaves the device, so the recorder below
+     delegates to the real one rather than reimplementing it. */
+  const real = window.WodouhAuth;
   window.__sent = [];
   window.WODOUH_CONFIG = Object.assign({}, window.WODOUH_CONFIG, {
     SUPABASE_URL: "https://stub.supabase.co",
@@ -49,6 +58,16 @@ const STUB = (apple) => {
     getProfile: () => Promise.resolve({ id: "u1", phone_prompted_at: null, phone_number: null }),
     savePhone: (n, c, txt) => { window.__sent.push({ fn: "savePhone", n, c, txt }); return Promise.resolve({}); },
     skipPhone: () => { window.__sent.push({ fn: "skipPhone" }); return Promise.resolve({}); },
+    /* pushLocal is recorded but NOT stubbed away: the real shape() runs, so
+       what the assertions inspect is the payload the shipped file would build
+       from the shipped local state. Stubbing the allow-list would test the
+       stub. */
+    pushLocal: (local) => {
+      const body = real.shape(local || {});
+      window.__sent.push({ fn: "pushLocal", local, body });
+      return Promise.resolve(window.__pushFails ? { sent: 0, failed: 1 } : { sent: 3, failed: 0 });
+    },
+    shape: real.shape,
     deleteAccount: () => Promise.resolve()
   };
 };
@@ -196,7 +215,124 @@ const STUB = (apple) => {
   ok(!skipped.some(s => s.fn === "savePhone"),
      "and sends NO number and NO consent, even with the box ticked and a number typed");
 
+  /* ---- 6. sync: the boundary the whole product rests on
+   *
+   * Everywhere else, "your contract stays on your phone" is true because there
+   * was nowhere else to put it. Here there IS somewhere else, so it is a
+   * decision that a future edit could quietly reverse. These assertions are
+   * written against CONTENT, not against field names: the local state below
+   * carries a distinctive string in every place a leak could happen — the
+   * pasted contract text, the file name, the typed termination reason, the
+   * bilingual event titles — and the payload is searched for all of them.
+   * A new field that carries one of these out fails here even if nobody
+   * thought to write an assertion for that field. */
+  console.log("\n— sync sends outcomes, and never a word the reader wrote or a line of their contract");
+  const LEAK = "CANARY";
+  const push = await p.evaluate(async (canary) => {
+    /* openMigrate refuses unless someone is actually signed in — the stub
+       replaces WodouhAuth but never runs initAuth, so say so explicitly. */
+    authUser = { id: "u1" };
+    myContracts.length = 0;
+    myContracts.push({ doc: "doc_emp", score: 61, at: Date.now(), signed: true,
+                       text: canary + "_pasted_contract_text",
+                       filename: canary + "_عقد.pdf" });
+    TRACKED.length = 0;
+    TRACKED.push({ doc: "doc_emp", events: [
+      { d: 90, k: "info", when: Date.now() + 1,
+        t: { ar: canary + "_عنوان", en: canary + "_title" },
+        n: { ar: canary + "_شرح",  en: canary + "_note" } }] });
+    term = Object.assign(blankTerm(), { how: "employer", start: "2018-01-01",
+      end: "2026-01-31", wage: 12000, leaveDays: 12,
+      reason: canary + " my manager shouted at me in front of everyone" });
+    migAsked = false;
+    window.__sent = [];
+    openMigrate({ id: "u1", phone_prompted_at: null, phone_number: null });
+    const onScreen = document.querySelector(".screen.active").id;
+    migrateYes();
+    await new Promise(r => setTimeout(r, 80));
+    const rec = window.__sent.find(s => s.fn === "pushLocal");
+    return { onScreen, body: rec && rec.body, wire: JSON.stringify(rec && rec.body),
+             after: document.querySelector(".screen.active").id, asked: migAsked,
+             /* Nothing local is destroyed by a sync — it is a copy. */
+             kept: myContracts.length === 1 && TRACKED.length === 1 && !!term };
+  }, LEAK);
+
+  ok(push.onScreen === "screen-migrate", "having local work opens the sync question rather than assuming an answer");
+  ok(push.body && push.body.contracts.length === 1, "saying yes sends the contract record");
+  ok(push.wire && push.wire.indexOf(LEAK) === -1,
+     "and NOT one character of the contract text, the file name, the typed reason, or the event copy");
+  ok(push.body && push.body.case_file && push.body.case_file.reason === "employer",
+     "the case file carries the reason KEY, not the sentence the reader wrote");
+  ok(push.body && push.body.contracts[0].score === 61 && push.body.contracts[0].doc_kind === "doc_emp",
+     "what does cross is the outcome: a document kind and a score");
+  ok(push.body && /^\d{4}-\d{2}-\d{2}T/.test(push.body.reminders[0].due_at),
+     "reminders carry a real timestamp the database will accept");
+  ok(push.kept === true, "and the local copy is untouched — sync is a copy, never a move");
+  ok(push.asked === true && push.after === "screen-phone",
+     "the question is recorded as asked, then the phone question follows it");
+
+  /* Refusing must be as complete as it sounds. */
+  const declined = await p.evaluate(async () => {
+    migAsked = false;
+    window.__sent = [];
+    openMigrate({ id: "u1", phone_prompted_at: null, phone_number: null });
+    migrateNo();
+    await new Promise(r => setTimeout(r, 60));
+    return { sent: window.__sent.map(s => s.fn), asked: migAsked,
+             kept: myContracts.length === 1 };
+  });
+  ok(declined.sent.indexOf("pushLocal") === -1,
+     "saying no sends NOTHING — no partial upload, no 'just the safe bits'");
+  ok(declined.kept === true, "and their work stays exactly where it was");
+
+  /* Asked once. Being asked on every launch is how an optional question starts
+     to feel mandatory — and this one is about uploading their data. */
+  const again = await p.evaluate(() => {
+    show("home");
+    const opened = openMigrate({ id: "u1", phone_prompted_at: null, phone_number: null });
+    return { opened, on: document.querySelector(".screen.active").id };
+  });
+  ok(again.opened === false && again.on === "screen-home",
+     "and having answered once, the reader is never asked again on this device");
+
+  /* Nothing to move, nothing to ask. */
+  const nothing = await p.evaluate(() => {
+    myContracts.length = 0; TRACKED.length = 0; term = null; migAsked = false;
+    return openMigrate({ id: "u1" });
+  });
+  ok(nothing === false, "a reader with no local work is not asked a question about local work");
+
+  /* A failed upload must not claim success, and must not cost them anything. */
+  const failed = await p.evaluate(async () => {
+    myContracts.length = 0;
+    myContracts.push({ doc: "doc_emp", score: 61, at: Date.now(), signed: false });
+    migAsked = false; window.__pushFails = true;
+    openMigrate({ id: "u1" });
+    migrateYes();
+    await new Promise(r => setTimeout(r, 80));
+    const err = document.getElementById("migErr");
+    window.__pushFails = false;
+    return { on: document.querySelector(".screen.active").id,
+             shown: !err.hidden, msg: err.textContent,
+             kept: myContracts.length === 1 };
+  });
+  ok(failed.shown === true, "a push that partly failed says so instead of moving on");
+  ok(/still saved on this device|محفوظ على جهازك/i.test(failed.msg),
+     "and tells the reader their work is still on the device");
+  ok(failed.kept === true, "which is true — nothing was cleared");
+
+  /* The screen must SAY what leaves, at the moment of asking. A policy page
+     nobody opens is not consent to an upload. */
+  const words = await p.evaluate(() => {
+    if (document.documentElement.lang !== "ar") toggleLang();
+    return document.getElementById("screen-migrate").textContent;
+  });
+  ok(/نص عقدك/.test(words) && /PDF/.test(words),
+     "the screen names the contract text and the PDF as things that never leave");
+  ok(/الأرقام اللي كتبتها/.test(words),
+     "and names what does leave, in the same breath");
+
   await b.close();
-  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, and consent is never assumed");
+  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, consent is never assumed, and the contract never leaves");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

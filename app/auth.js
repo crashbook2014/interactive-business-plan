@@ -261,6 +261,154 @@
     return patchProfile({ phone_prompted_at: new Date().toISOString() });
   }
 
+
+  /* ============================================================== sync
+   *
+   * WHAT CROSSES THE WIRE, AND WHAT NEVER DOES.
+   *
+   * Crosses: the OUTCOME of a review — a document kind, a score, a timestamp —
+   * plus the deadlines the reader is tracking and the figures they typed into
+   * the calculator themselves.
+   *
+   * Never: pasted text, PDF bytes, extracted clause quotes, or the free text
+   * anyone wrote about why they were let go. 0001_init.sql was written around
+   * that boundary and this file is the other half of it. `shape()` below is
+   * where the boundary is enforced — it builds the payload from named fields
+   * rather than serialising whatever the app happens to be holding, so a new
+   * field added to local state cannot ride along unnoticed.
+   *
+   * SYNC IS ONE-WAY ON PURPOSE, FOR NOW.
+   *
+   * Push only. Two devices editing the same case file is a merge problem, and
+   * a merge that guesses wrong loses someone's employment claim. Until there
+   * is a real conflict rule, the server is a backup the reader asked for
+   * rather than a second source of truth.
+   */
+  var NUM = function (v) { var n = Number(v); return Number.isFinite(n) ? n : null; };
+  var STR = function (v, max) { return typeof v === "string" ? v.slice(0, max || 120) : null; };
+  var DATE = function (v) {          /* a date the database will accept, or nothing */
+    if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    return null;
+  };
+  var WHEN = function (v) {          /* local reminders store ms since epoch */
+    var n = Number(v);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    try { return new Date(n).toISOString(); } catch (e) { return null; }
+  };
+
+  /* The allow-list. Adding a field to local state does NOT add it here, which
+     is the point: what leaves the device is decided in one readable place.
+     Every value is also re-derived — a number is coerced and clamped, a date is
+     matched against a pattern — so a hand-edited localStorage payload cannot
+     post something the database will reject and take the rest of the push
+     down with it. */
+  function shape(local) {
+    var out = { contracts: [], reminders: [], case_file: null };
+
+    (local.contracts || []).slice(0, 8).forEach(function (c) {
+      if (!c || typeof c !== "object") return;
+      var score = NUM(c.score);
+      out.contracts.push({
+        doc_kind: STR(c.doc, 40),
+        score: score === null ? 0 : Math.max(0, Math.min(100, Math.round(score))),
+        signed: c.signed === true,
+        at: NUM(c.at)
+      });
+    });
+
+    (local.tracked || []).slice(0, 20).forEach(function (t) {
+      if (!t || typeof t !== "object") return;
+      (t.events || []).slice(0, 40).forEach(function (e) {
+        if (!e || typeof e !== "object") return;
+        var due = WHEN(e.when);
+        var day = NUM(e.d);
+        /* event_key is an IDENTIFIER, built from the document kind and the day
+           offset that defines the event. Deliberately NOT the event's title:
+           that is authored copy in two languages, it is not stable across a
+           wording change, and sending display text where a key belongs is how
+           a database column quietly becomes a text dump.
+
+           due_at and event_key are NOT NULL in 0001_init.sql, so a reminder
+           missing either is dropped rather than posted and rejected. */
+        var doc = STR(t.doc, 40);
+        if (!due || !doc || day === null) return;
+        out.reminders.push({
+          doc_kind: doc,
+          event_key: doc + ":d" + Math.round(day),
+          due_at: due,
+          kind: ["info", "action", "deadline"].indexOf(e.k) >= 0 ? e.k : "info"
+        });
+      });
+    });
+
+    var tm = local.term || {};
+    if (tm && (tm.start || tm.wage)) {
+      var wage = NUM(tm.wage), leave = NUM(tm.leaveDays);
+      out.case_file = {
+        reason: STR(tm.how, 40),            /* the KEY, never the typed reason */
+        last_wage: wage === null ? null : Math.max(0, wage),
+        start_date: DATE(tm.start),
+        end_date: DATE(tm.end),
+        unused_leave: leave === null ? null : Math.max(0, Math.min(365, Math.round(leave)))
+      };
+    }
+    return out;
+  }
+
+  /* Push the reader's work after they have said yes to it. Resolves to a
+     summary of what was sent, so the UI can report rather than assert. */
+  function pushLocal(local) {
+    var u = user();
+    if (!u) return Promise.reject(new Error("signed_out"));
+    var body = shape(local || {});
+    var jobs = [];
+
+    body.contracts.forEach(function (c) {
+      jobs.push(
+        api("/rest/v1/contracts", {
+          method: "POST",
+          headers: { "prefer": "return=representation" },
+          body: { user_id: u.id, language: (cfg().LANG || "ar"), status: "analyzed" }
+        }).then(function (rows) {
+          var id = rows && rows[0] && rows[0].id;
+          if (!id) return;
+          return api("/rest/v1/contract_analyses", {
+            method: "POST",
+            /* user_id is sent, and the database overwrites it from the parent
+               contract anyway. Belt and braces on purpose. */
+            body: { contract_id: id, user_id: u.id, score: c.score || 0 }
+          });
+        })
+      );
+    });
+
+    if (body.reminders.length) {
+      jobs.push(api("/rest/v1/reminders", {
+        method: "POST",
+        body: body.reminders.map(function (r) {
+          return { user_id: u.id, doc_kind: r.doc_kind, event_key: r.event_key,
+                   due_at: r.due_at, kind: r.kind };
+        })
+      }));
+    }
+
+    if (body.case_file) {
+      jobs.push(api("/rest/v1/case_files", {
+        method: "POST",
+        body: Object.assign({ user_id: u.id }, body.case_file)
+      }));
+    }
+
+    /* allSettled, not all: one rejected row must not discard the rest of
+       someone's work, and the caller is told how much landed. */
+    return Promise.allSettled(jobs).then(function (res) {
+      return {
+        sent: res.filter(function (r) { return r.status === "fulfilled"; }).length,
+        failed: res.filter(function (r) { return r.status === "rejected"; }).length
+      };
+    });
+  }
+
   /* --------------------------------------------------------- erasure */
   function deleteAccount() {
     if (!user()) return Promise.reject(new Error("signed_out"));
@@ -280,6 +428,8 @@
     getProfile: getProfile,
     savePhone: savePhone,
     skipPhone: skipPhone,
+    pushLocal: pushLocal,
+    shape: shape,
     deleteAccount: deleteAccount
   };
 })(typeof window !== "undefined" ? window : this);

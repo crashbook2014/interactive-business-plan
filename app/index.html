@@ -1780,6 +1780,20 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
     <p class="au-err" id="auErr" hidden></p>
   </section>
 
+  <!-- Asked before the phone question on purpose: this is about data the
+       reader ALREADY has and would lose, the phone is a favour to us. -->
+  <section class="screen" id="screen-migrate">
+    <h2 class="section-title" data-t="au_mig_h"></h2>
+    <p class="pw-note" data-t="au_mig_b"></p>
+    <div class="tm-sec">
+      <p data-t="au_mig_what"></p>
+      <p><b data-t="au_mig_never"></b></p>
+      <button class="primary" id="migYes" onclick="migrateYes()" data-t="au_mig_yes"></button>
+      <p class="tq-skip au-skip" id="migNo" onclick="migrateNo()" data-t="au_mig_no"></p>
+      <p class="au-err" id="migErr" hidden></p>
+    </div>
+  </section>
+
   <section class="screen" id="screen-phone">
     <h2 class="section-title" data-t="ph_title"></h2>
     <p class="pw-note" data-t="ph_sub"></p>
@@ -2158,6 +2172,18 @@ const T = {
             en:"Want it linked to your account so it follows you to any device? Say no and it stays on this device, exactly as it is."},
   au_mig_yes:{ar:"إي، اربطه بحسابي",en:"Yes, link it"},
   au_mig_no:{ar:"لا، خلّه على الجهاز",en:"No, keep it on this device"},
+  /* The whole app rests on "your contract stays on your phone". The one
+     moment that promise is most at risk is the moment we ask to upload
+     something — so this is where it gets restated, in full, item by item,
+     instead of a link to a policy nobody opens. */
+  au_mig_what:{ar:"اللي يُرفع: نوع المستند ودرجته، والتواريخ اللي تتابعها، والأرقام اللي كتبتها بنفسك في الحاسبة.",
+               en:"What gets uploaded: the document type and its score, the dates you're tracking, and the figures you typed into the calculator yourself."},
+  au_mig_never:{ar:"اللي ما يُرفع أبدًا: نص عقدك، ولا ملف الـPDF، ولا أي اقتباس منه، ولا السبب اللي كتبته بخط يدك.",
+                en:"What never gets uploaded: your contract text, the PDF, any quote from it, or the reason you typed in your own words."},
+  au_mig_busy:{ar:"جارٍ الربط…",en:"Linking…"},
+  au_mig_done:{ar:"تم الربط بحسابك.",en:"Linked to your account."},
+  au_mig_fail:{ar:"ما ضبط الرفع، وشغلك محفوظ على جهازك زي ما هو.",
+               en:"The upload didn't work. Your work is still saved on this device, exactly as it was."},
 
   /* Phone. Asked once, optional, and the marketing tick is a SEPARATE
      decision from giving the number at all. */
@@ -4656,6 +4682,70 @@ function localWorkExists(){
          !!(term && term.start);
 }
 
+/* ------------------------------------------------------------------ sync
+ *
+ * THE ONE MOMENT THE PRIVACY PROMISE IS AT RISK.
+ *
+ * Everything else in this app keeps the contract on the phone because it never
+ * had anywhere else to put it. Here there IS somewhere else, so the promise
+ * stops being a property of the architecture and becomes a decision — which is
+ * why it is asked, why the screen lists what leaves and what never does, and
+ * why WodouhAuth.shape() rebuilds the payload from named fields rather than
+ * serialising local state. A field added to saveState() does not become a field
+ * that gets uploaded.
+ *
+ * ASKED ONCE PER DEVICE, and `migAsked` is why. The question is about the work
+ * on THIS phone, so the answer belongs beside it in localStorage, not on the
+ * profile: a second device has its own work and deserves its own question.
+ *
+ * NOTHING IS DELETED LOCALLY EITHER WAY. Push is a copy, not a move — the
+ * signed-out app keeps working against exactly the same localStorage it always
+ * did, which is rule 1 of auth.js and the reason a failed upload is a shrug
+ * rather than a loss.
+ */
+let migAsked = false, migProfile = null;
+
+function openMigrate(profile){
+  if (!authOn() || !signedIn()) return false;
+  if (migAsked || !localWorkExists()) return false;
+  migProfile = profile || null;
+  const err = document.getElementById("migErr");
+  if (err) err.hidden = true;
+  const yes = document.getElementById("migYes");
+  if (yes){ yes.disabled = false; yes.textContent = t("au_mig_yes"); }
+  show("migrate");
+  return true;
+}
+
+/* Asked and answered, whichever way. Recorded before the network is touched,
+   so a failed upload does not re-ask on every launch. */
+function migrateDone(){
+  migAsked = true; saveState();
+  const p = migProfile; migProfile = null;
+  if (!maybeAskPhone(p)) show(authBack, 1);
+}
+
+function migrateYes(){
+  const yes = document.getElementById("migYes");
+  const err = document.getElementById("migErr");
+  if (yes){ yes.disabled = true; yes.textContent = t("au_mig_busy"); }
+  WodouhAuth.pushLocal({ contracts: myContracts, tracked: TRACKED, term })
+    .then(r => {
+      /* A partial push is reported as a failure, not quietly as success. The
+         reader is choosing whether to rely on this, and "some of it arrived"
+         is not something they can act on. */
+      if (r && r.failed > 0) throw new Error("partial");
+      migrateDone();
+    })
+    .catch(() => {
+      migAsked = true; saveState();
+      if (yes){ yes.disabled = false; yes.textContent = t("au_mig_yes"); }
+      if (err){ err.textContent = t("au_mig_fail"); err.hidden = false; }
+    });
+}
+
+function migrateNo(){ migrateDone(); }
+
 function initAuth(){
   if (!authOn()) return;
   WodouhAuth.onChange(u => { authUser = u; renderAccount(); });
@@ -4664,13 +4754,11 @@ function initAuth(){
     renderAccount();
     if (!u) return;
     return WodouhAuth.getProfile().then(p => {
-      /* NOT YET WIRED: the "you have work on this device — link it?" prompt.
-         The copy exists (au_mig_*) and localWorkExists() answers whether there
-         is anything to ask about, but the upload itself is the next piece of
-         work and nothing here pretends otherwise. When it lands, this is where
-         it goes — BEFORE the phone question, because their existing work is
-         about data they already have and the phone is a favour to us. */
-      maybeAskPhone(p);
+      /* Their existing work comes BEFORE the phone question: it is data they
+         already have and could lose, and the phone is a favour to us. If there
+         is nothing to move, the phone question happens immediately as before —
+         openMigrate() reports whether it took the screen. */
+      if (!openMigrate(p)) maybeAskPhone(p);
     }).catch(() => {});
   });
 }
@@ -7609,6 +7697,7 @@ function saveState(){
     localStorage.setItem(STORE, JSON.stringify({
       nat,
       timelyOff, installOff,
+      migAsked,
       usedCodes,
       owned, packUntil,
       askUsed,
@@ -7633,6 +7722,11 @@ function loadState(){
     nat = (d.nat === "sa" || d.nat === "nonsa") ? d.nat : null;
     timelyOff = d.timelyOff === true;
     installOff = d.installOff === true;
+    /* Only an explicit true suppresses the sync question. Anything else —
+       missing, corrupt, written by an older version — means "not asked yet",
+       so the failure mode is being asked once more rather than silently never
+       being offered the thing an account is for. */
+    migAsked = d.migAsked === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
 
