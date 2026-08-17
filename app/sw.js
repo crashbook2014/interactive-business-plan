@@ -52,6 +52,7 @@ const CACHE = "wodouh-shell-v1";
 const SHELL = [
   "./",
   "./index.html",
+  "./auth.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-192.png",

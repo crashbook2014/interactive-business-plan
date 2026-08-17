@@ -1,0 +1,202 @@
+/* Accounts, and the consent that has to survive an audit.
+ *
+ * The schema test proves the database refuses a consent it cannot evidence.
+ * This proves the screen in front of it behaves, because a correct constraint
+ * with a careless form in front of it produces exactly the outcome the
+ * constraint was written to prevent: someone marketed to who never agreed.
+ *
+ * Four properties, in the order they matter:
+ *
+ *   1. The app still works signed out. No screen gates, no flow ends at
+ *      "create an account". Unconfigured, accounts do not exist at all.
+ *   2. The marketing tick is UNCHECKED and is a SEPARATE control from the
+ *      number. Saving a number never implies permission to market to it.
+ *   3. Skipping is a real answer, and can never be recorded as consent.
+ *   4. The exact sentence shown is what gets stored — not a key, not a
+ *      paraphrase. A year later "what did they agree to?" has one answer.
+ *
+ * The Supabase calls are stubbed. What is under test is this app's behaviour,
+ * not Supabase's.
+ */
+const { playwright, launchOpts, APP } = require("./_env.js");
+const { chromium } = playwright();
+const FAIL = [];
+const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
+
+/* Installed AFTER load, not via addInitScript: auth.js is a real script tag
+   now, so an init-script stub gets overwritten by the genuine client the
+   moment the page loads. That overwrite is itself worth knowing — it is proof
+   the file is actually being fetched and executed.
+
+   Replaces WodouhAuth with a recorder. Everything the app sends is captured
+   verbatim so the assertions read the real arguments. */
+const STUB = (apple) => {
+  window.__sent = [];
+  window.WODOUH_CONFIG = Object.assign({}, window.WODOUH_CONFIG, {
+    SUPABASE_URL: "https://stub.supabase.co",
+    SUPABASE_ANON_KEY: "anon",
+    APPLE_SIGNIN: apple
+  });
+  window.WodouhAuth = {
+    configured: () => true,
+    appleAvailable: () => apple === true,
+    init: () => Promise.resolve({ id: "u1", email: "a@b.co" }),
+    user: () => ({ id: "u1" }),
+    onChange: () => () => {},
+    signInWithGoogle: () => { window.__sent.push({ fn: "google" }); return new Promise(() => {}); },
+    signInWithApple: () => { window.__sent.push({ fn: "apple" }); return new Promise(() => {}); },
+    signOut: () => Promise.resolve(),
+    getProfile: () => Promise.resolve({ id: "u1", phone_prompted_at: null, phone_number: null }),
+    savePhone: (n, c, txt) => { window.__sent.push({ fn: "savePhone", n, c, txt }); return Promise.resolve({}); },
+    skipPhone: () => { window.__sent.push({ fn: "skipPhone" }); return Promise.resolve({}); },
+    deleteAccount: () => Promise.resolve()
+  };
+};
+
+(async () => {
+  const b = await chromium.launch(launchOpts());
+
+  /* ---- 1. signed out is the whole app */
+  console.log("\n— unconfigured: accounts do not exist, and nothing breaks");
+  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const off = [];
+  p0.on("request", r => { if (!/^http:\/\/(127\.|localhost)/.test(r.url())) off.push(r.url()); });
+  p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p0.goto(APP);
+  await p0.waitForFunction(() => typeof window.show === "function");
+  const bare = await p0.evaluate(() => {
+    nat = "sa";
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-31", wage:12000, ctype:"indef" });
+    return { on: authOn(), signed: signedIn(), award: Math.round(termAward()),
+             loaded: typeof WodouhAuth !== "undefined" };
+  });
+  ok(bare.loaded, "the auth client is loaded same-origin, so the CSP needs no script exception");
+  ok(bare.on === false, "with no Supabase project configured, accounts are off");
+  ok(bare.signed === false, "nobody is signed in");
+  ok(bare.award > 0, `and the product still computes signed out (${bare.award} SAR)`);
+  ok(off.length === 0, `with zero off-origin requests${off.length ? ": " + off.join(", ") : ""}`);
+
+  /* Opening sign-in must be impossible rather than merely discouraged. */
+  const noRoute = await p0.evaluate(() => {
+    openSignin("account");
+    return document.querySelector(".screen.active").id;
+  });
+  ok(noRoute !== "screen-signin",
+     "and calling openSignin() directly does not reach the screen");
+  await p0.close();
+
+  /* ---- 2. configured: two buttons, and Apple only where it works */
+  console.log("\n— the sign-in screen is two buttons, and Apple appears only where it works");
+  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p.goto(APP);
+  await p.waitForFunction(() => typeof window.show === "function");
+  await p.evaluate(STUB, false);
+
+  const screen = await p.evaluate(() => {
+    openSignin("account");
+    const s = document.getElementById("screen-signin");
+    const vis = el => el && getComputedStyle(el).display !== "none" && !el.hidden;
+    return {
+      id: document.querySelector(".screen.active").id,
+      google: vis(document.getElementById("auGoogle")),
+      apple: vis(document.getElementById("auApple")),
+      /* No password field anywhere. Not hidden — absent. */
+      pwFields: document.querySelectorAll('#screen-signin input[type="password"]').length,
+      emailFields: document.querySelectorAll('#screen-signin input[type="email"]').length,
+      text: s.textContent
+    };
+  });
+  ok(screen.id === "screen-signin", "the screen opens when configured");
+  ok(screen.google === true, "Google is offered");
+  ok(screen.apple === false, "Apple is NOT offered without an Apple developer account — a dead button is worse than one fewer option");
+  ok(screen.pwFields === 0 && screen.emailFields === 0,
+     "there is no password or email field anywhere on the screen");
+  ok(/without an account/i.test(screen.text) || /بدون حساب/.test(screen.text),
+     "and the screen says plainly that the app works without an account");
+
+  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p2.goto(APP);
+  await p2.waitForFunction(() => typeof window.show === "function");
+  await p2.evaluate(STUB, true);
+  const withApple = await p2.evaluate(() => {
+    openSignin("account");
+    return !document.getElementById("auApple").hidden;
+  });
+  ok(withApple === true, "with APPLE_SIGNIN configured, Apple appears — no code change needed");
+  await p2.close();
+
+  /* ---- 3. the consent checkbox */
+  console.log("\n— the marketing tick is unchecked, separate, and never implied");
+  const box = await p.evaluate(() => {
+    show("phone");
+    const c = document.getElementById("phConsent");
+    const n = document.getElementById("phNum");
+    return { checked: c.checked, type: c.type,
+             /* Distinct controls, not one field that means two things. */
+             separate: c !== n && !n.contains(c),
+             note: document.getElementById("screen-phone").textContent };
+  });
+  ok(box.checked === false, "it is UNCHECKED by default");
+  ok(box.separate === true, "and it is a separate control from the number field");
+  ok(/separate from saving the number|منفصل عن حفظ الرقم/i.test(box.note),
+     "and the screen says in words that the two are separate decisions");
+  ok(/never use it to sign you in|ولا نستخدمه لتسجيل الدخول/i.test(box.note),
+     "and that the number is never used to sign in");
+
+  /* ---- 4. what actually gets sent */
+  console.log("\n— what the app sends is what the reader chose");
+  const noConsent = await p.evaluate(async () => {
+    window.__sent = [];
+    show("phone");
+    document.getElementById("phNum").value = "0512345678";
+    document.getElementById("phConsent").checked = false;
+    let err = null;
+    try { savePhone(); } catch(e){ err = String(e); }
+    await new Promise(r => setTimeout(r, 60));
+    return { sent: window.__sent[0], err, has: typeof WodouhAuth.savePhone };
+  });
+  ok(noConsent.sent && noConsent.sent.fn === "savePhone", "saving a number sends savePhone");
+  ok(noConsent.sent && noConsent.sent.c === false,
+     "a number saved WITHOUT the tick sends consent false — storing a number never implies permission");
+
+  const withConsent = await p.evaluate(async () => {
+    window.__sent = [];
+    show("phone");
+    document.getElementById("phNum").value = "0512345678";
+    document.getElementById("phConsent").checked = true;
+    savePhone();
+    await new Promise(r => setTimeout(r, 60));
+    return window.__sent[0];
+  });
+  ok(withConsent.c === true, "ticking it sends consent true");
+  /* The database refuses a true consent without the sentence that produced it,
+     so this is the client half of that contract. */
+  const shown = await p.evaluate(() => document.querySelector('[data-t="ph_consent"]').textContent.trim());
+  ok(typeof withConsent.txt === "string" && withConsent.txt.trim() === shown,
+     "and it sends the EXACT sentence shown on screen, not a key or a paraphrase");
+  ok(withConsent.txt.length > 20,
+     `which is the real wording, not a label (${withConsent.txt.slice(0, 40)}…)`);
+
+  /* ---- 5. skip is an answer, not a consent */
+  console.log("\n— skipping is a real answer and can never be read as agreement");
+  const skipped = await p.evaluate(async () => {
+    window.__sent = [];
+    show("phone");
+    document.getElementById("phNum").value = "0512345678";
+    document.getElementById("phConsent").checked = true;   /* ticked, then skipped */
+    skipPhone();
+    await new Promise(r => setTimeout(r, 60));
+    return window.__sent;
+  });
+  ok(skipped.length === 1 && skipped[0].fn === "skipPhone",
+     "skip records that the question was asked");
+  ok(!skipped.some(s => s.fn === "savePhone"),
+     "and sends NO number and NO consent, even with the box ticked and a number typed");
+
+  await b.close();
+  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, and consent is never assumed");
+  process.exit(FAIL.length ? 1 : 0);
+})().catch(e => { console.error(e); process.exit(1); });

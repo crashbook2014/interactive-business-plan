@@ -1316,6 +1316,22 @@
   .sit-u-acts{display:flex;gap:9px;flex-wrap:wrap}
   .sit-u-acts .ghost{flex:1 1 auto;min-height:46px;font-size:13.5px}
   @media (min-width:600px){ .sit-grid{display:grid;grid-template-columns:1fr 1fr} }
+  /* Accounts. Two buttons, brand-styled, nothing else competing. */
+  .au-acts{display:flex;flex-direction:column;gap:11px;margin:20px 0 14px}
+  .au-btn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;
+    min-height:54px;border-radius:var(--r-md);border:1px solid var(--line);
+    background:var(--card);color:var(--ink);font:inherit;font-size:15.5px;font-weight:700;
+    box-shadow:var(--e1);cursor:pointer}
+  html[lang="ar"] .au-btn{font-weight:400}
+  .au-btn svg{width:19px;height:19px;flex:none}
+  .au-btn:active{transform:scale(.985)}
+  .au-btn.apple{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .au-skip{text-align:center;cursor:pointer;text-decoration:underline;margin-top:4px}
+  .au-what{margin-top:18px}
+  .au-err{margin-top:12px;font-size:13px;color:var(--red-ink)}
+  .ph-l{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  html[lang="ar"] .ph-l{font-weight:400}
+  .ph-in{min-height:52px;direction:ltr;text-align:start;font-size:16px}
 </style>
 <script>
 /* ============================================================ THE CURTAIN
@@ -1740,6 +1756,48 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
+  <!-- ACCOUNTS. Both screens are unreachable unless Supabase is configured;
+       nothing routes here otherwise and no entry point renders. -->
+  <section class="screen" id="screen-signin">
+    <button class="back" onclick="closeSignin()"><span class="bk" aria-hidden="true">‹</span><span data-t="back"></span></button>
+    <h2 class="section-title" data-t="au_title"></h2>
+    <p class="pw-note" data-t="au_sub"></p>
+    <div class="au-acts">
+      <button class="au-btn" id="auGoogle" onclick="doSignIn('google')">
+        <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.3-.2-1.9H9v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.9 10.7a5.4 5.4 0 0 1 0-3.4V5H.9a9 9 0 0 0 0 8l3-2.3z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 .9 5l3 2.3C4.6 5.2 6.6 3.6 9 3.6z"/></svg>
+        <span data-t="au_google"></span>
+      </button>
+      <button class="au-btn apple" id="auApple" hidden onclick="doSignIn('apple')">
+        <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M12.9 9.6c0-1.9 1.6-2.8 1.6-2.9-.9-1.3-2.2-1.4-2.7-1.5-1.2-.1-2.3.7-2.9.7-.6 0-1.5-.7-2.5-.7-1.3 0-2.5.7-3.1 1.9-1.3 2.3-.3 5.7 1 7.5.6.9 1.3 1.9 2.3 1.9 1 0 1.3-.6 2.4-.6s1.4.6 2.4.6c1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1 0 0-1.9-.7-1.9-2.9zM11.2 3.7c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.3 1.2-.5.6-.9 1.5-.8 2.4.9.1 1.8-.4 2.3-1.2z"/></svg>
+        <span data-t="au_apple"></span>
+      </button>
+    </div>
+    <p class="tq-skip au-skip" onclick="closeSignin()" data-t="au_skip"></p>
+    <div class="tm-sec au-what">
+      <p><b data-t="au_what"></b></p>
+      <p data-t="au_what_b"></p>
+    </div>
+    <p class="au-err" id="auErr" hidden></p>
+  </section>
+
+  <section class="screen" id="screen-phone">
+    <h2 class="section-title" data-t="ph_title"></h2>
+    <p class="pw-note" data-t="ph_sub"></p>
+    <div class="tm-sec">
+      <label class="ph-l" for="phNum" data-t="ph_label"></label>
+      <input class="ask-q ph-in" id="phNum" type="tel" inputmode="tel" autocomplete="tel"/>
+      <!-- SEPARATE from saving the number, and unchecked. Bundling the two
+           would pre-consent people to marketing calls, which is a problem for
+           app review and for PDPL alike. -->
+      <label class="ai-agree"><input type="checkbox" id="phConsent"/>
+        <span data-t="ph_consent"></span></label>
+      <p class="tq-skip" data-t="ph_consent_note"></p>
+      <button class="primary" id="phSave" onclick="savePhone()" data-t="ph_save"></button>
+      <p class="tq-skip au-skip" onclick="skipPhone()" data-t="ph_skip"></p>
+      <p class="au-err" id="phErr" hidden></p>
+    </div>
+  </section>
+
   <!-- ASK -->
   <section class="screen" id="screen-ask">
     <button class="back" onclick="show('rights',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_rights"></span></button>
@@ -2028,6 +2086,10 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
   </div>
 </div>
 
+<!-- Accounts. Same-origin, so the CSP stays `script-src 'self'` — the reason
+     this file talks to Supabase over plain fetch instead of importing an SDK
+     from a CDN. It does nothing at all until SUPABASE_URL is configured. -->
+<script src="./auth.js"></script>
 <script>
 /* ============================================ RUNTIME CONFIGURATION
  *
@@ -2072,6 +2134,48 @@ window.WODOUH_CONFIG = Object.assign({
 
 /* ------------------------------------------------------------------ i18n */
 const T = {
+  /* ---- accounts.
+     Offered where an account BUYS something and nowhere else. The app has
+     always worked signed out and still does; nothing below gates a screen. */
+  au_title:{ar:"احفظ شغلك",en:"Save your work"},
+  au_sub:{ar:"وضوح يشتغل بدون حساب، وراح يظل كذا. الحساب فايدته وحدة: شغلك يظل معك لو غيّرت جوالك أو مسحت المتصفح.",
+          en:"Wodouh works without an account and always will. An account does one thing: it keeps your work when you change phone or clear your browser."},
+  au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
+  au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
+  au_skip:{ar:"لا شكرًا، أكمل بدون حساب",en:"No thanks — keep going without one"},
+  au_what:{ar:"وش نحفظ؟",en:"What we save"},
+  au_what_b:{ar:"نتيجة التقييم وخطاباتك وتذكيراتك. ما نحفظ نص عقدك ولا ملفه — هذي ما تطلع من جهازك أصلًا.",
+             en:"Your assessment result, your letters and your reminders. Not your contract's text or file — those never leave your device in the first place."},
+  au_out:{ar:"تسجيل الخروج",en:"Sign out"},
+  au_del:{ar:"احذف حسابي وكل بياناتي",en:"Delete my account and all my data"},
+  au_del_sure:{ar:"يُحذف نهائيًا وما يرجع. متأكد؟",en:"Permanently deleted, with no way back. Sure?"},
+  au_err:{ar:"ما ضبط تسجيل الدخول. جرّب مرة ثانية.",en:"Sign-in didn't work. Try again."},
+
+  /* The local-data question. Their work moving to a server is exactly the kind
+     of thing that gets asked, not assumed. */
+  au_mig_h:{ar:"عندك شغل محفوظ على هذا الجهاز",en:"You have work saved on this device"},
+  au_mig_b:{ar:"تبي نربطه بحسابك عشان يوصلك على أي جهاز؟ لو قلت لا، يظل على هذا الجهاز زي ما هو.",
+            en:"Want it linked to your account so it follows you to any device? Say no and it stays on this device, exactly as it is."},
+  au_mig_yes:{ar:"إي، اربطه بحسابي",en:"Yes, link it"},
+  au_mig_no:{ar:"لا، خلّه على الجهاز",en:"No, keep it on this device"},
+
+  /* Phone. Asked once, optional, and the marketing tick is a SEPARATE
+     decision from giving the number at all. */
+  ph_title:{ar:"رقمك؟ اختياري تمامًا",en:"Your number? Completely optional"},
+  ph_sub:{ar:"ما نحتاجه عشان تستخدم وضوح، ولا نستخدمه لتسجيل الدخول أبدًا. فايدته الوحيدة إننا نقدر نوصلك لو احتجت مساعدة.",
+          en:"You don't need it to use Wodouh, and we never use it to sign you in. Its only purpose is so we can reach you if you need help."},
+  ph_label:{ar:"رقم الجوال",en:"Mobile number"},
+  ph_ph:{ar:"05xxxxxxxx",en:"05xxxxxxxx"},
+  /* Stored verbatim in phone_consent_text — the database refuses a true
+     consent without the sentence that produced it. */
+  ph_consent:{ar:"أوافق على التواصل معي لأغراض الدعم والعروض التسويقية",
+              en:"I agree to be contacted for support and marketing"},
+  ph_consent_note:{ar:"اختياري، ومنفصل عن حفظ الرقم. تقدر تحفظ رقمك بدون ما تعلّم هنا.",
+                   en:"Optional, and separate from saving the number. You can save your number without ticking this."},
+  ph_save:{ar:"احفظ الرقم",en:"Save number"},
+  ph_skip:{ar:"تخطّي",en:"Skip"},
+  ph_bad:{ar:"الرقم ما يبان صحيح.",en:"That number doesn't look right."},
+
   /* ---- the situation chooser.
      The front door used to be an upload box, which asks one question: "do you
      have a contract file?" Everyone whose job just ENDED answers no and
@@ -4458,6 +4562,118 @@ function renderLib(){
 /* Calculating first is deliberate — the file is built from the figure. But
    once that figure exists, the file itself is the right destination. */
 function openRightsCase(){ if (eosData) openCase(); else openEos(); }
+
+/* ============================================================ accounts
+ *
+ * WHERE SIGN-IN IS OFFERED, AND WHERE IT IS NOT.
+ *
+ * It is offered at exactly the moments an account buys something: saving work,
+ * carrying it to another phone, paying. It is never a gate. There is no
+ * sign-in wall, no screen that checks for a session before rendering, and no
+ * flow that ends at "create an account to continue". The app worked signed out
+ * before this file gained a backend and it still does — which is also §13 of
+ * the customer-journey document, and the reason the free diagnosis is worth
+ * anything.
+ *
+ * ACCOUNTS ARE ABSENT, NOT DISABLED, WHEN UNCONFIGURED. Same pattern as the AI
+ * and the paywall: no Supabase project means no entry point renders and no
+ * request is made.
+ */
+let authUser = null, authBack = "account";
+
+function authOn(){ return typeof WodouhAuth !== "undefined" && WodouhAuth.configured(); }
+function signedIn(){ return !!authUser; }
+
+function openSignin(back){
+  if (!authOn()) return;
+  authBack = back || "account";
+  const ap = document.getElementById("auApple");
+  if (ap) ap.hidden = !WodouhAuth.appleAvailable();
+  const err = document.getElementById("auErr");
+  if (err) err.hidden = true;
+  show("signin");
+}
+function closeSignin(){ show(authBack, 1); }
+
+function doSignIn(provider){
+  if (!authOn()) return;
+  const err = document.getElementById("auErr");
+  const go = provider === "apple" ? WodouhAuth.signInWithApple() : WodouhAuth.signInWithGoogle();
+  go.catch(() => {
+    if (err){ err.textContent = t("au_err"); err.hidden = false; }
+  });
+}
+
+/* Asked once, after the account exists, and only if the reader has never been
+   asked before. phone_prompted_at is what makes "once" true across devices —
+   asking again on every visit is how an optional question starts to feel
+   mandatory. */
+function maybeAskPhone(profile){
+  if (!profile || profile.phone_prompted_at || profile.phone_number) return false;
+  show("phone");
+  return true;
+}
+
+function savePhone(){
+  const num = (document.getElementById("phNum") || {}).value || "";
+  const box = document.getElementById("phConsent");
+  const err = document.getElementById("phErr");
+  /* The exact sentence beside the checkbox, sent with the answer. The database
+     refuses a true consent without it, so this is not belt-and-braces — it is
+     the only shape the schema accepts. */
+  WodouhAuth.savePhone(num, !!(box && box.checked), t("ph_consent"))
+    .then(() => show(authBack, 1))
+    .catch(e => {
+      if (err){
+        err.textContent = t(String(e && e.message) === "bad_phone" ? "ph_bad" : "au_err");
+        err.hidden = false;
+      }
+    });
+}
+
+function skipPhone(){
+  /* Skip is a real answer and is recorded as one, so the question does not
+     come back. It must never be read as consent to anything. */
+  WodouhAuth.skipPhone().catch(() => {}).then(() => show(authBack, 1));
+}
+
+function signOutNow(){
+  WodouhAuth.signOut().then(() => { authUser = null; renderAccount(); });
+}
+
+function deleteAccountNow(){
+  if (!confirm(t("au_del_sure"))) return;
+  WodouhAuth.deleteAccount()
+    .then(() => { authUser = null; renderAccount(); })
+    .catch(() => {});
+}
+
+/* Local work moving to a server is asked about, never assumed. The prompt only
+   appears when there is something to move. */
+function localWorkExists(){
+  return (myContracts && myContracts.length > 0) ||
+         (TRACKED && TRACKED.length > 0) ||
+         !!(term && term.start);
+}
+
+function initAuth(){
+  if (!authOn()) return;
+  WodouhAuth.onChange(u => { authUser = u; renderAccount(); });
+  WodouhAuth.init().then(u => {
+    authUser = u;
+    renderAccount();
+    if (!u) return;
+    return WodouhAuth.getProfile().then(p => {
+      /* NOT YET WIRED: the "you have work on this device — link it?" prompt.
+         The copy exists (au_mig_*) and localWorkExists() answers whether there
+         is anything to ask about, but the upload itself is the next piece of
+         work and nothing here pretends otherwise. When it lands, this is where
+         it goes — BEFORE the phone question, because their existing work is
+         about data they already have and the phone is a favour to us. */
+      maybeAskPhone(p);
+    }).catch(() => {});
+  });
+}
 
 /* ---------------------------------------------------- situation routing
  *
@@ -8586,6 +8802,7 @@ function renderInstallHint(){
 function dismissInstall(){ installOff = true; saveState(); renderInstallHint(); }
 
 loadState();
+if (typeof initAuth === "function") initAuth();
 applyLang();
 initIntake();
 initGestures();
