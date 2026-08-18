@@ -385,6 +385,17 @@
   .dc-label{font-size:19px;line-height:1.35;color:var(--dc-ink);text-wrap:balance}
   .dc-why{font-size:13.5px;color:var(--ink-2);line-height:1.6}
   .dc-conf{font-size:11.5px;color:var(--ink-2);opacity:.85;line-height:1.55;text-wrap:balance}
+  /* WHEN WE READ MOST OF IT, THIS IS FOOTNOTE. WHEN WE DID NOT, IT IS THE
+     MOST IMPORTANT LINE ON THE CARD.
+     The text was always correct — "we only recognised 3" — but it was set in
+     the smallest, faintest type on a card headlined by a large confident
+     number, which is the visual equivalent of saying it under your breath. A
+     reader scanning a 92 has no reason to look for the caveat, so at low
+     coverage the caveat stops being fine print. */
+  .dc-conf[data-level="low"]{font-size:13px;opacity:1;color:var(--amber-ink);
+    display:flex;gap:6px;align-items:flex-start;
+    background:var(--amber-bg);border-radius:10px;padding:8px 10px;margin-top:4px}
+  .dc-conf[data-level="low"] svg{width:15px;height:15px;flex:none;margin-top:1px}
   @media (prefers-reduced-motion:no-preference){
     .decision{animation:rise var(--t) var(--ease-spring) both}
   }
@@ -2287,6 +2298,13 @@ const T = {
   /* Arabic counted nouns inflect: one is singular, two takes the dual, 3–10
      takes a broken plural, 11+ returns to the singular accusative. Rendering
      "٢ بند أصفر" would read as broken Arabic in an Arabic-first product. */
+  /* Arabic inflects a counted noun by its count, and "٢ بنود" is wrong the way
+     "2 clause" is wrong in English — the dual has its own form. The same four
+     shapes the red and amber counts already use. */
+  dc_cl_1:{ar:"بندًا واحدًا",en:"1 clause"},
+  dc_cl_2:{ar:"بندين",en:"2 clauses"},
+  dc_cl_p:{ar:"{n} بنود",en:"{n} clauses"},
+  dc_cl_m:{ar:"{n} بندًا",en:"{n} clauses"},
   dc_red_1:{ar:"بند أحمر",en:"1 red"},
   dc_red_2:{ar:"بندان أحمران",en:"2 red"},
   dc_red_p:{ar:"{n} بنود حمراء",en:"{n} red"},
@@ -2296,12 +2314,15 @@ const T = {
   dc_amber_p:{ar:"{n} بنود صفراء",en:"{n} amber"},
   dc_amber_m:{ar:"{n} بندًا أصفر",en:"{n} amber"},
   dc_join:{ar:" و",en:" and "},
-  dc_conf_high:{ar:"ثقة عالية — نموذج معروف، فحصنا {n} بنود.",
-                en:"High confidence — a known sample, {n} clauses checked."},
-  dc_conf_med:{ar:"ثقة متوسطة — تعرّفنا على {n} بنود في نصّك. قد توجد بنود أخرى ما التقطناها.",
-               en:"Medium confidence — we recognised {n} clauses in your text. There may be others we didn't catch."},
-  dc_conf_low:{ar:"ثقة محدودة — تعرّفنا على {n} فقط. اقرأ بقية العقد بنفسك.",
-               en:"Limited confidence — we only recognised {n}. Read the rest of the contract yourself."},
+  dc_conf_high:{ar:"نموذج معروف — فحصنا {n}.",
+                en:"A known sample — {n} checked."},
+  dc_conf_med:{ar:"تعرّفنا على {n} في نصّك. قد توجد بنود أخرى ما التقطناها.",
+               en:"We recognised {n} in your text. There may be others we didn't catch."},
+  /* Says what the number MEANS, not just what it is. "We recognised 3" leaves
+     the reader to work out that the score therefore covers only three clauses;
+     spelling that out is the whole point of the line. */
+  dc_conf_low:{ar:"تعرّفنا على {n} فقط من عقدك، والدرجة فوق محسوبة على هذي البنود وحدها — مو على العقد كامل. اقرأ الباقي بنفسك أو أرسله لمحامٍ.",
+               en:"We recognised only {n} in your contract, and the score above covers those alone — not the whole contract. Read the rest yourself, or have a lawyer look at it."},
   res_flags_h:{ar:"البنود المرصودة",en:"Flagged clauses"},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
@@ -4348,9 +4369,30 @@ function renderDecision(){
   }
   document.getElementById("dcWhy").textContent = why;
 
+  /* The level drives the styling, so "we barely read this" cannot be styled as
+     a footnote by a later CSS edit — the class is data, not decoration. */
   const c = confidence(current);
-  document.getElementById("dcConf").textContent =
-    t("dc_conf_" + c.level).replace("{n}", fmtNum(c.n));
+  const conf = document.getElementById("dcConf");
+  conf.dataset.level = c.level;
+  conf.textContent = "";
+  if (c.level === "low"){
+    /* An icon, because at a glance the shape of a warning reads before its
+       words do — and this is the line a reader is least likely to stop for. */
+    const ic = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    ic.setAttribute("viewBox", "0 0 24 24");
+    ic.setAttribute("fill", "none");
+    ic.setAttribute("stroke", "currentColor");
+    ic.setAttribute("stroke-width", "2.2");
+    ic.setAttribute("stroke-linecap", "round");
+    ic.setAttribute("aria-hidden", "true");
+    ic.innerHTML = '<path d="M12 8v5M12 16.5v.2"/><circle cx="12" cy="12" r="9"/>';
+    conf.appendChild(ic);
+    const sp = document.createElement("span");
+    sp.textContent = t("dc_conf_low").replace("{n}", countNoun("dc_cl", c.n));
+    conf.appendChild(sp);
+  } else {
+    conf.textContent = t("dc_conf_" + c.level).replace("{n}", countNoun("dc_cl", c.n));
+  }
 }
 
 /* Which single action we recommend, given the decision. Everything else

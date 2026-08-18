@@ -163,7 +163,65 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   ok(sym.pattern !== sym.normalisedPattern,
      "the patterns are normalised too, not just the text — normalising one side alone is what broke it the first time");
 
+  /* ---- 5. the score says how much of the contract it covers
+   *
+   * The dangerous output is not a low score. It is a HIGH score on a contract
+   * we barely read: "92 / 100" beside two recognised clauses reads as "your
+   * contract is fine" to everyone who does not know what the number is
+   * computed from.
+   *
+   * The line saying so already existed and was already accurate. It was set in
+   * the smallest, faintest type on a card headlined by a large confident
+   * number — correct, and said under its breath. So what is pinned here is
+   * that at low coverage it stops being fine print.
+   */
+  console.log("\n— the score says how much of the contract it actually covers");
+  const shown = (txt) => p.evaluate(async (t) => {
+    nat = "sa"; show("home");
+    document.getElementById("pasteBox").value = t;
+    pasteChanged(); analyze("pasted");
+    await new Promise(r => setTimeout(r, 2800));
+    const conf = document.getElementById("dcConf");
+    const cs = getComputedStyle(conf);
+    return { screen: document.querySelector(".screen.active").id,
+             score: +document.getElementById("scoreNum").textContent,
+             level: conf.dataset.level,
+             text: conf.textContent.trim(),
+             px: parseFloat(cs.fontSize),
+             marked: cs.backgroundColor !== "rgba(0, 0, 0, 0)",
+             icon: !!conf.querySelector("svg") };
+  }, txt);
+
+  const thin = await shown(`اتفاقية
+يعمل الطرف الثاني بوظيفة محاسب لدى الطرف الأول.
+الراتب الشهري ثمانية آلاف ريال.
+فترة التجربة تسعون يوماً.`);
+  ok(thin.screen === "screen-result" && thin.level === "low",
+     `a contract we barely recognised is marked low coverage (${thin.level})`);
+  ok(thin.score >= 80,
+     `and it still scores high (${thin.score}) — which is exactly why the caveat has to carry weight`);
+  ok(thin.marked === true && thin.icon === true,
+     "so at low coverage the line is a marked caution, not a footnote");
+  ok(/محسوبة على هذي البنود وحدها|covers those alone/.test(thin.text),
+     "and it says what the number MEANS: the score covers the recognised clauses alone");
+  ok(/بندين/.test(thin.text),
+     `with the count inflected as Arabic inflects it — the dual, not "٢ بنود" (${thin.text.slice(0, 30)}…)`);
+
+  const full = await shown(FORMAL);
+  ok(full.level === "med", `a better-recognised contract is not shouted at (${full.level})`);
+  ok(full.marked === false && full.px < thin.px,
+     `and its line stays quiet (${full.px}px vs ${thin.px}px) — a caution that fires every time stops being one`);
+
+  /* A curated sample is a known quantity and must not be labelled as if we
+     had guessed at it. */
+  const sample = await p.evaluate(async () => {
+    nat = "sa"; analyze("employment");
+    await new Promise(r => setTimeout(r, 2800));
+    return document.getElementById("dcConf").dataset.level;
+  });
+  ok(sample === "high", `a built-in sample reports high coverage, because it is authored not matched (${sample})`);
+
   await b.close();
-  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nordinary contracts are read as contracts, and nonsense still is not");
+  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nordinary contracts are read as contracts, nonsense still is not, and the score says what it covers");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
