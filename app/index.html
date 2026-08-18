@@ -3740,7 +3740,7 @@ const RULES = [
     a:{ar:"اجعل حق الإنهاء متبادلًا وبمدة إشعار عادلة.",en:"Make termination mutual, with a fair notice period."},
     r:{ar:"الفصل دون مكافأة ولا إشعار محصور في حالات المادة ٨٠، وتتعامل معه المحاكم كاستثناء تأديبي لا كأداة إدارية. ولازم يُمكَّنك صاحب العمل من سماع أقوالك، ويوثّق السبب، ويبلغك كتابيًا — وثّق تاريخ الإبلاغ وطريقته.",
        en:"Dismissal with no award and no notice is confined to the cases in Article 80, and the courts treat it as an exceptional disciplinary step, not a management tool. Your employer must let you state your case, document the reason, and notify you in writing — record the date and manner you were told."} },
-  { re:/(overtime|ساعات\s*إضافية|عمل\s*إضافي)/i, s:"amber",
+  { re:/(overtime|working\s*hours|hours\s*per\s*week|ساعات\s*(?:إضافية|اضافية|العمل|عمل)|عمل\s*إضافي|ساعة\s*(?:أسبوعي|اسبوعي|يومي)|(?:ال)?دوام\s*(?:الرسمي|اليومي)?)/i, s:"amber",
     t:{ar:"العمل الإضافي",en:"Overtime"},
     src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
     p:{ar:"العقد يذكر عملًا إضافيًا. تأكد أن أجره وطريقة حسابه مكتوبة صراحة.",
@@ -3749,7 +3749,7 @@ const RULES = [
        en:"Ask for the overtime rate in writing, and that any compensatory leave in its place needs your agreement."},
     r:{ar:"الأجر الإضافي مستحق نظامًا ولو سكت العقد — احفظ سجل ساعاتك. ولو عرضوا عليك إجازة تعويضية بدل الأجر، ما تصح إلا بموافقتك أنت.",
        en:"Overtime is owed by law even if the contract is silent — keep your hours log. And if you're offered compensatory leave instead of pay, that only counts with your consent."} },
-  { re:/(notice\s*period|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day))/i, s:"amber", nat:"sa",
+  { re:/(notice\s*period|prior\s*notice|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i, s:"amber", nat:"sa",
     t:{ar:"مدة الإشعار",en:"Notice period"},
     src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
     p:{ar:"انتبه لمدة الإشعار المطلوبة قبل إنهاء العقد — المدد الطويلة تقيّد حركتك.",
@@ -3757,7 +3757,7 @@ const RULES = [
     a:{ar:"الشائع ٣٠ يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."},
     r:{ar:"يمكن الاتفاق على إعفائك من باقي المدة عند الاستقالة — اطلبه كتابيًا.",
        en:"The remainder can be waived by agreement when you resign — get it in writing."} },
-  { re:/(auto[- ]?renew|تجديد\s*تلقائي)/i, s:"amber",
+  { re:/(auto[- ]?renew|renew.{0,15}automatic|(?:تجديد|تتجدد|يتجدد|يُجدد|تُجدد)\s*(?:ال)?تلقائي|تجدد\s*تلقائ)/i, s:"amber",
     t:{ar:"التجديد التلقائي",en:"Auto-renewal"},
     p:{ar:"العقد يتجدد تلقائيًا. لا بأس بذلك إذا كانت مهلة الاعتراض واضحة ومعقولة.",
        en:"The contract auto-renews. That's fine if the opt-out window is clear and reasonable."},
@@ -3783,19 +3783,19 @@ const RULES = [
      The guard written for this in surfaces.test.js covered the two stores that
      were wrong that day. This was a third surface, and the one a reader acts
      on. The test now enumerates by citation instead. */
-  { re:/(probation|فترة\s*التجربة)/i, s:"amber",
+  { re:/(probation|probationary|فترة\s*(?:ال)?(?:تجربة|تجربه|اختبار)|تحت\s*(?:ال)?تجربة)/i, s:"amber",
     t:{ar:"فترة التجربة",en:"Probation period"},
     src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
     p:{ar:"فيه فترة تجربة منصوصة، وهذا طبيعي. الحد الأقصى ١٨٠ يومًا. لكن هل يجوز النص على ١٨٠ من البداية أو لازم ٩٠ ثم تمديد مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نتحقق منها من النص الرسمي — راجع المدة المكتوبة عندك.",
        en:"A probation period is stated, which is normal. The ceiling is 180 days. But whether an employer may state 180 from the outset, or must set 90 and extend it in writing, changed with the 2025 amendments and we have not confirmed the current text — check the period written in yours."},
     a:{ar:"تأكد أن المدة المكتوبة في عقدك ضمن الحد، واسأل عن أساسها إذا تجاوزت ٩٠ يومًا.",
        en:"Check the period written in your contract is within the limit, and ask what it rests on if it is longer than 90 days."} },
-  { re:/(annual\s*leave|إجازة\s*سنوية)/i, s:"green",
+  { re:/(annual\s*leave|paid\s*leave|(?:إجازة|اجازة)\s*(?:ال)?(?:سنوية|سنويه|اعتيادية|مدفوعة))/i, s:"green",
     t:{ar:"الإجازة السنوية",en:"Annual leave"},
     src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
     p:{ar:"العقد ينص على إجازة سنوية — تأكد من عدد الأيام وأنها مدفوعة.",
        en:"The contract covers annual leave — check the day count and that it's paid."}, a:null },
-  { re:/(salary|راتب|أجر\s*شهري)/i, s:"green",
+  { re:/(salary|wage|remuneration|راتب|رواتب|أجر|اجر|الأجر|مكافأة\s*شهرية|(?:مبلغ|قدره)[^.\n]{0,40}(?:ريال|ر\.?س)|ريال\s*(?:سعودي)?\s*(?:شهري|في\s*نهاية\s*كل\s*شهر))/i, s:"green",
     t:{ar:"الراتب",en:"Salary"},
     p:{ar:"الراتب مذكور. تأكد أن المبلغ والبدلات ومواعيد الدفع كلها مكتوبة بأرقام.",
        en:"Salary is mentioned. Confirm the amount, allowances, and payment dates are all in numbers."}, a:null }  ,
@@ -3900,13 +3900,65 @@ const RULES = [
    library, so the three can never disagree about who sees what. */
 function forTrack(x){ return !x.nat || x.nat === nat; }
 
+/* ---------------------------------------------- Arabic, as people write it
+ *
+ * THE BUG THIS EXISTS TO FIX, IN ONE EXAMPLE.
+ *
+ * A real contract says "الإجازة السنوية إحدى وعشرون يوماً". The rule looks for
+ * /إجازة\s*سنوية/. It does not match — because the definite article ال is
+ * attached to the FRONT of the second word, so after "إجازة" the text reads
+ * "السنوية" and the pattern expects "سنوية". The clause is right there, in the
+ * contract, written normally, and we walked straight past it.
+ *
+ * That is not a gap in one rule. Arabic attaches ال, and the conjunctions و ف
+ * ب ك ل, as prefixes rather than separate words, so EVERY multi-word Arabic
+ * pattern in the rule set had the same hole. A realistic contract matched 2 of
+ * 17 rules, and one of the 15 it missed was written verbatim in the text.
+ *
+ * So rather than patch seventeen regexes and hope the next one remembers, the
+ * TEXT is normalised for matching: tashkeel and tatweel removed, alef and ya
+ * forms unified, and the ال prefix stripped from the front of words. Matching
+ * runs against both the original and the normalised form, so a rule written
+ * either way still fires and nothing that matched before can stop matching.
+ *
+ * This normalisation is for MATCHING ONLY. Nothing the reader sees passes
+ * through it — their contract is displayed exactly as they wrote it.
+ */
+function normAr(text){
+  return String(text)
+    /* Tashkeel (harakat) and tatweel: decoration that changes no word. */
+    .replace(/[ً-ْٰـ]/g, "")
+    /* أ إ آ ٱ are all alef in practice, and contracts mix them freely. */
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")          /* ى -> ي */
+    .replace(/ة/g, "ه")          /* ة -> ه */
+    /* The definite article, with or without a leading conjunction/preposition.
+       Only stripped when at least three letters follow, so short words that
+       merely begin with those letters are left alone. */
+    .replace(/(^|[\s(«"'،.:;-])(?:[وفبكل])?ال(?=[ء-ي]{3,})/g, "$1");
+}
+
+/* The same rule, compiled against normalised Arabic. Built once per rule and
+   cached on the rule itself, because rebuilding seventeen RegExps on every
+   analysis is work with a known answer. */
+function ruleN(rule){
+  if (!rule._reN) rule._reN = new RegExp(normAr(rule.re.source), rule.re.flags);
+  return rule._reN;
+}
+
 function analyzePasted(text){
   const clauses = [];
   /* Carry the whole rule through, minus its matcher. Copying a hand-picked
      subset silently dropped `src` (so pasted contracts cited nothing) and
      `r` (so signed-mode readers got negotiation advice instead of their
      rights). A rule gaining a field should not need an edit here. */
-  for (const rule of RULES) if (forTrack(rule) && rule.re.test(text)){
+  /* Normalised once, not per rule: seventeen regexes over a 40 KB contract is
+     already the hot path here. BOTH sides go through the same transform —
+     normalising the text alone was the first attempt and it made things worse,
+     because the patterns are written in un-normalised Arabic and stopped
+     meeting the text they were built to match. */
+  const alt = normAr(text);
+  for (const rule of RULES) if (forTrack(rule) && (rule.re.test(text) || ruleN(rule).test(alt))){
     const { re, ...rest } = rule;
     clauses.push({ ...rest, q:null });
   }

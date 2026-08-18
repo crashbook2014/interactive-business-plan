@@ -31,6 +31,7 @@ const ORDER = [
   "layout.test.js",
   "surfaces.test.js",
   "pdf.test.js",
+  "matching.test.js",
   "situations.test.js",
   "accounts.test.js",
   "commerce.test.js",
