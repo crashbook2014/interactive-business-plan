@@ -2450,10 +2450,18 @@ const T = {
   nr_title:{ar:"ما قدرنا نقرأ هذا النص",en:"We couldn't read this one"},
   nr_body:{ar:"ما ودّنا نعطيك تقييمًا لعقد ما قرأناه صح — الأمانة أهم.",
            en:"We'd rather not score a contract we couldn't properly read. Honesty first."},
-  nr_tips:{ar:["الصق العقد كاملًا بما فيه العناوين","تأكد أن النص عربي أو إنجليزي","جرّب عقدًا تجريبيًا لتشوف كيف يشتغل وضوح"],
-           en:["Paste the full contract, headings included","Check the text is Arabic or English","Try a sample to see how Wodouh works"]},
+  nr_tips:{ar:["الصق العقد كاملًا بما فيه العناوين","لو كان ملف PDF، جرّب «طباعة ← حفظ كـPDF» وارفعه من جديد","تأكد أن النص عربي أو إنجليزي","جرّب عقدًا تجريبيًا لتشوف كيف يشتغل وضوح"],
+           en:["Paste the full contract, headings included","If it was a PDF, try Print → Save as PDF and upload it again","Check the text is Arabic or English","Try a sample to see how Wodouh works"]},
   nr_retry:{ar:"ألصق نصًا آخر",en:"Paste another text"},
   nr_sample:{ar:"جرّب نموذجًا",en:"Try a sample"},
+  /* The scanned/photographed case. Separated from nr_* because the honest
+     answer is different: no retry of the same file will ever work, so the
+     tips must not suggest one. */
+  nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
+  nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن — لكن نص العقد يشتغل معنا تمامًا.",
+            en:"This looks like a scan or a photo. We can't read images yet — but the contract's text works perfectly."},
+  nrs_tips:{ar:["افتح الملف على الجوال، حدّد النص وانسخه، ثم الصقه هنا","لو عندك النسخة الأصلية من Word، صدّرها PDF وارفعها","أو الصق أهم البنود فقط — التجربة والإشعار وعدم المنافسة"],
+            en:["Open the file, select the text, copy it and paste it here","If you have the original Word file, export it to PDF and upload that","Or paste just the key clauses — probation, notice, non-compete"]},
   offline:{ar:"يبدو أنك غير متصل — تحقق من الاتصال وحاول مرة ثانية.",
            en:"You appear to be offline — check your connection and try again."},
   sub:{ar:"اختر عقدًا تجريبيًا أو الصق نص عقدك، ونشرح لك كل بند بلغة واضحة.",en:"Pick a sample contract or paste your own, and we'll explain every clause in plain language."},
@@ -3888,12 +3896,7 @@ function applyLang(){
   document.getElementById("greet").textContent =
     t(h < 12 ? "greet_m" : h < 17 ? "greet_a" : "greet_e");
   document.documentElement.style.setProperty("--dir", lang==="ar" ? "-1" : "1");
-  document.getElementById("nrTitle").textContent = t("nr_title");
-  document.getElementById("nrBody").textContent = t("nr_body");
-  document.getElementById("nrRetry").textContent = t("nr_retry");
-  document.getElementById("nrSample").textContent = t("nr_sample");
-  document.getElementById("nrTips").innerHTML =
-    T.nr_tips[lang].map(x=>`<li>${x}</li>`).join("");
+  renderNoread();
   document.getElementById("offlineNotice").textContent = t("offline");
   document.getElementById("deskTitle").textContent = t("desk_title");
   document.getElementById("deskSub").textContent = t("desk_sub");
@@ -7362,28 +7365,251 @@ async function inflate(bytes){
 
 function latin(bytes){ let o=""; for (let i=0;i<bytes.length;i++) o+=String.fromCharCode(bytes[i]); return o; }
 
-/* Pull the strings out of BT…ET blocks: (str) Tj, [(a) -2 (b)] TJ, ' and " */
-function textFromContent(src){
-  let out = "";
-  const re = /\((?:\\.|[^\\()])*\)\s*(?:Tj|TJ|'|")|\[(?:[^\[\]]|\\.)*\]\s*TJ/g;
+/* ---------------------------------------------------- ToUnicode CMaps
+ *
+ * WHY THIS EXISTS, IN ONE PARAGRAPH.
+ *
+ * Word exports Arabic with embedded SUBSET fonts using Identity-H encoding.
+ * The bytes inside a text-showing operator are then not letters and not
+ * Unicode — they are two-byte indices into that one font's private glyph
+ * table. Reading them as characters produces soup, which legible() correctly
+ * refused, which is why a real Saudi employment contract came back as "we
+ * couldn't read this". The document itself carries the answer: a /ToUnicode
+ * CMap mapping those indices back to Unicode, which is what lets a desktop
+ * reader copy Arabic out of the same file. We parse the map the PDF already
+ * ships rather than guessing.
+ *
+ * Latin text from the same exporter usually arrives as literal (…) strings in
+ * WinAnsi and needs none of this — which is exactly why an English contract
+ * worked and an Arabic one did not.
+ */
+
+/* A CMap is a code → string table. `two` records the code width, taken from
+   the width the file itself declares, because Identity-H is 2-byte and simple
+   8-bit encodings are 1-byte and misreading that shifts every character. */
+const CMAP_MAX = 65536;   /* a malformed bfrange must not be able to hang the tab */
+
+function hexUnits(h){
+  const clean = h.replace(/[^0-9a-fA-F]/g, "");
+  const out = [];
+  for (let i = 0; i + 3 < clean.length; i += 4) out.push(parseInt(clean.slice(i, i+4), 16));
+  /* A trailing pair means an odd 1-byte tail; keep it rather than dropping a
+     character at the end of a run. */
+  if (clean.length % 4 === 2) out.push(parseInt(clean.slice(-2), 16));
+  return out;
+}
+
+/* The destination of a bfchar/bfrange is UTF-16BE. fromCharCode over the code
+   units reassembles surrogate pairs on its own. */
+function hexStr(h){
+  const u = hexUnits(h);
+  return u.length ? String.fromCharCode.apply(null, u) : "";
+}
+
+function parseCMap(src){
+  const map = new Map();
+  let two = false, saw = 0;
+
+  /* Code width, in order of trust: the declared codespace, then the width the
+     bfchar entries actually use. */
+  const cs = /begincodespacerange([\s\S]*?)endcodespacerange/.exec(src);
+  if (cs){
+    const first = /<([0-9a-fA-F\s]+)>/.exec(cs[1]);
+    if (first && first[1].replace(/\s/g, "").length >= 4) two = true;
+  }
+
+  const chars = /beginbfchar([\s\S]*?)endbfchar/g;
+  let blk;
+  while ((blk = chars.exec(src))){
+    const pair = /<([0-9a-fA-F\s]+)>\s*<([0-9a-fA-F\s]+)>/g;
+    let m;
+    while ((m = pair.exec(blk[1]))){
+      const code = m[1].replace(/\s/g, "");
+      if (code.length >= 4) two = true;
+      map.set(parseInt(code, 16), hexStr(m[2]));
+      if (++saw > CMAP_MAX) return { map, two };
+    }
+  }
+
+  const ranges = /beginbfrange([\s\S]*?)endbfrange/g;
+  while ((blk = ranges.exec(src))){
+    /* Two legal forms: <lo> <hi> <dstStart>, and <lo> <hi> [<d1> <d2> …]. */
+    const re = /<([0-9a-fA-F\s]+)>\s*<([0-9a-fA-F\s]+)>\s*(?:<([0-9a-fA-F\s]+)>|\[([\s\S]*?)\])/g;
+    let m;
+    while ((m = re.exec(blk[1]))){
+      const loHex = m[1].replace(/\s/g, "");
+      if (loHex.length >= 4) two = true;
+      const lo = parseInt(loHex, 16), hi = parseInt(m[2].replace(/\s/g, ""), 16);
+      if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi < lo) continue;
+      const span = Math.min(hi - lo, CMAP_MAX - saw);
+      if (span < 0) return { map, two };
+      if (m[4] != null){
+        const items = m[4].match(/<([0-9a-fA-F\s]+)>/g) || [];
+        for (let i = 0; i <= span && i < items.length; i++){
+          map.set(lo + i, hexStr(items[i].slice(1, -1)));
+          saw++;
+        }
+      } else {
+        /* Incrementing destination: only the LAST code unit advances, which is
+           what keeps a range crossing a surrogate boundary from corrupting. */
+        const base = hexUnits(m[3]);
+        if (!base.length) continue;
+        for (let i = 0; i <= span; i++){
+          const u = base.slice();
+          u[u.length - 1] = u[u.length - 1] + i;
+          map.set(lo + i, String.fromCharCode.apply(null, u));
+          saw++;
+        }
+      }
+      if (saw > CMAP_MAX) return { map, two };
+    }
+  }
+  return { map, two };
+}
+
+/* Resource name (/F3) → CMap. The content stream names fonts by resource, the
+   ToUnicode lives on the font object, so this walks /Font << /F3 12 0 R >>
+   dictionaries and follows the reference. One map for the document rather than
+   one per page: resource names are consistent across pages in every exporter
+   that matters here, and a per-page model buys nothing for the cost. */
+async function fontMaps(src, bytes, objAt){
+  const maps = new Map();
+  const dicts = /\/Font\s*<<([\s\S]*?)>>/g;
+  let d;
+  while ((d = dicts.exec(src))){
+    const refs = /\/([A-Za-z0-9#+.-]+)\s+(\d+)\s+(\d+)\s+R/g;
+    let r;
+    while ((r = refs.exec(d[1]))){
+      const name = r[1];
+      if (maps.has(name)) continue;
+      const fontObj = objAt(+r[2]);
+      if (!fontObj) continue;
+      const tu = /\/ToUnicode\s+(\d+)\s+(\d+)\s+R/.exec(fontObj);
+      if (!tu) continue;
+      const cm = await streamOf(src, bytes, objAt, +tu[1]);
+      if (cm) maps.set(name, parseCMap(cm));
+    }
+  }
+  return maps;
+}
+
+/* Index every `N 0 obj … endobj` once, so a /ToUnicode reference is a lookup
+   rather than a scan of the whole file per font. */
+function objectIndex(src){
+  const at = new Map();
+  const re = /(\d+)\s+\d+\s+obj\b/g;
   let m;
   while ((m = re.exec(src))){
-    const chunk = m[0];
-    const strs = chunk.match(/\((?:\\.|[^\\()])*\)/g) || [];
-    for (const raw of strs){
-      out += raw.slice(1,-1)
-        .replace(/\\([nrtbf])/g, (x,c)=>({n:"\n",r:"",t:"\t",b:"",f:""}[c]))
-        .replace(/\\([0-7]{1,3})/g, (x,o)=>String.fromCharCode(parseInt(o,8)))
-        .replace(/\\(.)/g, "$1");
-    }
-    out += /T\*|'|"/.test(chunk) ? "\n" : " ";
+    const end = src.indexOf("endobj", m.index);
+    at.set(+m[1], src.slice(m.index, end < 0 ? m.index + 4000 : end));
+  }
+  return n => at.get(n);
+}
+
+/* The decoded stream belonging to object N, or null. */
+async function streamOf(src, bytes, objAt, num){
+  const body = objAt(num);
+  if (!body) return null;
+  const abs = src.indexOf(body);
+  if (abs < 0) return null;
+  const sm = /stream\r?\n?/.exec(body);
+  if (!sm) return null;
+  const start = abs + sm.index + sm[0].length;
+  const end = src.indexOf("endstream", start);
+  if (end < 0) return null;
+  let stop = end;
+  while (stop > start && (bytes[stop-1] === 10 || bytes[stop-1] === 13)) stop--;
+  const raw = bytes.subarray(start, stop);
+  const data = /FlateDecode/.test(body.slice(0, sm.index)) ? await inflate(raw) : raw;
+  return data ? latin(data) : null;
+}
+
+/* ------------------------------------------------------ text operators */
+
+/* A literal (…) string, unescaped into raw BYTE values. Kept as bytes rather
+   than characters because a 2-byte CID has to be paired up afterwards, and
+   pairing characters that have already been mangled is not recoverable. */
+function litBytes(raw){
+  const s = raw.slice(1, -1);
+  const out = [];
+  for (let i = 0; i < s.length; i++){
+    if (s[i] !== "\\"){ out.push(s.charCodeAt(i) & 0xff); continue; }
+    const c = s[++i];
+    if (c === undefined) break;
+    if (c >= "0" && c <= "7"){
+      let oct = c;
+      while (oct.length < 3 && s[i+1] >= "0" && s[i+1] <= "7") oct += s[++i];
+      out.push(parseInt(oct, 8) & 0xff);
+    } else if (c === "n") out.push(10);
+    else if (c === "t") out.push(9);
+    else if (c === "r") { /* dropped, as before */ }
+    else if (c === "b" || c === "f") { /* dropped, as before */ }
+    else if (c === "\n") { /* line continuation */ }
+    else out.push(c.charCodeAt(0) & 0xff);
   }
   return out;
 }
 
+function decodeCodes(codes, cmap){
+  if (!cmap || !cmap.map.size) return String.fromCharCode.apply(null, codes);
+  let out = "";
+  if (cmap.two){
+    for (let i = 0; i + 1 < codes.length; i += 2){
+      const cid = (codes[i] << 8) | codes[i+1];
+      const u = cmap.map.get(cid);
+      /* An unmapped CID contributes nothing. Emitting a placeholder would push
+         the text back below the legibility threshold and lose the whole
+         document over a handful of glyphs. */
+      if (u !== undefined) out += u;
+    }
+  } else {
+    for (const c of codes){
+      const u = cmap.map.get(c);
+      out += u !== undefined ? u : String.fromCharCode(c);
+    }
+  }
+  return out;
+}
+
+/* Pull text out of a content stream, tracking which font is active so each run
+   is decoded through its own map. Returns { text, ops } — ops counts the
+   text-showing operators seen, which is how a scanned page (no operators at
+   all) is told apart from a page whose glyphs we simply could not name. */
+function textFromContent(src, maps){
+  let out = "", font = null, ops = 0;
+  const re = /\/([A-Za-z0-9#+.-]+)\s+[\d.]+\s+Tf|\((?:\\.|[^\\()])*\)\s*(?:Tj|'|")|<[0-9a-fA-F\s]*>\s*Tj|\[(?:[^\[\]\\]|\\.)*\]\s*TJ/g;
+  let m;
+  while ((m = re.exec(src))){
+    const chunk = m[0];
+    if (m[1] !== undefined){ font = m[1]; continue; }
+    ops++;
+    const cmap = font && maps ? maps.get(font) : null;
+    const parts = chunk.match(/\((?:\\.|[^\\()])*\)|<[0-9a-fA-F\s]*>/g) || [];
+    for (const raw of parts){
+      if (raw[0] === "<"){
+        const hex = raw.slice(1, -1).replace(/[^0-9a-fA-F]/g, "");
+        const codes = [];
+        for (let i = 0; i + 1 < hex.length; i += 2) codes.push(parseInt(hex.slice(i, i+2), 16));
+        out += decodeCodes(codes, cmap);
+      } else {
+        out += decodeCodes(litBytes(raw), cmap);
+      }
+    }
+    out += /'|"/.test(chunk[chunk.length-1] || "") ? "\n" : " ";
+  }
+  return { text: out, ops };
+}
+
+/* Returns { text, ops } so the caller can distinguish "there was nothing to
+   read" from "we read it and it made no sense" — two different problems with
+   two different answers for the reader. */
 async function extractPdf(buf){
   const bytes = new Uint8Array(buf), src = latin(bytes);
-  let text = "";
+  const objAt = objectIndex(src);
+  let maps = new Map();
+  try { maps = await fontMaps(src, bytes, objAt); } catch(e){ /* decode without */ }
+
+  let text = "", ops = 0;
   const re = /stream\r?\n?/g;
   let m;
   while ((m = re.exec(src))){
@@ -7397,9 +7623,29 @@ async function extractPdf(buf){
     let data = /FlateDecode/.test(head) ? await inflate(raw) : raw;
     if (!data) continue;
     const content = latin(data);
-    if (/BT|Tj|TJ/.test(content)) text += textFromContent(content) + "\n";
+    if (/BT|Tj|TJ/.test(content)){
+      const got = textFromContent(content, maps);
+      text += got.text + "\n";
+      ops += got.ops;
+    }
   }
-  return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+  return { text: text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(), ops };
+}
+
+/* Which of the two read failures we hit, so the screen can say something the
+   reader can act on. Set before show("noread"), read by renderNoread(), and
+   re-read on every language toggle. */
+let noreadReason = "glyphs";
+
+function renderNoread(){
+  const scan = noreadReason === "scan";
+  const p = scan ? "nrs_" : "nr_";
+  document.getElementById("nrTitle").textContent = t(p + "title");
+  document.getElementById("nrBody").textContent = t(p + "body");
+  document.getElementById("nrRetry").textContent = t("nr_retry");
+  document.getElementById("nrSample").textContent = t("nr_sample");
+  document.getElementById("nrTips").innerHTML =
+    T[p + "tips"][lang].map(x=>`<li>${esc(x)}</li>`).join("");
 }
 
 /* Enough real letters to be worth analysing? Guards against glyph-index soup. */
@@ -7420,16 +7666,33 @@ async function handleFile(file){
   if (!isPdf && !isTxt) return fail(t("err_type"));
 
   document.getElementById("upMain").classList.add("busy");
-  let text = "";
+  let text = "", ops = 0;
   try {
-    text = isPdf ? await extractPdf(await file.arrayBuffer()) : await file.text();
+    if (isPdf){
+      const got = await extractPdf(await file.arrayBuffer());
+      text = got.text; ops = got.ops;
+    } else {
+      text = await file.text(); ops = 1;
+    }
     /* An 8 MB PDF can decode to far more text than any contract contains.
        Cap it so the regex pass and the textarea stay bounded. */
     if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT);
-  } catch(e){ text = ""; }
+  } catch(e){ text = ""; ops = 0; }
   document.getElementById("upMain").classList.remove("busy");
 
-  if (!legible(text)){ current = null; runLoading(()=>{ buzz(12); show("noread"); }); return; }
+  /* TWO FAILURES, TWO ANSWERS. A page with no text-showing operators at all is
+     a scan or a photograph — there is no text layer to find, no retry will
+     help, and saying "paste it instead" is the only useful thing we can offer.
+     A page WITH operators whose output we could not turn into letters is a
+     font problem, where re-exporting genuinely does fix it. Telling both
+     readers the same thing sends one of them round a loop that cannot end. */
+  if (!legible(text)){
+    noreadReason = (isPdf && ops === 0) ? "scan" : "glyphs";
+    current = null;
+    runLoading(()=>{ buzz(12); renderNoread(); show("noread"); });
+    return;
+  }
+  noreadReason = "glyphs";
   document.getElementById("pasteBox").value = text;
   pasteChanged();
   analyze("pasted");
