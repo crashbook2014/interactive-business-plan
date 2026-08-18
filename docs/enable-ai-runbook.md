@@ -161,3 +161,71 @@ Then, on the live site:
 Set `ANALYZE_URL` back to `""` and restore `connect-src 'none'`. The feature
 disappears completely — no panel, no entry, no request — and the unconditional
 privacy promise becomes true again. Nothing else in the app depends on it.
+
+---
+
+## Scanned contracts (the Files API path)
+
+Added alongside the pre-signing review mode. **Not the default path.** Text-based
+PDFs are extracted on the reader's own device and only the text is sent — no
+file is uploaded and nothing is stored anywhere. This path exists for the one
+case on-device code cannot handle: a scan or a photo with no text layer.
+
+### Deploy
+
+```
+supabase db push                       # includes 0004_uploads.sql
+supabase functions deploy upload
+supabase functions deploy analyze
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+supabase secrets set ALLOWED_ORIGIN=https://alwodouh.com
+```
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically into
+Edge Functions. **The service_role key must never appear in the repo, in `app/`,
+or in `web/`** — it bypasses every RLS policy in the schema.
+
+### The ownership rule, and why it is built this way
+
+Anthropic's `file_id` is **workspace-scoped, not user-scoped**: every id our key
+creates is readable by our key. A `file_id` is therefore not a capability, and a
+client sending one is making a claim, not proving anything.
+
+So:
+
+| | |
+|---|---|
+| The client sends | our `uploads.id` (a UUID we minted) |
+| The client never sees | the Anthropic `file_id` |
+| Every use is checked | `select file_id from uploads where id = ? and user_id = <caller>` |
+| Anonymous uploads | refused — an unowned file cannot be ownership-checked later |
+| An expired handle | refused, so the retention promise is load-bearing |
+| Insert fails after upload | the file is deleted upstream immediately rather than orphaned |
+
+### Retention
+
+`uploads.expires_at` defaults to one hour. `deleted_at` is set only when the
+upstream delete is **confirmed**. Anything past `expires_at` with `deleted_at`
+still null is a file that outlived its purpose:
+
+```sql
+select * from public.uploads_pending_delete(100);
+```
+
+Run that on a schedule and delete each `file_id` upstream. "We delete it
+immediately" is only true if something notices when it did not happen.
+
+### What a scan does NOT get
+
+**No figures.** A scan reaches the model as an image, so there is no extracted
+text on our side to check a stated amount against. The grader is told the
+source is unknown and refuses every figure rather than passing them through
+unverified — a scanned contract shows findings and no numbers. That is the
+honest version of "we could not check this", and a far better failure than a
+confident wrong salary.
+
+### PDPL
+
+This path transmits a Saudi resident's employment contract to a processor
+outside the Kingdom. Cross-border transfer, retention and data-subject rights
+are not settled by any code here. Get advice before the first real user.

@@ -45,92 +45,127 @@ const ROWS = [
 ];
 
 const finding = (over) => Object.assign({
-  title_ar: "بند", title_en: "Clause",
-  detail_ar: "شرح", detail_en: "Detail",
-  law_reference: null,
+  clause_ar: "نص البند", clause_en: "The clause",
+  issue_ar: "شرح", issue_en: "Detail",
+  law_reference: null, severity: "high",
+}, over);
+
+const point = (over) => Object.assign({
+  clause_ar: "نص البند", clause_en: "The clause",
+  suggestion_ar: "اطلب غيره", suggestion_en: "Ask for something else",
 }, over);
 
 const base = (over) => Object.assign({
-  extraction_confidence: "high",
-  extraction_notes_ar: "قرأنا العقد كاملًا",
-  extraction_notes_en: "Read the full contract",
-  key_terms: {
-    job_title: "Site Engineer", monthly_wage: "10,000 SAR", contract_type: "fixed",
-    probation_days: "180", notice_days: "30", annual_leave_days: "21",
-    non_compete_months: "24",
+  contract_meta: {
+    contract_type_ar: "عقد عمل غير محدد المدة", contract_type_en: "Unlimited-term contract",
+    parties_identified: true, extraction_confidence: "high",
+    extraction_notes_ar: null, extraction_notes_en: null,
   },
-  red_flags: [], worth_negotiating: [],
+  key_terms: {
+    position_ar: "مهندس موقع", position_en: "Site Engineer",
+    salary_amount: 10000, salary_currency: "SAR",
+    probation_period_days: 180, contract_duration: "unlimited",
+    notice_period_days: 30, working_hours_per_week: 48,
+  },
+  red_flags: [], negotiation_points: [],
+  summary_ar: "ملخص قصير", summary_en: "A short summary",
 }, over);
 
 (async () => {
   const { gradeContractReview, hedge, figuresIn } =
     await import("../supabase/functions/_shared/review-contract.mjs");
-  const run = (o) => gradeContractReview(base(o), { source: DOC, rows: ROWS });
+  const run = (o, opts) => gradeContractReview(base(o), Object.assign({ source: DOC, rows: ROWS }, opts));
 
   /* ---- 1. money */
   console.log("\n— the model may report a figure the contract states, and no other");
   const clean = run({});
-  ok(clean.key_terms.monthly_wage === "10,000 SAR",
-     "a wage written in the contract survives — reading it back is the product");
-  ok(clean.key_terms.probation_days === "180" && clean.key_terms.non_compete_months === "24",
-     "and so do the other terms lifted from the document");
+  ok(clean.key_terms.salary_amount === 10000,
+     "a salary written in the contract survives — reading it back is the product");
+  ok(clean.key_terms.probation_period_days === 180 && clean.key_terms.notice_period_days === 30,
+     "and the day counts come through as NUMBERS, so they can be compared rather than parsed from prose");
 
-  const invented = run({
-    key_terms: Object.assign(base({}).key_terms, { monthly_wage: "18,000 SAR" }),
-  });
-  ok(invented.key_terms.monthly_wage === null,
-     "a wage that appears NOWHERE in the document is dropped, not shown");
-  ok(invented.dropped.terms.includes("monthly_wage"),
+  const invented = run({ key_terms: Object.assign(base({}).key_terms, { salary_amount: 18000 }) });
+  ok(invented.key_terms.salary_amount === null,
+     "a salary that appears NOWHERE in the document is dropped, not shown");
+  ok(invented.dropped.terms.includes("salary_amount"),
      "and the drop is reported rather than passed off as an empty field");
 
+  /* A number out of physical range is a misread, and one wrong row makes the
+     whole table untrustworthy. */
+  const impossible = run({ key_terms: Object.assign(base({}).key_terms, { working_hours_per_week: 400 }) });
+  ok(impossible.key_terms.working_hours_per_week === null,
+     "400 hours in a 168-hour week is a misread and is dropped, not rendered");
+
   const promised = run({
-    red_flags: [finding({ detail_en: "You are owed 45,000 SAR in end-of-service pay.",
-                          detail_ar: "تستحق ٤٥٠٠٠ ريال مكافأة نهاية الخدمة." })],
+    red_flags: [finding({ issue_en: "You are owed 45,000 SAR in end-of-service pay.",
+                          issue_ar: "تستحق ٤٥٠٠٠ ريال مكافأة نهاية الخدمة." })],
   });
   ok(promised.red_flags.length === 0,
      "a finding that invents an amount is dropped WHOLE — money is computed on the device, never here");
   ok(promised.dropped.findings === 1, "and counted, so a filtered build cannot look like a clean contract");
 
-  /* The figure has to be checked as a number, not as a substring: 1,500 in the
-     contract must not attest 11,500 in the output. */
   ok(!figuresIn(DOC).has("11500") && figuresIn(DOC).has("1500"),
      "attestation matches whole figures — 1,500 in the contract does not license 11,500");
 
-  const arabicDigits = run({
-    red_flags: [finding({ detail_ar: "الأجر ١٠٬٠٠٠ ريال شهريًا." })],
-  });
+  const arabicDigits = run({ red_flags: [finding({ issue_ar: "الأجر ١٠٬٠٠٠ ريال شهريًا." })] });
   ok(arabicDigits.red_flags.length === 1,
-     "and Arabic-Indic digits are digits — the same figure written ١٠٠٠٠ is attested too");
+     "and Arabic-Indic digits are digits — the same figure written ١٠٬٠٠٠ is attested too");
+
+  /* THE SCORE. The brief asked the model to return one; it does not, because
+     the device computes it. A field that does not exist cannot drift. */
+  ok(clean.contract_score === undefined && clean.score === undefined,
+     "the response carries NO score — the device computes that, deterministically and offline");
 
   /* ---- 2. never illegal, in either language */
   console.log("\n— nothing is called illegal, void, or a violation — in either language");
   const blunt = run({
     red_flags: [finding({
-      title_en: "Probation violates the law", detail_en: "This clause is illegal and void.",
-      title_ar: "فترة التجربة مخالفة للنظام", detail_ar: "هذا الشرط باطل ويخالف النظام.",
+      clause_en: "Probation violates the law", issue_en: "This clause is illegal and void.",
+      clause_ar: "فترة التجربة مخالفة للنظام", issue_ar: "هذا الشرط باطل ويخالف النظام.",
     })],
   });
   const f = blunt.red_flags[0];
-  ok(f && !/violat|illegal|void/i.test(f.title_en + f.detail_en),
-     `the English is hedged ("${f && f.detail_en}")`);
-  ok(f && !/مخالف|باطل|يخالف/.test(f.title_ar + f.detail_ar),
-     `and so is the Arabic ("${f && f.detail_ar}")`);
+  ok(f && !/violat|illegal|void/i.test(f.clause_en + f.issue_en),
+     `the English is hedged ("${f && f.issue_en}")`);
+  ok(f && !/مخالف|باطل|يخالف/.test(f.clause_ar + f.issue_ar),
+     `and so is the Arabic ("${f && f.issue_ar}")`);
   ok(f && f.hedged === true && blunt.hedged === true,
      "and the fact that it was rewritten is reported, not silent");
-  ok(f && /questionable|inconsistent|review/i.test(f.detail_en) && /يتوافق|مراجعة|نظر/.test(f.detail_ar),
-     `the replacement still says something rather than emptying the finding ("${f && f.detail_ar}")`);
+  ok(f && /questionable|inconsistent|review/i.test(f.issue_en) && /يتوافق|مراجعة|نظر/.test(f.issue_ar),
+     "the replacement still says something rather than emptying the finding");
 
-  /* The rewrite table is best-effort; the residue check is the guarantee. A
-     sentence the table cannot fully clean must not be published half-hedged. */
-  const stubborn = run({
-    red_flags: [finding({ detail_en: "Void ab initio under any reading of the law." })],
-  });
-  ok(stubborn.red_flags.every(x => !/\bvoid\b/i.test(x.detail_en)),
-     "a finding the rewriter cannot fully clean is dropped, not published half-hedged");
+  const stubborn = run({ red_flags: [finding({ issue_en: "The employer is a repeat violator here." })] });
+  ok(stubborn.red_flags.length === 0 && stubborn.dropped.findings === 1,
+     "a finding the rewrite table has no entry for is DROPPED, not published half-hedged");
 
-  /* The Arabic half is the half that matters most here and is the easiest to
-     get wrong: JS \b forms no boundary against Arabic letters, so a naive
-     /يخالف\b/ silently never fires. */
+  /* Negotiation points go through the SAME filters, not a near-copy that
+     drifts. This is the assertion that catches a second code path. */
+  const softIllegal = run({ negotiation_points: [point({ suggestion_en: "The current term is illegal." })] });
+  ok(softIllegal.negotiation_points.every(x => !/illegal/i.test(x.suggestion_en)),
+     "negotiation points pass through the identical hedge — one filter, two lists");
+  const softMoney = run({ negotiation_points: [point({ suggestion_en: "Ask for 25,000 SAR instead." })] });
+  ok(softMoney.negotiation_points.length === 0,
+     "and the identical money check");
+
+  /* The summary is the line a reader trusts most, so it gets the same guards. */
+  /* The summary is HEDGED rather than emptied where the rewrite succeeds —
+     losing a whole summary over one word is a worse trade than softening it.
+     It is only emptied when the rewrite cannot clean it, same rule as findings. */
+  const badSummary = run({ summary_en: "This contract is illegal.", summary_ar: "العقد باطل." });
+  ok(!/illegal/i.test(badSummary.summary_en) && !/باطل/.test(badSummary.summary_ar),
+     `a summary making a flat legal ruling is hedged, in both languages ("${badSummary.summary_en}")`);
+  ok(badSummary.summary_en.length > 0,
+     "and survives rather than vanishing — losing the whole summary over one word is the worse trade");
+  /* "violator" is caught by the banned list but has no entry in the rewrite
+     table, which is exactly the gap the residue check exists to close: the
+     table will always be incomplete, so the guarantee cannot depend on it
+     being complete. */
+  const unfixableSummary = run({ summary_en: "The employer is a repeat violator of labour standards." });
+  ok(unfixableSummary.summary_en === "",
+     "but one the rewrite table has no entry for is emptied — the residue check, not the table, is the guarantee");
+  const moneySummary = run({ summary_en: "You could claim about 60,000 SAR." });
+  ok(moneySummary.summary_en === "", "and so is one that invents a figure");
+
   ok(hedge("يخالف النظام").changed === true, "the Arabic patterns actually fire");
   ok(hedge("مخالفات سابقة").changed === false,
      "and do not fire on an unrelated word that merely shares a root");
@@ -139,9 +174,9 @@ const base = (over) => Object.assign({
   console.log("\n— a citation nobody verified is labelled as such");
   const cited = run({
     red_flags: [
-      finding({ title_en: "Grounds", law_reference: "Article 74" }),
-      finding({ title_en: "Invented", law_reference: "Article 141" }),
-      finding({ title_en: "Named law", law_reference: "Labour Law, Royal Decree M/51" }),
+      finding({ law_reference: "Article 74" }),
+      finding({ law_reference: "Article 141" }),
+      finding({ law_reference: "Labour Law, Royal Decree M/51" }),
     ],
   });
   ok(cited.red_flags[0].law_reference.verified === true,
@@ -151,27 +186,41 @@ const base = (over) => Object.assign({
      "one that is not is still SHOWN — the owner's rule — but carries verified:false");
   ok(cited.red_flags[2].law_reference.verified === false,
      "and a reference with no article number is not verified either: the word means one thing");
-  ok(cited.red_flags[0].law_reference.article === "74", "the article number is extracted for the UI to tier on");
-
   const arCite = run({ red_flags: [finding({ law_reference: "المادة ٧٤" })] });
   ok(arCite.red_flags[0].law_reference.verified === true,
      "an Arabic citation with Arabic-Indic digits verifies identically");
 
-  /* ---- 4. low confidence means nothing, not something */
-  console.log("\n— a document we could not read yields no terms and no findings");
-  const garbled = gradeContractReview(base({
-    extraction_confidence: "low",
-    red_flags: [finding({ title_en: "Confident nonsense" })],
-    worth_negotiating: [finding({ title_en: "More of it" })],
-  }), { source: DOC, rows: ROWS });
-  ok(garbled.red_flags.length === 0 && garbled.worth_negotiating.length === 0,
+  /* ---- 4. the acceptance test, as a permanent assertion */
+  console.log("\n— \"I like cats and coffee\" cannot produce a confident reading");
+  const nonsense = gradeContractReview(base({
+    contract_meta: Object.assign(base({}).contract_meta, {
+      extraction_confidence: "low",
+      extraction_notes_en: "This is not an employment contract.",
+      extraction_notes_ar: "هذا ليس عقد عمل.",
+    }),
+    /* The model filling these in anyway is exactly the failure being guarded
+       against — a low-confidence label with confident content under it. */
+    red_flags: [finding({ clause_en: "Confident nonsense" })],
+    negotiation_points: [point({ clause_en: "More of it" })],
+    summary_en: "A solid contract overall.",
+  }), { source: "I like cats and coffee, the weather is nice.", rows: ROWS });
+  ok(nonsense.red_flags.length === 0 && nonsense.negotiation_points.length === 0,
      "findings produced alongside a low-confidence flag are discarded — they describe a document we did not read");
-  ok(Object.values(garbled.key_terms).every(v => v === null),
-     "and every key term is null, whatever the completion filled in");
-  ok(!!garbled.extraction_notes_ar && !!garbled.extraction_notes_en,
-     "while the explanation of WHY survives, in both languages");
+  ok(Object.values(nonsense.key_terms).every(v => v === null),
+     "every key term is null, whatever the completion filled in");
+  ok(nonsense.summary_en === "" && nonsense.summary_ar === "",
+     "and no summary is shown — a confident sentence is the most misleading thing here");
+  ok(!!nonsense.contract_meta.extraction_notes_en,
+     "while the explanation of WHY survives, which is the useful half");
 
-  /* ---- 5. the disclaimer is ours, not the model's */
+  /* ---- 5. nationality changes the reading */
+  console.log("\n— a resident and a Saudi do not get the same reading");
+  ok(run({}, { track: "Resident" }).track === "Resident" && run({}).track === "Saudi",
+     "the track is carried through to the reader, so nobody wonders why a colleague saw something else");
+  ok(gradeContractReview(base({}), { source: DOC, rows: ROWS, track: "<script>" }).track === "Saudi",
+     "and an unrecognised track falls back to Saudi rather than inventing a third");
+
+  /* ---- 6. the disclaimer is ours, not the model's */
   console.log("\n— the disclaimer comes from the server, verbatim");
   const reworded = gradeContractReview(base({
     disclaimer_ar: "لا حاجة لمحامٍ.", disclaimer_en: "No lawyer needed.",
@@ -180,28 +229,27 @@ const base = (over) => Object.assign({
      /does not substitute/.test(reworded.disclaimer_en),
      "a completion that rewrote the disclaimer does not get to publish it");
 
-  /* ---- 6. hostile and malformed input */
+  /* ---- 7. hostile and malformed input */
   console.log("\n— a hostile or malformed completion cannot reach the reader");
   const junk = [null, undefined, "a string", 42, [], { red_flags: "not an array" },
-                { extraction_confidence: "excellent", key_terms: "nope" }];
-  let threw = null;
+                { contract_meta: "nope", key_terms: "nope" }];
+  let bad = null;
   for (const j of junk) {
     try {
       const r = gradeContractReview(j, { source: DOC, rows: ROWS });
-      if (!Array.isArray(r.red_flags) || typeof r.disclaimer_ar !== "string") threw = "bad shape: " + JSON.stringify(j);
-    } catch (e) { threw = String(e && e.message); }
+      if (!Array.isArray(r.red_flags) || typeof r.disclaimer_ar !== "string") bad = "bad shape: " + JSON.stringify(j);
+    } catch (e) { bad = String(e && e.message); }
   }
-  ok(threw === null, `every malformed completion returns a valid shape${threw ? " — " + threw : ""}`);
+  ok(bad === null, `every malformed completion returns a valid shape${bad ? " — " + bad : ""}`);
 
-  const unknownConf = gradeContractReview({ extraction_confidence: "excellent" }, { source: DOC, rows: ROWS });
-  ok(unknownConf.extraction_confidence === "low",
+  const unknownConf = gradeContractReview({ contract_meta: { extraction_confidence: "excellent" } },
+                                          { source: DOC, rows: ROWS });
+  ok(unknownConf.contract_meta.extraction_confidence === "low",
      "an unrecognised confidence value falls to LOW — the safe direction, so a typo shows nothing rather than everything");
 
-  /* Length limits exist so a completion cannot use a finding as a channel for
-     the contract text it was told never to reproduce. */
-  const huge = run({ red_flags: [finding({ detail_en: "x".repeat(5000) })] });
-  ok(huge.red_flags[0].detail_en.length <= 800,
-     `findings are bounded (${huge.red_flags[0].detail_en.length} chars), so one cannot smuggle the document back out`);
+  const huge = run({ red_flags: [finding({ issue_en: "x".repeat(5000), clause_en: "y".repeat(5000) })] });
+  ok(huge.red_flags[0].issue_en.length <= 600 && huge.red_flags[0].clause_en.length <= 300,
+     `findings are bounded (clause ${huge.red_flags[0].clause_en.length}, issue ${huge.red_flags[0].issue_en.length}), so one cannot smuggle the document back out`);
 
   /* ---- 7. the client half: what a reader actually sees */
   console.log("\n— on screen: absent when unconfigured, and tiered when it is");
@@ -248,26 +296,33 @@ const base = (over) => Object.assign({
       terms: [...h.querySelectorAll(".cr-terms > div")].length
     };
   }, {
-    extraction_confidence: "high",
-    extraction_notes_ar: "", extraction_notes_en: "",
-    key_terms: { job_title: "مهندس موقع", monthly_wage: "10,000 SAR",
-                 contract_type: null, probation_days: "180", notice_days: null,
-                 annual_leave_days: null, non_compete_months: null },
+    track: "Resident",
+    contract_meta: { contract_type_ar: "عقد محدد المدة", contract_type_en: "Fixed-term",
+                     parties_identified: true, extraction_confidence: "high",
+                     extraction_notes_ar: null, extraction_notes_en: null },
+    key_terms: { position_ar: "مهندس موقع", position_en: "Site Engineer",
+                 salary_amount: 10000, salary_currency: "SAR",
+                 probation_period_days: 180, contract_duration: null,
+                 notice_period_days: null, working_hours_per_week: null },
     red_flags: [
-      { title_ar: "فترة التجربة", title_en: "Probation", detail_ar: "١٨٠ يومًا",
-        detail_en: "180 days", severity: "high", hedged: false,
+      { clause_ar: "يحتفظ صاحب العمل بالجواز", clause_en: "Employer retains passport",
+        issue_ar: "قد لا يتوافق", issue_en: "May need review", severity: "high", hedged: false,
         law_reference: { ref: "المادة ٥٣", article: "53", verified: false } },
-      { title_ar: "<img src=x onerror=alert(1)>", title_en: "XSS",
-        detail_ar: "نص", detail_en: "text", severity: "high", hedged: false,
+      { clause_ar: "<img src=x onerror=alert(1)>", clause_en: "XSS",
+        issue_ar: "نص", issue_en: "text", severity: "high", hedged: false,
         law_reference: { ref: "المادة ٧٤", article: "74", verified: true } }
     ],
-    worth_negotiating: [],
+    negotiation_points: [],
+    summary_ar: "خلاصة", summary_en: "Summary",
     dropped: { findings: 2, terms: [] },
     disclaimer_ar: "هذا التحليل لأغراض معلوماتية فقط.", disclaimer_en: "Informational only."
   });
 
   ok(shown.hidden === false, "configured, the panel appears");
-  ok(shown.terms === 3, `only the terms the contract actually stated are listed (${shown.terms} of 7)`);
+  ok(shown.terms === 4,
+     `only the terms the contract actually stated are listed — contract type, position, salary, probation (${shown.terms})`);
+  ok(/مقيم/.test(shown.text),
+     "and the reader is told this is the resident reading, so a differing result has a visible reason");
   ok(shown.tiers.join(",") === "unverified,verified",
      `each citation is tiered by what the SERVER decided, not by tone (${shown.tiers.join(", ")})`);
   /* Pinned to the copy key rather than to a hard-coded phrase: the two live
@@ -283,9 +338,13 @@ const base = (over) => Object.assign({
      "and findings the server refused are reported, so a filtered result cannot pass for a clean contract");
 
   const lowConf = await p2.evaluate(() => {
-    crResult = { extraction_confidence: "low", extraction_notes_ar: "المستند غير مقروء",
-                 extraction_notes_en: "unreadable", key_terms: { job_title: "ghost" },
-                 red_flags: [], worth_negotiating: [], dropped: { findings: 0, terms: [] },
+    crResult = { track: "Saudi",
+                 contract_meta: { extraction_confidence: "low",
+                                  extraction_notes_ar: "المستند غير مقروء",
+                                  extraction_notes_en: "unreadable" },
+                 key_terms: { position_ar: "ghost" },
+                 red_flags: [], negotiation_points: [], summary_ar: "خلاصة واثقة",
+                 dropped: { findings: 0, terms: [] },
                  disclaimer_ar: "x", disclaimer_en: "y" };
     renderCrPanel();
     const h = document.getElementById("crPanel");
@@ -294,6 +353,8 @@ const base = (over) => Object.assign({
   ok(lowConf.terms === 0,
      "a low-confidence read shows NO extracted terms on screen, even if the payload carries some");
   ok(/غير مقروء/.test(lowConf.text), "but does show why it could not be read");
+  ok(!/خلاصة واثقة/.test(lowConf.text),
+     "and shows no summary — the confident sentence is the most misleading thing on a document we could not read");
 
   await b.close();
 

@@ -144,47 +144,79 @@ function gradeRef(ref, ok) {
   };
 }
 
-function gradeFinding(f, ok, figures, severity) {
+/* One finding, in either list. `fields` names which text keys this shape
+   carries, so red flags (clause + issue) and negotiation points (clause +
+   suggestion) go through the SAME money, hedge and length guards rather than
+   through two near-copies that drift apart. */
+function gradeFinding(f, ok, figures, fields, extra) {
   if (!f || typeof f !== "object") return null;
-  const title_ar = hedge(STR(f.title_ar, 120));
-  const title_en = hedge(STR(f.title_en, 120));
-  const detail_ar = hedge(STR(f.detail_ar, 800));
-  const detail_en = hedge(STR(f.detail_en, 800));
-  if (!title_ar.text || !title_en.text || !detail_ar.text || !detail_en.text) return null;
 
-  /* Dropped whole, not edited. See rule 1 in the header. */
-  const all = [title_ar.text, title_en.text, detail_ar.text, detail_en.text].join(" ");
-  if (!moneyAttested(all, figures)) return { dropped: "money" };
-  /* Rewriting failed to clean it. Publishing a half-hedged legal conclusion is
-     worse than publishing nothing, so this one does not go out. */
-  if ([title_ar, title_en, detail_ar, detail_en].some((x) => x.residue)) {
-    return { dropped: "language" };
+  const out = {};
+  const parts = [];
+  for (const [k, max] of fields) {
+    const h = hedge(STR(f[k], max));
+    if (!h.text) return null;              /* a half-filled finding is not a finding */
+    if (h.residue) return { dropped: "language" };
+    out[k] = h.text;
+    parts.push(h.text);
   }
 
-  return {
-    title_ar: title_ar.text, title_en: title_en.text,
-    detail_ar: detail_ar.text, detail_en: detail_en.text,
-    law_reference: gradeRef(f.law_reference, ok),
-    severity,
-    hedged: title_ar.changed || title_en.changed || detail_ar.changed || detail_en.changed,
-  };
+  /* Dropped whole, not edited. See rule 1 in the header. */
+  if (!moneyAttested(parts.join(" "), figures)) return { dropped: "money" };
+
+  out.hedged = fields.some(([k]) => hedge(STR(f[k], 2000)).changed);
+  return Object.assign(out, extra(f));
 }
 
-/* The key terms table. Every value is a short string lifted from the document,
-   and any that reads as money must be attested — a misread wage is the single
-   figure most likely to be believed and acted on. These NEVER reach the
-   calculator: Wodouh computes money on the device, from what the reader typed,
-   and that has not changed. */
-const TERM_KEYS = [
-  "job_title", "monthly_wage", "contract_type", "probation_days",
-  "notice_days", "annual_leave_days", "non_compete_months",
+/* clause_ar / clause_en quote the reader's own contract back to them, which is
+   how they find the clause in their document. It is also the one place in this
+   response that carries contract TEXT rather than a description of it — so it
+   is length-capped hard, and the app must never persist it. 0001_init.sql
+   still stores no contract text and this does not change that. */
+const RED_FIELDS = [["clause_ar", 300], ["clause_en", 300], ["issue_ar", 600], ["issue_en", 600]];
+const NEG_FIELDS = [["clause_ar", 300], ["clause_en", 300], ["suggestion_ar", 600], ["suggestion_en", 600]];
+
+/* The key terms table, now typed: the brief asks for numbers where the value is
+   a number, because "180" and "180 days" and "one hundred eighty" are the same
+   fact and only one of them can be compared, sorted, or checked against the
+   law. Strings stay strings.
+
+   THE SALARY IS THE DANGEROUS ONE. It is the single figure most likely to be
+   believed and acted on, so it must appear in the document — a misread wage
+   that looks authoritative is worse than no wage at all. And none of these ever
+   reach the calculator: Wodouh computes money on the device, from what the
+   reader typed, and that has not changed. */
+const TERM_NUM = [
+  ["salary_amount", 1e9],
+  ["probation_period_days", 3650],
+  ["notice_period_days", 3650],
+  ["working_hours_per_week", 168],
+];
+const TERM_STR = [
+  ["position_ar", 120], ["position_en", 120],
+  ["salary_currency", 12], ["contract_duration", 60],
 ];
 
 function gradeTerms(t, figures) {
   const out = {};
   const dropped = [];
-  for (const k of TERM_KEYS) {
-    const v = STR(t && t[k], 120);
+  const src = t && typeof t === "object" ? t : {};
+
+  for (const [k, max] of TERM_NUM) {
+    const n = Number(src[k]);
+    /* Bounds are not decoration. 168 is the number of hours in a week: a
+       "working_hours_per_week" of 400 is a misread, and rendering it would
+       make the whole table untrustworthy. */
+    if (!Number.isFinite(n) || n < 0 || n > max) { out[k] = null; if (src[k] != null) dropped.push(k); continue; }
+    /* A salary the document does not contain is invented, whatever confidence
+       it arrived with. Checked as a whole number, so 1,500 in the contract
+       cannot attest 11,500 in the output. */
+    if (k === "salary_amount" && !figures.has(String(Math.round(n)))) { out[k] = null; dropped.push(k); continue; }
+    out[k] = n;
+  }
+
+  for (const [k, max] of TERM_STR) {
+    const v = STR(src[k], max);
     if (!v) { out[k] = null; continue; }
     if (!moneyAttested(v, figures)) { out[k] = null; dropped.push(k); continue; }
     out[k] = v;
@@ -192,69 +224,99 @@ function gradeTerms(t, figures) {
   return { terms: out, dropped };
 }
 
+const TERM_KEYS = TERM_NUM.concat(TERM_STR).map(([k]) => k);
+const NULL_TERMS = () => Object.fromEntries(TERM_KEYS.map((k) => [k, null]));
+
 export const DISCLAIMER_AR =
   "هذا التحليل لأغراض معلوماتية فقط ولا يغني عن استشارة محامٍ مختص.";
 export const DISCLAIMER_EN =
   "This analysis is for informational purposes only and does not substitute for advice from a licensed attorney.";
 
 /* The whole response, graded. `source` is the document text the reader
-   submitted, and it is used only to attest figures — it is never stored and
-   never returned. */
-export function gradeContractReview(parsed, { source = "", rows = [] } = {}) {
+   submitted, used only to attest figures — never stored, never returned.
+   `track` is "Saudi" or "Resident", carried through so the app can show which
+   reading it got. THERE IS NO SCORE HERE, deliberately: the device computes it.
+   See the note on CR_SCHEMA in analyze/index.ts. */
+export function gradeContractReview(parsed, { source = "", rows = [], track = "Saudi", sourceKnown = true } = {}) {
   const p = parsed && typeof parsed === "object" ? parsed : {};
+  const meta = p.contract_meta && typeof p.contract_meta === "object" ? p.contract_meta : {};
   const ok = verifiedArticles(rows);
-  const figures = figuresIn(source);
+  /* A SCAN HAS NO TEXT TO CHECK AGAINST. When the document reached the model
+     as an image, there is no extracted text on this side, so no figure can be
+     attested — and an empty figure set means every figure is refused rather
+     than every figure allowed. A scanned contract therefore shows findings and
+     no numbers, which is the honest version of "we could not verify this",
+     and is a far better failure than a confident wrong salary. */
+  const figures = sourceKnown ? figuresIn(source) : new Set();
 
-  const conf = ["high", "medium", "low"].includes(p.extraction_confidence)
-    ? p.extraction_confidence : "low";
+  const conf = ["high", "medium", "low"].includes(meta.extraction_confidence)
+    ? meta.extraction_confidence : "low";
 
-  /* Rule 5 of the brief, made structural: a document we could not read yields
-     no terms and no findings, whatever the model filled in. Fabricated terms
-     under a "low confidence" label are still fabricated terms. */
+  const shell = {
+    track: track === "Resident" ? "Resident" : "Saudi",
+    contract_meta: {
+      contract_type_ar: hedge(STR(meta.contract_type_ar, 120)).text || null,
+      contract_type_en: hedge(STR(meta.contract_type_en, 120)).text || null,
+      parties_identified: meta.parties_identified === true,
+      extraction_confidence: conf,
+      extraction_notes_ar: hedge(STR(meta.extraction_notes_ar, 400)).text || null,
+      extraction_notes_en: hedge(STR(meta.extraction_notes_en, 400)).text || null,
+    },
+    disclaimer_ar: DISCLAIMER_AR,
+    disclaimer_en: DISCLAIMER_EN,
+  };
+
+  /* Rule 6 of the brief, made structural rather than requested: a document we
+     could not read yields NO terms and NO findings, whatever the completion
+     filled in around the low-confidence flag. Fabricated terms under an honest
+     label are still fabricated terms — and this is the exact path the "I like
+     cats and coffee" acceptance test walks. */
   if (conf === "low") {
-    return {
-      extraction_confidence: "low",
-      extraction_notes_ar: hedge(STR(p.extraction_notes_ar, 400)).text,
-      extraction_notes_en: hedge(STR(p.extraction_notes_en, 400)).text,
-      key_terms: Object.fromEntries(TERM_KEYS.map((k) => [k, null])),
-      red_flags: [],
-      worth_negotiating: [],
+    return Object.assign(shell, {
+      key_terms: NULL_TERMS(),
+      red_flags: [], negotiation_points: [],
+      summary_ar: "", summary_en: "",
       dropped: { findings: 0, terms: [] },
       hedged: false,
-      disclaimer_ar: DISCLAIMER_AR,
-      disclaimer_en: DISCLAIMER_EN,
-    };
+    });
   }
 
   const { terms, dropped: droppedTerms } = gradeTerms(p.key_terms, figures);
 
-  const grade = (list, severity) =>
+  const gradeList = (list, fields, extra) =>
     (Array.isArray(list) ? list.slice(0, 8) : [])
-      .map((f) => gradeFinding(f, ok, figures, severity))
+      .map((f) => gradeFinding(f, ok, figures, fields, extra))
       .filter(Boolean);
 
-  const reds = grade(p.red_flags, "high");
-  const negs = grade(p.worth_negotiating, "medium");
-  const kept = (l) => l.filter((f) => !f.dropped);
-  const red_flags = kept(reds), worth_negotiating = kept(negs);
+  const reds = gradeList(p.red_flags, RED_FIELDS, (f) => ({
+    law_reference: gradeRef(f.law_reference, ok),
+    severity: f.severity === "medium" ? "medium" : "high",
+  }));
+  const negs = gradeList(p.negotiation_points, NEG_FIELDS, () => ({ severity: "medium" }));
 
-  return {
-    extraction_confidence: conf,
-    extraction_notes_ar: hedge(STR(p.extraction_notes_ar, 400)).text,
-    extraction_notes_en: hedge(STR(p.extraction_notes_en, 400)).text,
+  const kept = (l) => l.filter((x) => !x.dropped);
+  const red_flags = kept(reds), negotiation_points = kept(negs);
+
+  const sum = (k) => {
+    const h = hedge(STR(p[k], 600));
+    /* A summary carrying an invented figure or a flat legal ruling is
+       emptied rather than shown — it is the line the reader trusts most. */
+    if (h.residue || !moneyAttested(h.text, figures)) return "";
+    return h.text;
+  };
+
+  return Object.assign(shell, {
     key_terms: terms,
     red_flags,
-    worth_negotiating,
+    negotiation_points,
+    summary_ar: sum("summary_ar"),
+    summary_en: sum("summary_en"),
     /* Reported rather than hidden. A build that silently drops half the
        findings looks identical to a contract with nothing wrong in it. */
     dropped: {
-      findings: (reds.length - red_flags.length) + (negs.length - worth_negotiating.length),
+      findings: (reds.length - red_flags.length) + (negs.length - negotiation_points.length),
       terms: droppedTerms,
     },
-    hedged: [...red_flags, ...worth_negotiating].some((f) => f.hedged),
-    /* Returned from here, verbatim, rather than trusted from the completion.
-       A disclaimer the model could reword is not a disclaimer. */
-    disclaimer_ar: DISCLAIMER_AR,
-    disclaimer_en: DISCLAIMER_EN,
-  };
+    hedged: [...red_flags, ...negotiation_points].some((f) => f.hedged),
+  });
 }

@@ -328,6 +328,64 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(cl.rows === 3, `clauses screen lists every clause (got ${cl.rows})`);
   ok(!/undefined|NaN/.test(cl.text), "clauses screen contains no undefined or NaN");
 
+  /* ---- the letter bar, which a QA pass reported as flaky
+   *
+   * It was not reproducible: the bar appears, sits inside the viewport, is not
+   * covered, and the button navigates. There is no auto-dismiss timer in
+   * renderBuilder() at all — nothing to time out.
+   *
+   * The likely cause of the flake is that .builder is position:sticky, so it
+   * lives INSIDE the scrolling container rather than floating over it. An
+   * automated click issued before the container has scrolled can find it
+   * off-screen. That is worth pinning rather than "fixing", because this bar
+   * sits directly in front of the negotiation-letter paywall and friction here
+   * costs money.
+   */
+  console.log("\n— the letter bar appears, stays reachable, and opens the letter");
+  const letter = await p.evaluate(async () => {
+    nat = "sa"; analyze("employment");
+    await new Promise(r => setTimeout(r, 2800));
+    const add = document.querySelector("[data-add]");
+    if (!add) return { err: "no add button", screen: document.querySelector(".screen.active").id };
+    add.click();
+    await new Promise(r => setTimeout(r, 400));
+    const el = document.getElementById("builder");
+    const r = el.getBoundingClientRect();
+    const mid = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return {
+      screen: document.querySelector(".screen.active").id,
+      hidden: el.hidden,
+      inViewport: r.top >= 0 && r.bottom <= innerHeight && r.height > 0,
+      /* Whatever is at the bar's centre must belong to the bar. Anything else
+         means something is drawn over the button. */
+      covered: !el.contains(mid),
+      count: document.getElementById("bCount").textContent.trim(),
+    };
+  });
+  ok(!letter.err, `a clause can be added on the result screen${letter.err ? " — " + letter.err : ""}`);
+  ok(letter.hidden === false, "adding one reveals the bar");
+  ok(letter.inViewport === true, "which sits inside the viewport, not below the fold");
+  ok(letter.covered === false, "with nothing drawn over its centre");
+  ok(letter.count.length > 0, `and a live count of what is in the letter ("${letter.count}")`);
+
+  /* The click, through the real event path rather than by calling the
+     handler — which is the thing the QA pass could not do reliably. */
+  let clicked = "did not navigate";
+  try {
+    await p.click("#bView", { timeout: 3000 });
+    clicked = await p.evaluate(() => document.querySelector(".screen.active").id);
+  } catch (e) { clicked = "click failed: " + String(e.message).split("\n")[0]; }
+  ok(clicked === "screen-paywall",
+     `and a real click on it reaches the paywall (${clicked})`);
+
+  /* It must NOT linger on a screen it does not belong to — a floating bar that
+     survives navigation is the other half of this complaint. */
+  const elsewhere = await p.evaluate(() => {
+    show("home"); renderBuilder();
+    return document.getElementById("builder").hidden;
+  });
+  ok(elsewhere === true, "and it disappears when the reader leaves the result screen");
+
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all surface checks passed"));
   await b.close();

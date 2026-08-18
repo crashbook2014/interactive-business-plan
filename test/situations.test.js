@@ -163,7 +163,53 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
   ok(intake.boxVisible && intake.btnVisible,
      "and the paste box and analyze button are still there, not hidden behind the chooser");
 
+  /* ---- 6. the nationality answer is asked once and then remembered
+   *
+   * A QA pass reported this as a state bug: "asked again right before
+   * analysis". It is not — but the distance between "not a bug" and "a bug
+   * nobody noticed" is one careless edit to saveState(), so it is pinned here.
+   *
+   * What is actually happening: answering during onboarding is OPTIONAL by
+   * design (obNext is never disabled), and the gate then asks at the point the
+   * law diverges. Someone who skipped the question is not being asked twice —
+   * they are being asked once, late. Someone who answered is never asked
+   * again, and that is what these assertions hold.
+   */
+  console.log("\n— the nationality answer survives, and is never asked for twice");
+  const track = await p.evaluate(() => {
+    localStorage.clear(); loadState();
+    const gateWhenUnset = needsTrack(() => {});
+    nat = "sa"; saveState();
+    const written = JSON.parse(localStorage.getItem(STORE)).nat;
+    /* A fresh launch: drop the in-memory value and rebuild from storage. */
+    nat = null; loadState();
+    return { gateWhenUnset, written, restored: nat, gateAfter: needsTrack(() => {}) };
+  });
+  ok(track.gateWhenUnset === true,
+     "with no answer, the gate fires before any law is rendered");
+  ok(track.written === "sa", "answering writes it to storage immediately");
+  ok(track.restored === "sa", "and it is still there after a reload");
+  ok(track.gateAfter === false,
+     "so the gate does NOT fire again — answered once, remembered everywhere");
+
+  /* The resumed flow must come back with the same contract, not drop the
+     reader on the home screen having lost what they were doing. */
+  const resumed = await p.evaluate(() => {
+    /* nat is cleared EXPLICITLY, not by clearing storage: loadState() returns
+       early when there is no stored payload, so it leaves whatever is already
+       in memory untouched. Clearing storage alone does not reset the app — a
+       sharp edge worth knowing, and the reason this line is not just
+       localStorage.clear(). */
+    localStorage.clear(); nat = null; loadState();
+    let landed = null;
+    needsTrack(() => { landed = "resumed"; });
+    document.querySelectorAll("#obPick .ob-choice")[0].click();
+    return { landed, nat };
+  });
+  ok(resumed.landed === "resumed" && resumed.nat === "sa",
+     "and answering the gate resumes what the reader was doing rather than restarting them");
+
   await b.close();
-  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nevery situation has a door, and each opens what it names");
+  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nevery situation has a door, each opens what it names, and the track is asked once");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

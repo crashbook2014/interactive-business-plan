@@ -914,6 +914,10 @@
   .cr-cite.unverified{border-inline-start-color:var(--amber-ink);background:var(--amber-bg);
                       padding:6px 9px;border-radius:0 8px 8px 0}
   .cr-cite.unverified b{color:var(--amber-ink)}
+  .cr-clause{display:block;font-size:13.5px;color:var(--ink-2);font-weight:400;
+             padding-inline-start:9px;border-inline-start:2px solid var(--line);
+             margin-bottom:6px;font-style:italic}
+  html[lang="ar"] .cr-clause{font-style:normal}
   .cr-terms{margin:8px 0 4px}
   .cr-terms>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;
                 border-bottom:1px solid var(--line);font-size:14px}
@@ -2409,8 +2413,8 @@ const T = {
      true for anyone who does not opt in. It stops being true the moment the
      optional Claude read is both configured and accepted, so these variants
      replace it rather than the promise being quietly softened for everyone. */
-  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك.",
-                   en:"Your text is analyzed on your device. The only exceptions are optional, and happen only with your consent."},
+  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك — ومنها رفع العقود الممسوحة ضوئيًا.",
+                   en:"Your text is analyzed on your device. The only exceptions are optional and happen only with your consent — including uploading scanned contracts."},
   my_contracts:{ar:"عقودي",en:"My contracts"},
   mc_empty:{ar:"ما حلّلت أي عقد بعد.",en:"You haven't analyzed a contract yet."},
   mc_open:{ar:"افتحه",en:"Open"},
@@ -2436,8 +2440,8 @@ const T = {
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n٣ — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، ولا يُحفظ شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
-                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n٣ — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\n٤ — «اقرأ عقدًا ممسوحًا ضوئيًا»: هذا الوحيد اللي يرفع الملف نفسه، مو نصه. نلجأ له فقط إذا كان عقدك صورة أو مسحًا ضوئيًا وما فيه نص نقدر نقرأه على جهازك. يتطلب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل، وفي كل الأحوال خلال ساعة. وما نعرض عليك أي مبلغ من عقد ممسوح — لأننا ما نقدر نتحقق منه.\n\nالأربعة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic. الثلاثة الأولى ما يُحفظ منها شيء في أي مرحلة؛ الرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
+                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\n4 — \"Read a scanned contract\": the only one that uploads the FILE rather than its text. It is used only when your contract is a photo or a scan with no text we can read on your device. It requires signing in, the file is deleted from Anthropic's servers as soon as the analysis returns and within an hour in every case, and we show you no amount at all from a scan — because we cannot check one.\n\nAll four go through Wodouh's server to Anthropic's Claude model. Nothing is stored at any point for the first three; the fourth stores the file briefly and then deletes it. None of them can change any amount — all the arithmetic stays on your device. Decline all four and the assessment works in full."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -2499,13 +2503,21 @@ const T = {
   cr_dropped:{ar:"أسقطنا {n} ملاحظة لأنها ذكرت رقمًا مو موجود في عقدك أو صاغت حكمًا قانونيًا قاطعًا.",
               en:"We dropped {n} finding(s) that stated a figure not in your contract or made a flat legal ruling."},
   /* Key-term labels. */
-  cr_k_job:{ar:"المسمى الوظيفي",en:"Job title"},
-  cr_k_wage:{ar:"الأجر الشهري",en:"Monthly wage"},
-  cr_k_type:{ar:"نوع العقد",en:"Contract type"},
+  cr_k_pos:{ar:"المسمى الوظيفي",en:"Position"},
+  cr_k_salary:{ar:"الراتب",en:"Salary"},
+  cr_k_dur:{ar:"مدة العقد",en:"Contract duration"},
   cr_k_prob:{ar:"فترة التجربة",en:"Probation"},
   cr_k_notice:{ar:"مدة الإشعار",en:"Notice period"},
-  cr_k_leave:{ar:"الإجازة السنوية",en:"Annual leave"},
-  cr_k_nc:{ar:"عدم المنافسة",en:"Non-compete"},
+  cr_k_hours:{ar:"ساعات العمل الأسبوعية",en:"Weekly hours"},
+  cr_days:{ar:"{n} يوم",en:"{n} days"},
+  cr_hours:{ar:"{n} ساعة",en:"{n} hours"},
+  cr_type:{ar:"نوع العقد",en:"Contract type"},
+  cr_sum:{ar:"الخلاصة",en:"In short"},
+  /* Which reading this is. A resident and a Saudi get different findings on
+     the same contract, so the reader is told which one they are looking at
+     rather than left to wonder why a colleague saw something else. */
+  cr_track_sa:{ar:"قراءة على أساس أنك سعودي",en:"Read as a Saudi national"},
+  cr_track_nonsa:{ar:"قراءة على أساس أنك مقيم",en:"Read as a resident"},
   nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
   nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن — لكن نص العقد يشتغل معنا تمامًا.",
             en:"This looks like a scan or a photo. We can't read images yet — but the contract's text works perfectly."},
@@ -6583,11 +6595,31 @@ async function aiRun(){
  */
 let crBusy = false, crResult = null, crError = null;
 
+/* [payload key, label key, how to render it]. Days and hours carry their unit
+   in the reader's own language rather than arriving as a bare number, because
+   "180" alone is the kind of thing a worried reader misreads as months. */
 const CR_KEYS = [
-  ["job_title", "cr_k_job"], ["monthly_wage", "cr_k_wage"], ["contract_type", "cr_k_type"],
-  ["probation_days", "cr_k_prob"], ["notice_days", "cr_k_notice"],
-  ["annual_leave_days", "cr_k_leave"], ["non_compete_months", "cr_k_nc"],
+  ["position", "cr_k_pos", "bilingual"],
+  ["salary_amount", "cr_k_salary", "money"],
+  ["contract_duration", "cr_k_dur", "text"],
+  ["probation_period_days", "cr_k_prob", "days"],
+  ["notice_period_days", "cr_k_notice", "days"],
+  ["working_hours_per_week", "cr_k_hours", "hours"],
 ];
+
+/* Every value the model produced, rendered. Numbers go through fmtNum so an
+   Arabic reader sees Arabic-Indic digits like everywhere else in the app. */
+function crTermValue(kt, key, how){
+  if (how === "bilingual"){
+    const v = lang === "ar" ? kt[key + "_ar"] : kt[key + "_en"];
+    return v || null;
+  }
+  if (how === "text") return kt[key] || null;
+  const n = kt[key];
+  if (typeof n !== "number" || !isFinite(n)) return null;
+  if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || "SAR");
+  return t(how === "days" ? "cr_days" : "cr_hours").replace("{n}", fmtNum(n));
+}
 
 async function crRun(){
   const url = analyzeUrl();
@@ -6600,7 +6632,12 @@ async function crRun(){
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind: "contract_review", text: text.slice(0, 40000) })
+      /* The track the reader chose, sent as context. A resident and a Saudi
+         get different findings on the same contract — passport retention,
+         Iqama fees, sponsorship transfer and return airfare only apply to
+         one of them, and raising them for the other is noise. */
+      body: JSON.stringify({ kind: "contract_review", text: text.slice(0, 40000),
+                             nat: nat === "nonsa" ? "nonsa" : "sa" })
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data || typeof data !== "object" || !Array.isArray(data.red_flags)){
@@ -6621,11 +6658,22 @@ async function crRun(){
 function crFindingEl(f){
   const el = document.createElement("div");
   el.className = "ai-find " + (f.severity === "high" ? "attention" : "review");
-  const b = document.createElement("b");
-  b.textContent = (lang === "ar" ? f.title_ar : f.title_en) || "";
+
+  /* The clause first, quoted, so the reader can find it in their own document
+     — then what is wrong with it, or what to ask for instead. A finding that
+     names no clause is an opinion; one that quotes the clause is a pointer. */
+  const clause = (lang === "ar" ? f.clause_ar : f.clause_en) || "";
+  if (clause){
+    const q = document.createElement("b");
+    q.className = "cr-clause";
+    q.textContent = clause;
+    el.appendChild(q);
+  }
+  const body = (lang === "ar" ? (f.issue_ar || f.suggestion_ar)
+                              : (f.issue_en || f.suggestion_en)) || "";
   const p = document.createElement("p");
-  p.textContent = (lang === "ar" ? f.detail_ar : f.detail_en) || "";
-  el.appendChild(b); el.appendChild(p);
+  p.textContent = body;
+  el.appendChild(p);
 
   const ref = f.law_reference;
   if (ref && ref.ref){
@@ -6671,33 +6719,59 @@ function renderCrPanel(){
   }
   if (!crResult) return;
 
+  const meta = crResult.contract_meta || {};
+
+  /* Which reading this is. A resident and a Saudi see different findings on
+     the same contract, so say which one this is rather than leaving the reader
+     to wonder why a colleague saw something they did not. */
+  const tr = document.createElement("p");
+  tr.className = "src-line method";
+  tr.textContent = t(crResult.track === "Resident" ? "cr_track_nonsa" : "cr_track_sa");
+  sec.appendChild(tr);
+
   /* Rule 6 of the brief, honoured on screen: a document we could not read
-     shows the reason and NOTHING extracted from it. */
-  if (crResult.extraction_confidence === "low"){
+     shows the reason and NOTHING extracted from it. This is the path the
+     "I like cats and coffee" acceptance test walks. */
+  if (meta.extraction_confidence === "low"){
     const p = document.createElement("p"); p.textContent = t("cr_low");
     sec.appendChild(p);
-    const why = (lang === "ar" ? crResult.extraction_notes_ar : crResult.extraction_notes_en) || "";
+    const why = (lang === "ar" ? meta.extraction_notes_ar : meta.extraction_notes_en) || "";
     if (why){ const w = document.createElement("p"); w.className = "caveat"; w.textContent = why; sec.appendChild(w); }
     return;
   }
 
-  /* The terms table first. A reader who learns their probation is 180 days has
-     been served even if every finding below is empty. */
-  const terms = CR_KEYS.filter(([k]) => crResult.key_terms && crResult.key_terms[k]);
-  if (terms.length){
+  const summary = (lang === "ar" ? crResult.summary_ar : crResult.summary_en) || "";
+  if (summary){
+    const sp = document.createElement("p");
+    sp.className = "ai-summary";
+    sp.textContent = summary;
+    sec.appendChild(sp);
+  }
+
+  /* The terms table. A reader who learns their probation is 180 days has been
+     served even if every finding below is empty. */
+  const kt = crResult.key_terms || {};
+  const rows = [];
+  const ctype = lang === "ar" ? meta.contract_type_ar : meta.contract_type_en;
+  if (ctype) rows.push([t("cr_type"), ctype]);
+  for (const [key, label, how] of CR_KEYS){
+    const v = crTermValue(kt, key, how);
+    if (v) rows.push([t(label), v]);
+  }
+  if (rows.length){
     const h = document.createElement("p"); h.className = "lib-h"; h.textContent = t("cr_terms");
     sec.appendChild(h);
     const tbl = document.createElement("div"); tbl.className = "cr-terms";
-    for (const [k, label] of terms){
+    for (const [label, value] of rows){
       const row = document.createElement("div");
-      const dt = document.createElement("span"); dt.textContent = t(label);
-      const dd = document.createElement("b"); dd.textContent = crResult.key_terms[k];
+      const dt = document.createElement("span"); dt.textContent = label;
+      const dd = document.createElement("b"); dd.textContent = value;
       row.appendChild(dt); row.appendChild(dd); tbl.appendChild(row);
     }
     sec.appendChild(tbl);
   }
 
-  const lists = [["cr_red", crResult.red_flags], ["cr_neg", crResult.worth_negotiating]];
+  const lists = [["cr_red", crResult.red_flags], ["cr_neg", crResult.negotiation_points]];
   let any = 0;
   for (const [label, list] of lists){
     if (!Array.isArray(list) || !list.length) continue;
