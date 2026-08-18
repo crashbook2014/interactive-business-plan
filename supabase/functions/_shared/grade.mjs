@@ -25,7 +25,16 @@
    a rule that only holds in English is not a rule in this app. */
 const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 export function normNum(s){
-  return String(s).replace(/[٠-٩]/g, d => String(AR_DIGITS.indexOf(d)));
+  return String(s)
+    .replace(/[٠-٩]/g, d => String(AR_DIGITS.indexOf(d)))
+    /* U+066C ARABIC THOUSANDS SEPARATOR and U+066B ARABIC DECIMAL SEPARATOR.
+       Without these, "٤٥٬٠٠٠ ريال" normalises to "45٬000 ريال" and the money
+       matcher reads it as the number 000 — a figure written the way Arabic
+       actually writes it was invisible to a check whose whole job is to see
+       figures. It failed safe (an unrecognised number is refused, not
+       allowed), but it failed. */
+    .replace(/\u066C/g, ",")
+    .replace(/\u066B/g, ".");
 }
 
 /* Every article number the text asserts, in either language. Deliberately

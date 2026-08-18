@@ -300,3 +300,66 @@ Figures are compared as numbers against the cited rows, not as substrings.
   read. Someone who clears storage gets five more. The server's per-IP rate
   limit is the real ceiling; the daily cap is there to keep an honest reader
   from running up a bill by accident.
+
+---
+
+## Pre-signing contract review (`kind: "contract_review"`)
+
+The fifth mode on the analyze function, and the only one aimed at a contract
+nobody has signed yet. Every other mode deals with an employment that is
+ending; this one reads an offer while the reader still has leverage.
+
+**Not deployed.** Like every AI surface here it ships inert: with no
+`ANALYZE_URL` the panel renders nothing at all — not a teaser, not a locked
+state. Nothing in this section has met a live API response.
+
+### The citation position, stated plainly
+
+Everywhere else in Wodouh an article number appears only if a human marked it
+`verified` in `docs/legal-sources.md`. **For this mode the product owner chose
+differently:** the model cites an article whenever it is confident and returns
+`law_reference: null` when it is not. That decision is implemented as made.
+
+What the server adds is a `verified` flag on every citation, computed against
+the same 29-row register. The app renders verified citations teal and
+unverified ones amber with the warning attached — the same two tiers the Ask
+feature already uses, so a reader who has learned what the colours mean does
+not learn them twice.
+
+`src_caveat` was rewritten when this landed. It used to promise, without
+qualification, that we never show an unverified article number. That promise
+now holds for Wodouh's own readings and is stated with its exception named.
+`tm_hw_rules_b` was left alone: it describes the deterministic termination
+engine, which this mode does not touch.
+
+### What the server enforces rather than requests
+
+The prompt asks for all three. `supabase/functions/_shared/review-contract.mjs`
+guarantees them, because a prompt is a request and a filter is a guarantee.
+
+| Rule | Enforcement |
+|---|---|
+| No invented money | Every riyal figure in the output must appear in the submitted document. A finding carrying an unattested figure is **dropped whole**, never edited — stripping the number leaves a sentence that reads as though it never made a claim. |
+| No legal rulings | "violates", "illegal", "void", "unlawful", and their Arabic equivalents are rewritten to the hedge. If rewriting cannot fully clean the text, the finding is dropped. |
+| Citations are labelled | Every `law_reference` checked against the register; `verified` computed, never taken from the completion. |
+| Low confidence means nothing | `extraction_confidence: "low"` discards all terms and all findings server-side, whatever the completion filled in. |
+| The disclaimer is ours | Returned verbatim from the server. A disclaimer the model can reword is not a disclaimer. |
+
+Drops are **counted and reported** (`dropped.findings`, `dropped.terms`) and
+shown to the reader. A build that silently filtered half the findings looks
+identical to a contract with nothing wrong in it.
+
+### Money, and the one thing that changed
+
+The standing rule is that the model may never state a riyal figure. This mode
+narrows it rather than breaking it: the model may **report a figure the
+contract itself states** — that is reading, and it is the product — and may not
+calculate, estimate, or predict any amount. Extracted terms are display-only
+and never reach the calculator. Wodouh still computes every riyal on the
+reader's device, from what the reader typed.
+
+### Tests
+
+`test/contract-review.test.js` — the grader as a unit test against the exact
+module the Edge Function imports, plus browser assertions for the tiering, the
+shipped-inert rule, and that a finding containing markup renders as text.

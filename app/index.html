@@ -904,6 +904,22 @@
   .ask-ans.verified{border-inline-start:3px solid var(--teal)}
   .ask-ans.verified .hd b{color:var(--teal-ink)}
   .ask-ans.unverified{border-inline-start:3px solid var(--amber-ink);background:var(--amber-bg)}
+  /* Contract review reuses the SAME two tiers as the ask answers above, on
+     purpose: a reader who has learned once what teal and amber mean here does
+     not have to learn it again. */
+  .cr-cite{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin-top:8px;
+           padding-inline-start:9px;border-inline-start:3px solid var(--teal);font-size:13px}
+  .cr-cite b{color:var(--teal-ink)}
+  .cr-cite span{color:var(--ink-2);font-size:12px}
+  .cr-cite.unverified{border-inline-start-color:var(--amber-ink);background:var(--amber-bg);
+                      padding:6px 9px;border-radius:0 8px 8px 0}
+  .cr-cite.unverified b{color:var(--amber-ink)}
+  .cr-terms{margin:8px 0 4px}
+  .cr-terms>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;
+                border-bottom:1px solid var(--line);font-size:14px}
+  .cr-terms>div:last-child{border-bottom:0}
+  .cr-terms span{color:var(--ink-2)}
+  .cr-terms b{color:var(--ink);text-align:end}
   .ask-ans.unverified .hd b{color:var(--amber-ink)}
   .ask-body{font-size:14px !important;color:var(--ink) !important;margin-top:8px !important}
   .ask-src-h{font-size:11.5px !important;font-weight:700;margin-top:12px !important;
@@ -1619,6 +1635,9 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
       </button>
     </div>
     <div class="escalate" id="escalate" hidden></div>
+    <!-- Pre-signing AI read. Renders nothing at all unless ANALYZE_URL is
+         configured — same shipped-inert rule as every other AI surface. -->
+    <div id="crPanel" hidden></div>
     <div class="feedback" id="feedback"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
@@ -2299,8 +2318,14 @@ const T = {
   src_ejar_d:{ar:"تسجيل العقود السكنية والعلاقة الإيجارية",en:"Residential lease registration and the tenancy relationship"},
   src_moj:{ar:"وزارة العدل — المحاكم العمالية",en:"Ministry of Justice — labour courts"},
   src_moj_d:{ar:"مسار التسوية والتقاضي العمالي",en:"The settlement and labour litigation route"},
-  src_caveat:{ar:"نذكر رقم المادة فقط حين نكون تحققنا منها. وإلا نذكر النظام باسمه دون رقم — لأن الدقة المصطنعة أسوأ من عدمها.",
-              en:"We name an article number only where we've verified it. Otherwise we name the law without one — invented precision is worse than none."},
+  /* This sentence used to promise, without qualification, that we never show
+     an unverified article number. The AI contract read makes that untrue: it
+     may cite an article it is confident about but that nobody here has
+     checked. Rather than quietly leave the old wording standing, the promise
+     is stated where it still holds and the exception is named — and the
+     exception is always labelled on screen, in amber, beside the number. */
+  src_caveat:{ar:"في قراءتنا نحن، نذكر رقم المادة فقط حين نكون تحققنا منها، وإلا نذكر النظام باسمه دون رقم. أما الاستشهادات اللي يستخرجها التحليل الذكي من عقدك، فنعرضها كما هي ونوسمها «غير محققة» إذا ما كانت في سجلنا — تعرف بالضبط وش تحقّقنا منه ووش لا.",
+              en:"In our own readings we name an article number only where we've verified it, and otherwise name the law without one. Citations the AI read pulls from your contract are shown as given and marked \u201Cunverified\u201D when they aren't in our register — so you know exactly what we checked and what we didn't."},
   govern_by:{ar:"ما ينظّم هذا البند",en:"What governs this"},
 
   /* Two kinds of origin, never blurred. A citation means a verified article;
@@ -2457,6 +2482,30 @@ const T = {
   /* The scanned/photographed case. Separated from nr_* because the honest
      answer is different: no retry of the same file will ever work, so the
      tips must not suggest one. */
+  /* ---- pre-signing contract review (the fifth analyze mode) */
+  cr_title:{ar:"قراءة تفصيلية للعقد",en:"A detailed read of the contract"},
+  cr_terms:{ar:"ما ينص عليه العقد",en:"What the contract states"},
+  cr_red:{ar:"بنود توقف عندها",en:"Clauses to stop at"},
+  cr_neg:{ar:"بنود تستاهل تفاوض",en:"Worth negotiating"},
+  cr_none:{ar:"ما طلع شي يستدعي وقفة في البنود اللي قرأناها.",
+           en:"Nothing in the clauses we read calls for a pause."},
+  cr_low:{ar:"ما قدرنا نقرأ هذا المستند بثقة كافية، فما نعرض عليك بنودًا استخرجناها منه — أفضل من نعطيك أرقامًا ما تأكدنا منها.",
+          en:"We couldn't read this document with enough confidence, so we're not showing terms extracted from it. Better than numbers we aren't sure of."},
+  /* The label that carries the citation decision. A number the model produced
+     and nobody checked says so, in the reader's own language, beside the
+     number itself — not in a footnote. */
+  cr_v:{ar:"مادة محققة",en:"Verified article"},
+  cr_u:{ar:"استشهاد غير محقق — راجعه بنفسك",en:"Unverified citation — check it yourself"},
+  cr_dropped:{ar:"أسقطنا {n} ملاحظة لأنها ذكرت رقمًا مو موجود في عقدك أو صاغت حكمًا قانونيًا قاطعًا.",
+              en:"We dropped {n} finding(s) that stated a figure not in your contract or made a flat legal ruling."},
+  /* Key-term labels. */
+  cr_k_job:{ar:"المسمى الوظيفي",en:"Job title"},
+  cr_k_wage:{ar:"الأجر الشهري",en:"Monthly wage"},
+  cr_k_type:{ar:"نوع العقد",en:"Contract type"},
+  cr_k_prob:{ar:"فترة التجربة",en:"Probation"},
+  cr_k_notice:{ar:"مدة الإشعار",en:"Notice period"},
+  cr_k_leave:{ar:"الإجازة السنوية",en:"Annual leave"},
+  cr_k_nc:{ar:"عدم المنافسة",en:"Non-compete"},
   nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
   nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن — لكن نص العقد يشتغل معنا تمامًا.",
             en:"This looks like a scan or a photo. We can't read images yet — but the contract's text works perfectly."},
@@ -6509,6 +6558,169 @@ async function aiRun(){
   }
   aiBusy = false;
   renderAiPanel();
+}
+
+/* ================================== pre-signing contract review
+ *
+ * The fifth analyze mode, and the only one aimed at a contract nobody has
+ * signed yet — which is the moment a person still has leverage, and the only
+ * moment advice can prevent a problem instead of describing one.
+ *
+ * WHAT IS DIFFERENT ABOUT CITATIONS HERE, SAID PLAINLY.
+ *
+ * Everywhere else in Wodouh an article number appears only when a human
+ * verified it in the register. For this mode the product owner chose the
+ * model's own judgement instead: cite when confident, nothing when not. That
+ * is implemented as chosen. What the app does NOT do is let the two look the
+ * same — the server marks every citation verified or not, and this renders the
+ * unverified ones in the amber tier the Ask feature already uses, with the
+ * warning attached. The reader is told which numbers a human checked rather
+ * than left to assume.
+ *
+ * Everything the server refused — invented money, flat legal rulings — never
+ * arrives here. This function is display; the guarantees are upstream in
+ * review-contract.mjs and are not re-litigated on a device the reader controls.
+ */
+let crBusy = false, crResult = null, crError = null;
+
+const CR_KEYS = [
+  ["job_title", "cr_k_job"], ["monthly_wage", "cr_k_wage"], ["contract_type", "cr_k_type"],
+  ["probation_days", "cr_k_prob"], ["notice_days", "cr_k_notice"],
+  ["annual_leave_days", "cr_k_leave"], ["non_compete_months", "cr_k_nc"],
+];
+
+async function crRun(){
+  const url = analyzeUrl();
+  if (!url || !aiConsent) return;
+  const text = aiSourceText();
+  if (!text){ crError = "ai_notext"; renderCrPanel(); return; }
+
+  crBusy = true; crError = null; crResult = null; renderCrPanel();
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind: "contract_review", text: text.slice(0, 40000) })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || typeof data !== "object" || !Array.isArray(data.red_flags)){
+      crError = res.status === 429 ? "ai_busy" : "ai_failed";
+    } else {
+      crResult = data;
+    }
+  } catch(e){
+    crError = "ai_offline";
+  }
+  crBusy = false;
+  renderCrPanel();
+}
+
+/* One finding. Built as elements rather than a template string because every
+   piece of text here originated in a document a third party wrote, and
+   textContent is the only assignment that cannot become markup. */
+function crFindingEl(f){
+  const el = document.createElement("div");
+  el.className = "ai-find " + (f.severity === "high" ? "attention" : "review");
+  const b = document.createElement("b");
+  b.textContent = (lang === "ar" ? f.title_ar : f.title_en) || "";
+  const p = document.createElement("p");
+  p.textContent = (lang === "ar" ? f.detail_ar : f.detail_en) || "";
+  el.appendChild(b); el.appendChild(p);
+
+  const ref = f.law_reference;
+  if (ref && ref.ref){
+    const cite = document.createElement("p");
+    /* The tier is a class, not a sentence, so it survives translation and
+       cannot be lost in a copy edit. */
+    cite.className = "cr-cite " + (ref.verified ? "verified" : "unverified");
+    const num = document.createElement("b");
+    num.textContent = ref.ref;
+    const tag = document.createElement("span");
+    tag.textContent = t(ref.verified ? "cr_v" : "cr_u");
+    cite.appendChild(num); cite.appendChild(tag);
+    el.appendChild(cite);
+  }
+  return el;
+}
+
+function renderCrPanel(){
+  const host = document.getElementById("crPanel");
+  if (!host) return;
+  /* Unconfigured: nothing renders. Same shipped-inert rule as every other AI
+     surface — an invisible feature cannot mislead anyone about where their
+     contract goes. */
+  if (!aiAvailable()){ host.hidden = true; host.innerHTML = ""; return; }
+  host.hidden = false;
+  host.innerHTML = "";
+
+  const sec = document.createElement("div");
+  sec.className = "tm-sec";
+  const hd = document.createElement("div");
+  hd.className = "hd";
+  const hb = document.createElement("b"); hb.textContent = t("cr_title");
+  hd.appendChild(hb); sec.appendChild(hd);
+  host.appendChild(sec);
+
+  if (crBusy){ const p = document.createElement("p"); p.textContent = t("ai_working"); sec.appendChild(p); return; }
+  if (crError){
+    const p = document.createElement("p"); p.textContent = t(crError); sec.appendChild(p);
+    const b = document.createElement("button");
+    b.className = "ghost wide"; b.textContent = t("ai_retry"); b.onclick = crRun;
+    sec.appendChild(b);
+    return;
+  }
+  if (!crResult) return;
+
+  /* Rule 6 of the brief, honoured on screen: a document we could not read
+     shows the reason and NOTHING extracted from it. */
+  if (crResult.extraction_confidence === "low"){
+    const p = document.createElement("p"); p.textContent = t("cr_low");
+    sec.appendChild(p);
+    const why = (lang === "ar" ? crResult.extraction_notes_ar : crResult.extraction_notes_en) || "";
+    if (why){ const w = document.createElement("p"); w.className = "caveat"; w.textContent = why; sec.appendChild(w); }
+    return;
+  }
+
+  /* The terms table first. A reader who learns their probation is 180 days has
+     been served even if every finding below is empty. */
+  const terms = CR_KEYS.filter(([k]) => crResult.key_terms && crResult.key_terms[k]);
+  if (terms.length){
+    const h = document.createElement("p"); h.className = "lib-h"; h.textContent = t("cr_terms");
+    sec.appendChild(h);
+    const tbl = document.createElement("div"); tbl.className = "cr-terms";
+    for (const [k, label] of terms){
+      const row = document.createElement("div");
+      const dt = document.createElement("span"); dt.textContent = t(label);
+      const dd = document.createElement("b"); dd.textContent = crResult.key_terms[k];
+      row.appendChild(dt); row.appendChild(dd); tbl.appendChild(row);
+    }
+    sec.appendChild(tbl);
+  }
+
+  const lists = [["cr_red", crResult.red_flags], ["cr_neg", crResult.worth_negotiating]];
+  let any = 0;
+  for (const [label, list] of lists){
+    if (!Array.isArray(list) || !list.length) continue;
+    any += list.length;
+    const h = document.createElement("p"); h.className = "lib-h"; h.textContent = t(label);
+    sec.appendChild(h);
+    list.forEach(f => sec.appendChild(crFindingEl(f)));
+  }
+  if (!any){ const p = document.createElement("p"); p.textContent = t("cr_none"); sec.appendChild(p); }
+
+  /* Reported, not hidden. A build that silently filtered half the findings
+     looks exactly like a contract with nothing wrong in it. */
+  const dropped = crResult.dropped && crResult.dropped.findings;
+  if (dropped > 0){
+    const d = document.createElement("p"); d.className = "caveat";
+    d.textContent = t("cr_dropped").replace("{n}", fmtNum(dropped));
+    sec.appendChild(d);
+  }
+
+  const disc = document.createElement("p");
+  disc.className = "disclaimer";
+  disc.textContent = lang === "ar" ? crResult.disclaimer_ar : crResult.disclaimer_en;
+  sec.appendChild(disc);
 }
 
 /* ========================================= AI second-pass review
