@@ -2301,7 +2301,10 @@ const T = {
   /* Arabic inflects a counted noun by its count, and "٢ بنود" is wrong the way
      "2 clause" is wrong in English — the dual has its own form. The same four
      shapes the red and amber counts already use. */
-  dc_cl_1:{ar:"بندًا واحدًا",en:"1 clause"},
+  /* Genitive, because every use site reads "تعرّفنا على {n}" and a noun after
+     a preposition is majrūr. The accusative "بندًا واحدًا" was wrong there, and
+     wrong in the most-read sentence on the result screen. */
+  dc_cl_1:{ar:"بندٍ واحدٍ",en:"1 clause"},
   dc_cl_2:{ar:"بندين",en:"2 clauses"},
   dc_cl_p:{ar:"{n} بنود",en:"{n} clauses"},
   dc_cl_m:{ar:"{n} بندًا",en:"{n} clauses"},
@@ -2321,7 +2324,7 @@ const T = {
   /* Says what the number MEANS, not just what it is. "We recognised 3" leaves
      the reader to work out that the score therefore covers only three clauses;
      spelling that out is the whole point of the line. */
-  dc_conf_low:{ar:"تعرّفنا على {n} فقط من عقدك، والدرجة فوق محسوبة على هذي البنود وحدها — مو على العقد كامل. اقرأ الباقي بنفسك أو أرسله لمحامٍ.",
+  dc_conf_low:{ar:"تعرّفنا على {n} فقط من عقدك، والدرجة فوق محسوبة على ما تعرّفنا عليه وحده — مو على العقد كامل. اقرأ الباقي بنفسك أو أرسله لمحامٍ.",
                en:"We recognised only {n} in your contract, and the score above covers those alone — not the whole contract. Read the rest yourself, or have a lawyer look at it."},
   res_flags_h:{ar:"البنود المرصودة",en:"Flagged clauses"},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
@@ -3737,7 +3740,7 @@ const SAMPLES = {
 
 /* -------------------------------------------- heuristics for pasted text */
 const RULES = [
-  { re:/(non[- ]?compete|عدم\s*المنافسة)/i, s:"red",
+  { re:/(non[- ]?compete|non[- ]?competition|عدم\s*(?:ال)?منافسة|حظر\s*(?:ال)?منافسة|(?:عدم|لا\s*يجوز|يُحظر|يحظر|يمتنع)[^.\n]{0,70}(?:منافس|منافِس|جهة\s*منافسة|شركة\s*منافسة)|الالتحاق[^.\n]{0,40}منافس)/i, s:"red",
     t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
     p:{ar:"وجدنا بند عدم منافسة. لازم يكون مكتوبًا ومحدد المدة والمنطقة ونوع النشاط — وسنتان من نهاية العلاقة حد أعلى، ما يرتفع بالاتفاق.",
        en:"We found a non-compete. It must be written and define its duration, area and type of activity — and two years from the end of the relationship is a maximum, not a norm."},
@@ -3754,6 +3757,11 @@ const RULES = [
     r:{ar:"الشرط الجزائي المبالغ فيه قابل للتخفيض إذا لم يقع ضرر بقدره — احتفظ بما يثبت حجم الضرر الفعلي.",
        en:"An excessive penalty can be reduced where the actual harm is smaller — keep whatever evidences the real loss."} },
   { re:/(terminate.{0,30}(any\s*time|without)|إنهاء.{0,20}(أي وقت|دون))/i, s:"red",
+    /* Not raised when the same clause says either party may do it. The flag is
+       about a RIGHT ONE SIDE HOLDS ALONE; mutual termination on notice is
+       ordinary and lawful, and calling it one-sided is the false positive this
+       guard exists to stop. */
+    unless:/لأي\s*من\s*(?:ال)?طرفين|لكلا\s*(?:ال)?طرفين|للطرفين|أي\s*من\s*(?:ال)?طرفين|كل\s*من\s*(?:ال)?طرفين|either\s*part(?:y|ies)|both\s*parties|each\s*party|mutual/i,
     t:{ar:"إنهاء العقد من طرف واحد",en:"One-sided termination"},
     src:{ar:"نظام العمل السعودي — المادة ٨٠",en:"Saudi Labor Law — Article 80"},
     p:{ar:"يبدو أن أحد الأطراف يستطيع إنهاء العقد في أي وقت أو دون سبب. غالبًا هذا الحق غير متبادل.",
@@ -3904,7 +3912,12 @@ const RULES = [
   /* The non-Saudi twin of the notice rule. Article 75 cannot reach a
      fixed-term contract, so quoting its 60/30 here would be a citation
      lending authority to a rule that does not apply. */
-  { re:/(notice\s*period|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day))/i,
+  { /* Broadened to match its Saudi counterpart. These two rules are the same
+       question asked of two tracks, and only one of them was widened when the
+       vocabulary was fixed — so a resident lost the notice card that a Saudi
+       reader kept on the identical contract. A resident receiving LESS than a
+       Saudi is the opposite of what the track exists to do. */
+    re:/(notice\s*period|prior\s*notice|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i,
     s:"amber", nat:"nonsa",
     t:{ar:"الإشعار وإنهاء العقد",en:"Notice and ending the contract"},
     src:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"},
@@ -3959,6 +3972,65 @@ function normAr(text){
     .replace(/(^|[\s(«"'،.:;-])(?:[وفبكل])?ال(?=[ء-ي]{3,})/g, "$1");
 }
 
+/* ------------------------------------------- is this a contract at all?
+ *
+ * THE BUG THIS EXISTS TO CLOSE, AND WHO CAUSED IT.
+ *
+ * Paste "أنا أحب القطط والقهوة… راتبي الشهري ثمانية آلاف ريال والعمل الإضافي
+ * والإجازة السنوية وفترة التجربة كلها كلمات موجودة هنا لكن بلا سياق عقدي" and
+ * the app returned 84/100 with four flagged clauses — probation, annual leave,
+ * overtime, salary. Not one of them exists in that text. The reader is told
+ * their contract scored 84 when they pasted a paragraph about cats.
+ *
+ * The matcher was asking "does this text MENTION probation?" when the only
+ * question that matters is "does this document IMPOSE a probation term?" A
+ * topic word is not a clause. That gap was always there and the rule
+ * broadening in the previous change widened it: more vocabulary meant more
+ * ways for ordinary prose to trip a rule, and the test that was supposed to
+ * catch it used an English string with no contract vocabulary in it, so it
+ * proved nothing about this case at all.
+ *
+ * THE FIX IS A GATE, NOT MORE PATTERNS. Before any clause rule runs, the text
+ * has to look like a legal instrument: named parties, numbered clauses,
+ * obligation language, a document title. These are STRUCTURE, and structure is
+ * what prose about a contract does not have, however many of its words it
+ * borrows. Measured across real contracts and adversarial prose, the two
+ * separate cleanly — a formal contract shows all four signals, a plainly
+ * worded one shows three, a single pasted clause shows two, and prose that
+ * merely talks about work shows none. The bar is two.
+ *
+ * Note that the adversarial text contains the words "عقد" and "بند". That is
+ * why the signals require them in STRUCTURAL position — "البند الأول",
+ * "عقد عمل" — rather than anywhere at all.
+ */
+const DOC_SIGNALS = {
+  /* Named parties. A contract has sides; a paragraph does not. */
+  parties: /الطرف\s*(?:ال)?(?:أول|اول|ثاني|ثانى)|(?:أحد|احد|كلا|لأي\s*من|أي\s*من)\s*(?:ال)?طرفين|(?:ال)?طرفين\b|صاحب\s*(?:ال)?عمل|رب\s*(?:ال)?عمل|first\s*party|second\s*party|the\s*employer|the\s*employee|either\s*party|both\s*parties/i,
+  /* Numbered clauses, in either language. */
+  structure: /(?:البند|المادة|بند|مادة)\s*(?:ال)?(?:أول|اول|ثاني|ثالث|رابع|خامس|سادس|سابع|ثامن|تاسع|عاشر|\d+)|(?:^|\n)\s*\d+\s*[.)\-–]\s*\S|clause\s*\d+|article\s*\d+|section\s*\d+/i,
+  /* Obligation language: the verbs that create duties rather than describe. */
+  /* Obligation and contract-body language: the verbs that CREATE a duty or
+     state a term, rather than describe one. "بوظيفة" and "يتقاضى" earn their
+     place because a contract assigns a position and a wage, while prose about
+     a job talks around them — measured against the adversarial and chatty
+     samples, neither trips any of these. */
+  obligation: /يلتزم|يتعهد|يحق\s*ل|يستحق|تنص|اتفق\s*الطرفان|أبرم|ابرم|بموجب\s*هذا|يعمل\s*(?:ال)?طرف|بوظيفة|يتقاضى|تبدأ\s*مدة|مدة\s*(?:ال)?عقد|shall\b|agrees?\s+to\b|undertakes?\b|hereby\b|position\s*of\b/i,
+  /* The document naming itself. */
+  title: /عقد\s*(?:عمل|توظيف|العمل)|اتفاقي(?:ة|ه)\s*(?:عمل|توظيف)|employment\s*(?:contract|agreement)|offer\s*letter|contract\s*of\s*employment/i,
+};
+
+/* Two of four. Deliberately low: the cost of turning away a real contract is
+   far higher than the cost of analysing an unusual one, and the measured gap
+   between a real contract (3-4) and prose about work (0) is wide enough that
+   two is not a close call. Both the raw text and the normalised form are
+   tested, for the same reason the clause rules are. */
+function looksLikeContract(text){
+  const raw = String(text || ""), alt = normAr(raw);
+  const hit = Object.keys(DOC_SIGNALS).filter(k =>
+    DOC_SIGNALS[k].test(raw) || DOC_SIGNALS[k].test(alt));
+  return { ok: hit.length >= 2, signals: hit };
+}
+
 /* The same rule, compiled against normalised Arabic. Built once per rule and
    cached on the rule itself, because rebuilding seventeen RegExps on every
    analysis is work with a known answer. */
@@ -3967,19 +4039,118 @@ function ruleN(rule){
   return rule._reN;
 }
 
+/* Global variants, so every match can be walked rather than only the first.
+   Built once per rule and cached, like the normalised patterns. */
+function withG(re){ return new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g"); }
+function ruleG(rule){  if (!rule._reG)  rule._reG  = withG(rule.re);        return rule._reG; }
+function ruleGN(rule){ if (!rule._reGN) rule._reGN = withG(ruleN(rule));    return rule._reGN; }
+
+/* The disqualifier, in the form matching the text being scanned. */
+function ruleUnlessN(rule, normalised){
+  if (!rule.unless) return null;
+  if (!normalised) return rule.unless;
+  if (!rule._unN) rule._unN = new RegExp(normAr(rule.unless.source), rule.unless.flags);
+  return rule._unN;
+}
+
+/* A rule fires when its pattern matches AND its disqualifier does not appear
+   NEAR the match.
+ *
+ * The window matters. Checking `unless` against the whole document would let
+ * one mutual clause anywhere silence a genuinely one-sided clause elsewhere;
+ * checking only the matched span would miss the qualifier sitting three words
+ * to the left, which is exactly where "لأي من الطرفين" sits. 160 characters
+ * either side is about one clause in a Saudi contract.
+ *
+ * WHY THIS EXISTS. A contract read "فترة التجربة تسعون يوماً، يجوز خلالها لأي
+ * من الطرفين إنهاء العقد دون إشعار أو مكافأة" — an ordinary, lawful, EXPLICITLY
+ * MUTUAL probation clause. The app raised a red flag saying one party appeared
+ * able to end the contract unilaterally, cited Article 80 at it, scored the
+ * contract 44/100, told the reader to see a lawyer, and offered to sell them a
+ * letter demanding the clause be changed. The pattern had matched "إنهاء … دون"
+ * and could not see the four words in front of it.
+ *
+ * A false red flag is the most expensive thing this product can produce. It
+ * frightens someone about a term that is fine, and it does it in the same
+ * breath as asking for money. */
+/* Only used when a clause boundary cannot be found — see clauseAround(). */
+const GUARD_WINDOW = 160;
+
+/* The text of the CLAUSE the match sits in, bounded by the nearest sentence or
+   line break on each side.
+ *
+ * A fixed character window was the first attempt and it was wrong in a way
+ * that mattered: 160 characters reaches comfortably into the previous clause,
+ * so a contract reading "clause 3: either party may terminate on notice /
+ * clause 9: however the Company may terminate at any time without cause" let
+ * clause 3's mutuality excuse clause 9 — hiding the single worst term in the
+ * document. A qualifier governs the sentence it is in. */
+function clauseAround(src, at, end){
+  const BREAK = /[\n.؟!؛]/;
+  let from = 0;
+  for (let i = at - 1; i >= 0 && at - i <= 600; i--){
+    if (BREAK.test(src[i])){ from = i + 1; break; }
+  }
+  let to = src.length;
+  for (let i = end; i < src.length && i - end <= 600; i++){
+    if (BREAK.test(src[i])){ to = i; break; }
+  }
+  /* One unbroken run of text with no punctuation at all: fall back to the
+     fixed window rather than handing the guard the whole document. */
+  if (to - from > 900){
+    from = Math.max(0, at - GUARD_WINDOW);
+    to = Math.min(src.length, end + GUARD_WINDOW);
+  }
+  return src.slice(from, to);
+}
+
+function ruleFires(rule, text, alt){
+  /* The guard is normalised for the normalised pass, for exactly the reason
+     the pattern is: "لأي" becomes "لاي" once the alef forms are unified, so a
+     guard written in un-normalised Arabic silently never matches there. That
+     is the same asymmetry that broke the clause patterns, and it costs more
+     here — a guard that quietly fails does not miss a clause, it raises a
+     false alarm.
+
+     EVERY match is examined, not just the first. A contract can say "either
+     party may terminate on notice" in clause 3 and "the Company may terminate
+     at any time without cause" in clause 9. Stopping at the first match let
+     the mutual clause vouch for the one-sided one, which is a worse failure
+     than the false positive this guard was written to fix: it hides the
+     clause the reader most needs to see. */
+  const pairs = [[text, ruleG(rule), rule.unless ? ruleUnlessN(rule, false) : null],
+                 [alt,  ruleGN(rule), rule.unless ? ruleUnlessN(rule, true)  : null]];
+  for (const [src, pat, guard] of pairs){
+    pat.lastIndex = 0;
+    let m;
+    while ((m = pat.exec(src))){
+      if (!guard) return true;
+      if (!guard.test(clauseAround(src, m.index, m.index + m[0].length))) return true;
+      /* A zero-length match would spin forever. */
+      if (m.index === pat.lastIndex) pat.lastIndex++;
+    }
+  }
+  return false;
+}
+
 function analyzePasted(text){
   const clauses = [];
   /* Carry the whole rule through, minus its matcher. Copying a hand-picked
      subset silently dropped `src` (so pasted contracts cited nothing) and
      `r` (so signed-mode readers got negotiation advice instead of their
      rights). A rule gaining a field should not need an edit here. */
+  /* THE GATE. Before a single clause rule runs: is this a legal instrument at
+     all? Keyword matching on prose that merely talks about work is how a
+     paragraph about cats scored 84/100. */
+  if (!looksLikeContract(text).ok) return null;
+
   /* Normalised once, not per rule: seventeen regexes over a 40 KB contract is
      already the hot path here. BOTH sides go through the same transform —
      normalising the text alone was the first attempt and it made things worse,
      because the patterns are written in un-normalised Arabic and stopped
      meeting the text they were built to match. */
   const alt = normAr(text);
-  for (const rule of RULES) if (forTrack(rule) && (rule.re.test(text) || ruleN(rule).test(alt))){
+  for (const rule of RULES) if (forTrack(rule) && ruleFires(rule, text, alt)){
     const { re, ...rest } = rule;
     clauses.push({ ...rest, q:null });
   }
@@ -6439,7 +6610,14 @@ function renderAskEntry(){
   if (b) b.hidden = !askAvailable();
 }
 
-function openAsk(){ askAnswer = null; askError = null; renderAsk(); show("ask"); }
+function openAsk(){
+  /* Unreachable rather than merely unadvertised, the same rule openSignin()
+     follows. Both doors are already hidden when there is no endpoint; this
+     closes the case where something calls it anyway, so a screen that cannot
+     answer can never be reached. */
+  if (!askAvailable()) return;
+  askAnswer = null; askError = null; renderAsk(); show("ask");
+}
 
 /* What we would send if the reader ticks the second box — and the same object
    is what the panel describes, so the copy cannot drift from the payload. */
