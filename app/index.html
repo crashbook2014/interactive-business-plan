@@ -1317,6 +1317,16 @@
   .clause .head{display:flex;align-items:center;gap:10px;padding:13px 16px}
   .clause .stripe{flex:none;width:10px;height:10px;border-radius:99px}
   .clause h4{font-size:15px;color:var(--ink);flex:1}
+  /* The reader's OWN sentence is marked apart from an authored sample quote:
+     teal edge and a label. That difference is the whole point — a quote from
+     their document turns an opinion into a pointer. */
+  .quote[data-own]{border-inline-start-color:var(--teal)}
+  .quote[data-own]::before{content:attr(data-label);display:block;font-style:normal;
+    font-size:10.5px;letter-spacing:.04em;color:var(--teal-ink);
+    font-weight:700;margin-bottom:4px}
+  .flag .quote{margin:0 0 10px;padding:10px 14px;background:var(--sand);
+    border-inline-start:3px solid var(--line);border-radius:8px;font-size:12.5px;
+    color:var(--ink-2);line-height:1.7;font-style:italic}
   .clause .quote{margin:0 16px;padding:10px 14px;background:var(--sand);border-inline-start:3px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.7;font-style:italic}
   .clause .plain{padding:10px 16px 4px;font-size:14px;color:var(--ink);line-height:1.75}
   .clause .act{margin:8px 16px 14px;display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 12px}
@@ -2546,6 +2556,9 @@ const T = {
      rather than left to wonder why a colleague saw something else. */
   cr_track_sa:{ar:"قراءة على أساس أنك سعودي",en:"Read as a Saudi national"},
   cr_track_nonsa:{ar:"قراءة على أساس أنك مقيم",en:"Read as a resident"},
+  /* Said, not implied. The reader needs to know these are THEIR words and not
+     our paraphrase — that is the difference between an opinion and evidence. */
+  q_own:{ar:"من عقدك",en:"From your contract"},
   nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
   nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن — لكن نص العقد يشتغل معنا تمامًا.",
             en:"This looks like a scan or a photo. We can't read images yet — but the contract's text works perfectly."},
@@ -4113,14 +4126,23 @@ const GUARD_WINDOW = 160;
  * clause 3's mutuality excuse clause 9 — hiding the single worst term in the
  * document. A qualifier governs the sentence it is in. */
 function clauseAround(src, at, end){
-  const BREAK = /[\n.؟!؛]/;
+  /* A full stop between two digits is a decimal point, not the end of a
+     sentence. Without this, "الراتب 10.500 ريال" gets cut in half and the
+     quote we show the reader starts mid-number — which reads as a bug in the
+     one place the product is asking to be trusted. */
+  const isBreak = (i) => {
+    const ch = src[i];
+    if (ch === "\n" || ch === "؟" || ch === "!" || ch === "؛") return true;
+    if (ch !== ".") return false;
+    return !(/\d/.test(src[i-1] || "") && /\d/.test(src[i+1] || ""));
+  };
   let from = 0;
   for (let i = at - 1; i >= 0 && at - i <= 600; i--){
-    if (BREAK.test(src[i])){ from = i + 1; break; }
+    if (isBreak(i)){ from = i + 1; break; }
   }
   let to = src.length;
   for (let i = end; i < src.length && i - end <= 600; i++){
-    if (BREAK.test(src[i])){ to = i; break; }
+    if (isBreak(i)){ to = i; break; }
   }
   /* One unbroken run of text with no punctuation at all: fall back to the
      fixed window rather than handing the guard the whole document. */
@@ -4145,19 +4167,67 @@ function ruleFires(rule, text, alt){
      the mutual clause vouch for the one-sided one, which is a worse failure
      than the false positive this guard was written to fix: it hides the
      clause the reader most needs to see. */
-  const pairs = [[text, ruleG(rule), rule.unless ? ruleUnlessN(rule, false) : null],
-                 [alt,  ruleGN(rule), rule.unless ? ruleUnlessN(rule, true)  : null]];
-  for (const [src, pat, guard] of pairs){
+  /* The RAW text is scanned first and its clause is the one quoted back, so the
+     reader sees their own words rather than the normalised form — which has had
+     its hamzas flattened and its ال stripped and would look like a typo. */
+  const pairs = [[text, ruleG(rule), rule.unless ? ruleUnlessN(rule, false) : null, true],
+                 [alt,  ruleGN(rule), rule.unless ? ruleUnlessN(rule, true)  : null, false]];
+  for (const [src, pat, guard, verbatim] of pairs){
     pat.lastIndex = 0;
     let m;
     while ((m = pat.exec(src))){
-      if (!guard) return true;
-      if (!guard.test(clauseAround(src, m.index, m.index + m[0].length))) return true;
+      const clause = clauseAround(src, m.index, m.index + m[0].length);
+      if (!guard || !guard.test(clause)){
+        /* Only the un-normalised pass can be quoted. A match found only in the
+           normalised text still fires the rule — it is the same clause — but
+           quoting the mangled form would look like we misread the contract. */
+        return { hit: true, quote: verbatim ? clause : null };
+      }
       /* A zero-length match would spin forever. */
       if (m.index === pat.lastIndex) pat.lastIndex++;
     }
   }
-  return false;
+  return { hit: false, quote: null };
+}
+
+/* THE SENTENCE FROM THEIR OWN CONTRACT, TIDIED FOR DISPLAY.
+ *
+ * Wodouh's whole proposition is "never take our word for it", and the result
+ * screen was the one place a reader could not check: every flag on a pasted
+ * contract showed a generic paragraph, and the matched text was shown only for
+ * the built-in samples. That is also how a red flag came to fire on a clause
+ * that said the opposite of what the flag claimed — shown the sentence, a
+ * reader would have said "but it says either party".
+ *
+ * Capped rather than truncated mid-word, because a quote that ends in the
+ * middle of a word reads as a rendering bug and undermines the thing it is
+ * there to establish. */
+const QUOTE_MAX = 260;
+
+/* Samples carry an authored {ar,en} quote; a pasted contract carries the
+   reader's own sentence as a plain string. Both render the same way, and BOTH
+   are escaped — the pasted one is text out of a document, and a document is
+   not something this app gets to hand to innerHTML. */
+function quoteHtml(c){
+  const raw = typeof c.q === "string" ? c.q : (c.q && c.q[lang]);
+  if (!raw) return "";
+  const m = lang === "ar" ? ["\u00AB","\u00BB"] : ["\u201C","\u201D"];
+  /* Marked when it is the reader's own text, so "from your contract" can be
+     said rather than implied. */
+  const own = typeof c.q === "string" ? ` data-own="1" data-label="${esc(t("q_own"))}"` : "";
+  return `<div class="quote"${own}>${m[0]}${esc(raw)}${m[1]}</div>`;
+}
+
+function tidyQuote(sc){
+  let q = String(sc || "").replace(/\s+/g, " ").trim();
+  /* Drop a leading clause label — "البند الخامس:" — which is scaffolding
+     rather than the term itself. */
+  q = q.replace(/^(?:ال)?(?:بند|مادة)\s*(?:ال)?\S+\s*[:\-–]\s*/i, "")
+       .replace(/^(?:clause|article|section)\s*\d+\s*[:.\-–]\s*/i, "");
+  if (q.length <= QUOTE_MAX) return q;
+  const cut = q.slice(0, QUOTE_MAX);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > QUOTE_MAX * 0.6 ? cut.slice(0, sp) : cut).trim() + "…";
 }
 
 function analyzePasted(text){
@@ -4177,9 +4247,15 @@ function analyzePasted(text){
      because the patterns are written in un-normalised Arabic and stopped
      meeting the text they were built to match. */
   const alt = normAr(text);
-  for (const rule of RULES) if (forTrack(rule) && ruleFires(rule, text, alt)){
-    const { re, ...rest } = rule;
-    clauses.push({ ...rest, q:null });
+  for (const rule of RULES){
+    if (!forTrack(rule)) continue;
+    const fired = ruleFires(rule, text, alt);
+    if (!fired.hit) continue;
+    const { re, unless, _reN, _reG, _reGN, _unN, ...rest } = rule;
+    /* A plain string, not the bilingual {ar,en} the samples carry: this is the
+       reader's own sentence and it exists in exactly one language — theirs. */
+    const q = fired.quote ? tidyQuote(fired.quote) : null;
+    clauses.push({ ...rest, q: q || null });
   }
   /* Nothing recognised means we cannot honestly score this text. Returning null
      routes to the "couldn't read" screen instead of inventing a verdict. */
@@ -4694,7 +4770,7 @@ function renderResult(reset){
                 stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg>
          </span>
        </button>
-       <div class="advice"><p>${c.p[lang]}</p>${tip}</div>`;
+       <div class="advice">${quoteHtml(c)}<p>${c.p[lang]}</p>${tip}</div>`;
     div.style.setProperty("--d", Math.min(idx,6)*40 + "ms");
     wrap.appendChild(div);
   });
@@ -9763,8 +9839,7 @@ function renderClauses(){
   current.clauses.forEach((c,i)=>{
     const div = document.createElement("div");
     div.className = "clause " + c.s;
-    const q = lang==="ar" ? ["«","»"] : ["\u201C","\u201D"];
-    const quote = c.q ? `<div class="quote">${q[0]}${c.q[lang]}${q[1]}</div>` : "";
+    const quote = quoteHtml(c);
     const act = actionLabel(c.s);
     const adv = adviceFor(c);
     const advice = adv ? ` ${adv[lang]}` : "";

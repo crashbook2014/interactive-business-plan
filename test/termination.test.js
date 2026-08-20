@@ -349,8 +349,6 @@ async function art87Certainty(p){
   ok(labels.bad.length === 0,
      `all ${labels.checked} needed-input labels resolve in both languages${labels.bad.length ? " — missing: " + labels.bad.join(", ") : ""}`);
 
-  console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
-                                  : "all termination checks passed"));
   /* ---- nationality is not contract type, and treating it as one moved money
    *
    * compEstimate() read `isNonSaudi() ? "fixed" : "indef"`. Half of that is
@@ -428,6 +426,8 @@ async function art87Certainty(p){
   ok(!/[٠-٩]/.test(Object.values(svc).join(" ")),
      "and every digit is Latin, in Arabic too");
 
+  console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
+                                  : "all termination checks passed"));
   await b.close();
   process.exit(FAIL.length ? 1 : 0);
 })();

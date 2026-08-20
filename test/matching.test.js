@@ -255,6 +255,92 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   ok(tracks.nonsa >= tracks.sa,
      `a resident is never shown FEWER findings than a Saudi on the same contract (${tracks.nonsa} vs ${tracks.sa})`);
 
+  /* ---- 4e. the reader is shown the sentence we acted on
+   *
+   * Wodouh's proposition is "never take our word for it", and the result
+   * screen was the one place a reader could not check: every flag on a pasted
+   * contract showed a generic paragraph, and the matched text appeared only
+   * for the built-in samples. That is also how a red flag came to fire on a
+   * clause that said the opposite of what it claimed — shown the sentence, a
+   * reader would have said "but it says either party".
+   *
+   * The quote is EVIDENCE, so three things have to hold: it must come from
+   * their document verbatim, it must be marked as theirs rather than ours, and
+   * it must be text — a contract is a file someone else wrote.
+   */
+  console.log("\n— every flag quotes the sentence it fired on");
+  const HEAD_Q = "عقد عمل\nأبرم هذا العقد بين شركة الأفق ويشار إليها بالطرف الأول، وبين أحمد ويشار إليه بالطرف الثاني.\n";
+  const quoted = await p.evaluate(async (txt) => {
+    if (document.documentElement.lang !== "ar") toggleLang();
+    nat = "sa"; show("home");
+    document.getElementById("pasteBox").value = txt;
+    pasteChanged(); analyze("pasted");
+    await new Promise(r => setTimeout(r, 2800));
+    const host = document.getElementById("flags");
+    return {
+      flags: host.querySelectorAll(".flag").length,
+      quotes: [...host.querySelectorAll(".quote")].map(q => q.textContent.trim()),
+      own: host.querySelectorAll('.quote[data-own]').length,
+      labelled: [...host.querySelectorAll('.quote[data-own]')].every(q => !!q.dataset.label),
+    };
+  }, HEAD_Q + "البند التاسع: يلتزم الطرف الثاني بعدم العمل لدى أي جهة منافسة داخل المملكة لمدة سنتين.\nالبند الثالث: الراتب الشهري عشرة آلاف ريال سعودي.");
+
+  ok(quoted.quotes.length === quoted.flags && quoted.flags > 0,
+     `every flag carries a quote, not just some (${quoted.quotes.length}/${quoted.flags})`);
+  ok(quoted.quotes.some(q => /جهة منافسة داخل المملكة/.test(q)),
+     "and the quote is the reader's OWN sentence, verbatim from their contract");
+  ok(quoted.quotes.every(q => !/^«?\s*(?:ال)?بند\s/.test(q)),
+     `with the clause label stripped — "البند التاسع:" is scaffolding, not a term (${quoted.quotes[0].slice(0, 34)}…)`);
+  ok(quoted.own === quoted.flags && quoted.labelled,
+     "marked as theirs and labelled, so it reads as evidence rather than our paraphrase");
+
+  /* An authored sample quote is bilingual and must still render — the two
+     shapes share one code path and a regression would silently blank one. */
+  const authored = await p.evaluate(async () => {
+    nat = "sa"; analyze("employment");
+    await new Promise(r => setTimeout(r, 2800));
+    const host = document.getElementById("flags");
+    return { quotes: host.querySelectorAll(".quote").length,
+             own: host.querySelectorAll('.quote[data-own]').length };
+  });
+  ok(authored.quotes > 0, `a built-in sample still shows its authored quotes (${authored.quotes})`);
+  ok(authored.own === 0, "and they are NOT marked as the reader's own, because they are not");
+
+  /* A contract is a document a third party wrote. It does not get innerHTML. */
+  const evil = await p.evaluate(async (txt) => {
+    nat = "sa"; show("home");
+    document.getElementById("pasteBox").value = txt;
+    pasteChanged(); analyze("pasted");
+    await new Promise(r => setTimeout(r, 2800));
+    const host = document.getElementById("flags");
+    return { executed: !!window.__pwned,
+             nodes: host.querySelectorAll("img,script,iframe,svg[onload]").length,
+             /* An angle bracket surviving as a CHARACTER is the proof it was
+                escaped — had it been parsed as markup there would be a node
+                instead. Only one bracket is asserted: the quote is bounded to
+                its own sentence, so which side of the tag survives depends on
+                where the boundary fell, and pinning both would be pinning the
+                fixture rather than the property. */
+             asText: host.textContent.includes(">") || host.textContent.includes("<") };
+    /* NO FULL STOP INSIDE THE TAG. The first version of this fixture used
+       onerror="window.__pwned=1" — and the quote boundary split at the dot in
+       "window.__pwned", stripping the opening "<" so no tag could ever form.
+       The assertions passed with escaping REMOVED, which makes them decoration.
+       Verified by deleting esc() and watching this fail. */
+  }, HEAD_Q + 'البند الثالث: <img src=q onerror="__pwned=1"> الراتب الشهري عشرة آلاف ريال سعودي.');
+  ok(evil.executed === false, "markup inside a contract does not execute");
+  ok(evil.nodes === 0, "and injects no nodes");
+  ok(evil.asText === true, "it renders as the text it is");
+
+  /* A full stop between digits is a decimal point, not a sentence end. */
+  const decimal = await p.evaluate((txt) => {
+    nat = "sa";
+    const r = analyzePasted(txt);
+    return r ? r.clauses.map(c => c.q).filter(Boolean) : [];
+  }, HEAD_Q + "البند الثالث: الراتب الشهري 10.500 ريال سعودي شاملاً البدلات.");
+  ok(decimal.some(q => /10\.500/.test(q)),
+     `a decimal figure is not cut in half by the quote boundary (${decimal[0] || "no quote"})`);
+
   /* ---- 5. the score says how much of the contract it covers
    *
    * The dangerous output is not a low score. It is a HIGH score on a contract
