@@ -278,8 +278,8 @@ async function art87Certainty(p){
      `answering raises the figure (${rise.marriage.total} vs ${rise.skipped.total})`);
   ok(!rise.marriage.has && !rise.none.has,
      "once answered either way, the note is gone");
-  ok(rise.ar.has && /المادة ٨٧/.test(rise.ar.text),
-     "and it renders in Arabic too");
+  ok(rise.ar.has && /المادة 87/.test(rise.ar.text),
+     "and it renders in Arabic too — with the article number in Latin digits, which is now the rule in both languages");
   /* The screen is read once. The document is the thing that gets sent — to the
      employer, to a lawyer, into a friendly-settlement filing — and it was
      carrying the understated total with nothing beside it. */
@@ -351,6 +351,83 @@ async function art87Certainty(p){
 
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all termination checks passed"));
+  /* ---- nationality is not contract type, and treating it as one moved money
+   *
+   * compEstimate() read `isNonSaudi() ? "fixed" : "indef"`. Half of that is
+   * sound — Article 37 requires a non-Saudi's contract to be fixed-term, so
+   * inferring it there cannot be wrong. The other half is simply false. A Saudi
+   * may hold either kind, and every Saudi whose FIXED-TERM contract was ended
+   * early was sent down the indefinite branch of Article 77: 15 days per year
+   * of service instead of the wage for the remaining term.
+   *
+   * Measured on a real shape — 2 years' service at 15,000, terminated with 18
+   * months left — that is 30,000 shown where 270,000 was owed. The app had
+   * already conceded the point and ignored it: "fixed term expired" is offered
+   * to Saudis as a way the job ended, which only a fixed-term contract can do.
+   */
+  console.log("\n— contract type is asked, not inferred from nationality");
+  const ct = await p.evaluate(() => {
+    const setup = () => {
+      show("eos");
+      document.getElementById("eosStart").value = "2024-01-01";
+      document.getElementById("eosEnd").value = "2026-01-01";
+      document.getElementById("eosWage").value = "15000";
+      calcEos();
+    };
+    const out = {};
+    nat = "sa"; eosHow = "term";
+
+    eosCtype = "indef"; renderEos(); setup();
+    out.saudiUnlimited = {
+      comp: Math.round(compEstimate()),
+      endDateAsked: !document.getElementById("eosTermFld").hidden,
+      typeAsked: !document.getElementById("eosCtypeFld").hidden,
+    };
+
+    eosCtype = "fixed"; renderEos(); setup();
+    out.saudiFixedNoDate = { comp: Math.round(compEstimate()),
+                             endDateAsked: !document.getElementById("eosTermFld").hidden };
+    document.getElementById("eosTermEnd").value = "2027-07-01";
+    out.saudiFixedWithDate = { comp: Math.round(compEstimate()) };
+
+    nat = "nonsa"; eosCtype = null; renderEos(); setup();
+    out.resident = { typeAsked: !document.getElementById("eosCtypeFld").hidden,
+                     endDateAsked: !document.getElementById("eosTermFld").hidden,
+                     fixed: contractIsFixed() };
+    return out;
+  });
+
+  ok(ct.saudiUnlimited.typeAsked === true,
+     "a Saudi whose employer ended it is ASKED which kind of contract they had");
+  ok(ct.saudiUnlimited.endDateAsked === false,
+     "an unlimited-term contract is never asked when it was due to end — it has no such date");
+  ok(ct.saudiFixedNoDate.endDateAsked === true,
+     "and a Saudi on a fixed term IS asked, because the compensation turns on it");
+  ok(ct.saudiFixedWithDate.comp > ct.saudiUnlimited.comp * 3,
+     `the two branches produce genuinely different money (${ct.saudiFixedWithDate.comp} vs ${ct.saudiUnlimited.comp}) — this is the gap the old code fell into`);
+  ok(ct.saudiFixedNoDate.comp > 0 && ct.saudiFixedNoDate.comp < ct.saudiFixedWithDate.comp,
+     `and the end date stays OPTIONAL — without it the two-month floor is shown, not an error (${ct.saudiFixedNoDate.comp})`);
+  ok(ct.resident.typeAsked === false && ct.resident.fixed === true,
+     "a non-Saudi is not asked: Article 37 settles it, and a question with one answer is friction");
+  ok(ct.resident.endDateAsked === true,
+     "but is still asked for the end date, which is what the compensation is computed on");
+
+  /* Arabic counts its nouns. "5 سنة و5 شهر" is wrong the way "5 year and 5
+     month" is, and it sat on the line where a reader checks whether we got
+     their facts right before believing our arithmetic. */
+  console.log("\n— the length of service reads as Arabic");
+  const svc = await p.evaluate(() => {
+    if (document.documentElement.lang !== "ar") toggleLang();
+    return { one: svcText(1, 0), two: svcText(2, 1), five: svcText(5, 5),
+             zeroM: svcText(6, 0), many: svcText(11, 3) };
+  });
+  ok(svc.five === "5 سنوات و5 أشهر", `3-10 takes the plural (${svc.five})`);
+  ok(/سنتين/.test(svc.two) && /شهر واحد/.test(svc.two), `the dual has its own form (${svc.two})`);
+  ok(svc.zeroM === "6 سنوات", `and zero months is dropped rather than printed (${svc.zeroM})`);
+  ok(/11 سنة/.test(svc.many), `11+ takes the singular accusative (${svc.many})`);
+  ok(!/[٠-٩]/.test(Object.values(svc).join(" ")),
+     "and every digit is Latin, in Arabic too");
+
   await b.close();
   process.exit(FAIL.length ? 1 : 0);
 })();

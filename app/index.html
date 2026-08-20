@@ -1897,6 +1897,10 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
         <input type="number" inputmode="numeric" min="0" step="100" id="eosWage"/>
         <em data-t="eos_wage_hint"></em>
       </label>
+      <div class="fld" id="eosCtypeFld" hidden>
+        <span data-t="eos_ctype"></span><div class="opts" id="eosCtype"></div>
+        <em data-t="eos_ct_hint"></em>
+      </div>
       <label class="fld" for="eosTermEnd" id="eosTermFld" hidden>
         <span data-t="eos_term_end"></span><input type="date" id="eosTermEnd"/>
         <em data-t="eos_term_hint"></em>
@@ -2281,7 +2285,7 @@ const T = {
   ph_note_b:{ar:"في النسخة الحقيقية يُقرأ النص من الصورة على جهازك. في هذا النموذج غير مفعّل — الصق النص أو جرّب نموذجًا.",
              en:"In the real app the text is read from the photo on your device. It isn't enabled in this prototype — paste the text or try a sample."},
   ph_paste:{ar:"ألصق النص بدلًا من ذلك",en:"Paste the text instead"},
-  err_big:{ar:"الملف أكبر من ٨ ميجابايت. جرّب تلصق نص العقد بدلًا من رفعه.",en:"That file is over 8 MB. Try pasting the contract text instead."},
+  err_big:{ar:"الملف أكبر من 8 ميجابايت. جرّب تلصق نص العقد بدلًا من رفعه.",en:"That file is over 8 MB. Try pasting the contract text instead."},
   err_type:{ar:"نقرأ PDF والملفات النصية. لو عندك صورة أو صيغة ثانية، الصق النص مباشرة.",en:"We read PDFs and text files. If yours is an image or another format, paste the text directly."},
   how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
 
@@ -2297,7 +2301,7 @@ const T = {
   dc_why_none:{ar:"ما طلع أي بند أحمر أو أصفر.",en:"No red or amber clauses came up."},
   /* Arabic counted nouns inflect: one is singular, two takes the dual, 3–10
      takes a broken plural, 11+ returns to the singular accusative. Rendering
-     "٢ بند أصفر" would read as broken Arabic in an Arabic-first product. */
+     "2 بند أصفر" would read as broken Arabic in an Arabic-first product. */
   /* Arabic inflects a counted noun by its count, and "٢ بنود" is wrong the way
      "2 clause" is wrong in English — the dual has its own form. The same four
      shapes the red and amber counts already use. */
@@ -2333,12 +2337,12 @@ const T = {
   src_head:{ar:"مصادرنا",en:"Our sources"},
   src_sub:{ar:"كل ما نقوله مبني على هذه المصادر الرسمية. افتحها وتحقق بنفسك.",
            en:"Everything we say rests on these official sources. Open them and check for yourself."},
-  src_stamp:{ar:"المراجع محدّثة حتى فبراير ٢٠٢٥",en:"References current to February 2025"},
-  src_stamp_why:{ar:"آخر تعديلات نظام العمل دخلت حيّز النفاذ في ١٩ فبراير ٢٠٢٥.",
+  src_stamp:{ar:"المراجع محدّثة حتى فبراير 2025",en:"References current to February 2025"},
+  src_stamp_why:{ar:"آخر تعديلات نظام العمل دخلت حيّز النفاذ في 19 فبراير 2025.",
                  en:"The latest Labor Law amendments came into force on 19 February 2025."},
   src_reviewed:{ar:"روجعت",en:"Reviewed"},
   src_labor:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
-  src_labor_d:{ar:"المرسوم الملكي م/٥١ وتعديلاته — الأساس لأحكام العمل والإجازات ونهاية الخدمة",
+  src_labor_d:{ar:"المرسوم الملكي م/51 وتعديلاته — الأساس لأحكام العمل والإجازات ونهاية الخدمة",
                en:"Royal Decree M/51 and its amendments — the basis for employment, leave and end-of-service"},
   src_hrsd:{ar:"وزارة الموارد البشرية والتنمية الاجتماعية",en:"Ministry of Human Resources and Social Development"},
   src_hrsd_d:{ar:"النص الرسمي واللوائح والأدلة التنفيذية",en:"The official text, regulations and implementing guides"},
@@ -2363,7 +2367,7 @@ const T = {
               en:"The labour law treats Saudis and residents differently on contract type, notice, and compensation. So we give you the right answer rather than the near-enough one — which are you?"},
   /* Deliberately not a countdown. No "only N days left", no alarm. The
      obligation is the employer's; the reader's move is simply to look. */
-  tm_qiwa_h:{ar:"من ٦ أغسطس: كل العقود على صيغة قوى الموحدة",
+  tm_qiwa_h:{ar:"من 6 أغسطس: كل العقود على صيغة قوى الموحدة",
              en:"From 6 August: all contracts move to the unified Qiwa form"},
   tm_qiwa_b:{ar:"التحويل مسؤولية صاحب العمل، وما تفقد أي حق في هذا التاريخ. اللي يخصك: تتأكد أن عقدك مسجّل في قوى وأن نسختك تطابق المسجّلة.",
              en:"Migrating it is your employer's job, and you lose nothing on that date. Your part is simply to check your contract is on Qiwa and that your copy matches the registered one."},
@@ -2415,7 +2419,7 @@ const T = {
   lib_go_case:{ar:"جهّز الملف",en:"Build the file"},
   src_score:{ar:"التقييم من منهجية وضوح، لا من نص نظامي.",
              en:"The score comes from Wodouh's methodology, not from any statute."},
-  src_eos:{ar:"الحساب وفق نظام العمل السعودي — المادتان ٨٤ و٨٥",
+  src_eos:{ar:"الحساب وفق نظام العمل السعودي — المادتان 84 و85",
            en:"Calculated under Saudi Labor Law — Articles 84 and 85"},
   src_tl:{ar:"المواعيد محسوبة من تاريخ التوقيع وفق بنود عقدك — تقدير وضوح، راجعها مع عقدك.",
           en:"Dates are counted from signing using your contract's own terms — Wodouh's estimate, check them against your contract."},
@@ -2464,15 +2468,15 @@ const T = {
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n١ — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n٢ — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n٣ — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\n٤ — «اقرأ عقدًا ممسوحًا ضوئيًا»: هذا الوحيد اللي يرفع الملف نفسه، مو نصه. نلجأ له فقط إذا كان عقدك صورة أو مسحًا ضوئيًا وما فيه نص نقدر نقرأه على جهازك. يتطلب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل، وفي كل الأحوال خلال ساعة. وما نعرض عليك أي مبلغ من عقد ممسوح — لأننا ما نقدر نتحقق منه.\n\nالأربعة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic. الثلاثة الأولى ما يُحفظ منها شيء في أي مرحلة؛ الرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\n4 — «اقرأ عقدًا ممسوحًا ضوئيًا»: هذا الوحيد اللي يرفع الملف نفسه، مو نصه. نلجأ له فقط إذا كان عقدك صورة أو مسحًا ضوئيًا وما فيه نص نقدر نقرأه على جهازك. يتطلب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل، وفي كل الأحوال خلال ساعة. وما نعرض عليك أي مبلغ من عقد ممسوح — لأننا ما نقدر نتحقق منه.\n\nالأربعة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic. الثلاثة الأولى ما يُحفظ منها شيء في أي مرحلة؛ الرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
                     en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\n4 — \"Read a scanned contract\": the only one that uploads the FILE rather than its text. It is used only when your contract is a photo or a scan with no text we can read on your device. It requires signing in, the file is deleted from Anthropic's servers as soon as the analysis returns and within an hour in every case, and we show you no amount at all from a scan — because we cannot check one.\n\nAll four go through Wodouh's server to Anthropic's Claude model. Nothing is stored at any point for the first three; the fourth stores the file briefly and then deletes it. None of them can change any amount — all the arithmetic stays on your device. Decline all four and the assessment works in full."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
   acc_lang:{ar:"اللغة",en:"Language"},
-  anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
+  anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين 400 و1000 ر.س للاستشارة الواحدة.",
                 en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
-  vat_line:{ar:"الأسعار شاملة ضريبة القيمة المضافة (١٥٪).",en:"Prices include 15% VAT."},
+  vat_line:{ar:"الأسعار شاملة ضريبة القيمة المضافة (15٪).",en:"Prices include 15% VAT."},
   guarantee:{ar:"ما أعجبك؟ نرجّع لك المبلغ — بدون أسئلة.",en:"Not happy? We refund you — no questions."},
   secure_pay:{ar:"دفع آمن",en:"Secure payment"},
   pw_more:{ar:"+ {n} بنود أخرى في الخطاب الكامل",en:"+ {n} more points in the full letter"},
@@ -2645,14 +2649,14 @@ const T = {
      free to every reader and always have been — trackOrView and openAssist
      have no payment check. It now names something that is genuinely withheld
      and genuinely delivered: further letters for further contracts. */
-  plan_pack_d:{ar:"هذا الخطاب، وأي خطاب لعقد جديد خلال ٦ أشهر",
+  plan_pack_d:{ar:"هذا الخطاب، وأي خطاب لعقد جديد خلال 6 أشهر",
                en:"This letter, plus a letter for any new contract for 6 months"},
   plan_best:{ar:"الأفضل قيمة",en:"Best value"},
   cost_note:{ar:"يعني ما تقدر تترك خلال {m} — أي ما يعادل {v}.",
              en:"That's {m} you can't leave during — about {v}."},
   cost_months2:{ar:"شهرين",en:"two months"},
   plan_lawyer:{ar:"خطاب + مراجعة محامٍ",en:"Letter + lawyer review"},
-  plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال ٢٤ ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
+  plan_lawyer_d:{ar:"محامٍ سعودي مرخّص يراجع الخطاب والتنبيهات خلال 24 ساعة",en:"A licensed Saudi lawyer reviews the letter and flags within 24h"},
   /* Not "Popular" / «الأكثر طلبًا». There are no paying customers and payments
      are a prototype, so that was social proof for a number nobody measured —
      on a screen whose own footer says no real payment happens. The skeptical
@@ -2682,7 +2686,7 @@ const T = {
   desk_sub:{ar:"وضوح يشرح عقود العمل والإيجار والعمل الحر بلغة بسيطة، وينبّهك للمخاطر، ويعطيك خلاصة واضحة.",
             en:"Wodouh explains employment, rental, and freelance contracts in plain language, flags the risks, and gives you a clear verdict."},
   desk_meta:{ar:"نموذج تفاعلي — جرّبه بنفسك",en:"Interactive prototype — try it yourself"},
-  paste_hint:{ar:"الصق نص العقد كاملًا — ٤٠ حرفًا على الأقل.",en:"Paste the full contract text — 40 characters minimum."},
+  paste_hint:{ar:"الصق نص العقد كاملًا — 40 حرفًا على الأقل.",en:"Paste the full contract text — 40 characters minimum."},
   pl_title:{ar:"الخطط والأسعار",en:"Plans & pricing"},
   pl_sub:{ar:"التقييم والتنبيهات مجانية دائمًا. ادفع فقط لما تحتاج مخرجات أو فريقًا.",
           en:"Scores and flags are always free. Pay only when you need outputs or a team."},
@@ -2699,14 +2703,14 @@ const T = {
   pl_biz:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
   pl_biz_d:{ar:"للشركات والمنشآت التي تُصدر العقود",en:"For companies that issue contracts"},
   pl_permo:{ar:"/شهر",en:"/mo"}, pl_peryr:{ar:"/سنة",en:"/yr"},
-  pl_seat:{ar:"لكل ٥ مقاعد",en:"for 5 seats"},
+  pl_seat:{ar:"لكل 5 مقاعد",en:"for 5 seats"},
   pl_cta_free:{ar:"أنت عليها",en:"You're on it"},
   pl_cta_plus:{ar:"اشترك",en:"Subscribe"},
-  pl_cta_biz:{ar:"جرّب ١٤ يومًا مجانًا",en:"Start 14-day trial"},
-  pl_enterprise:{ar:"فريق أكبر من ٢٠؟ تواصل معنا لتسعير المنشآت.",en:"Team over 20? Talk to us about enterprise pricing."},
+  pl_cta_biz:{ar:"جرّب 14 يومًا مجانًا",en:"Start 14-day trial"},
+  pl_enterprise:{ar:"فريق أكبر من 20؟ تواصل معنا لتسعير المنشآت.",en:"Team over 20? Talk to us about enterprise pricing."},
   f_score:{ar:"تقييم العقد والتنبيهات",en:"Contract score and flags"},
   f_clauses:{ar:"شرح البنود بلغة بسيطة",en:"Plain-language clause explanations"},
-  f_q3:{ar:"٣ أسئلة مجانية لكل عقد",en:"3 free assistant questions per contract"},
+  f_q3:{ar:"3 أسئلة مجانية لكل عقد",en:"3 free assistant questions per contract"},
   f_qmax:{ar:"أسئلة بلا حدود للمساعد",en:"Unlimited assistant questions"},
   f_draft:{ar:"صياغة الخطابات والمستندات",en:"Letter and document drafting"},
   f_remind:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
@@ -2717,7 +2721,7 @@ const T = {
   f_lawyer:{ar:"مراجعة محامٍ بسعر مخفّض",en:"Discounted lawyer review"},
 
   biz_title:{ar:"مساحة عملكم",en:"Your workspace"},
-  biz_trial:{ar:"تجربة — باقي ١٤ يومًا",en:"Trial — 14 days left"},
+  biz_trial:{ar:"تجربة — باقي 14 يومًا",en:"Trial — 14 days left"},
   biz_stat_c:{ar:"عقد",en:"contracts"},
   biz_stat_avg:{ar:"متوسط التقييم",en:"avg score"},
   biz_stat_need:{ar:"يحتاج انتباه",en:"need attention"},
@@ -2739,6 +2743,15 @@ const T = {
   cf_claim:{ar:"ما قد تطالب به",en:"What you may claim"},
   cf_eos:{ar:"مكافأة نهاية الخدمة",en:"End-of-service award"},
   cf_comp:{ar:"تعويض الإنهاء بغير سبب مشروع (تقديري)",en:"Compensation for termination without valid reason (estimate)"},
+  /* Contract type is ASKED, not inferred. A non-Saudi's contract is fixed-term
+     by Article 37, so that one is safe to assume — but a Saudi can hold either,
+     and assuming "unlimited" computed Article 77 compensation on the wrong
+     branch for every Saudi whose fixed-term contract was ended early. */
+  eos_ctype:{ar:"نوع عقدك؟",en:"What kind of contract?"},
+  eos_ct_fixed:{ar:"محدد المدة",en:"Fixed term"},
+  eos_ct_indef:{ar:"غير محدد المدة",en:"Unlimited term"},
+  eos_ct_hint:{ar:"مكتوب في العقد. لو محدد المدة، تعويض الإنهاء المبكر يُحسب على المدة الباقية.",
+               en:"It's written in the contract. If it's fixed term, early-termination compensation is calculated on the remaining period."},
   eos_term_end:{ar:"متى كان عقدك ينتهي؟",en:"When was your contract due to end?"},
   eos_term_hint:{ar:"من العقد نفسه — عليها يُحسب تعويض الإنهاء المبكر",
                  en:"From the contract itself — early-termination compensation is calculated on it"},
@@ -2748,7 +2761,7 @@ const T = {
                      en:"The wages for your contract's remaining term, with a floor of two months — a non-Saudi's contract is always fixed-term. Owed only if the termination is found to be without valid reason."},
   cf_comp_note_need:{ar:"هذا الحد الأدنى فقط (أجر شهرين). أضف تاريخ نهاية عقدك في الحاسبة عشان نحسب أجر المدة الباقية — وهو غالبًا أكبر.",
                      en:"This is the floor only (two months' wages). Add your contract's end date in the calculator so we can work out the remaining term — which is usually more."},
-  cf_comp_note:{ar:"١٥ يومًا عن كل سنة، بحد أدنى أجر شهرين — يستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع.",
+  cf_comp_note:{ar:"15 يومًا عن كل سنة، بحد أدنى أجر شهرين — يستحق فقط إذا ثبت أن الإنهاء بغير سبب مشروع.",
                 en:"15 days per year, minimum two months' wage — owed only if the termination is found to be without valid reason."},
   cf_leave:{ar:"بدل الإجازات غير المستخدمة",en:"Unused leave"},
   cf_leave_q:{ar:"كم يوم إجازة لك غير مستخدم؟",en:"How many unused leave days?"},
@@ -2762,7 +2775,7 @@ const T = {
   cf_copy:{ar:"انسخ الملف",en:"Copy file"},
   d_contract:{ar:"العقد الموقّع",en:"The signed contract"},
   d_letter:{ar:"خطاب الإنهاء",en:"Termination letter"},
-  d_pay:{ar:"كشوف الرواتب (آخر ٣ أشهر)",en:"Payslips (last 3 months)"},
+  d_pay:{ar:"كشوف الرواتب (آخر 3 أشهر)",en:"Payslips (last 3 months)"},
   d_wps:{ar:"سجل حماية الأجور",en:"Wage Protection System record"},
   d_msgs:{ar:"المراسلات (إيميل أو واتساب)",en:"Correspondence (email or WhatsApp)"},
   d_leave:{ar:"سجل الإجازات",en:"Leave record"},
@@ -2940,11 +2953,11 @@ const T = {
              en:"Nothing came out as an amount from what you entered. That doesn't mean nothing is owed — it means we don't have enough to calculate it."},
   tm_m_caveat:{ar:"هذي تقديرات لما قد يكون مستحقًا، بناءً على ما أدخلته. المستحق الفعلي يعتمد على الوقائع كاملة والأنظمة السارية ونصوص عقدك والجهة المختصة.",
                en:"These are estimates of what may be owed, based on what you provided. Final entitlement depends on the full facts, applicable regulations, contract terms, and the competent authority."},
-  tm_src_84:{ar:"نظام العمل السعودي — المادة ٨٤",en:"Saudi Labor Law — Article 84"},
-  tm_src_8485:{ar:"نظام العمل السعودي — المادتان ٨٤ و٨٥",en:"Saudi Labor Law — Articles 84 and 85"},
-  tm_src_111:{ar:"نظام العمل السعودي — المادة ١١١",en:"Saudi Labor Law — Article 111"},
-  tm_src_76:{ar:"نظام العمل السعودي — المادتان ٧٥ و٧٦",en:"Saudi Labor Law — Articles 75 and 76"},
-  tm_src_77:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"},
+  tm_src_84:{ar:"نظام العمل السعودي — المادة 84",en:"Saudi Labor Law — Article 84"},
+  tm_src_8485:{ar:"نظام العمل السعودي — المادتان 84 و85",en:"Saudi Labor Law — Articles 84 and 85"},
+  tm_src_111:{ar:"نظام العمل السعودي — المادة 111",en:"Saudi Labor Law — Article 111"},
+  tm_src_76:{ar:"نظام العمل السعودي — المادتان 75 و76",en:"Saudi Labor Law — Articles 75 and 76"},
+  tm_src_77:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"},
   tm_src_wage:{ar:"حساب من الشهور اللي ذكرتها، لا من نص نظامي.",
                en:"Calculated from the months you reported, not from a statutory rule."},
   tm_src_other:{ar:"المبلغ اللي أدخلته أنت — يتبع نص عقدك لا النظام.",
@@ -3164,9 +3177,9 @@ const T = {
      be shown the full award: an 18,333 SAR overstatement on the test case, in
      the direction that costs a reader credibility in front of the authority
      rather than only money. Force majeure is unscoped and stays unscoped. */
-  tm_exc_marriage:{ar:"عاملة، وأنهيت العقد خلال ٦ أشهر من زواجي",
+  tm_exc_marriage:{ar:"عاملة، وأنهيت العقد خلال 6 أشهر من زواجي",
                    en:"I am a female worker and ended it within 6 months of my marriage"},
-  tm_exc_birth:{ar:"عاملة، وأنهيت العقد خلال ٣ أشهر من ولادتي",
+  tm_exc_birth:{ar:"عاملة، وأنهيت العقد خلال 3 أشهر من ولادتي",
                 en:"I am a female worker and ended it within 3 months of giving birth"},
 
   /* --- certainty */
@@ -3185,7 +3198,7 @@ const T = {
   /* Added because certaintyFor() started requiring exc87 on the resignation
      path without a label to name it, so the gap sentence ended at its colon
      with nothing after it — in both languages. */
-  need_exc87:{ar:"سبب استقالتك — هل ينطبق أحد استثناءات المادة ٨٧",
+  need_exc87:{ar:"سبب استقالتك — هل ينطبق أحد استثناءات المادة 87",
               en:"whether you resigned for one of the Article 87 reasons"},
 
   /* --- rules in plain language */
@@ -3195,7 +3208,7 @@ const T = {
                   en:"A party who doesn't observe the notice period pays the other the wage for that period, or what remains of it. Indefinite contracts only."},
   tm_rule_leave:{ar:"رصيد الإجازة السنوية غير المستخدم يُدفع نقدًا عند ترك العمل، وبنسبة ما قضيته من السنة. حق لا يسقط بالاتفاق.",
                  en:"Unused annual leave is paid in cash when you leave, pro-rata for the part of the year you worked. It cannot be waived by agreement."},
-  tm_rule_comp:{ar:"الإنهاء بغير سبب مشروع يستوجب تعويضًا: أجر ١٥ يومًا عن كل سنة في العقد غير محدد المدة، أو أجر المدة الباقية في العقد محدد المدة، وبحد أدنى أجر شهرين.",
+  tm_rule_comp:{ar:"الإنهاء بغير سبب مشروع يستوجب تعويضًا: أجر 15 يومًا عن كل سنة في العقد غير محدد المدة، أو أجر المدة الباقية في العقد محدد المدة، وبحد أدنى أجر شهرين.",
                 en:"Termination without a valid reason attracts compensation: 15 days' wages per year on an indefinite contract, or the wages for the remaining term on a fixed-term one, with a floor of two months."},
   tm_rule_unpaid:{ar:"الأجر المستحق دين قائم بذاته. ما فيه مادة تحسب لك عدد الشهور — الرقم من إجابتك.",
                   en:"Wages owed are a debt in their own right. No article computes the number of months for you — that figure is your answer."},
@@ -3217,7 +3230,7 @@ const T = {
               en:"You reported {d} days of balance, at a daily rate derived from {w} SAR a month."},
   appl_unpaid:{ar:"ذكرت {m} شهرًا غير مدفوع، على راتب {w} ريال.",
                en:"You reported {m} months unpaid, at {w} SAR a month."},
-  appl_comp_indef:{ar:"عقدك غير محدد المدة، فالحساب بأجر ١٥ يومًا عن كل سنة من خدمتك {s} — أو حد الشهرين، أيهما أعلى.",
+  appl_comp_indef:{ar:"عقدك غير محدد المدة، فالحساب بأجر 15 يومًا عن كل سنة من خدمتك {s} — أو حد الشهرين، أيهما أعلى.",
                    en:"Your contract is indefinite, so the calculation is 15 days' wages for each year of your {s} — or the two-month floor, whichever is higher."},
   appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} شهرًا وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
                    en:"Your contract is fixed-term with about {m} months left at termination — or the two-month floor, whichever is higher."},
@@ -3262,7 +3275,7 @@ const T = {
                           en:"You reported notice alongside a probation termination, which is unusual."},
   rv_notice_over:{ar:"الإشعار المعطى أطول من المذكور في العقد، فما فيه فرق مستحق.",
                   en:"The notice given exceeds what the contract stated, so nothing is owed on it."},
-  rv_exc_unasked:{ar:"ما جاوبت على سؤال استثناءات المادة ٨٧ — لو ينطبق عليك، المكافأة تصير كاملة.",
+  rv_exc_unasked:{ar:"ما جاوبت على سؤال استثناءات المادة 87 — لو ينطبق عليك، المكافأة تصير كاملة.",
                   en:"You didn't answer the Article 87 exceptions question — if one applies, the award becomes the full one."},
   rv_ctype_conflict:{ar:"اخترت عقدًا غير محدد المدة، لكن عقد غير السعودي محدد المدة نظامًا. اعتمدنا محدد المدة.",
                      en:"You picked an indefinite contract, but a non-Saudi's contract is fixed-term by law. We used fixed-term."},
@@ -3382,7 +3395,7 @@ const T = {
   plan_case_d:{ar:"ملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، وقائمة مستنداتك",
                en:"A formatted bilingual file: the facts, the claim in figures, and your document list"},
   plan_case_lawyer:{ar:"الملف + محامٍ مرخّص",en:"File + licensed lawyer"},
-  plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال ٢٤ ساعة",
+  plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال 24 ساعة",
                       en:"A Saudi lawyer reviews your file and replies within 24h"},
   cf_facts:{ar:"الوقائع",en:"The facts"},
   cf_ev:{ar:"المستندات المرفقة",en:"Documents attached"},
@@ -3405,9 +3418,23 @@ const T = {
   eos_calc:{ar:"احسب",en:"Calculate"},
   eos_result:{ar:"مستحقك التقديري",en:"Your estimated entitlement"},
   eos_service:{ar:"مدة الخدمة",en:"Length of service"},
+  /* Arabic inflects a counted noun by its count. "5 سنة و5 شهر" is wrong the
+     way "5 year and 5 month" is wrong in English, and it appeared on the line
+     where the reader checks whether we got their facts right before believing
+     our arithmetic. countNoun() and these four shapes were already here for
+     the clause counts. */
+  eos_y_1:{ar:"سنة واحدة",en:"1 year"},
+  eos_y_2:{ar:"سنتين",en:"2 years"},
+  eos_y_p:{ar:"{n} سنوات",en:"{n} years"},
+  eos_y_m:{ar:"{n} سنة",en:"{n} years"},
+  eos_m_1:{ar:"شهر واحد",en:"1 month"},
+  eos_m_2:{ar:"شهرين",en:"2 months"},
+  eos_m_p:{ar:"{n} أشهر",en:"{n} months"},
+  eos_m_m:{ar:"{n} شهرًا",en:"{n} months"},
+  eos_yrs_join:{ar:"{y} و{m}",en:"{y}, {m}"},
   eos_yrs:{ar:"{y} سنة و{m} شهر",en:"{y} years, {m} months"},
-  eos_b_first:{ar:"أول ٥ سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
-  eos_b_after:{ar:"ما بعد ٥ سنوات — شهر عن كل سنة",en:"Beyond 5 years — one month per year"},
+  eos_b_first:{ar:"أول 5 سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
+  eos_b_after:{ar:"ما بعد 5 سنوات — شهر عن كل سنة",en:"Beyond 5 years — one month per year"},
   eos_b_sub:{ar:"المجموع قبل التعديل",en:"Subtotal before adjustment"},
   eos_b_factor:{ar:"معامل الاستقالة",en:"Resignation factor"},
   eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
@@ -3415,7 +3442,7 @@ const T = {
             en:"Resigning before completing two years generally earns no award."},
   eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى. وهذي المكافأة مستقلة عن التأمينات الاجتماعية — التأمينات ما تنقصها ولا تغني عنها.",
             en:"An estimate based on the standard formula. It excludes unused leave and other dues. This award is separate from GOSI — social insurance does not reduce it or replace it."},
-  eos_verify:{ar:"الحساب مبني على المادتين ٨٤ و٨٥ من نظام العمل — راجع المصادر في «حسابي».",
+  eos_verify:{ar:"الحساب مبني على المادتين 84 و85 من نظام العمل — راجع المصادر في «حسابي».",
               en:"Based on Articles 84 and 85 of the Labor Law — see the sources under Account."},
   eos_sar:{ar:"ر.س",en:"SAR"},
 
@@ -3458,7 +3485,7 @@ const T = {
               en:"Subscribe to Wodouh+ for unlimited questions, summaries, and document drafting."},
   as_quota_b_dark:{ar:"خلصت أسئلتك المجانية عن هذا العقد. تقييمك وتنبيهاتك تبقى متاحة، ومكتبة الحقوق فيها إجابات مفصّلة بمصادرها.",
                    en:"That's your free questions for this contract. Your score and flags stay available, and the rights library answers the common questions with their sources."},
-  as_quota_cta:{ar:"اشترك — ٥٠ ر.س/شهر",en:"Subscribe — 50 SAR/month"},
+  as_quota_cta:{ar:"اشترك — 50 ر.س/شهر",en:"Subscribe — 50 SAR/month"},
   as_not_lawyer:{ar:"أنا لست محاميًا — أشرح لك النظام وأساعدك تفهم. للقضايا المعقدة، وصّلك بمحامٍ مرخّص.",
                  en:"I'm not a lawyer — I explain the law and help you understand. For complex matters, I'll connect you with a licensed one."},
   cap_ask:{ar:"سؤال قانوني",en:"Legal question"},
@@ -3512,7 +3539,7 @@ const OB = [
       <path d="M48 93h40" stroke="var(--green)" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
     </svg>` },
   { title:{ar:"خلاصة واضحة قبل التوقيع",en:"A clear verdict before you sign"},
-    sub:{ar:"تقييم من ١٠٠ ونصيحة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة.",
+    sub:{ar:"تقييم من 100 ونصيحة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة.",
          en:"A score out of 100 and honest advice — we help you understand and decide. We don't replace legal advice when you need it."},
     art:`<svg viewBox="0 0 120 120" fill="none">
       <circle cx="60" cy="60" r="44" stroke="var(--line)" stroke-width="9"/>
@@ -3543,7 +3570,7 @@ const SAMPLES = {
       { s:"red",
         src:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
         t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
-    src:{ar:"نظام العمل السعودي — المادة ٨٣",en:"Saudi Labor Law — Article 83"},
+    src:{ar:"نظام العمل السعودي — المادة 83",en:"Saudi Labor Law — Article 83"},
         q:{ar:"يلتزم الموظف بعدم العمل في أي نشاط مشابه داخل المملكة لمدة سنتين من تاريخ انتهاء العقد.",
            en:"The employee shall not engage in any similar business within the Kingdom for two years after the contract ends."},
         p:{ar:"هذا البند يمنعك من العمل في مجالك في كل السعودية لمدة سنتين. النطاق واسع جدًا مقارنة بالمعتاد.",
@@ -3553,18 +3580,18 @@ const SAMPLES = {
         r:{ar:"الشرط الواسع لا يعني نفاذه كما كُتب: النظام يشترط تحديد المدة والمكان ونوع العمل. إذا حاولوا تطبيقه عليك، اطلب حصره كتابيًا أو نازعه.",
            en:"A sweeping clause doesn't automatically bite: it must be limited in duration, place and type of work. If they try to enforce it, ask for it in writing narrowed — or contest it."} },
       { s:"amber",
-        src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
+        src:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"},
         cost:{months:2},
         t:{ar:"مدة الإشعار",en:"Notice period"},
         q:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
            en:"Either party wishing to terminate must give the other sixty days' written notice."},
-        p:{ar:"٦٠ يومًا مدة طويلة نسبيًا؛ الشائع ٣٠ يومًا. تقيّدك إذا جاك عرض أفضل.",
+        p:{ar:"60 يومًا مدة طويلة نسبيًا؛ الشائع 30 يومًا. تقيّدك إذا جاك عرض أفضل.",
            en:"Sixty days is on the long side; thirty is common. It slows you down if a better offer comes."},
-        a:{ar:"اطلب ٣٠ يومًا، أو ٦٠ للشركة و٣٠ لك.",en:"Ask for 30 days — or 60 for the company, 30 for you."},
+        a:{ar:"اطلب 30 يومًا، أو 60 للشركة و30 لك.",en:"Ask for 30 days — or 60 for the company, 30 for you."},
         r:{ar:"المدة ملزمة الآن، لكنها قابلة للتقصير بالاتفاق عند الاستقالة. اطلب موافقة كتابية على إعفائك من باقي المدة.",
            en:"The period binds you now, but it can be shortened by agreement when you resign. Ask for written consent to waive the remainder."} },
       { s:"amber",
-        src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
+        src:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"},
         t:{ar:"أجر العمل الإضافي",en:"Overtime pay"},
         q:{ar:"قد يُطلب من الموظف العمل ساعات إضافية وفق حاجة العمل.",
            en:"The employee may be required to work additional hours as business needs require."},
@@ -3576,17 +3603,17 @@ const SAMPLES = {
            en:"The contract's silence doesn't cancel the entitlement — overtime is owed by law. Keep your hours log and claim the difference in writing."} },
       { s:"green",
         t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
-        q:{ar:"راتب أساسي شهري مع بدل سكن ٢٥٪ وبدل نقل ١٠٪ يُدفع نهاية كل شهر ميلادي.",
+        q:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع نهاية كل شهر ميلادي.",
            en:"A monthly base salary plus 25% housing and 10% transport allowance, paid at the end of each Gregorian month."},
         p:{ar:"واضح ومحدد: الراتب والبدلات ومواعيد الدفع كلها مكتوبة. هذا اللي نحب نشوفه.",
            en:"Clear and specific: salary, allowances, and payment dates are all written down. Exactly what we like to see."},
         a:null },
       { s:"green",
-        src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
+        src:{ar:"نظام العمل السعودي — المادة 109",en:"Saudi Labor Law — Article 109"},
         t:{ar:"الإجازة السنوية",en:"Annual leave"},
         q:{ar:"يستحق الموظف إجازة سنوية مدفوعة مدتها ثلاثون يومًا.",
            en:"The employee is entitled to thirty days of paid annual leave."},
-        p:{ar:"٣٠ يومًا مدفوعة — مطابقة للمعيار المعتاد.",en:"Thirty paid days — matches the standard."},
+        p:{ar:"30 يومًا مدفوعة — مطابقة للمعيار المعتاد.",en:"Thirty paid days — matches the standard."},
         a:null },
       /* Amber for the same reason as the live rule: this cites Article 53,
          which the register marks disputed. Ninety days is inside the ceiling on
@@ -3594,11 +3621,11 @@ const SAMPLES = {
          could not confirm, because the sample is what a first-time reader uses
          to decide whether to trust the product. */
       { s:"amber",
-        src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
+        src:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"},
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"يخضع الموظف لفترة تجربة مدتها تسعون يومًا من تاريخ مباشرة العمل.",
            en:"The employee is subject to a probation period of ninety days from the start date."},
-        p:{ar:"٩٠ يومًا داخل الحد الأقصى (١٨٠ يومًا) على أي قراءة، وموثّقة بوضوح. ملاحظة: هل يجوز النص على ١٨٠ من البداية أو لازم تمديد مكتوب؟ لم نتحقق من الصياغة الحالية بعد تعديلات ٢٠٢٥.",
+        p:{ar:"90 يومًا داخل الحد الأقصى (180 يومًا) على أي قراءة، وموثّقة بوضوح. ملاحظة: هل يجوز النص على 180 من البداية أو لازم تمديد مكتوب؟ لم نتحقق من الصياغة الحالية بعد تعديلات 2025.",
            en:"Ninety days sits inside the 180-day ceiling on either reading, and it is clearly documented. Note: whether 180 may be stated from the outset or needs a written extension is something we have not confirmed against the current text after the 2025 amendments."},
         a:null }
     ]},
@@ -3608,7 +3635,7 @@ const SAMPLES = {
     clauses:[
       { s:"green",
         t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
-        q:{ar:"راتب أساسي شهري مع بدل سكن ٢٥٪ وبدل نقل ١٠٪ يُدفع في اليوم الخامس والعشرين من كل شهر.",
+        q:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع في اليوم الخامس والعشرين من كل شهر.",
            en:"A monthly base salary plus 25% housing and 10% transport allowance, paid on the 25th of each month."},
         p:{ar:"المبلغ والبدلات وموعد الدفع كلها مكتوبة بوضوح — ما فيه غموض.",
            en:"Amount, allowances, and payment date are all written plainly — nothing vague."}, a:null },
@@ -3616,18 +3643,18 @@ const SAMPLES = {
         t:{ar:"مدة الإشعار",en:"Notice period"},
         q:{ar:"يلتزم الطرفان بإشعار كتابي مدته ثلاثون يومًا عند الرغبة في إنهاء العقد.",
            en:"Both parties shall give thirty days' written notice to terminate."},
-        p:{ar:"٣٠ يومًا للطرفين — متبادلة وعادلة، وهذا اللي نحب نشوفه.",
+        p:{ar:"30 يومًا للطرفين — متبادلة وعادلة، وهذا اللي نحب نشوفه.",
            en:"Thirty days for both sides — mutual and fair, exactly what we like to see."}, a:null },
       { s:"green",
         t:{ar:"الإجازة السنوية",en:"Annual leave"},
         q:{ar:"يستحق الموظف إجازة سنوية مدفوعة مدتها ثلاثون يومًا، مع تذكرة سفر سنوية.",
            en:"Thirty days of paid annual leave, plus an annual flight ticket."},
-        p:{ar:"٣٠ يومًا مدفوعة وتذكرة سنوية — أعلى من الحد المعتاد.",
+        p:{ar:"30 يومًا مدفوعة وتذكرة سنوية — أعلى من الحد المعتاد.",
            en:"Thirty paid days and a yearly ticket — above the usual baseline."}, a:null },
       { s:"green",
-        src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
+        src:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"},
         t:{ar:"العمل الإضافي",en:"Overtime"},
-        q:{ar:"يُحتسب أجر العمل الإضافي بواقع ١٥٠٪ من أجر الساعة ويُدفع مع راتب الشهر ذاته.",
+        q:{ar:"يُحتسب أجر العمل الإضافي بواقع 150٪ من أجر الساعة ويُدفع مع راتب الشهر ذاته.",
            en:"Overtime is paid at 150% of the hourly rate, with the same month's salary."},
         p:{ar:"النسبة وموعد الدفع مكتوبان صراحة — ما ترك شيء للتفسير.",
            en:"Rate and payment timing are both explicit — nothing left to interpretation."}, a:null },
@@ -3635,7 +3662,7 @@ const SAMPLES = {
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"فترة تجربة مدتها تسعون يومًا، وتُحتسب ضمن مدة الخدمة عند التثبيت.",
            en:"A ninety-day probation, counted toward length of service on confirmation."},
-        p:{ar:"٩٠ يومًا معتادة، واحتسابها ضمن الخدمة في صالحك.",
+        p:{ar:"90 يومًا معتادة، واحتسابها ضمن الخدمة في صالحك.",
            en:"A normal ninety days, and counting it toward service works in your favor."}, a:null }
     ]},
   rental: { score:74, doc:"doc_rent",
@@ -3648,17 +3675,17 @@ const SAMPLES = {
            en:"The landlord may terminate the contract at any time with seven days' notice, without stating reasons."},
         p:{ar:"المؤجر يقدر يطلب منك الإخلاء خلال أسبوع واحد وبدون سبب — وأنت ما عندك نفس الحق. هذا اختلال واضح.",
            en:"The landlord can ask you to leave within one week, for no reason — and you don't get the same right. That's clearly one-sided."},
-        a:{ar:"اطلب حذف البند أو جعله متبادلًا بإشعار ٦٠ يومًا للطرفين.",
+        a:{ar:"اطلب حذف البند أو جعله متبادلًا بإشعار 60 يومًا للطرفين.",
            en:"Ask to remove it, or make it mutual with 60 days' notice for both sides."},
         r:{ar:"الإخلاء بإرادة المؤجر وحده ودون سبب نظامي وإشعار معقول قابل للاعتراض. عقدك المسجّل في إيجار هو سندك — لا تُخلِ بناءً على رسالة شفهية.",
            en:"Eviction at the landlord's sole will, with no lawful reason and no reasonable notice, is contestable. Your Ejar-registered contract is your proof — don't vacate on a verbal message."} },
       { s:"amber",
         t:{ar:"الزيادة السنوية",en:"Annual rent increase"},
-        q:{ar:"تُزاد الأجرة السنوية بنسبة ١٠٪ عند كل تجديد.",
+        q:{ar:"تُزاد الأجرة السنوية بنسبة 10٪ عند كل تجديد.",
            en:"The annual rent shall increase by 10% upon each renewal."},
-        p:{ar:"زيادة تلقائية ١٠٪ كل سنة أعلى من المعتاد في أغلب الأحياء.",
+        p:{ar:"زيادة تلقائية 10٪ كل سنة أعلى من المعتاد في أغلب الأحياء.",
            en:"An automatic 10% yearly increase is higher than typical in most neighborhoods."},
-        a:{ar:"فاوض على ٥٪ أو اربط الزيادة بمؤشر إيجار المنطقة.",
+        a:{ar:"فاوض على 5٪ أو اربط الزيادة بمؤشر إيجار المنطقة.",
            en:"Negotiate 5%, or tie increases to the area's rental index."},
         r:{ar:"الزيادة المتفق عليها سارية لهذه المدة، لكن التجديد فرصتك: أشعر قبل نافذة عدم التجديد وفاوض أو انتقل.",
            en:"The agreed increase stands for this term, but renewal is your opening: give notice before the non-renewal window and either negotiate or move."} },
@@ -3715,9 +3742,9 @@ const SAMPLES = {
         t:{ar:"موعد السداد",en:"Payment terms"},
         q:{ar:"تُدفع المستحقات خلال ستين يومًا من تاريخ استلام الفاتورة.",
            en:"Payment is due within sixty days of invoice receipt."},
-        p:{ar:"٦٠ يومًا بعد الفاتورة مدة طويلة على مستقل — الشائع ١٤ إلى ٣٠ يومًا.",
+        p:{ar:"60 يومًا بعد الفاتورة مدة طويلة على مستقل — الشائع 14 إلى 30 يومًا.",
            en:"Sixty days after invoicing is long for a freelancer — 14 to 30 days is common."},
-        a:{ar:"اطلب دفعة مقدمة ٥٠٪ وسداد الباقي خلال ١٤ يومًا من التسليم.",
+        a:{ar:"اطلب دفعة مقدمة 50٪ وسداد الباقي خلال 14 يومًا من التسليم.",
            en:"Ask for 50% upfront and the balance within 14 days of delivery."},
         r:{ar:"الموعد ملزم، لكن ما بعده تأخر يستوجب المطالبة. أرسل إشعارًا كتابيًا يوم الاستحقاق واحتفظ بالفاتورة وإثبات التسليم.",
            en:"The date binds, but anything past it is late and claimable. Send a written notice on the due date and keep the invoice and proof of delivery."} },
@@ -3763,27 +3790,27 @@ const RULES = [
        guard exists to stop. */
     unless:/لأي\s*من\s*(?:ال)?طرفين|لكلا\s*(?:ال)?طرفين|للطرفين|أي\s*من\s*(?:ال)?طرفين|كل\s*من\s*(?:ال)?طرفين|either\s*part(?:y|ies)|both\s*parties|each\s*party|mutual/i,
     t:{ar:"إنهاء العقد من طرف واحد",en:"One-sided termination"},
-    src:{ar:"نظام العمل السعودي — المادة ٨٠",en:"Saudi Labor Law — Article 80"},
+    src:{ar:"نظام العمل السعودي — المادة 80",en:"Saudi Labor Law — Article 80"},
     p:{ar:"يبدو أن أحد الأطراف يستطيع إنهاء العقد في أي وقت أو دون سبب. غالبًا هذا الحق غير متبادل.",
        en:"One party appears able to terminate at any time or without cause. Often this right isn't mutual."},
     a:{ar:"اجعل حق الإنهاء متبادلًا وبمدة إشعار عادلة.",en:"Make termination mutual, with a fair notice period."},
-    r:{ar:"الفصل دون مكافأة ولا إشعار محصور في حالات المادة ٨٠، وتتعامل معه المحاكم كاستثناء تأديبي لا كأداة إدارية. ولازم يُمكَّنك صاحب العمل من سماع أقوالك، ويوثّق السبب، ويبلغك كتابيًا — وثّق تاريخ الإبلاغ وطريقته.",
+    r:{ar:"الفصل دون مكافأة ولا إشعار محصور في حالات المادة 80، وتتعامل معه المحاكم كاستثناء تأديبي لا كأداة إدارية. ولازم يُمكَّنك صاحب العمل من سماع أقوالك، ويوثّق السبب، ويبلغك كتابيًا — وثّق تاريخ الإبلاغ وطريقته.",
        en:"Dismissal with no award and no notice is confined to the cases in Article 80, and the courts treat it as an exceptional disciplinary step, not a management tool. Your employer must let you state your case, document the reason, and notify you in writing — record the date and manner you were told."} },
   { re:/(overtime|working\s*hours|hours\s*per\s*week|ساعات\s*(?:إضافية|اضافية|العمل|عمل)|عمل\s*إضافي|ساعة\s*(?:أسبوعي|اسبوعي|يومي)|(?:ال)?دوام\s*(?:الرسمي|اليومي)?)/i, s:"amber",
     t:{ar:"العمل الإضافي",en:"Overtime"},
-    src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"},
+    src:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"},
     p:{ar:"العقد يذكر عملًا إضافيًا. تأكد أن أجره وطريقة حسابه مكتوبة صراحة.",
        en:"The contract mentions overtime. Make sure its rate and calculation are stated explicitly."},
     a:{ar:"اطلب كتابة أجر الساعة الإضافية بوضوح، وأن أي إجازة تعويضية بدلًا عنه تكون بموافقتك.",
        en:"Ask for the overtime rate in writing, and that any compensatory leave in its place needs your agreement."},
     r:{ar:"الأجر الإضافي مستحق نظامًا ولو سكت العقد — احفظ سجل ساعاتك. ولو عرضوا عليك إجازة تعويضية بدل الأجر، ما تصح إلا بموافقتك أنت.",
        en:"Overtime is owed by law even if the contract is silent — keep your hours log. And if you're offered compensatory leave instead of pay, that only counts with your consent."} },
-  { re:/(notice\s*period|prior\s*notice|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i, s:"amber", nat:"sa",
+  { re:/(notice\s*period|prior\s*notice|(?:60|60|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i, s:"amber", nat:"sa",
     t:{ar:"مدة الإشعار",en:"Notice period"},
-    src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"},
+    src:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"},
     p:{ar:"انتبه لمدة الإشعار المطلوبة قبل إنهاء العقد — المدد الطويلة تقيّد حركتك.",
        en:"Watch the required notice period — long ones limit your flexibility."},
-    a:{ar:"الشائع ٣٠ يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."},
+    a:{ar:"الشائع 30 يومًا؛ فاوض إن كانت أطول.",en:"Thirty days is common; negotiate if it's longer."},
     r:{ar:"يمكن الاتفاق على إعفائك من باقي المدة عند الاستقالة — اطلبه كتابيًا.",
        en:"The remainder can be waived by agreement when you resign — get it in writing."} },
   { re:/(auto[- ]?renew|renew.{0,15}automatic|(?:تجديد|تتجدد|يتجدد|يُجدد|تُجدد)\s*(?:ال)?تلقائي|تجدد\s*تلقائ)/i, s:"amber",
@@ -3814,14 +3841,14 @@ const RULES = [
      on. The test now enumerates by citation instead. */
   { re:/(probation|probationary|فترة\s*(?:ال)?(?:تجربة|تجربه|اختبار)|تحت\s*(?:ال)?تجربة)/i, s:"amber",
     t:{ar:"فترة التجربة",en:"Probation period"},
-    src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"},
-    p:{ar:"فيه فترة تجربة منصوصة، وهذا طبيعي. الحد الأقصى ١٨٠ يومًا. لكن هل يجوز النص على ١٨٠ من البداية أو لازم ٩٠ ثم تمديد مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نتحقق منها من النص الرسمي — راجع المدة المكتوبة عندك.",
+    src:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"},
+    p:{ar:"فيه فترة تجربة منصوصة، وهذا طبيعي. الحد الأقصى 180 يومًا. لكن هل يجوز النص على 180 من البداية أو لازم 90 ثم تمديد مكتوب؟ الصياغة تغيّرت مع تعديلات 2025 ولم نتحقق منها من النص الرسمي — راجع المدة المكتوبة عندك.",
        en:"A probation period is stated, which is normal. The ceiling is 180 days. But whether an employer may state 180 from the outset, or must set 90 and extend it in writing, changed with the 2025 amendments and we have not confirmed the current text — check the period written in yours."},
-    a:{ar:"تأكد أن المدة المكتوبة في عقدك ضمن الحد، واسأل عن أساسها إذا تجاوزت ٩٠ يومًا.",
+    a:{ar:"تأكد أن المدة المكتوبة في عقدك ضمن الحد، واسأل عن أساسها إذا تجاوزت 90 يومًا.",
        en:"Check the period written in your contract is within the limit, and ask what it rests on if it is longer than 90 days."} },
   { re:/(annual\s*leave|paid\s*leave|(?:إجازة|اجازة)\s*(?:ال)?(?:سنوية|سنويه|اعتيادية|مدفوعة))/i, s:"green",
     t:{ar:"الإجازة السنوية",en:"Annual leave"},
-    src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"},
+    src:{ar:"نظام العمل السعودي — المادة 109",en:"Saudi Labor Law — Article 109"},
     p:{ar:"العقد ينص على إجازة سنوية — تأكد من عدد الأيام وأنها مدفوعة.",
        en:"The contract covers annual leave — check the day count and that it's paid."}, a:null },
   { re:/(salary|wage|remuneration|راتب|رواتب|أجر|اجر|الأجر|مكافأة\s*شهرية|(?:مبلغ|قدره)[^.\n]{0,40}(?:ريال|ر\.?س)|ريال\s*(?:سعودي)?\s*(?:شهري|في\s*نهاية\s*كل\s*شهر))/i, s:"green",
@@ -3840,7 +3867,7 @@ const RULES = [
   { re:/(passport|جواز\s*(?:السفر|سفر)|حجز\s*الجواز|استلام\s*الجواز)/i, s:"red",
     t:{ar:"حجز جواز السفر",en:"Passport retention"},
     nat:"nonsa",
-    src:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"},
+    src:{ar:"اللائحة التنفيذية لنظام العمل — المادة 6",en:"Labor Law Implementing Regulations — Article 6"},
     p:{ar:"العقد يذكر جواز السفر. صاحب العمل ما يحق له يحجز جوازك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت على ذلك.",
        en:"The contract mentions your passport. An employer may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise."},
     a:{ar:"اطلب حذف أي بند يسلّم الجواز لصاحب العمل. الجواز يبقى معك.",
@@ -3851,7 +3878,7 @@ const RULES = [
   { re:/(recruitment\s*(?:fee|cost)|iqama\s*fee|work\s*permit\s*fee|رسوم\s*(?:الاستقدام|الإقامة|رخصة\s*العمل|التأشيرة)|تتحمل\s*رسوم)/i, s:"red",
     t:{ar:"رسوم الاستقدام والإقامة",en:"Recruitment and Iqama fees"},
     nat:"nonsa",
-    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"},
     p:{ar:"يبدو أن العقد يحمّلك رسومًا. رسوم الاستقدام وإصدار وتجديد الإقامة ورخصة العمل وغرامات التأخير وتغيير المهنة وتأشيرة الخروج والعودة — كلها على صاحب العمل.",
        en:"The contract appears to put fees on you. Recruitment, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, and exit/re-entry visas are all the employer's cost."},
     a:{ar:"اطلب حذف أي بند يحمّلك هذي الرسوم — النظام يضعها على صاحب العمل.",
@@ -3862,7 +3889,7 @@ const RULES = [
   { re:/(return\s*ticket|repatriation|تذكرة\s*(?:العودة|السفر)|تذكرة\s*الرجوع)/i, s:"amber",
     t:{ar:"تذكرة العودة",en:"Return ticket"},
     nat:"nonsa",
-    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"},
     p:{ar:"تذكرة العودة لبلدك في نهاية العلاقة على صاحب العمل. تتحملها أنت فقط إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع.",
        en:"The return ticket home at the end of the relationship is the employer's cost. It falls on you only if you're unfit for work or you choose to leave without legitimate reason."},
     a:{ar:"تأكد أن البند يذكر التذكرة صراحة ومن يتحملها ومتى.",
@@ -3886,7 +3913,7 @@ const RULES = [
   { re:/(exit\s*(?:and\s*)?re[- ]?entry|final\s*exit|خروج\s*وال?عودة|الخروج\s*النهائي)/i, s:"amber",
     t:{ar:"تأشيرة الخروج والعودة",en:"Exit and re-entry visa"},
     nat:"nonsa",
-    src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"},
+    src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"},
     p:{ar:"العقد يذكر الخروج والعودة. رسوم التأشيرة على صاحب العمل، والسفر في إجازتك حق لك لا منّة.",
        en:"The contract mentions exit and re-entry. The visa fee is the employer's cost, and travelling on your own leave is your right, not a favour."},
     a:{ar:"اطلب توضيح أن التأشيرة تُصدر عند طلبك في إجازتك المستحقة وعلى حساب صاحب العمل.",
@@ -3901,7 +3928,7 @@ const RULES = [
   { re:/(indefinite|unlimited\s*(?:term|period)|غير\s*محدد\s*المدة|غير\s*محددة\s*المدة|مدة\s*غير\s*محددة)/i,
     s:"amber", nat:"nonsa",
     t:{ar:"نوع العقد",en:"Contract type"},
-    src:{ar:"نظام العمل السعودي — المادة ٣٧",en:"Saudi Labor Law — Article 37"},
+    src:{ar:"نظام العمل السعودي — المادة 37",en:"Saudi Labor Law — Article 37"},
     p:{ar:"العقد يوصف نفسه بغير محدد المدة. عقد غير السعودي لازم يكون مكتوبًا ومحدد المدة، وما يتحول لغير محدد مهما تجدد — حتى لو اتفقتم على ذلك. وإذا ما ذُكرت مدة، تُحتسب سنة من مباشرتك الفعلية.",
        en:"The contract describes itself as indefinite. A non-Saudi's contract must be written and fixed-term, and never converts to indefinite however often it renews — even by agreement. Where no term is stated, it is taken as one year from your actual start."},
     a:{ar:"اطلب النص على مدة صريحة. هي اللي تحدد تعويضك لو أُنهي العقد مبكرًا.",
@@ -3917,11 +3944,11 @@ const RULES = [
        vocabulary was fixed — so a resident lost the notice card that a Saudi
        reader kept on the identical contract. A resident receiving LESS than a
        Saudi is the opposite of what the track exists to do. */
-    re:/(notice\s*period|prior\s*notice|(?:60|٦٠|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i,
+    re:/(notice\s*period|prior\s*notice|(?:60|60|sixty|ستين|ستون)\s*(?:يوم|day)|(?:إشعار|اشعار|إخطار|اخطار)\s*(?:كتابي|مسبق|خطي)|(?:مدة|مهلة)\s*(?:ال)?(?:إشعار|اشعار|إخطار|اخطار))/i,
     s:"amber", nat:"nonsa",
     t:{ar:"الإشعار وإنهاء العقد",en:"Notice and ending the contract"},
-    src:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"},
-    p:{ar:"عقدك محدد المدة، فالأصل أنه يمشي لنهاية مدته. مدد الإشعار في المادة ٧٥ خاصة بالعقود غير محددة المدة وما تنطبق عليك. اللي يهمك: الإنهاء المبكر بلا سبب مشروع.",
+    src:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"},
+    p:{ar:"عقدك محدد المدة، فالأصل أنه يمشي لنهاية مدته. مدد الإشعار في المادة 75 خاصة بالعقود غير محددة المدة وما تنطبق عليك. اللي يهمك: الإنهاء المبكر بلا سبب مشروع.",
        en:"Your contract is fixed-term, so it runs to its end date. The notice periods in Article 75 are for indefinite contracts and don't reach you. What matters for you is early termination without valid reason."},
     a:{ar:"تأكد أن المدة مكتوبة بوضوح، وأن أي بند إنهاء مبكر متبادل بين الطرفين.",
        en:"Make sure the term is written clearly, and that any early-termination clause cuts both ways."},
@@ -4185,6 +4212,22 @@ let current = null;
 function t(k){ const e = T[k]; return e ? e[lang] : ""; }
 
 /* For the few places where a dynamic value is interpolated into markup. */
+/* DIGITS STAY LATIN, IN BOTH LANGUAGES.
+ *
+ * Arabic renders numerals as ٠١٢٣ by default, and the app used to follow that
+ * — except the score ring, which stayed Latin, so the largest number on the
+ * result screen was the one thing that did not match its own page. The product
+ * owner's call is Latin everywhere: readers here move between Arabic contracts,
+ * bank apps and government portals that mostly use Latin digits, and a figure
+ * you have to re-read is a figure you do not trust.
+ *
+ * The -u-nu-latn extension keeps everything else Arabic — month names, ordering,
+ * the grouping separator — and changes only the digits. Swapping wholesale to
+ * an English locale would have turned "١٩ فبراير" into "19 February" inside an
+ * Arabic sentence. */
+const AR_NUM  = "ar-SA-u-nu-latn";
+const AR_DATE = "ar-SA-u-ca-gregory-nu-latn";
+
 function esc(s){
   return String(s).replace(/[&<>"']/g, c =>
     ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -4504,6 +4547,14 @@ function confidence(a){
 
 /* Picks the right inflected form for a counted noun. English collapses to a
    single plural, so the same four keys serve both languages. */
+/* A service duration, with both nouns inflected. Zero months is dropped
+   entirely — "6 سنوات و0 شهر" says nothing that "6 سنوات" does not. */
+function svcText(y, m){
+  const yr = countNoun("eos_y", y);
+  if (!m) return yr;
+  return t("eos_yrs_join").replace("{y}", yr).replace("{m}", countNoun("eos_m", m));
+}
+
 function countNoun(stem, n){
   const form = n === 1 ? "_1" : n === 2 ? "_2" : n <= 10 ? "_p" : "_m";
   return t(stem + form).replace("{n}", fmtNum(n));
@@ -4727,29 +4778,29 @@ const LIB = [
          official text, so the answer states what both readings agree on and
          says plainly that the rest is unconfirmed. Naming the uncertainty is
          cheaper than being confidently wrong about which clause is lawful. */
-      a:{ar:"الحد الأقصى ١٨٠ يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على ١٨٠ يومًا من البداية، أو لازم ٩٠ يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
+      a:{ar:"الحد الأقصى 180 يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على 180 يومًا من البداية، أو لازم 90 يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات 2025 ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
          en:"The ceiling is 180 days, and probation has to be stated explicitly in your contract — if it isn't there, there is no probation. Eid holidays and sick leave don't count toward it, and either side may end the contract during it.\n\nOne thing we have not confirmed: whether an employer may state 180 days from the outset, or must set 90 and then extend by written agreement. The wording changed with the 2025 amendments and we could not verify the current text against an official source — check it before relying on that difference."},
-      src:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
+      src:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"} },
     { q:{ar:"كم مدة الإشعار قبل إنهاء العقد؟",en:"How much notice is required?"}, nat:"sa",
-      a:{ar:"في العقد غير محدد المدة والراتب شهري: ٦٠ يومًا إذا كان الإنهاء من صاحب العمل، و٣٠ يومًا إذا كان منك. المدة غير متساوية — انتبه لأي عقد يساوي بينهما لغير صالحك.",
+      a:{ar:"في العقد غير محدد المدة والراتب شهري: 60 يومًا إذا كان الإنهاء من صاحب العمل، و30 يومًا إذا كان منك. المدة غير متساوية — انتبه لأي عقد يساوي بينهما لغير صالحك.",
          en:"On an indefinite, monthly-paid contract: 60 days if the employer ends it, 30 days if you do. It is deliberately asymmetric — watch for any contract that levels it against you."},
-      src:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"} },
+      src:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"} },
     { q:{ar:"مين يتحمّل رسوم الاستقدام والإقامة؟",en:"Who pays recruitment and Iqama fees?"}, nat:"nonsa",
       a:{ar:"صاحب العمل. تشمل رسوم الاستقدام، وإصدار وتجديد الإقامة ورخصة العمل، وغرامات التأخير، وتغيير المهنة، وتأشيرة الخروج والعودة. أي بند يحمّلك إياها مخالف.",
          en:"The employer. That covers recruitment, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, and exit/re-entry visas. Any clause charging you is contrary to the law."},
-      src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+      src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"} },
     { q:{ar:"يحق لصاحب العمل يحجز جوازي؟",en:"Can my employer hold my passport?"}, nat:"nonsa",
       a:{ar:"لا. ما يحق له يحجز جواز سفرك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت ورقة تقول غير كذا.",
          en:"No. He may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise."},
-      src:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"} },
+      src:{ar:"اللائحة التنفيذية لنظام العمل — المادة 6",en:"Labor Law Implementing Regulations — Article 6"} },
     { q:{ar:"وش نوع عقدي كمقيم؟",en:"What kind of contract can I have as a resident?"}, nat:"nonsa",
       a:{ar:"محدد المدة دائمًا. لازم يكون مكتوبًا وبمدة صريحة، وما يتحول لغير محدد المدة مهما تجدد — حتى لو اتفقتم على ذلك. وإذا ما ذُكرت مدة، تُحتسب سنة من مباشرتك الفعلية.",
          en:"Always fixed-term. It must be written with an explicit term, and it never converts to indefinite however often it renews — even by agreement. Where no term is stated, it is taken as one year from your actual start."},
-      src:{ar:"نظام العمل السعودي — المادة ٣٧",en:"Saudi Labor Law — Article 37"} },
+      src:{ar:"نظام العمل السعودي — المادة 37",en:"Saudi Labor Law — Article 37"} },
     { q:{ar:"وش يصير لو أُنهي عقدي مبكرًا؟",en:"What if my contract is ended early?"}, nat:"nonsa",
-      a:{ar:"عقدك محدد المدة، فمدد الإشعار في المادة ٧٥ ما تنطبق عليك. الإنهاء المبكر بلا سبب مشروع يستحق أجر المدة الباقية من العقد، وبحد أدنى أجر شهرين.",
+      a:{ar:"عقدك محدد المدة، فمدد الإشعار في المادة 75 ما تنطبق عليك. الإنهاء المبكر بلا سبب مشروع يستحق أجر المدة الباقية من العقد، وبحد أدنى أجر شهرين.",
          en:"Your contract is fixed-term, so the Article 75 notice periods don't apply to you. Ending it early without valid reason is worth the wages for the contract's remaining term, with a floor of two months."},
-      src:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"},
+      src:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"},
       go:"openEos", label:"lib_go_calc" },
     { q:{ar:"أبي أراجع عقدًا قبل التوقيع",en:"I want a contract checked before I sign"},
       a:{ar:"ارفعه أو الصقه ونعطيك قرارًا واضحًا: توقّع، أو فاوض، أو راجع محاميًا — مع البنود اللي وراء القرار.",
@@ -4759,27 +4810,27 @@ const LIB = [
 
   { g:"lib_g_during", items:[
     { q:{ar:"كيف يُحسب أجر العمل الإضافي؟",en:"How is overtime paid?"},
-      a:{ar:"أجر الساعة زائد ٥٠٪ من الأجر الأساسي. احتفظ بسجل ساعاتك — هو أساس أي مطالبة لاحقة.",
+      a:{ar:"أجر الساعة زائد 50٪ من الأجر الأساسي. احتفظ بسجل ساعاتك — هو أساس أي مطالبة لاحقة.",
          en:"Your hourly wage plus 50% of the basic wage. Keep your own record of hours — it's the basis of any later claim."},
-      src:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"} },
+      src:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"} },
     { q:{ar:"كم إجازتي السنوية؟",en:"How much annual leave do I get?"},
-      a:{ar:"٢١ يومًا على الأقل، وترتفع إلى ٣٠ يومًا على الأقل بعد خمس سنوات متصلة عند نفس صاحب العمل.",
+      a:{ar:"21 يومًا على الأقل، وترتفع إلى 30 يومًا على الأقل بعد خمس سنوات متصلة عند نفس صاحب العمل.",
          en:"At least 21 days, rising to at least 30 after five continuous years with the same employer."},
-      src:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"} },
+      src:{ar:"نظام العمل السعودي — المادة 109",en:"Saudi Labor Law — Article 109"} },
     { q:{ar:"أقدر أنقل كفالتي بدون موافقته؟",en:"Can I transfer sponsorship without approval?"}, nat:"nonsa",
       a:{ar:"في حالات محددة نعم، عبر منصة قوى — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتتأكد من انطباق حالتك.",
          en:"In defined cases yes, through the Qiwa platform — including your contract expiring, three consecutive months of unpaid wages, and an expired Iqama. Check Qiwa to confirm your case qualifies."},
       src:{ar:"مبادرة تحسين العلاقة التعاقدية — منصة قوى",en:"Labor Reform Initiative — Qiwa"} },
     { q:{ar:"وش المخصوم مني للتأمينات؟",en:"What am I paying to GOSI?"}, nat:"sa",
-      a:{ar:"يعتمد على تاريخ تسجيلك. قبل ٣ يوليو ٢٠٢٤: ٢١٫٥٪ إجمالًا — ١١٫٧٥٪ على صاحب العمل و٩٫٧٥٪ عليك. بعده: النظام الجديد، وارتفع في يوليو ٢٠٢٦ إلى ٢٣٫٥٪ — ١٢٫٧٥٪ عليه و١٠٫٧٥٪ عليك. ويُحتسب على الأساسي وبدل السكن فقط، بحد أقصى ٤٥٬٠٠٠ ريال شهريًا.",
+      a:{ar:"يعتمد على تاريخ تسجيلك. قبل 3 يوليو 2024: 21٫5٪ إجمالًا — 11٫75٪ على صاحب العمل و9٫75٪ عليك. بعده: النظام الجديد، وارتفع في يوليو 2026 إلى 23٫5٪ — 12٫75٪ عليه و10٫75٪ عليك. ويُحتسب على الأساسي وبدل السكن فقط، بحد أقصى 45٬000 ريال شهريًا.",
          en:"It depends when you were registered. Before 3 July 2024: 21.5% in total — 11.75% employer, 9.75% you. After that you are on the new system, which rose in July 2026 to 23.5% — 12.75% employer, 10.75% you. It is calculated on basic plus housing allowance only, capped at SAR 45,000 a month."},
       src:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
     { q:{ar:"يخصمون مني تأمينات — هل هذا صحيح؟",en:"They're deducting GOSI from me — is that right?"}, nat:"nonsa",
-      a:{ar:"كمقيم ما تدفع شيء من راتبك للتأمينات. صاحب العمل يدفع ٢٪ فقط من الأجر الخاضع لفرع الأخطار المهنية وحده — تغطية إصابات العمل. ما أنت مشمول بالمعاشات ولا بساند. فأي خصم تأمينات في مسير راتبك يستحق السؤال عنه.",
+      a:{ar:"كمقيم ما تدفع شيء من راتبك للتأمينات. صاحب العمل يدفع 2٪ فقط من الأجر الخاضع لفرع الأخطار المهنية وحده — تغطية إصابات العمل. ما أنت مشمول بالمعاشات ولا بساند. فأي خصم تأمينات في مسير راتبك يستحق السؤال عنه.",
          en:"As a resident you pay nothing to GOSI from your salary. Your employer pays 2% of the contributable wage for the occupational-hazards branch alone — work-injury cover. You are not in the pension branch or SANED. So any GOSI deduction on your payslip is worth questioning."},
       src:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
     { key:"qiwa", q:{ar:"عقدي موثق في قوى؟ وليه يهم؟",en:"Is my contract on Qiwa, and why does it matter?"},
-      a:{ar:"العقد لازم يكون موثقًا في قوى عشان يكون نافذًا — العقود غير المسجلة أو الموقّعة باليد ما عادت تحمل القوة النظامية نفسها. والعقود القائمة انتقلت للصيغة الموحدة على مراحل: محددة المدة من ٦ مارس ٢٠٢٦، وغير محددة المدة من ٦ أغسطس ٢٠٢٦. تحقق أن نسختك تطابق المسجلة في قوى.",
+      a:{ar:"العقد لازم يكون موثقًا في قوى عشان يكون نافذًا — العقود غير المسجلة أو الموقّعة باليد ما عادت تحمل القوة النظامية نفسها. والعقود القائمة انتقلت للصيغة الموحدة على مراحل: محددة المدة من 6 مارس 2026، وغير محددة المدة من 6 أغسطس 2026. تحقق أن نسختك تطابق المسجلة في قوى.",
          en:"A contract has to be authenticated on Qiwa to be enforceable — unregistered or hand-signed contracts no longer carry the same standing. Existing contracts moved to the standard form in stages: fixed-term from 6 March 2026, indefinite from 6 August 2026. Check that your copy matches what is registered on Qiwa."},
       src:{ar:"برنامج توحيد عقود العمل — منصة قوى",en:"Employment contract transition programme — Qiwa"} },
     { q:{ar:"راتبي تأخر — وش أسوي؟",en:"My wages are late — what can I do?"},
@@ -4796,41 +4847,41 @@ const LIB = [
     { q:{ar:"كيف تُحسب مكافأة نهاية الخدمة؟",en:"How is end-of-service pay calculated?"},
       a:{ar:"نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر، وبالتناسب للأجزاء.",
          en:"Half a month for each of the first five years, then a full month per year after that, on your final wage, pro-rated for part years."},
-      src:{ar:"نظام العمل السعودي — المادة ٨٤",en:"Saudi Labor Law — Article 84"},
+      src:{ar:"نظام العمل السعودي — المادة 84",en:"Saudi Labor Law — Article 84"},
       go:"openEos", label:"lib_go_calc" },
     { q:{ar:"وإذا استقلت أنا؟",en:"What if I resign?"},
       a:{ar:"أقل من سنتين: لا شيء. من سنتين إلى خمس: الثلث. من خمس إلى عشر: الثلثان. عشر فأكثر: المكافأة كاملة.",
          en:"Under two years: nothing. Two to five: one third. Five to ten: two thirds. Ten or more: the full award."},
-      src:{ar:"نظام العمل السعودي — المادة ٨٥",en:"Saudi Labor Law — Article 85"},
+      src:{ar:"نظام العمل السعودي — المادة 85",en:"Saudi Labor Law — Article 85"},
       go:"openEos", label:"lib_go_calc" },
     { q:{ar:"قدّمت استقالتي وما ردّوا عليّ",en:"I resigned and got no response"},
       a:{ar:"إذا ما ردّ صاحب العمل على استقالتك خلال ثلاثين يومًا، تُعدّ مقبولة حكمًا. السكوت ما يعلّقك — احتفظ بما يثبت تاريخ تقديمك.",
          en:"If your employer doesn't respond to your resignation within 30 days, it is deemed accepted. Silence doesn't leave you in limbo — keep proof of the date you submitted it."},
-      src:{ar:"نظام العمل السعودي — المادة ٧٩",en:"Saudi Labor Law — Article 79"} },
+      src:{ar:"نظام العمل السعودي — المادة 79",en:"Saudi Labor Law — Article 79"} },
     { q:{ar:"فصلوني بدون مكافأة ولا إشعار",en:"I was dismissed with no award and no notice"},
-      a:{ar:"هذا محصور في حالات المادة ٨٠، وتتعامل معه المحاكم كاستثناء تأديبي لا كأداة إدارية. ولازم يُمكّنك صاحب العمل من سماع أقوالك، ويوثّق السبب، ويبلغك كتابيًا. إذا ما صار كذا، وضعك أقوى مما تظن.",
+      a:{ar:"هذا محصور في حالات المادة 80، وتتعامل معه المحاكم كاستثناء تأديبي لا كأداة إدارية. ولازم يُمكّنك صاحب العمل من سماع أقوالك، ويوثّق السبب، ويبلغك كتابيًا. إذا ما صار كذا، وضعك أقوى مما تظن.",
          en:"That is confined to the cases in Article 80, and the courts treat it as an exceptional disciplinary step rather than a management tool. Your employer must let you state your case, document the reason, and notify you in writing. If none of that happened, your position is stronger than you think."},
-      src:{ar:"نظام العمل السعودي — المادة ٨٠",en:"Saudi Labor Law — Article 80"},
+      src:{ar:"نظام العمل السعودي — المادة 80",en:"Saudi Labor Law — Article 80"},
       go:"openRightsCase", label:"lib_go_case" },
     { q:{ar:"مين يتحمّل تذكرة العودة؟",en:"Who pays my return ticket?"}, nat:"nonsa",
       a:{ar:"صاحب العمل، عند نهاية العلاقة. تتحمّلها أنت فقط إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع.",
          en:"The employer, at the end of the relationship. It falls on you only if you're unfit for work or you choose to leave without legitimate reason."},
-      src:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} }
+      src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"} }
   ]},
 
   { g:"lib_g_after", items:[
     { q:{ar:"كم عندي وقت أرفع فيه مطالبة؟",en:"How long do I have to bring a claim?"},
       a:{ar:"اثنا عشر شهرًا من انتهاء العلاقة. بعدها لا تُسمع الدعوى — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء.",
          en:"Twelve months from the end of the relationship. After that a claim isn't heard — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception."},
-      src:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
+      src:{ar:"نظام العمل السعودي — المادة 222",en:"Saudi Labor Law — Article 222"} },
     { q:{ar:"فقدت وظيفتي — لي إعانة؟",en:"I lost my job — is there support?"}, nat:"sa",
-      a:{ar:"نعم، ساند — تأمين التعطل عن العمل، للسعوديين. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك ١٢ شهرًا على الأقل خلال آخر ٣٦ شهرًا، ومسجَّل في طاقات. التعويض ٦٠٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى ٩٬٠٠٠ ريال، ثم ٥٠٪، لمدة تصل إلى ١٢ شهرًا.",
+      a:{ar:"نعم، ساند — تأمين التعطل عن العمل، للسعوديين. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك 12 شهرًا على الأقل خلال آخر 36 شهرًا، ومسجَّل في طاقات. التعويض 60٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى 9٬000 ريال، ثم 50٪، لمدة تصل إلى 12 شهرًا.",
          en:"Yes — SANED, unemployment insurance, for Saudi nationals. The conditions: you lost the job involuntarily, you're actively looking, you have at least 12 months of contributions in the last 36, and you're registered with Taqat. It pays 60% of your average covered wage over the previous two years for the first three months, capped at SAR 9,000, then 50%, for up to 12 months."},
       src:{ar:"نظام التأمينات الاجتماعية — برنامج ساند",en:"Social Insurance Law — SANED programme"} },
     { q:{ar:"قالوا التأمينات تغني عن المكافأة",en:"They said GOSI replaces my end-of-service award"},
-      a:{ar:"غير صحيح. المكافأة والتأمينات نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين ٨٤ و٨٥، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا — الكتابة وحدها تنهي أكثر هذي النقاشات.",
+      a:{ar:"غير صحيح. المكافأة والتأمينات نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين 84 و85، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا — الكتابة وحدها تنهي أكثر هذي النقاشات.",
          en:"Not true. The award and GOSI are separate systems. Your employer pays the award themselves under Articles 84 and 85, and it is not reduced by, offset against, or replaced by GOSI contributions. If you're told otherwise, ask for it in writing — putting it in writing ends most of these conversations."},
-      src:{ar:"نظام التأمينات الاجتماعية مع المادتين ٨٤ و٨٥",en:"Social Insurance Law read with Articles 84 and 85"},
+      src:{ar:"نظام التأمينات الاجتماعية مع المادتين 84 و85",en:"Social Insurance Law read with Articles 84 and 85"},
       go:"openEos", label:"lib_go_calc" },
     { q:{ar:"أبي أجهّز ملف مطالبتي",en:"I want to prepare my claim"},
       a:{ar:"احسب مستحقك أولًا، وبعدها نجمع الوقائع والمستندات في ملف واحد جاهز للتسوية أو للمحامي.",
@@ -5163,10 +5214,32 @@ function renderEos(){
     b.onclick = ()=>{ eosHow = o.id; renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos(); };
     wrap.appendChild(b);
   });
-  /* Only the fixed-term branch needs a contract end date, and only a
-     termination raises the compensation question at all. */
+  /* The contract-type question, for the one reader whose answer is not settled
+     by law. Rendered here rather than in the markup so it tracks eosHow. */
+  const ctFld = document.getElementById("eosCtypeFld");
+  if (ctFld) ctFld.hidden = !eosNeedsCtype();
+  const ctWrap = document.getElementById("eosCtype");
+  if (ctWrap && eosNeedsCtype()){
+    ctWrap.innerHTML = "";
+    [["fixed","eos_ct_fixed"],["indef","eos_ct_indef"]].forEach(([id,label])=>{
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = eosCtype === id ? "on" : "";
+      b.textContent = t(label);
+      b.onclick = ()=>{
+        eosCtype = id; buzz(8); renderEos();
+        if (document.getElementById("eosOut").innerHTML) calcEos();
+      };
+      ctWrap.appendChild(b);
+    });
+  }
+
+  /* The contract's end date is only meaningful for a fixed-term contract, and
+     only a termination raises the compensation question at all. An unlimited
+     contract has no end date to give — asking for one is asking for something
+     that does not exist. */
   const fld = document.getElementById("eosTermFld");
-  if (fld) fld.hidden = !(isNonSaudi() && eosHow === "term");
+  if (fld) fld.hidden = !(contractIsFixed() && eosHow === "term");
 }
 
 /* Calendar arithmetic, not averaged days: an exact three-year span must come
@@ -5278,7 +5351,7 @@ function noticeFor(dueDays, givenDays, wage){
 }
 
 function money(n){
-  return new Intl.NumberFormat(lang==="ar" ? "ar-SA" : "en-US",
+  return new Intl.NumberFormat(lang==="ar" ? AR_NUM : "en-US",
     { maximumFractionDigits:0 }).format(Math.round(n));
 }
 
@@ -5304,7 +5377,7 @@ function calcEos(){
   const factor = eosHow === "resign" ? resignFactor(y) : 1;
   const total = sub * factor;
 
-  const svc = t("eos_yrs").replace("{y}", fmtNum(parts.y)).replace("{m}", fmtNum(parts.m));
+  const svc = svcText(parts.y, parts.m);
   const cur = t("eos_sar");
   const row = (label, val, cls) =>
     `<div class="r${cls?" "+cls:""}"><span>${label}</span><b>${val}</b></div>`;
@@ -5434,7 +5507,7 @@ function openCase(){
 function compEstimate(){
   if (!eosData) return 0;
   return compFor(eosData.wage, eosData.years,
-                 isNonSaudi() ? "fixed" : "indef", remainingTermMonths());
+                 contractIsFixed() ? "fixed" : "indef", remainingTermMonths());
 }
 
 /* The calculator's binding to the shared core: read the contract end date off
@@ -5459,7 +5532,7 @@ function termLooksImplausible(){
 
 /* Which of the two Article 77 branches produced the number on screen. */
 function compBasisKey(){
-  if (!isNonSaudi()) return "cf_comp_note";
+  if (!contractIsFixed()) return "cf_comp_note";
   return remainingTermMonths() == null ? "cf_comp_note_need" : "cf_comp_note_term";
 }
 function leaveAmount(){ return eosData ? leaveFor(leaveDays, eosData.wage) : 0; }
@@ -5518,7 +5591,7 @@ function buildCaseDoc(){
   if (lang==="ar")
     return `${t("cf_facts")}\n`+
       `• بداية العمل: ${fmtD(d.start)}\n• نهاية العمل: ${fmtD(d.end)}\n`+
-      `• مدة الخدمة: ${t("eos_yrs").replace("{y}",fmtNum(d.parts.y)).replace("{m}",fmtNum(d.parts.m))}\n`+
+      `• مدة الخدمة: ${svcText(d.parts.y, d.parts.m)}\n`+
       `• آخر أجر شهري: ${money(d.wage)} ${cur}\n• طريقة الإنهاء: ${t("eos_h_term")}\n\n`+
       `${t("cf_claim")}\n`+
       `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
@@ -5528,7 +5601,7 @@ function buildCaseDoc(){
       `${t("cf_ev")}\n${docs}\n\n${t("cf_ask")}\n${t("cf_ask_b")}`;
   return `${t("cf_facts")}\n`+
     `• Start date: ${fmtD(d.start)}\n• End date: ${fmtD(d.end)}\n`+
-    `• Length of service: ${t("eos_yrs").replace("{y}",d.parts.y).replace("{m}",d.parts.m)}\n`+
+    `• Length of service: ${svcText(d.parts.y, d.parts.m)}\n`+
     `• Last monthly wage: ${money(d.wage)} ${cur}\n• How it ended: ${t("eos_h_term")}\n\n`+
     `${t("cf_claim")}\n`+
     `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
@@ -6001,7 +6074,7 @@ const CERT_CLS = { confirmed:"ok", likely:"review", uncertain:"issue", na:"ok" }
    the sentence that makes it theirs. */
 function appliesText(l){
   const p = termParts(), cur = t("eos_sar");
-  const svc = t("eos_yrs").replace("{y}", fmtNum(p.y)).replace("{m}", fmtNum(p.m));
+  const svc = svcText(p.y, p.m);
   switch (l.key){
     case "tm_m_eos": {
       const h = termHow();
@@ -7250,7 +7323,7 @@ function termFacts(){
   return [
     `${t("tm_d_start")}: ${d(term.start)}`,
     `${t("tm_d_end")}: ${d(term.end)}`,
-    `${t("tm_d_service")}: ${t("eos_yrs").replace("{y}", fmtNum(p.y)).replace("{m}", fmtNum(p.m))}`,
+    `${t("tm_d_service")}: ${svcText(p.y, p.m)}`,
     `${t("tm_d_wage")}: ${termWage() ? money(termWage()) + " " + cur : t("tm_d_unknown")}`,
     `${t("tm_d_how")}: ${t(termHow() ? termHow().label : "th_other")}`,
     `${t("tm_d_ctype")}: ${t(termCtype() === "fixed" ? "tm_f_fixed" : termCtype() === "indef" ? "tm_f_indef" : "tm_d_unknown")}`,
@@ -7487,7 +7560,7 @@ const BIZ = {
   ],
   templates:[
     { score:61, t:{ar:"قالبكم للعمل الحر",en:"Your freelance template"},
-      w:{ar:"٣ بنود تجعل المستقلين يترددون",en:"3 clauses make freelancers hesitate"} },
+      w:{ar:"3 بنود تجعل المستقلين يترددون",en:"3 clauses make freelancers hesitate"} },
     { score:84, t:{ar:"قالب عقد العمل",en:"Your employment template"},
       w:{ar:"بند الإشعار غير متبادل",en:"Notice period isn't mutual"} }
   ]
@@ -7674,44 +7747,44 @@ const KB = [
      naming both GOSI and the award is asking how the two relate, however it is
      worded. Listing literal phrases missed "تغني عن" and "replace". */
   { k:/(?=[\s\S]*(تأمينات|التأمينات|ساند|gosi|social insurance))(?=[\s\S]*(مكافأة|مكافأه|نهاية الخدمة|end of service|eosb|gratuity))/i,
-    a:{ar:"لا. مكافأة نهاية الخدمة والتأمينات الاجتماعية نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين ٨٤ و٨٥، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا.",
+    a:{ar:"لا. مكافأة نهاية الخدمة والتأمينات الاجتماعية نظامان منفصلان. المكافأة يدفعها صاحب العمل بنفسه وفق المادتين 84 و85، وما تُخصم منها ولا تُستبدل باشتراكات التأمينات. لو قيل لك غير ذلك، اطلبه مكتوبًا.",
        en:"No. The end-of-service award and GOSI are separate systems. The award is paid by your employer under Articles 84 and 85, and it is not reduced by, offset against, or replaced by GOSI contributions. If you are told otherwise, ask for it in writing."},
-    r:{ar:"نظام التأمينات الاجتماعية مع المادتين ٨٤ و٨٥",en:"Social Insurance Law read with Articles 84 and 85"} },
+    r:{ar:"نظام التأمينات الاجتماعية مع المادتين 84 و85",en:"Social Insurance Law read with Articles 84 and 85"} },
 
   { k:/(نهاية الخدمة|مكافأة|end of service|eosb|gratuity)/i,
     a:{ar:"مكافأة نهاية الخدمة تُحسب عادة نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر. طريقة إنهاء العقد (استقالة أو إنهاء من صاحب العمل) تغيّر المستحق.",
        en:"End-of-service pay is generally half a month for each of the first five years, then a full month per year after that, based on your final wage. How the contract ends — resignation or employer termination — changes what you're owed."},
-    r:{ar:"نظام العمل السعودي — المادتان ٨٤ و٨٥",en:"Saudi Labor Law — Articles 84 & 85"} },
+    r:{ar:"نظام العمل السعودي — المادتان 84 و85",en:"Saudi Labor Law — Articles 84 & 85"} },
   { k:/(عدم المنافسة|منافسة|non.?compete)/i,
     a:{ar:"شرط عدم المنافسة لا يصح إلا إذا كان محددًا في المدة والمكان ونوع العمل، والحد الأعلى المتعارف عليه سنتان. الشروط المفتوحة (كل المملكة، كل المجالات) غالبًا أوسع مما يلزم وقابلة للتفاوض.",
        en:"A non-compete is only valid if it's limited in duration, geography, and type of work — two years is the usual ceiling. Open-ended ones (the whole Kingdom, every field) are typically broader than necessary and negotiable."},
-    r:{ar:"نظام العمل السعودي — المادة ٨٣",en:"Saudi Labor Law — Article 83"} },
+    r:{ar:"نظام العمل السعودي — المادة 83",en:"Saudi Labor Law — Article 83"} },
   { k:/(فترة التجربة|تجربة|probation)/i,
     /* Same answer as the rights library's, and for the same reason: Article 53
        is DISPUTED in docs/legal-sources.md and the product may not assert a
        mechanism the register cannot confirm. This copy was missed when the
        library's was corrected — one question, two answers, in two places. */
-    a:{ar:"الحد الأقصى ١٨٠ يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على ١٨٠ يومًا من البداية، أو لازم ٩٠ يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات ٢٠٢٥ ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
+    a:{ar:"الحد الأقصى 180 يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على 180 يومًا من البداية، أو لازم 90 يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات 2025 ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
        en:"The ceiling is 180 days, and probation has to be stated explicitly in your contract — if it isn't there, there is no probation. Eid holidays and sick leave don't count toward it, and either side may end the contract during it.\n\nOne thing we have not confirmed: whether an employer may state 180 days from the outset, or must set 90 and then extend by written agreement. The wording changed with the 2025 amendments and we could not verify the current text against an official source — check it before relying on that difference."},
-    r:{ar:"نظام العمل السعودي — المادة ٥٣",en:"Saudi Labor Law — Article 53"} },
+    r:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"} },
   { k:/(الإشعار|إشعار|notice period|notice)/i, nat:"sa",
-    a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل ٦٠ يومًا، وأنت عليك إشعاره قبل ٣٠ يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",
+    a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل 60 يومًا، وأنت عليك إشعاره قبل 30 يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",
        en:"For an indefinite contract paid monthly the notice is not symmetrical: the employer must give you 60 days, and you must give the employer 30. You can agree to longer, never shorter."},
-    r:{ar:"نظام العمل السعودي — المادة ٧٥",en:"Saudi Labor Law — Article 75"} },
+    r:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"} },
   { k:/(?=[\s\S]*(أسافر|السفر|سفر|أطلع برة|الخروج|خروج|travel|leave the country|exit))(?=[\s\S]*(إجاز|اجاز|عودة|رجوع|بلدي|vacation|leave|re.?entry|return|country))/i,
     nat:"nonsa",
     a:{ar:"للسفر والعودة تحتاج تأشيرة خروج وعودة، ورسومها على صاحب العمل لا عليك. والسفر في إجازتك المستحقة حق لك، والمماطلة في إصدارها تقدر تبلّغ عنها وزارة الموارد البشرية.",
        en:"To travel and come back you need an exit and re-entry visa, and its cost falls on your employer, not you. Travelling on leave you've earned is your right, and if they stall on issuing it you can report that to the Ministry of Human Resources."},
-    r:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+    r:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"} },
 
   { k:/(إجاز|اجاز|annual leave|leave days|leave balance|vacation)/i,
-    a:{ar:"الإجازة السنوية لا تقل عن ٢١ يومًا مدفوعة، وترتفع إلى ٣٠ يومًا بعد خمس سنوات متصلة لدى نفس صاحب العمل. لا يجوز التنازل عنها مقابل بدل أثناء سريان العقد.",
+    a:{ar:"الإجازة السنوية لا تقل عن 21 يومًا مدفوعة، وترتفع إلى 30 يومًا بعد خمس سنوات متصلة لدى نفس صاحب العمل. لا يجوز التنازل عنها مقابل بدل أثناء سريان العقد.",
        en:"Annual leave is at least 21 paid days, rising to 30 after five continuous years with the same employer. You can't waive it for cash while the contract is running."},
-    r:{ar:"نظام العمل السعودي — المادة ١٠٩",en:"Saudi Labor Law — Article 109"} },
+    r:{ar:"نظام العمل السعودي — المادة 109",en:"Saudi Labor Law — Article 109"} },
   { k:/(عمل إضافي|إضافي|overtime)/i,
-    a:{ar:"أجر ساعة العمل الإضافي يساوي أجر الساعة زائد ٥٠٪ من الأجر الأساسي. ومن تعديلات ٢٠٢٥، يجوز لصاحب العمل يعرض عليك إجازة تعويضية بدل الأجر — لكن بموافقتك أنت، مو قرارًا يُفرض عليك. أي بند يطلب عملًا إضافيًا دون تحديد طريقة احتسابه بند ناقص.",
+    a:{ar:"أجر ساعة العمل الإضافي يساوي أجر الساعة زائد 50٪ من الأجر الأساسي. ومن تعديلات 2025، يجوز لصاحب العمل يعرض عليك إجازة تعويضية بدل الأجر — لكن بموافقتك أنت، مو قرارًا يُفرض عليك. أي بند يطلب عملًا إضافيًا دون تحديد طريقة احتسابه بند ناقص.",
        en:"Overtime is the hourly wage plus 50% of the basic wage. Since the 2025 amendments an employer may offer compensatory paid leave instead — but only with your consent, not as a decision imposed on you. Any clause requiring extra hours without saying how they're paid is incomplete."},
-    r:{ar:"نظام العمل السعودي — المادة ١٠٧",en:"Saudi Labor Law — Article 107"} },
+    r:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"} },
   { k:/(إيجار|ايجار|المؤجر|المستأجر|rent|lease|landlord|tenant|ejar)/i,
     a:{ar:"عقود الإيجار السكني تُسجَّل في شبكة إيجار، والتسجيل يحفظ حقوق الطرفين ويجعل الدفعات موثّقة. الإخلاء لا يكون بإرادة المؤجر وحده دون سبب نظامي وإشعار معقول.",
        en:"Residential leases are registered on the Ejar network, which documents payments and protects both sides. Eviction isn't the landlord's unilateral call without a lawful reason and reasonable notice."},
@@ -7724,10 +7797,10 @@ const KB = [
     a:{ar:"الشرط الجزائي جائز، لكن القاضي يملك تخفيضه إذا كان مبالغًا فيه أو لم يقع ضرر فعلي بقدره. الأفضل أن يكون متبادلًا وبسقف واضح.",
        en:"Penalty clauses are permitted, but a judge can reduce one that's excessive or exceeds the actual harm. Best practice is mutual and capped."},
     r:{ar:"الأنظمة العامة — الشرط الجزائي وتقديره",en:"General provisions — penalty clauses and assessment"} },
-  { k:/(تقادم|دعو|١٢ شهر|اثني عشر شهر|limitation|deadline to file|time limit|how long.*(sue|file|claim)|sue.*(how long|deadline))/i,
+  { k:/(تقادم|دعو|12 شهر|اثني عشر شهر|limitation|deadline to file|time limit|how long.*(sue|file|claim)|sue.*(how long|deadline))/i,
     a:{ar:"لا تُقبل الدعوى العمالية بعد اثني عشر شهرًا من انتهاء العلاقة — إلا بعذر تقبله المحكمة، أو إذا أقرّ الطرف الآخر بالحق. لا تعتمد على الاستثناء: بكّر.",
        en:"A labour claim isn't accepted after twelve months from the end of the relationship — unless the court accepts an excuse, or the other side acknowledges the right. Don't rely on the exception: move early."},
-    r:{ar:"نظام العمل السعودي — المادة ٢٢٢",en:"Saudi Labor Law — Article 222"} },
+    r:{ar:"نظام العمل السعودي — المادة 222",en:"Saudi Labor Law — Article 222"} },
   { k:/(محامي|محام|أقاضي|محكمة|lawyer|court|sue|litigat)/i,
     a:{ar:"إذا وصل الأمر لنزاع فعلي أو مبالغ كبيرة، تحتاج محاميًا مرخّصًا — أقدر أجهّز لك الملخص والأسئلة والمستندات قبل الجلسة، وهذا يوفّر عليك وقتًا وأتعابًا.",
        en:"If this has become a real dispute or involves large sums, you need a licensed lawyer — I can prepare your summary, questions, and documents beforehand, which saves you time and fees."},
@@ -7739,19 +7812,19 @@ const KB = [
      docs/legal-sources.md before shipping. */
 
   { k:/(الإشعار|إشعار|notice period|notice|إنهاء مبكر|early termination)/i, nat:"nonsa",
-    a:{ar:"عقدك محدد المدة، فمدد الإشعار في المادة ٧٥ خاصة بالعقود غير محددة المدة وما تنطبق عليك. الأصل أن العقد يمشي لنهاية مدته؛ وإذا أُنهي مبكرًا بغير سبب مشروع، تستحق أجر المدة الباقية من العقد بحد أدنى أجر شهرين.",
+    a:{ar:"عقدك محدد المدة، فمدد الإشعار في المادة 75 خاصة بالعقود غير محددة المدة وما تنطبق عليك. الأصل أن العقد يمشي لنهاية مدته؛ وإذا أُنهي مبكرًا بغير سبب مشروع، تستحق أجر المدة الباقية من العقد بحد أدنى أجر شهرين.",
        en:"Your contract is fixed-term, so the Article 75 notice periods — which are for indefinite contracts — don't reach you. Your contract runs to its end date; if it's ended early without valid reason, you're owed the wages for the remaining term, with a floor of two months."},
-    r:{ar:"نظام العمل السعودي — المادة ٧٧",en:"Saudi Labor Law — Article 77"} },
+    r:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"} },
 
   { k:/(جواز|passport|حجز الجواز)/i, nat:"nonsa",
     a:{ar:"صاحب العمل ما يحق له يحجز جواز سفرك ولا إقامتك ولا بطاقة التأمين الطبي — حتى لو وقّعت ورقة تقول غير كذا، لأن التنازل عن حق نظامي ما ينفذ. لو محجوز عندك، تقدر تبلّغ وزارة الموارد البشرية.",
        en:"Your employer may not hold your passport, Iqama, or medical insurance card — even if you signed something saying otherwise, because you can't validly sign away a statutory right. If yours is being held, you can report it to the Ministry of Human Resources."},
-    r:{ar:"اللائحة التنفيذية لنظام العمل — المادة ٦",en:"Labor Law Implementing Regulations — Article 6"} },
+    r:{ar:"اللائحة التنفيذية لنظام العمل — المادة 6",en:"Labor Law Implementing Regulations — Article 6"} },
 
   { k:/(رسوم|استقدام|الإقامة|رخصة العمل|iqama|recruitment|work permit|fees)/i, nat:"nonsa",
     a:{ar:"رسوم الاستقدام، وإصدار وتجديد الإقامة ورخصة العمل، وغرامات التأخير، وتغيير المهنة، وتأشيرة الخروج والعودة، وتذكرة العودة لبلدك في نهاية العلاقة — كلها على صاحب العمل. الاستثناء الوحيد للتذكرة: إذا كنت غير لائق للعمل أو رغبت بالرجوع بدون سبب مشروع. وإذا انتقلت لصاحب عمل جديد، هو اللي يتحمل رسوم النقل.",
        en:"Recruitment fees, issuing and renewing your Iqama and work permit, late-renewal fines, profession changes, exit and re-entry visas, and your return ticket at the end of the relationship are all the employer's cost. The only exception on the ticket: if you're unfit for work, or you choose to leave without legitimate reason. And if you move to a new employer, the new one pays the transfer fee."},
-    r:{ar:"نظام العمل السعودي — المادة ٤٠",en:"Saudi Labor Law — Article 40"} },
+    r:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"} },
 
   { k:/(كفال|نقل الخدمات|sponsor|sponsorship transfer)/i, nat:"nonsa",
     a:{ar:"من مبادرة تحسين العلاقة التعاقدية، تقدر تنقل خدماتك عبر منصة قوى بدون موافقة صاحب العمل الحالي في حالات محددة — منها انتهاء مدة العقد، وتأخر راتبك ثلاثة أشهر متتالية، وانتهاء إقامتك. راجع قوى لتشوف هل حالتك منها.",
@@ -7764,7 +7837,7 @@ const KB = [
   { k:/(استقال|استقالة|resign|resignation)/i,
     a:{ar:"الاستقالة صارت معرَّفة في النظام وسببًا مشروعًا لإنهاء العقد. والأهم: إذا قدّمت استقالتك وما ردّ صاحب العمل خلال ثلاثين يومًا، تُعدّ مقبولة حكمًا — ما يقدر يعلّقك بلا رد.",
        en:"Resignation is now defined in the law and is a lawful ground for ending a contract. More useful to you: if you resign and your employer doesn't respond within 30 days, it is deemed accepted — they cannot leave you hanging by staying silent."},
-    r:{ar:"نظام العمل السعودي — المادة ٧٩",en:"Saudi Labor Law — Article 79"} },
+    r:{ar:"نظام العمل السعودي — المادة 79",en:"Saudi Labor Law — Article 79"} },
 
   { k:/(قوى|qiwa|توثيق العقد|عقد موثق|authenticat)/i,
     a:{ar:"العقد لازم يكون موثقًا في منصة قوى عشان يكون نافذًا. العقود غير المسجلة أو الموقّعة باليد ما عادت تحمل القوة النظامية نفسها. تحقق أن عقدك موجود في قوى، ونسختك تطابق المسجلة.",
@@ -7782,22 +7855,22 @@ const KB = [
      the answer is genuinely opposite for each. */
 
   { k:/(تأمينات|التأمينات الاجتماعية|جوسي|gosi|social insurance)/i, nat:"nonsa",
-    a:{ar:"كمقيم، ما تدفع شيء من راتبك للتأمينات الاجتماعية. صاحب العمل يدفع ٢٪ فقط من الأجر الخاضع، وهذي لفرع الأخطار المهنية وحده — يعني تغطية إصابات العمل. ما أنت مشمول بفرع المعاشات ولا بساند. فإذا شفت خصم تأمينات في مسير راتبك، هذا غلط يستحق السؤال.",
+    a:{ar:"كمقيم، ما تدفع شيء من راتبك للتأمينات الاجتماعية. صاحب العمل يدفع 2٪ فقط من الأجر الخاضع، وهذي لفرع الأخطار المهنية وحده — يعني تغطية إصابات العمل. ما أنت مشمول بفرع المعاشات ولا بساند. فإذا شفت خصم تأمينات في مسير راتبك، هذا غلط يستحق السؤال.",
        en:"As a resident you pay nothing to GOSI from your salary. Your employer pays 2% of the contributable wage, and that is for the occupational-hazards branch alone — work-injury cover. You are not in the pension branch and not in SANED. So if you see a GOSI deduction on your payslip, that is wrong and worth questioning."},
     r:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
 
   { k:/(تأمينات|التأمينات الاجتماعية|جوسي|gosi|social insurance|معاش|تقاعد|pension)/i, nat:"sa",
-    a:{ar:"الاشتراك يعتمد على تاريخ تسجيلك. المسجَّلون قبل ٣ يوليو ٢٠٢٤: ٢١٫٥٪ إجمالًا — ١١٫٧٥٪ على صاحب العمل و٩٫٧٥٪ عليك. والمسجَّلون بعده يخضعون للنظام الجديد، وارتفع في يوليو ٢٠٢٦ إلى ٢٣٫٥٪ — ١٢٫٧٥٪ عليه و١٠٫٧٥٪ عليك. والاشتراك يُحتسب على الأجر الأساسي وبدل السكن فقط، بحد أقصى ٤٥٬٠٠٠ ريال شهريًا.",
+    a:{ar:"الاشتراك يعتمد على تاريخ تسجيلك. المسجَّلون قبل 3 يوليو 2024: 21٫5٪ إجمالًا — 11٫75٪ على صاحب العمل و9٫75٪ عليك. والمسجَّلون بعده يخضعون للنظام الجديد، وارتفع في يوليو 2026 إلى 23٫5٪ — 12٫75٪ عليه و10٫75٪ عليك. والاشتراك يُحتسب على الأجر الأساسي وبدل السكن فقط، بحد أقصى 45٬000 ريال شهريًا.",
        en:"Your rate depends on when you were registered. Registered before 3 July 2024: 21.5% in total — 11.75% employer, 9.75% you. Registered after that, you are on the new system, which rose in July 2026 to 23.5% — 12.75% employer, 10.75% you. Contributions are calculated on basic wage plus housing allowance only, capped at SAR 45,000 a month."},
     r:{ar:"نظام التأمينات الاجتماعية — المؤسسة العامة للتأمينات",en:"Social Insurance Law — GOSI"} },
 
   { k:/(ساند|saned|إعانة البطالة|تعطل عن العمل|unemployment)/i, nat:"nonsa",
     a:{ar:"ساند للسعوديين فقط، فما أنت مشمول فيه. اللي لك عند نهاية العلاقة: مكافأة نهاية الخدمة من صاحب العمل، وتذكرة العودة، وأي مستحقات متأخرة. وإذا كان الإنهاء بغير سبب مشروع، تعويض أجر المدة الباقية من عقدك بحد أدنى شهرين.",
        en:"SANED is for Saudi nationals only, so you are not covered by it. What you do have at the end of the relationship: the end-of-service award from your employer, the return ticket, and any outstanding dues. And if the termination was without valid reason, compensation for your contract's remaining term with a floor of two months."},
-    r:{ar:"نظام التأمينات الاجتماعية مع المادتين ٤٠ و٧٧",en:"Social Insurance Law read with Articles 40 and 77"} },
+    r:{ar:"نظام التأمينات الاجتماعية مع المادتين 40 و77",en:"Social Insurance Law read with Articles 40 and 77"} },
 
   { k:/(ساند|saned|إعانة البطالة|تعطل عن العمل|unemployment)/i, nat:"sa",
-    a:{ar:"ساند تأمين ضد التعطل، وهو للسعوديين فقط. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك ١٢ شهرًا على الأقل خلال آخر ٣٦ شهرًا، ومسجَّل في طاقات. التعويض ٦٠٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى ٩٬٠٠٠ ريال، ثم ٥٠٪، لمدة تصل إلى ١٢ شهرًا.",
+    a:{ar:"ساند تأمين ضد التعطل، وهو للسعوديين فقط. الشروط: تركت العمل بغير إرادتك، وتبحث عن عمل فعليًا، ولك اشتراك 12 شهرًا على الأقل خلال آخر 36 شهرًا، ومسجَّل في طاقات. التعويض 60٪ من متوسط أجرك الخاضع في آخر سنتين لأول ثلاثة أشهر بحد أقصى 9٬000 ريال، ثم 50٪، لمدة تصل إلى 12 شهرًا.",
        en:"SANED is unemployment insurance, and it is for Saudi nationals only. The conditions: you lost the job involuntarily, you are actively looking for work, you have at least 12 months of contributions in the last 36, and you are registered with Taqat. It pays 60% of your average covered wage over the previous two years for the first three months, capped at SAR 9,000, then 50%, for up to 12 months."},
     r:{ar:"نظام التأمينات الاجتماعية — برنامج ساند",en:"Social Insurance Law — SANED programme"} },
 
@@ -7832,7 +7905,7 @@ function answerSummary(){
   const amb = current.clauses.filter(c=>c.s==="amber").length;
   const grn = current.clauses.filter(c=>c.s==="green").length;
   const head = lang==="ar"
-    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من ١٠٠.\n${(signedMode&&current.vs?current.vs:current.verdict).ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
+    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من 100.\n${(signedMode&&current.vs?current.vs:current.verdict).ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
     : `${t(current.doc)} — scored ${current.score} out of 100.\n${(signedMode&&current.vs?current.vs:current.verdict).en}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
   const lines = current.clauses.map(c=>`• ${c.t[lang]} — ${c.p[lang]}`).join("\n");
   return { text: head + "\n\n" + lines };
@@ -8484,7 +8557,7 @@ function renderSources(){
   if (!wrap) return;
   wrap.innerHTML = SOURCES.map(x=>{
     const [y,m] = x.reviewed.split("-");
-    const when = new Intl.DateTimeFormat(lang==="ar"?"ar-SA-u-ca-gregory":"en-GB",
+    const when = new Intl.DateTimeFormat(lang==="ar"?AR_DATE:"en-GB",
       { month:"long", year:"numeric" }).format(new Date(+y, +m-1, 1));
     return `<a class="src" href="${x.url}" target="_blank" rel="noopener noreferrer">
         <span class="tx"><b>${t(x.name)}</b><span>${t(x.desc)}</span>
@@ -8680,8 +8753,8 @@ const EVENTS = {
     { d:91, k:"action", t:{ar:"الدفعة الثانية عبر إيجار",en:"Second rent installment via Ejar"},
       n:{ar:"الدفعة الربع سنوية الثانية تستحق عبر المنصة.",en:"The second quarterly payment is due through the platform."} },
     { d:305, k:"action", t:{ar:"نافذة عدم التجديد",en:"Non-renewal window"},
-      n:{ar:"إذا ما تبي التجديد بزيادة الـ١٠٪، أشعر المؤجر قبل هذا التاريخ.",en:"If you don't want the renewal with its 10% increase, notify the landlord before this date."} },
-    { d:365, k:"deadline", t:{ar:"تجديد الإيجار (+١٠٪)",en:"Lease renews (+10%)"},
+      n:{ar:"إذا ما تبي التجديد بزيادة الـ10٪، أشعر المؤجر قبل هذا التاريخ.",en:"If you don't want the renewal with its 10% increase, notify the landlord before this date."} },
+    { d:365, k:"deadline", t:{ar:"تجديد الإيجار (+10٪)",en:"Lease renews (+10%)"},
       n:{ar:"يتجدد بالزيادة السنوية المنصوص عليها — راجع البند قبلها.",en:"Renews with the contractual increase — revisit the clause before then."} }
   ],
   doc_free:[
@@ -8732,10 +8805,10 @@ function openTimeline(origin){
 function tlBack(){ show(tlOrigin === "result" ? "result" : "home", 1); }
 
 function fmtDate(ts){
-  return new Intl.DateTimeFormat(lang==="ar" ? "ar-SA-u-ca-gregory" : "en-GB",
+  return new Intl.DateTimeFormat(lang==="ar" ? AR_DATE : "en-GB",
     { day:"numeric", month:"long", year:"numeric" }).format(ts);
 }
-function fmtNum(n){ return new Intl.NumberFormat(lang==="ar" ? "ar-SA" : "en").format(n); }
+function fmtNum(n){ return new Intl.NumberFormat(lang==="ar" ? AR_NUM : "en").format(n); }
 
 function renderTrackTease(){
   document.getElementById("trackTitle").textContent = t(isTracked() ? "tr_on_title" : "tr_title");
@@ -9011,6 +9084,36 @@ let signedMode = false;
 let nat = null;
 function isNonSaudi(){ return nat === "nonsa"; }
 
+/* NATIONALITY IS NOT CONTRACT TYPE, AND TREATING IT AS ONE MOVED MONEY.
+ *
+ * compEstimate() used to read `isNonSaudi() ? "fixed" : "indef"`. Half of that
+ * is sound: Article 37 requires a non-Saudi's contract to be fixed-term, so
+ * inferring it there saves a question and cannot be wrong. The other half is
+ * simply false — a Saudi may hold either kind — and it sent every Saudi whose
+ * FIXED-TERM contract was ended early down the indefinite branch of Article 77,
+ * which pays 15 days per year of service instead of the wage for the remaining
+ * term. Those are different numbers, and for a long remaining term the wrong
+ * one is much smaller.
+ *
+ * The app already conceded the point and then ignored it: "انتهاء مدة العقد"
+ * is offered to Saudis as a way the job ended, which only a fixed-term contract
+ * can do. So it accepted that a Saudi can hold one, and still refused to ask.
+ *
+ * Now it asks. Unset is a real state and is treated as unknown rather than
+ * guessed — compFor() already returns the two-month floor and says so when the
+ * remaining term is unknown, which is the honest answer while the question is
+ * unanswered. */
+let eosCtype = null;
+
+function contractIsFixed(){
+  if (isNonSaudi()) return true;          /* Article 37 */
+  return eosCtype === "fixed";
+}
+
+/* Only a Saudi is asked: for a non-Saudi the answer is settled by law, and a
+   question with one possible answer is friction, not rigour. */
+function eosNeedsCtype(){ return !isNonSaudi() && eosHow === "term"; }
+
 function adviceFor(c){ return signedMode && c.r ? c.r : c.a; }
 
 /* Show a riyal figure only when the arithmetic is real and we actually know a
@@ -9221,7 +9324,7 @@ const LETTER_TO = {
    the Saudi track. Converting is total, so it cannot run out. */
 function pointNum(i){
   const n = String(i + 1);
-  return lang === "ar" ? n.replace(/[0-9]/g, d => "٠١٢٣٤٥٦٧٨٩"[+d]) : n;
+  return lang === "ar" ? n.replace(/[0-9]/g, d => "0123456789"[+d]) : n;
 }
 
 function negotiables(){ return current ? current.clauses.filter(c=>c.a) : []; }
@@ -9311,7 +9414,7 @@ function renderPaywall(){
     shown = lines.slice(0, 5).join("\n");
     rest = t("pw_more_case");
   } else {
-    const firstPoint = lines.findIndex(l=>/^\s*[١٢٣٤٥1-5]\./.test(l));
+    const firstPoint = lines.findIndex(l=>/^\s*[123451-5]\./.test(l));
     const cut = firstPoint >= 0 ? firstPoint + 1 : 4;
     shown = lines.slice(0, cut).join("\n");
     /* With a single point chosen there is no "+0 more" to promise; the value
