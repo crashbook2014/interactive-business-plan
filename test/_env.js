@@ -38,4 +38,20 @@ const BASE = (process.env.WODOUH_URL || "http://127.0.0.1:8099").replace(/\/$/, 
    look like AI bugs rather than a URL change. */
 const APP = BASE + "/app/#preview";
 
-module.exports = { playwright, launchOpts, BASE, APP };
+/* IS IT ON SCREEN? — the source string, to be injected into the page.
+ *
+ * Not `el.hidden`. The attribute is a REQUEST; the computed style is the
+ * answer, and they disagreed on six elements in the shipped build. An author
+ * rule as ordinary as `.fld{display:block}` outranks the user-agent
+ * display:none that the hidden attribute relies on, so a feature could be
+ * switched off in code, assert as off in every suite, and still be sitting
+ * there on the reader's screen — including a refund guarantee while payments
+ * were dark and a lawyer desk with no lawyer.
+ *
+ * Exported as SOURCE because the check runs inside page.evaluate, where a
+ * Node closure cannot follow it. */
+const SHOWN_SRC =
+  "(el) => !!el && getComputedStyle(el).display !== 'none' " +
+  "&& getComputedStyle(el).visibility !== 'hidden'";
+
+module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC };

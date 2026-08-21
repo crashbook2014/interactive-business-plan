@@ -386,6 +386,37 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   });
   ok(elsewhere === true, "and it disappears when the reader leaves the result screen");
 
+  /* ---- the floor under every feature switch
+   *
+   * `hidden` is how this app turns features off: an unconfigured AI, a dark
+   * paywall, a lawyer desk with no lawyer. It silently did not work. The
+   * attribute's display:none comes from the user-agent stylesheet, and
+   * `.fld{display:block}` — an ordinary author rule — outranks it. Six
+   * elements were switched off in code and on screen for the reader, and
+   * every suite passed the whole time because they all read el.hidden.
+   *
+   * Three of the six were promises the product cannot keep: a refund
+   * guarantee while payments are dark, a lawyer desk with no lawyer, and two
+   * doors to an AI that is not deployed.
+   *
+   * This is the one assertion that catches all of them, and any seventh.
+   */
+  console.log("\n— everything marked hidden is actually off the screen");
+  const ghosts = await p.evaluate(() => {
+    /* Screens are display:none until active, which would mask a hidden child
+       and make this pass for the wrong reason. Force them all on first. */
+    document.querySelectorAll(".screen").forEach(s => s.classList.add("active"));
+    const all = [...document.querySelectorAll("[hidden]")];
+    return {
+      total: all.length,
+      visible: all.filter(el => getComputedStyle(el).display !== "none")
+                  .map(el => el.id || el.className || el.tagName),
+    };
+  });
+  ok(ghosts.total > 20, `${ghosts.total} elements carry the hidden attribute`);
+  ok(ghosts.visible.length === 0,
+     `and every one of them computes to display:none${ghosts.visible.length ? " — ON SCREEN: " + ghosts.visible.join(", ") : ""}`);
+
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all surface checks passed"));
   await b.close();

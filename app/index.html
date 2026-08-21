@@ -1373,6 +1373,25 @@
   .ph-l{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
   html[lang="ar"] .ph-l{font-weight:400}
   .ph-in{min-height:52px;direction:ltr;text-align:start;font-size:16px}
+  /* ---------------------------------------------------------- [hidden]
+   *
+   * THE FLOOR. `hidden` is how this app turns features off — an unconfigured
+   * AI, a dark paywall, a lawyer desk with no lawyer — and it did not work.
+   *
+   * The attribute's display:none comes from the USER AGENT stylesheet, and any
+   * author rule that sets display on a class beats it. `.fld{display:block}`
+   * alone defeated it on six elements, three of which were promises the app
+   * cannot keep: a refund guarantee while payments are dark, a lawyer desk
+   * with no lawyer, and two doors to an AI that is not deployed. Every test
+   * passed throughout, because they all read el.hidden — the attribute, which
+   * was set correctly — rather than what the reader actually sees.
+   *
+   * !important is load-bearing, not laziness: the whole failure is an author
+   * rule winning, so the fix has to outrank one. Ten one-off
+   * `.x[hidden]{display:none}` patches already exist above, added one at a
+   * time as someone noticed each symptom. This is the rule that makes an
+   * eleventh unnecessary. */
+  [hidden]{display:none !important}
 </style>
 <script>
 /* ============================================================ THE CURTAIN
