@@ -21,6 +21,12 @@
  * in the corpus is a URL a completion can put in front of someone as a source
  * it never opened.
  *
+ * BOTH LANGUAGES, OR NEITHER. Wodouh is read in Arabic. A row whose claim
+ * exists only in English forces the model to translate the statute itself at
+ * answer time, unsupervised — which is the one thing this whole design exists
+ * to prevent. So a verified row without an Arabic claim is not compiled at
+ * all: the build fails rather than shipping a claim no human wrote.
+ *
  * REGENERATE AND COMMIT. corpus.test.js fails if the committed file and the
  * register disagree, so the two can never drift apart quietly.
  *
@@ -79,14 +85,20 @@ export function buildCorpus(md){
     if (/^[\s:-]+$/.test(cells[0])) continue;          /* the --- separator */
     if (header++ === 0) continue;                       /* the column names */
 
-    const status = plain(cells[2]);
+    const status = plain(cells[3]);
     /* Anything that is not a clean tick is out. A row mid-dispute, a row
        marked partly verified, a row someone annotated — all excluded. The
        corpus is the conservative reading of the register, always. */
     if (!/^✅\s*verified$/i.test(status)){ disputed++; continue; }
 
-    const article = articleOf(cells[1]);
-    rows.push({ id: idFor(article, seen), article, claim: plain(cells[0]) });
+    const article = articleOf(cells[2]);
+    const id = idFor(article, seen);
+    const claim_ar = plain(cells[1] ?? "");
+    /* The rule, enforced by construction rather than by remembering. An
+       untranslated verified row cannot be compiled, so it cannot reach an
+       Arabic reader as English. */
+    if (!claim_ar) throw new Error(`row "${id}" is verified but has no Arabic claim`);
+    rows.push({ id, article, claim: plain(cells[0]), claim_ar });
   }
 
   if (!rows.length) throw new Error("no verified rows found — refusing to write an empty corpus");

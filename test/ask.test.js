@@ -14,6 +14,8 @@
  *   - an article number the answer did not cite refuses the whole answer
  *   - a riyal figure that is not in a cited row refuses the whole answer
  *   - all of the above hold when the answer is written in Arabic
+ *   - every verified row exists in Arabic as well as English, and translation
+ *     moved no figure: the digits in the two are identical, per row
  *
  * These are unit tests, not browser tests: they run the exact module the Edge
  * Function imports, because a guarantee proven against a re-implementation is
@@ -131,6 +133,78 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     { tier: "verified", answer: "GOSI contributions are capped at SAR 45,000 per month.", cites: [cap.id] }, lookup);
   ok(quoted.tier === "verified",
      "an amount that appears in a cited row is allowed through — the rule is about invention, not arithmetic");
+
+  /* ---- 5b. the register is bilingual, and translation moved nothing
+     Wodouh is read in Arabic. A verified row that exists only in English is
+     not a display gap: the source block handed to the model becomes English,
+     the model is told to reply in Arabic, and it ends up translating the
+     statute itself at answer time — on the one surface whose entire promise is
+     that a human wrote the words. These assertions are the mechanical proof
+     that no such row can be compiled, and that no translation changed a
+     number. */
+  console.log("\n— every verified row exists in Arabic, and no figure moved in translation");
+
+  const AR_LETTER = /[\u0621-\u064A]/;
+  const missing = committed.rows.filter(r => !r.claim_ar || !AR_LETTER.test(r.claim_ar));
+  ok(missing.length === 0,
+     `every verified row carries an Arabic claim (${committed.rows.length - missing.length}/${committed.rows.length})` +
+     (missing.length ? ` — missing: ${missing.map(r => r.id).join(", ")}` : ""));
+
+  /* The invariant the whole register rests on, applied to the translator
+     rather than to the model: the same figures, in the same quantities, in
+     both languages. A row that says 180 days in English and 90 in Arabic is a
+     different legal claim wearing the same id. */
+  const digits = t => (String(t).replace(/,/g, "").match(/\d+(?:\.\d+)?/g) || []).sort();
+  const drifted = committed.rows.filter(r =>
+    digits(r.claim).join("|") !== digits(r.claim_ar).join("|"));
+  ok(drifted.length === 0,
+     "the digits in the Arabic claim match the English one exactly, row by row" +
+     (drifted.length ? ` — drifted: ${drifted.map(r => r.id).join(", ")}` : ""));
+
+  /* Latin digits throughout, the same rule the app enforces with
+     ar-SA-u-nu-latn. A figure a reader carries into a settlement meeting is
+     read off the screen; it should look the same everywhere it appears. */
+  const indic = committed.rows.filter(r => /[\u0660-\u0669]/.test(r.claim_ar));
+  ok(indic.length === 0,
+     "Arabic claims use Latin digits, as the rest of the app does" +
+     (indic.length ? ` — Arabic-Indic in: ${indic.map(r => r.id).join(", ")}` : ""));
+
+  /* An article number that exists only in the Arabic is a citation no human
+     verified in the column the register is checked against. */
+  const extraCite = committed.rows.filter(r => {
+    const en = new Set(articlesIn(r.claim));
+    return articlesIn(r.claim_ar).some(n => !en.has(n));
+  });
+  ok(extraCite.length === 0,
+     "no article number appears in the Arabic that is absent from the English" +
+     (extraCite.length ? ` — ${extraCite.map(r => r.id).join(", ")}` : ""));
+
+  /* The builder refuses rather than shipping an untranslated row. Proven by
+     removing one, not by trusting the comment above it. */
+  const holed = register.split("\n")
+    .map(l => l.startsWith("| End-of-service:")
+      ? l.split("|").map((c, i) => i === 2 ? " " : c).join("|") : l)
+    .join("\n");
+  let refused = false;
+  try { buildCorpus(holed); } catch { refused = true; }
+  ok(refused, "a verified row with its Arabic removed fails the build instead of shipping");
+
+  /* And the grader recognises a figure quoted from the Arabic side of a row.
+     Without this the Arabic reader gets the correct answer refused for
+     reason:"money" — the guarantee holding so hard it stops being useful. */
+  const capAr = committed.rows.find(r => /45,000|45000/.test(r.claim_ar || ""));
+  ok(!!capAr, "the GOSI cap row carries its amount in Arabic too");
+  if (capAr) {
+    const quotedAr = gradeAnswer(
+      { tier: "verified", answer: "الحد الأقصى للأجر الخاضع للاشتراك 45,000 ريال شهريًا.", cites: [capAr.id] },
+      lookup);
+    ok(quotedAr.tier === "verified",
+       "an amount quoted from the Arabic claim of a cited row is allowed through");
+    const strayAr = gradeAnswer(
+      { tier: "verified", answer: "مستحقاتك 61,300 ريال.", cites: [capAr.id] }, lookup);
+    ok(strayAr.tier === "refused" && strayAr.reason === "money",
+       "and a figure in no row is still refused — the check widened, it did not soften");
+  }
 
   /* ---- 6. the scanners themselves */
   console.log("\n— the scanners the rules are built on");

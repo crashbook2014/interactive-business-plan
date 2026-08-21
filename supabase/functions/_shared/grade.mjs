@@ -83,8 +83,12 @@ export function gradeAnswer(proposed, lookup){
      45,000 and must NOT be satisfied by a row that happens to contain 145000
      somewhere. Thousands separators are stripped on both sides so the same
      figure written two ways is still the same figure. */
+  /* Both languages of the row count. The register carries every claim in
+     English and Arabic, and the figures are identical by construction — but an
+     Arabic answer quotes the Arabic row, so a check that only reads the
+     English one would refuse a figure the reader is entitled to see. */
   const allowedNums = new Set(
-    cites.flatMap(r => normNum(r.claim).replace(/,/g, "").match(/\d+(?:\.\d+)?/g) || []),
+    cites.flatMap(r => normNum(`${r.claim} ${r.claim_ar || ""}`).replace(/,/g, "").match(/\d+(?:\.\d+)?/g) || []),
   );
   const money = moneyIn(answer).filter(n => !allowedNums.has(n));
   if (money.length) return { tier: "refused", answer: "", cites: [], reason: "money" };

@@ -6937,6 +6937,15 @@ function renderAsk(){
   sync();
 }
 
+/* The evidence is shown in the language the reader is reading. Both claims
+   come back from the server, so switching language re-renders an answer
+   already on screen rather than spending another question on it. The English
+   fallback is for an answer cached before the Arabic column existed — an
+   English source line is a smaller failure than a missing one. */
+function citeClaim(c){
+  return (lang === "ar" && c.claim_ar) ? c.claim_ar : c.claim;
+}
+
 /* Every field rendered with textContent-equivalent escaping. The answer is
    model output and the claims are our own file, but both go through esc()
    because the day one of them doesn't is the day this stops being true. */
@@ -6951,7 +6960,7 @@ function askAnswerHtml(a){
        <div class="hd"><b>${t("ask_tier_v")}</b></div>
        <p class="ask-body">${esc(a.answer)}</p>
        <p class="ask-src-h">${t("ask_src_h")}</p>
-       ${a.cites.map(c => `<div class="src-line law">${c.article ? esc(artNum(c.article)) + " — " : ""}${esc(c.claim)}</div>`).join("")}
+       ${a.cites.map(c => `<div class="src-line law">${c.article ? esc(artNum(c.article)) + " — " : ""}${esc(citeClaim(c))}</div>`).join("")}
      </div>`;
   }
   return `<div class="tm-sec ask-ans unverified">
