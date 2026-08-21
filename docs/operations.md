@@ -138,12 +138,23 @@ docs" is exactly the assumption that left a stale test list in
 
 ## CI
 
-`.github/workflows/ci.yml` — every push, every PR to `main`. **The backstop,
-not the primary gate** — the hook has already run by the time this does.
+`.github/workflows/ci.yml` — pushes to `main` and PRs to `main`. **The
+backstop, not the primary gate** — the hook has already run by the time this
+does. It used to trigger on every branch, which mailed two failures for one
+piece of work; `main` is the branch Pages deploys, so `main` is the branch a
+failure has to stop.
 
-Runs the suites, then type-checks `supabase/functions/analyze/index.ts` under
-`--strict`. That last step exists because the Edge Function is deployed by hand
-and nothing else would catch a type error in it before it was live.
+Runs the suites, then `npm run typecheck`, which type-checks
+`supabase/functions/analyze/index.ts` under `--strict` via
+`tsconfig.check.json`. That step exists because the Edge Function is deployed
+by hand and nothing else would catch a type error in it before it was live.
+
+**Two things about that step were wrong until 21 August 2026, and the lesson is
+worth more than the fix.** It was a long inline `tsc` invocation carrying
+`--types ""`, which TypeScript 6 rejects outright (TS6044) — so the step was
+broken. And it existed *only* here, in a workflow that has never once executed.
+A check that lives only in CI, when CI cannot start, is not a check. It runs in
+the pre-push hook now, on the machine, in about two seconds.
 
 **GitHub Pages deploys whatever lands on `main`.** CI going red does not stop
 the deploy — it tells you. If CI is red on `main`, treat the live site as

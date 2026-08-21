@@ -38,9 +38,41 @@ fi
 
 printf '\npre-push: running the suites before this leaves the machine\n'
 
-if npm test --silent; then
-  printf 'pre-push: green. Pushing.\n\n'
-  exit 0
+if ! npm test --silent; then
+  refused_suites=1
+fi
+
+# The type-check runs HERE, not only in CI. supabase/functions/analyze/index.ts
+# is deployed by hand and had never been type-checked by anything: CI has never
+# executed, and this hook only ran the suites. A check that exists solely in a
+# workflow that cannot start does not exist.
+#
+# Two seconds. Same command as CI, same config file.
+if [ -z "$refused_suites" ]; then
+  # typescript became a devDependency when this step was added, so a
+  # node_modules from before that is present but incomplete. Say which command
+  # fixes it rather than failing with tsc's "not found".
+  if [ ! -x node_modules/.bin/tsc ]; then
+    printf '\npre-push: TypeScript is missing. Run `npm install` (it is a\n'
+    printf 'devDependency now), or `git push --no-verify` to skip the check.\n\n'
+    exit 1
+  fi
+  printf 'pre-push: type-checking the Claude proxy\n'
+  if npm run typecheck --silent; then
+    printf 'pre-push: green. Pushing.\n\n'
+    exit 0
+  fi
+  printf '\n'
+  printf 'pre-push: PUSH REFUSED — the Claude proxy does not type-check.\n'
+  printf '\n'
+  printf '  Run:  npm run typecheck\n'
+  printf '\n'
+  printf '  That file is deployed by hand, so nothing downstream would catch\n'
+  printf '  the error before it was already answering readers.\n'
+  printf '\n'
+  printf '  Push anyway with:  git push --no-verify\n'
+  printf '\n'
+  exit 1
 fi
 
 printf '\n'

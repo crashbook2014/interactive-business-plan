@@ -8,10 +8,12 @@
     "setup": "git config core.hooksPath .githooks && echo 'pre-push gate armed: the suites now run before every push'",
     "test": "node test/run.js",
     "test:live": "WODOUH_URL=https://alwodouh.com node test/run.js --no-server",
-    "serve": "node test/serve.js"
+    "serve": "node test/serve.js",
+    "typecheck": "tsc -p tsconfig.check.json"
   },
   "devDependencies": {
-    "playwright": "^1.49.0"
+    "playwright": "^1.49.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18"

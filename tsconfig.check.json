@@ -1,0 +1,35 @@
+{
+  /* Type-checks the one hand-deployed file in the project.
+   *
+   * WHY A CONFIG FILE AND NOT A FLAG STRING. This was a single long `npx tsc`
+   * command inside a workflow step, and it carried `--types ""` — which
+   * TypeScript 6 rejects outright (TS6044). The step had never run, so the
+   * breakage was invisible. A config file is the same instruction in a place
+   * where it can be read, and "types": [] is valid in every version.
+   *
+   * WHY IT MATTERS AT ALL. supabase/functions/analyze/index.ts is deployed by
+   * hand. Nothing else in the project would catch a type error in it before it
+   * was already serving readers.
+   */
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+
+    /* Read the shared .mjs modules as source and INFER their types, rather
+       than hand-writing declarations that drift from the code they describe.
+       checkJs stays off on purpose: those files are covered by the suites, and
+       making them a second type-checked surface is a different project. */
+    "allowJs": true,
+    "checkJs": false,
+
+    /* No ambient @types from node_modules. The function runs in Deno, and
+       typing it against Node's globals would let a Node-only API pass. */
+    "types": []
+  },
+  "files": ["types/deno.d.ts", "supabase/functions/analyze/index.ts"]
+}

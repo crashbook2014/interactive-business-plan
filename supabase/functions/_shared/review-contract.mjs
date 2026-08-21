@@ -237,6 +237,10 @@ export const DISCLAIMER_EN =
    `track` is "Saudi" or "Resident", carried through so the app can show which
    reading it got. THERE IS NO SCORE HERE, deliberately: the device computes it.
    See the note on CR_SCHEMA in analyze/index.ts. */
+/**
+ * @param {any} parsed the model's completion, untrusted
+ * @param {{ source?: string, rows?: { id: string, article: string | null, claim: string, claim_ar: string }[], track?: string, sourceKnown?: boolean }} [opts]
+ */
 export function gradeContractReview(parsed, { source = "", rows = [], track = "Saudi", sourceKnown = true } = {}) {
   const p = parsed && typeof parsed === "object" ? parsed : {};
   const meta = p.contract_meta && typeof p.contract_meta === "object" ? p.contract_meta : {};

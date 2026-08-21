@@ -126,7 +126,10 @@ assessment in full.
 
 ### What has and has not been proven here
 
-The function **type-checks clean under `--strict`**, and the whole client path
+The function **type-checks clean under `--strict`** — verified by
+`npm run typecheck`, which now runs in the pre-push hook. Until 21 August 2026
+this sentence rested on a CI step that had never executed and would have failed
+if it had; the check is real from that date, not before it. The whole client path
 is verified against a stub: consent gating, the request body, response
 handling, injection rendering, and the privacy copy switching.
 

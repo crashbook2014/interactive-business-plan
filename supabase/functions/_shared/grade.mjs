@@ -58,6 +58,21 @@ export function moneyIn(text){
   return [...out];
 }
 
+/** JSDoc, not TypeScript — these files stay plain JavaScript so the Deno
+   function and the Node suites run the same bytes. The annotations exist so
+   `npm run typecheck` can see the shape of what crosses into analyze/index.ts;
+   they are comments, erased at runtime, and change nothing about how this
+   executes. Without them the empty `cites: []` below infers as never[], and
+   the caller's `.map()` over it becomes an unchecked any.
+
+   @typedef {{ id: string, article: string | null, claim: string, claim_ar: string }} Row
+   @typedef {{ tier: "verified"|"unverified"|"refused", answer: string, cites: Row[], reason?: string }} Graded */
+
+/**
+ * @param {any} proposed the model's completion, untrusted
+ * @param {(id: string) => Row | undefined} lookup resolves a citation id to a register row
+ * @returns {Graded}
+ */
 export function gradeAnswer(proposed, lookup){
   const answer = String(proposed?.answer ?? "").slice(0, 1500).trim();
   if (!answer) return { tier: "refused", answer: "", cites: [], reason: "empty" };
