@@ -284,6 +284,17 @@
    * is a real conflict rule, the server is a backup the reader asked for
    * rather than a second source of truth.
    */
+  /* The app's live language, without this file reaching into app state it
+     does not own more than it must. Falls back to Arabic, which is the
+     product's default and the schema's. */
+  function currentLang() {
+    try {
+      var l = (global.document && global.document.documentElement.lang) ||
+              (typeof global.lang === "string" ? global.lang : "");
+      return l === "en" ? "en" : "ar";
+    } catch (e) { return "ar"; }
+  }
+
   var NUM = function (v) { var n = Number(v); return Number.isFinite(n) ? n : null; };
   var STR = function (v, max) { return typeof v === "string" ? v.slice(0, max || 120) : null; };
   var DATE = function (v) {          /* a date the database will accept, or nothing */
@@ -368,7 +379,14 @@
         api("/rest/v1/contracts", {
           method: "POST",
           headers: { "prefer": "return=representation" },
-          body: { user_id: u.id, language: (cfg().LANG || "ar"), status: "analyzed" }
+          /* The language the reader was actually using, read from the app at
+             the moment of the push. This used to be cfg().LANG — a config key
+             that is set nowhere, documented nowhere, and read only here, so
+             every synced contract was filed as Arabic regardless of the
+             language its owner read it in. The schema constrains this to
+             'ar' or 'en', so anything else falls back rather than being
+             rejected by the database. */
+          body: { user_id: u.id, language: currentLang(), status: "analyzed" }
         }).then(function (rows) {
           var id = rows && rows[0] && rows[0].id;
           if (!id) return;

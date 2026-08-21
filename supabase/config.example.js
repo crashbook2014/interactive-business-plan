@@ -34,4 +34,18 @@ window.WODOUH_CONFIG = {
    *
    * ANALYZE_URL: "https://YOUR-PROJECT-REF.supabase.co/functions/v1/analyze"
    */
+
+  /* OPTIONAL — Apple sign-in.
+   *
+   * A SEPARATE SWITCH FROM SUPABASE ITSELF, because Apple Sign-In needs an
+   * Apple Developer account ($99/yr) that a fully-configured project may not
+   * have. Leave it out and the Apple button does not render at all — a dead
+   * sign-in button is worse than one fewer option, and app.js checks this
+   * rather than assuming both providers exist.
+   *
+   * Set it to true only once the provider is configured in
+   * Supabase → Authentication → Providers → Apple.
+   *
+   * APPLE_SIGNIN: true
+   */
 };

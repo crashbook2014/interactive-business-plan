@@ -983,6 +983,11 @@
   .rows .r.tot{border-top:1px solid var(--line);padding-top:10px;margin-top:2px;color:var(--ink);font-size:14.5px}
   .rows .r.tot b{color:var(--teal-ink);font-size:16px}
   .eos-note{font-size:11.5px;color:var(--ink-2);margin-top:14px;line-height:1.65;text-align:start}
+  /* A figure the reader should check before believing. Amber, like every
+     other "worth a pause" surface here — quiet enough not to cry wolf, loud
+     enough to be seen beside a large confident number. */
+  .eos-note.warn{color:var(--amber-ink);background:var(--amber-bg);border-radius:10px;
+    padding:9px 11px;font-size:12.5px;margin-top:12px}
 
   /* termination triage */
   .triage{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);
@@ -2640,6 +2645,9 @@ const T = {
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
   /* Back labels that name where the button actually goes. "Back to score" sat
      on a paywall that returns to the evidence step or the calculator. */
+  /* The sign-in screen asked for a key that does not exist, so t() returned ""
+     and its back button rendered as a bare chevron with no label. */
+  back:{ar:"رجوع",en:"Back"},
   back_case:{ar:"الحاسبة",en:"Back to calculator"},
   back_ev:{ar:"المستندات",en:"Back to documents"},
   pw_up_title:{ar:"أضف الملف والخطاب",en:"Add the case file and letter"},
@@ -3297,6 +3305,8 @@ const T = {
   rv_end_future:{ar:"تاريخ النهاية في المستقبل — تأكد منه، الحساب مبني عليه.",
                  en:"The end date is in the future — check it, the calculation rests on it."},
   rv_start_future:{ar:"تاريخ البداية في المستقبل.",en:"The start date is in the future."},
+  rv_service_long:{ar:"مدة الخدمة المحسوبة طويلة بشكل غير معتاد — تأكد من سنة البداية.",
+                   en:"The computed length of service is unusually long — check the start year."},
   rv_start_ancient:{ar:"تاريخ البداية قديم بشكل غير معتاد — تأكد من السنة.",
                     en:"The start date is unusually old — check the year."},
   rv_term_far:{ar:"تاريخ نهاية العقد يبدو بعيدًا جدًا — غلطة سنة واحدة تغيّر المبلغ كثيرًا.",
@@ -4377,6 +4387,15 @@ function applyLang(){
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
 function show(name, back){
+  /* A SCREEN BUILT FROM AN ANALYSIS CANNOT RENDER WITHOUT ONE.
+     `current` is deliberately not persisted — the contract never survives a
+     reload — so any route back to the result after state is lost dereferences
+     null and throws, which blanks the screen and leaves no way out of it.
+     Six entry points did this: show("result"), the swipe-back from clauses and
+     from letter, tlBack() on its default origin, and the two renderers.
+     Sending the reader home is the honest outcome: there is genuinely nothing
+     to show them, and home is where they can start again. */
+  if ((name === "result" || name === "clauses") && !current) name = "home";
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling"));
   const el = document.getElementById("screen-"+name);
   el.classList.add("active");
@@ -4430,6 +4449,9 @@ function resumeAfterTrack(){
 }
 
 let natGate = false;
+
+/* Has the tour been completed once? Persisted, so it is not re-run. */
+let obDone = false;
 
 function renderObPick(slide){
   const box = document.getElementById("obPick");
@@ -4493,14 +4515,25 @@ function renderOnboard(){
     dots.appendChild(d);
   });
 }
+/* Reaching the end of the tour finishes it, and finishing is REMEMBERED.
+   The carousel used to replay on every single launch: screen-onboard is the
+   markup's active screen and nothing recorded that it had been seen, so a
+   returning reader — including one who had already answered the nationality
+   question — was walked through four slides again before reaching their own
+   contracts. */
 function obNext(){
   if (obIndex < OB.length-1){ obIndex++; renderOnboard(); }
-  else show("home");
+  else obFinish();
+}
+
+function obFinish(){
+  obDone = true; saveState();
+  show("home");
 }
 
 /* Skipping the tour is fine; skipping the question is not, because the answer
    decides which law we show. Skip therefore jumps to the choice. */
-function obSkip(){ show("home"); }
+function obSkip(){ obFinish(); }
 
 function pasteChanged(){
   /* The button stays live; if the text is too short we say so rather than
@@ -4745,6 +4778,8 @@ function applyNextStep(d){
 }
 
 function renderResult(reset){
+  /* Called directly in a few places as well as through show(). Same reason. */
+  if (!current){ show("home"); return; }
   document.querySelector(".score-card").dataset.band = scoreBand(current.score);
   renderDecision();
   document.getElementById("verdict").textContent =
@@ -5450,6 +5485,32 @@ function money(n){
     { maximumFractionDigits:0 }).format(Math.round(n));
 }
 
+/* DATES THAT CANNOT BE TRUE, on any pair.
+ *
+ * The termination assessment has always checked these — the copy keys below
+ * are its — but the FREE calculator on the front door did not, and it is the
+ * one more people reach. Typing 1990 instead of 2019 produced "126 سنة" of
+ * service and 1,482,000 SAR with no hesitation whatsoever. The arithmetic was
+ * right; the input was impossible, and saying so is the whole character of
+ * this product everywhere else. */
+function datePlausibility(startStr, endStr){
+  const out = [];
+  const a = startStr ? new Date(startStr) : null;
+  const b = endStr ? new Date(endStr) : null;
+  const now = Date.now();
+  if (a && !isNaN(a) && a.getTime() > now) out.push("rv_start_future");
+  if (a && !isNaN(a) && a.getFullYear() < 1970) out.push("rv_start_ancient");
+  if (b && !isNaN(b) && b.getTime() > now + 86400000) out.push("rv_end_future");
+  if (a && b && !isNaN(a) && !isNaN(b)){
+    const years = (b.getTime() - a.getTime()) / (365.25 * 86400000);
+    /* Longer than any working life. Not capped — capping would invent a
+       number for someone with a genuinely long record — the reader is asked
+       to check the year. */
+    if (years > 60) out.push("rv_service_long");
+  }
+  return out;
+}
+
 function calcEos(){
   const sd = document.getElementById("eosStart").value;
   const ed = document.getElementById("eosEnd").value;
@@ -5493,6 +5554,18 @@ function calcEos(){
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
+
+  /* Beside the figure, not instead of it: the arithmetic is still shown,
+     because the reader may genuinely have meant what they typed. */
+  const odd = datePlausibility(sd, ed);
+  if (odd.length){
+    const warn = document.createElement("p");
+    warn.className = "eos-note warn";
+    warn.id = "eosOdd";
+    warn.textContent = odd.map(k => t(k)).join(" ");
+    const card = out.querySelector(".eos-card");
+    (card || out).appendChild(warn);
+  }
   eosSrc.hidden = false;
   eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
   /* The figure counts up to exactly the computed total; the value and its
@@ -8686,6 +8759,7 @@ function saveState(){
     localStorage.setItem(STORE, JSON.stringify({
       nat,
       timelyOff, installOff,
+      obDone,
       migAsked,
       usedCodes,
       owned, packUntil,
@@ -8716,6 +8790,9 @@ function loadState(){
        so the failure mode is being asked once more rather than silently never
        being offered the thing an account is for. */
     migAsked = d.migAsked === true;
+    /* Only an explicit true skips the tour. Anything else — missing, corrupt,
+       written by an older version — runs it, which is the harmless direction. */
+    obDone = d.obDone === true;
     usedCodes = Array.isArray(d.usedCodes)
       ? d.usedCodes.filter(x => typeof x === "string").slice(0, 200) : [];
 
@@ -8900,8 +8977,16 @@ function openTimeline(origin){
 function tlBack(){ show(tlOrigin === "result" ? "result" : "home", 1); }
 
 function fmtDate(ts){
+  /* Intl throws RangeError on an unparseable date, and a throw inside a
+     document builder blanks the whole screen. loadState() rebuilds numbers and
+     enum values field by field but takes DATE strings as-is, so a stored
+     term.start of "hello" reaches here as NaN — and the case file and employer
+     letter are exactly where that would land, with no way back.
+     Say we do not know, which is what the copy already provides for. */
+  const n = typeof ts === "number" ? ts : new Date(ts).getTime();
+  if (!Number.isFinite(n)) return t("tm_d_unknown") || "—";
   return new Intl.DateTimeFormat(lang==="ar" ? AR_DATE : "en-GB",
-    { day:"numeric", month:"long", year:"numeric" }).format(ts);
+    { day:"numeric", month:"long", year:"numeric" }).format(n);
 }
 function fmtNum(n){ return new Intl.NumberFormat(lang==="ar" ? AR_NUM : "en").format(n); }
 
@@ -9853,6 +9938,7 @@ function fbSend(){
 }
 
 function renderClauses(){
+  if (!current){ show("home"); return; }
   const wrap = document.getElementById("clauseList");
   wrap.innerHTML = "";
   current.clauses.forEach((c,i)=>{
@@ -9921,6 +10007,9 @@ initGestures();
 initOffline();
 window.addEventListener("scroll", onScroll, { passive:true });
 window.addEventListener("resize", moveTabIndicator, { passive:true });
+/* The tour is the markup's active screen, so skipping it is an explicit move
+   rather than an absence. Done last, once every renderer is initialised. */
+if (obDone) show("home");
 requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); });
 </script>
 </body>

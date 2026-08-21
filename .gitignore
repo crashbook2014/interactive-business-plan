@@ -12,4 +12,9 @@ supabase/config.js
 supabase/.env
 .env
 .env.*
+# ...but the CHECKLIST is meant to be committed. Without this negation the
+# pattern above swallows it silently: `git add .env.example` appears to work
+# and the file never lands, which is how a repo ends up with no documented
+# setup at all.
+!.env.example
 *.p8
