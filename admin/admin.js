@@ -546,6 +546,15 @@
       ["Tap Payments", "https://business.tap.company"]
     ]);
 
+    h += group("Search and reach", [
+      ["Google Search Console", "https://search.google.com/search-console"],
+      ["Bing Webmaster Tools", "https://www.bing.com/webmasters"],
+      ["PageSpeed Insights", "https://pagespeed.web.dev/analysis?url=https%3A%2F%2Falwodouh.com"],
+      ["Rich results test", "https://search.google.com/test/rich-results?url=https%3A%2F%2Falwodouh.com"],
+      ["sitemap.xml", "/sitemap.xml"],
+      ["robots.txt", "/robots.txt"]
+    ]);
+
     h += group("The law this product cites", [
       ["Labour Law (HRSD)", "https://hrsd.gov.sa"],
       ["GOSI", "https://www.gosi.gov.sa"],

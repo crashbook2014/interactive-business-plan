@@ -464,6 +464,50 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   await b.close();
 
-  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nall grounded-answer checks passed");
+  /* ---- the dates the reader is shown must be the register's own.
+   Four sources in app/index.html carry a hardcoded `reviewed:"YYYY-MM"`, and
+   docs/legal-sources.md carries its own "Last reviewed" and "Law currency" in
+   a markdown header. NOTHING kept them in step. Re-review the register in six
+   months and the app keeps telling readers it was checked in July 2026 —
+   a stale claim about currency, on a product whose entire proposition is
+   being current.
+
+   Checked as a relationship, not as two fixed strings: whatever the register
+   says, the app must say the same. */
+{
+  const reg = readFileSync(path.join(ROOT, "docs/legal-sources.md"), "utf8");
+  const src = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+  console.log("\n— the app's currency claims come from the register, not from memory");
+
+  const MONTHS = ["january","february","march","april","may","june",
+                  "july","august","september","october","november","december"];
+  const revd = reg.match(/Last reviewed:\s*\*\*(\d{1,2})\s+(\w+)\s+(\d{4})\*\*/i);
+  ok(!!revd, `the register states when it was last reviewed${revd ? " (" + revd[0].replace(/\*/g,"") + ")" : ""}`);
+  if (revd) {
+    const want = revd[3] + "-" + String(MONTHS.indexOf(revd[2].toLowerCase()) + 1).padStart(2, "0");
+    const stamps = [...src.matchAll(/reviewed:\s*"(\d{4}-\d{2})"/g)].map(m => m[1]);
+    ok(stamps.length > 0, `the app stamps ${stamps.length} sources with a review date`);
+    ok(stamps.every(d => d === want),
+       `every one of them matches the register (${want})${stamps.some(d => d !== want) ? " — got " + [...new Set(stamps)].join(", ") : ""}`);
+  }
+
+  const cur = reg.match(/Law currency:\s*\*\*(\d{1,2})\s+(\w+)\s+(\d{4})\*\*/i);
+  ok(!!cur, `the register states the law currency${cur ? " (" + cur[0].replace(/\*/g,"") + ")" : ""}`);
+  if (cur) {
+    const month = cur[2], year = cur[3];
+    /* Both languages: a currency claim that is right in English and stale in
+       Arabic is stale for most of this product's readers. */
+    ok(new RegExp(month + "\\s+" + year, "i").test(src),
+       `the English copy names the same currency date (${month} ${year})`);
+    const AR = { february:"فبراير", january:"يناير", march:"مارس", april:"أبريل", may:"مايو",
+                 june:"يونيو", july:"يوليو", august:"أغسطس", september:"سبتمبر",
+                 october:"أكتوبر", november:"نوفمبر", december:"ديسمبر" };
+    const arm = AR[month.toLowerCase()];
+    ok(!!arm && src.includes(arm + " " + year),
+       `and the Arabic copy names it too (${arm || "?"} ${year})`);
+  }
+}
+
+console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nall grounded-answer checks passed");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
