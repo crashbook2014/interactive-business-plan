@@ -31,10 +31,18 @@
  * one host in connect-src instead of two. That is the same trade the rest of
  * this app has made everywhere else.
  *
- * WHAT IS PUBLIC HERE: the project URL and the anon key. Both are public by
- * design — the anon key is a JWT that says "anonymous visitor" and grants
- * nothing on its own, because every table is behind row level security. The
- * service_role key must never appear in this file, in app/, or in the repo.
+ * WHAT IS PUBLIC HERE: the project URL and the publishable key. Both are
+ * public by design — the key identifies the project and grants no access on
+ * its own, because every table is behind row level security. The SECRET key
+ * (`sb_secret_…`, or a legacy service_role token) must never appear in this
+ * file, in app/, or in the repo.
+ *
+ * TWO KEY FORMATS. Supabase moved from JWT-shaped keys (`eyJ…`, carrying a
+ * role claim) to opaque prefixed ones (`sb_publishable_…`). Nothing here reads
+ * the key's contents, so both work unchanged — it is sent in the `apikey`
+ * header and Supabase resolves the role. SUPABASE_ANON_KEY keeps its name
+ * because renaming a config field silently breaks every config.js already
+ * written; it holds whichever format the project issued.
  */
 (function (global) {
   "use strict";

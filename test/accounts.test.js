@@ -333,6 +333,56 @@ const STUB = (apple) => {
      "and names what does leave, in the same breath");
 
   await b.close();
+/* ============================================ the setup script's one job
+   tools/setup-supabase.mjs writes supabase/config.js, and that file is served
+   to every visitor. So the property worth pinning is narrow and absolute: a
+   SECRET key must never be written into it, in any format.
+
+   This matters more since Supabase moved to opaque keys, not less. A
+   `sb_secret_…` key cannot be decoded by a JWT reader, so a check written only
+   for JWTs called it "unreadable" and refused it by accident — right outcome,
+   wrong reason, and one relaxed branch away from writing a key that bypasses
+   row level security into a public file. */
+console.log("\n— the setup script accepts a publishable key and refuses a secret one");
+{
+  const { execFileSync } = require("node:child_process");
+  const path = require("node:path");
+  const fs = require("node:fs");
+  const ROOT = path.join(__dirname, "..");
+  const OUT = path.join(ROOT, "supabase/config.js");
+  const jwt = role => "eyJhbGciOiJIUzI1NiJ9." +
+    Buffer.from(JSON.stringify({ role })).toString("base64url") + ".sig";
+
+  const run = key => {
+    try { fs.unlinkSync(OUT); } catch {}
+    let wrote = false, out = "";
+    try {
+      out = execFileSync("node", [path.join(ROOT, "tools/setup-supabase.mjs"),
+        "https://example.supabase.co", key], { encoding: "utf8", stdio: ["ignore","pipe","pipe"] });
+    } catch (e) { out = String(e.stderr || e.message); }
+    try { wrote = fs.readFileSync(OUT, "utf8").includes(key); } catch {}
+    try { fs.unlinkSync(OUT); } catch {}
+    return { wrote, out };
+  };
+
+  const cases = [
+    ["a new publishable key", "sb_publishable_RYzk7dHgfpv4ZlFN8sFWrQ_Uz3UhQIX", true],
+    ["a legacy anon JWT",     jwt("anon"),                                      true],
+    ["a new SECRET key",      "sb_secret_ABCdef123456",                         false],
+    ["a legacy service_role", jwt("service_role"),                              false],
+    ["something that is neither", "hello-world",                                false],
+  ];
+  for (const [name, key, shouldWrite] of cases){
+    const r = run(key);
+    ok(r.wrote === shouldWrite, shouldWrite
+      ? `${name} is accepted and written`
+      : `${name} is REFUSED and never reaches a file the public can read`);
+    if (!shouldWrite) ok(/REFUSED/.test(r.out), `${name}: and it says so loudly rather than failing quietly`);
+  }
+  ok(/ROTATE IT NOW/.test(run("sb_secret_ABCdef123456").out),
+     "and a pasted secret key is told to be rotated, because by then it has already been somewhere it should not be");
+}
+
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, consent is never assumed, and the contract never leaves");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -2,13 +2,19 @@
  *
  * Copy to config.js and fill in. config.js is gitignored.
  *
- * Both values below are PUBLIC by design. The anon key is a JWT that says
- * "anonymous visitor"; it grants nothing on its own because every table is
- * protected by row level security. It is safe in frontend source.
+ * Both values below are PUBLIC by design. The publishable key identifies the
+ * project and grants no access on its own, because every table is protected by
+ * row level security. It is safe in frontend source.
  *
- * The service_role key is the opposite: it bypasses RLS entirely. It must
- * never appear in this file, in any file under app/ or web/, or in the repo
- * at all. It belongs only in Supabase Edge Function secrets.
+ * Newer projects issue `sb_publishable_…`; older ones a JWT labelled `anon`
+ * `public`. Either goes in SUPABASE_ANON_KEY below — the field keeps that name
+ * so config.js files already written keep working, and nothing in the app
+ * reads the key's contents.
+ *
+ * The SECRET key is the opposite: `sb_secret_…`, or a legacy `service_role`
+ * token, bypasses RLS entirely. It must never appear in this file, in any file
+ * under app/ or web/, or in the repo at all. It belongs only in Supabase Edge
+ * Function secrets. `tools/setup-supabase.mjs` refuses to write one.
  */
 window.WODOUH_CONFIG = {
   SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",

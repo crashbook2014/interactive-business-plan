@@ -4,14 +4,27 @@
  *   node tools/setup-supabase.mjs https://YOUR-REF.supabase.co eyJhbGci...
  *
  * WHAT IT WRITES. supabase/config.js, which is gitignored. That file holds the
- * project URL and the ANON key, both public by design — the anon key is a JWT
- * meaning "anonymous visitor" and grants nothing on its own, because every
- * table is behind row level security (proven, now, by test/rls.test.js).
+ * project URL and the PUBLIC key, which grants nothing on its own because
+ * every table is behind row level security (proven, now, by test/rls.test.js).
  *
- * WHAT IT REFUSES TO WRITE. A service_role key. That key bypasses RLS
- * entirely; it belongs in `supabase secrets set`, typed by you, and nowhere
- * else. The check below is a real check, not a comment: a JWT whose role claim
- * says service_role is rejected rather than saved.
+ * TWO KEY FORMATS, AND THIS ACCEPTS BOTH. Supabase moved from JWT-shaped keys
+ * to opaque prefixed ones:
+ *
+ *   public   legacy `eyJ…` JWT with role "anon"   ·   new `sb_publishable_…`
+ *   secret   legacy `eyJ…` JWT with role          ·   new `sb_secret_…`
+ *            "service_role"
+ *
+ * The first version of this script only understood the legacy form, so it
+ * refused a perfectly good `sb_publishable_` key as "unreadable". Refusing
+ * safely is better than accepting blindly, but it was still wrong.
+ *
+ * WHAT IT REFUSES TO WRITE. A secret key, in EITHER format. That key bypasses
+ * row level security entirely; it belongs in `supabase secrets set`, typed by
+ * you, and nowhere else. This matters more with the new format, not less: an
+ * `sb_secret_…` key is an opaque string that a JWT decoder cannot read, so a
+ * check written only for JWTs would have called it unreadable and refused it
+ * for the wrong reason — and would have accepted it the moment somebody
+ * relaxed that branch.
  *
  * WHY A SCRIPT AT ALL. Copying config.example.js by hand works, and then two
  * separate things silently do not: the CSP has to name the project host or the
@@ -41,26 +54,41 @@ if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)) {
       "Expected something like https://abcdefghijklm.supabase.co");
 }
 
-/* Read the role out of the JWT payload. Not verified — we hold no key and do
-   not need to; this is a guard against a paste mistake, and a mistake does not
-   forge a signature. */
-let role = null;
-try {
-  const body = JSON.parse(Buffer.from(anon.split(".")[1], "base64url").toString("utf8"));
-  role = body.role || null;
-} catch { /* not a JWT shape; fall through to the check below */ }
+/* Which of the four shapes is this? Explicit rather than inferred, so an
+   unrecognised key is refused rather than written into a file served to every
+   visitor. Nothing here verifies a signature — we hold no key and do not need
+   to; this guards against a paste mistake, and a paste mistake does not forge
+   anything. */
+function classify(key) {
+  if (/^sb_secret_/.test(key)) return "secret";
+  if (/^sb_publishable_/.test(key)) return "public";
+  if (/^eyJ/.test(key)) {
+    try {
+      const body = JSON.parse(Buffer.from(key.split(".")[1], "base64url").toString("utf8"));
+      if (body.role === "service_role") return "secret";
+      if (body.role === "anon") return "public";
+    } catch { /* falls through to unknown */ }
+  }
+  return "unknown";
+}
 
-if (role === "service_role") {
-  die("REFUSED: that is the service_role key.\n\n" +
+const kind = classify(anon);
+
+if (kind === "secret") {
+  die("REFUSED: that is a SECRET key.\n\n" +
       "It bypasses row level security completely. Anyone who reads this file —\n" +
       "and it is served to every visitor — could read and change every row in\n" +
       "your database, including other people's employment contracts.\n\n" +
-      "Use the anon / public key. The service_role key goes in\n" +
-      "`supabase secrets set`, on your machine, and nowhere else.");
+      "Use the publishable key (`sb_publishable_…`, or the legacy one labelled\n" +
+      "`anon` `public`). The secret key goes in `supabase secrets set`, on your\n" +
+      "machine, and nowhere else.\n\n" +
+      "If you have already pasted that key anywhere it could be read — a chat,\n" +
+      "an email, a commit — ROTATE IT NOW in Settings → API.");
 }
-if (role !== "anon") {
-  die(`REFUSED: could not confirm this is the anon key (role: ${role ?? "unreadable"}).\n` +
-      "Copy the key labelled `anon` `public` from Settings → API.");
+if (kind !== "public") {
+  die("REFUSED: this does not look like a publishable key.\n\n" +
+      "Expected `sb_publishable_…` or a legacy `eyJ…` token whose role is\n" +
+      "`anon`. Copy it from Settings → API, under Publishable / anon public.");
 }
 
 if (existsSync(OUT)) {
@@ -76,10 +104,11 @@ writeFileSync(OUT, `/* Wodouh — public runtime configuration.
  *
  * Written by tools/setup-supabase.mjs. Gitignored.
  *
- * Both values are PUBLIC by design. The anon key is a JWT that says "anonymous
- * visitor"; it grants nothing on its own because every table is behind row
- * level security. The service_role key is the opposite and must never appear
- * here — it belongs only in Supabase Edge Function secrets.
+ * Both values are PUBLIC by design. The publishable key identifies the project
+ * and nothing else; it grants no access on its own, because every table is
+ * behind row level security. The SECRET key (\`sb_secret_…\`, or a legacy
+ * service_role token) is the opposite and must never appear here — it belongs
+ * only in Supabase Edge Function secrets.
  */
 window.WODOUH_CONFIG = {
   SUPABASE_URL: ${JSON.stringify(host)},

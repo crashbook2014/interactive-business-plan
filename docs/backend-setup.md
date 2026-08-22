@@ -94,12 +94,18 @@ resume the project from the dashboard.
    That writes `supabase/config.js` (gitignored), **refuses a service_role key
    rather than saving one**, and prints the two follow-ups in step 3 below.
 
-The anon key is safe in frontend source: it is a JWT meaning "anonymous
-visitor" and grants nothing on its own, because every table is behind row level
-security — which `test/rls.test.js` now proves rather than asserts. The
-**service_role** key is the opposite. It bypasses RLS entirely and must never
-appear in the repo, in `app/`, or in `web/`. It belongs only in Edge Function
-secrets.
+The publishable key is safe in frontend source: it identifies the project and
+grants no access on its own, because every table is behind row level security —
+which `test/rls.test.js` now proves rather than asserts.
+
+**Two formats, both accepted.** Newer projects issue `sb_publishable_…`; older
+ones a JWT labelled `anon` `public`. Either goes in `SUPABASE_ANON_KEY`, and
+`tools/setup-supabase.mjs` recognises both.
+
+The **secret** key is the opposite — `sb_secret_…`, or a legacy `service_role`
+token. It bypasses RLS entirely and must never appear in the repo, in `app/`,
+or in `web/`. It belongs only in Edge Function secrets, and the setup script
+refuses to write one into a file that is served to every visitor.
 
 ## 2. Run the migrations
 

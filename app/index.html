@@ -2327,9 +2327,16 @@ function ensureFlags(){
     const ctl = typeof AbortController === "function" ? new AbortController() : null;
     const timer = setTimeout(() => ctl && ctl.abort(), FLAG_TIMEOUT);
     try {
+      /* The `apikey` header alone. Supabase resolves it to the anonymous role,
+         and that is true of both the legacy JWT keys and the newer opaque
+         `sb_publishable_` ones. The Authorization header is for a SIGNED-IN
+         reader's access token; sending a project key there as a bearer token
+         happened to work for JWT-shaped keys and is not something to rely on
+         for a key format that is not a JWT at all. Nobody is signed in on this
+         path by definition — it is a public table. */
       const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
       const res = await fetch(url, {
-        headers: { apikey: key, authorization: "Bearer " + key },
+        headers: { apikey: key },
         signal: ctl ? ctl.signal : undefined,
         cache: "no-store",
       });
