@@ -165,7 +165,7 @@
       var c = window.WODOUH_CONFIG || {};
       return /^https:\/\//.test(c.ANALYZE_URL || "") ? null : f.needs;
     }
-    if (f.key === "payments") return f.needs;      /* nothing wires Moyasar yet */
+    if (f.key === "payments") return f.needs;      /* no gateway is wired yet */
     return null;
   }
 

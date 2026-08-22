@@ -391,6 +391,85 @@ async function seedTermination(p){
   ok(forged.pack <= Date.now() + 183 * 86400000,
      "a forged pack expiry is clamped to the window that was actually sold");
 
+  /* ============================================ the pages onboarding needs
+     A payment gateway will not approve a merchant without published terms,
+     privacy and refund pages, and a reader deserves them regardless. All three
+     were missing entirely until 22 August 2026. These assertions exist so they
+     cannot quietly go missing again, or drift from what the product does. */
+  console.log("\n— the three legal pages exist, in both languages, and are linked");
+
+  const { readFileSync } = require("node:fs");
+  const path = require("node:path");
+  const ROOT = path.join(__dirname, "..");
+
+  const PAGES = [
+    ["privacy", /سياسة الخصوصية/, /Privacy Policy/],
+    ["terms",   /شروط الاستخدام/, /Terms of Service/],
+    ["refund",  /سياسة الاسترجاع/, /Refund Policy/],
+  ];
+
+  for (const [name, arRe, enRe] of PAGES){
+    const lp = await b.newPage();
+    const res = await lp.goto(APP.replace(/\/app\/#preview$/, "") + "/" + name + "/");
+    ok(!!res && res.status() === 200, `/${name}/ is published and returns 200`);
+
+    /* Arabic first, because that is what most of this product's readers read —
+       and because a policy that defaults to a language the reader cannot read
+       is a policy they have not been given. */
+    const langAr = await lp.evaluate(() => document.documentElement.lang);
+    const dirAr = await lp.evaluate(() => document.documentElement.dir);
+    ok(langAr === "ar" && dirAr === "rtl", `/${name}/ opens in Arabic, right-to-left`);
+
+    const arText = await lp.evaluate(() => document.body.innerText);
+    ok(arRe.test(arText), `/${name}/ shows its Arabic heading`);
+    ok(!enRe.test(arText), `/${name}/ shows one language at a time, not both stacked`);
+
+    /* ?lang=en is what gets SENT to an onboarding reviewer. "Open it and press
+       the toggle" is a step that goes wrong. */
+    await lp.goto(APP.replace(/\/app\/#preview$/, "") + "/" + name + "/?lang=en");
+    const enText = await lp.evaluate(() => document.body.innerText);
+    ok(enRe.test(enText), `/${name}/?lang=en links straight to the English version`);
+
+    ok(/Draft|مسودّة/.test(arText) || /Draft/.test(enText),
+       `/${name}/ says plainly that it is a draft, and never that a lawyer approved it`);
+    ok(!/reviewed by (a|our) lawyer|راجعها محامٍ(?! بعد)/i.test(arText + enText),
+       `/${name}/ makes no claim of legal review it has not had`);
+
+    const noScroll = await lp.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+    ok(noScroll, `/${name}/ does not scroll sideways`);
+    await lp.close();
+  }
+
+  /* Orphaned policies are policies nobody finds. */
+  const root = readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const app = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+  for (const name of ["privacy", "terms", "refund"]){
+    ok(root.includes(`href="${name}/"`), `the root page footer links to /${name}/`);
+    ok(app.includes(`href="../${name}/"`), `the app links to /${name}/`);
+  }
+
+  /* ---- the refund page and the paywall are the same promise, twice */
+  console.log("\n— the refund page does not contradict the guarantee on the paywall");
+  const guarantee = await p.evaluate(() => ({ ar: T.guarantee.ar, en: T.guarantee.en }));
+  const refundAr = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
+  ok(/no questions/i.test(guarantee.en) && /no questions/i.test(refundAr),
+     "both say 'no questions' — the page honours the promise rather than quietly narrowing it");
+  ok(!/non-refundable|غير قابل للاسترجاع|لا يُسترجع/i.test(refundAr),
+     "and the refund page contains no blanket non-refundable clause that would contradict it");
+  ok(/14/.test(refundAr), "the refund window is stated as a number rather than left vague");
+
+  /* ---- what the paywall says it accepts is a claim about the gateway */
+  console.log("\n— the payment marks on screen match the declared list");
+  const marks = await p.evaluate(() => ({
+    rendered: [...document.querySelectorAll("#payMarks i")].map(i => i.textContent),
+    declared: PAY_MARKS,
+  }));
+  ok(marks.rendered.length > 0, `the marks render (${marks.rendered.join(", ")})`);
+  ok(JSON.stringify(marks.rendered) === JSON.stringify(marks.declared),
+     "and they are exactly PAY_MARKS — one place to correct when a gateway is chosen");
+  ok(!/<i>mada<\/i>|<i>Apple/.test(app),
+     "no payment method is hard-coded in the markup any more");
+
   await b.close();
   if (FAIL.length){
     console.log(`\n${FAIL.length} FAILURES`);

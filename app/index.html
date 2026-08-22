@@ -480,6 +480,8 @@
       font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .pay-methods svg{width:14px;height:14px;color:var(--teal)}
   .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
+  .legal-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
+  .legal-links a{font-size:12.5px;color:var(--teal-ink);text-decoration:underline;text-underline-offset:2px}
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
   .acc-anchor{text-align:center;font-size:12px;color:var(--ink);background:var(--teal-soft);
       border-radius:var(--r-sm);padding:9px 12px;margin-top:12px;line-height:1.6}
@@ -1723,7 +1725,7 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
     </div>
     <div class="pay-methods">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-      <span data-t="secure_pay"></span><i>mada</i><i>Apple&nbsp;Pay</i><i>STC&nbsp;Pay</i>
+      <span data-t="secure_pay"></span><span id="payMarks"></span>
     </div>
     <p class="demo-tag" data-t="vat_line"></p>
     <p class="acc-anchor" data-t="anchor_price"></p>
@@ -1902,6 +1904,14 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
     <div class="acc-sec">
       <h3 data-t="acc_privacy"></h3>
       <p data-t="acc_privacy_b"></p>
+      <!-- The policies, reachable rather than filed away. An unlinked privacy
+           policy is one a reader never finds and an onboarding reviewer has to
+           be sent by hand. -->
+      <p class="legal-links">
+        <a href="../privacy/" target="_blank" rel="noopener" data-t="ll_privacy"></a>
+        <a href="../terms/" target="_blank" rel="noopener" data-t="ll_terms"></a>
+        <a href="../refund/" target="_blank" rel="noopener" data-t="ll_refund"></a>
+      </p>
     </div>
     <div class="acc-sec">
       <h3 data-t="acc_how"></h3>
@@ -2654,6 +2664,9 @@ const T = {
      that omits something it can. */
   acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
                       en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
+  ll_privacy:{ar:"سياسة الخصوصية",en:"Privacy Policy"},
+  ll_terms:{ar:"شروط الاستخدام",en:"Terms of Service"},
+  ll_refund:{ar:"سياسة الاسترجاع",en:"Refund Policy"},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -9592,6 +9605,21 @@ const LAWYER_DESK = { live: LAWYER_COMPILED, turnaround: null };
 const PAYMENT_COMPILED = false;
 let PAYMENT_LIVE = PAYMENT_COMPILED;
 
+/* WHAT WE SAY WE ACCEPT IS A CLAIM, AND IT WAS HARD-CODED.
+   mada, Apple Pay and STC Pay were three literal <i> tags under the pay
+   button. No gateway is chosen yet, and the one we end up with may not support
+   all three — which would leave a false claim on the exact screen where
+   somebody decides whether to trust us with money.
+
+   One list, one place to correct it, and a test that asserts the marks
+   rendered on screen are exactly this list. Set it from the gateway's actual
+   capabilities on the day one is chosen; see docs/payments.md. */
+const PAY_MARKS = ["mada", "Apple\u00A0Pay", "STC\u00A0Pay"];
+function renderPayMarks(){
+  const host = document.getElementById("payMarks");
+  if (host) host.innerHTML = PAY_MARKS.map(m => `<i>${esc(m)}</i>`).join("");
+}
+
 /* Prices are numbers, not two hand-written strings per plan. Two strings drift;
    a number can be checked. See ladderBreaks() below, and the invariant it
    enforces: no bundle may ever cost less than something it contains. */
@@ -10186,6 +10214,10 @@ function dismissInstall(){ installOff = true; saveState(); renderInstallHint(); 
 
 loadState();
 if (typeof initAuth === "function") initAuth();
+/* Static and language-independent, so rendered once at boot rather than from
+   renderPaywall() — which returns early on several legitimate paths and left
+   the marks missing entirely. */
+renderPayMarks();
 applyLang();
 initIntake();
 initGestures();

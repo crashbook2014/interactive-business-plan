@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Two URLs, because there are two: the landing page and the app. The brand page
-  is deliberately absent, matching robots.txt.
+  Five URLs: the landing page, the app, and the three policies. The brand page
+  and the founder console are deliberately absent, matching robots.txt.
+
+  The policies are listed because a payment gateway's onboarding reviewer and a
+  reader both need to find them, and because a policy nobody can reach is a
+  policy nobody was given.
 
   No <xhtml:link rel="alternate" hreflang="..."> entries. Both pages serve
   Arabic and English from a single URL with a JavaScript toggle, and hreflang
@@ -20,5 +24,20 @@
     <loc>https://alwodouh.com/app/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alwodouh.com/privacy/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://alwodouh.com/terms/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://alwodouh.com/refund/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

@@ -59,7 +59,7 @@ each is off for a reason:
 
 | Still off | Where | What it needs |
 |---|---|---|
-| **Payments** | `PAYMENT_LIVE = false` in `app/index.html` | Moyasar merchant approval, then the server work in the plan. Until then a reader can reach a paywall and cannot pay — decide whether to launch free-only or wait |
+| **Payments** | `PAYMENT_LIVE = false` in `app/index.html` | Merchant approval from a payment gateway — Tap and Moyasar are both applied for, first one wins; see `docs/payments.md`. Then the server work. Until then a reader can reach a paywall and cannot pay — decide whether to launch free-only or wait |
 | **Subscriptions** | `SUBSCRIPTIONS_LIVE = false` | Same |
 | **The lawyer desk** | `LAWYER_DESK.live = false` | A real lawyer, a real turnaround time, and an answer to who reviewed the 29 claims |
 | **The AI** | `ANALYZE_URL: ""` | `docs/enable-ai-runbook.md` — a Supabase project, an Anthropic key, and a CSP edit |

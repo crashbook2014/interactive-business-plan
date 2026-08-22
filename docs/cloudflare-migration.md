@@ -129,7 +129,7 @@ true yet, so neither has been written into the code.**
    done and I will make both changes.
 
 2. **Cloudflare Workers could replace the Supabase Edge Function** for the AI
-   and, later, for Moyasar — one vendor instead of two, plus AI Gateway for
+   and, later, for the payment gateway — one vendor instead of two, plus AI Gateway for
    cost visibility. But `supabase/` already holds two migrations and a webhook
    function. **Do not move the backend because you moved the hosting.**
    Cloudflare Pages in front and Supabase behind is a perfectly good

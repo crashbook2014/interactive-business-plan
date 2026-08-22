@@ -1,0 +1,116 @@
+/* Wodouh — the shared look for /terms, /privacy and /refund.
+ *
+ * One stylesheet for three pages rather than three copies, because these
+ * documents will be edited by a lawyer and then by us, and a divergence
+ * between them is the kind of thing nobody notices until a merchant
+ * onboarding reviewer does.
+ *
+ * Tokens are lifted from app/index.html so the policies read as part of the
+ * product a person just used, not as something bolted on for compliance.
+ */
+:root{
+  --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
+  --sand:#F7F1E6; --card:#FDFAF3;
+  --amber:#C9922E; --amber-bg:#F6EAD2;
+  --ink:#2B3230; --ink-2:#5A625F; --ink-3:#8A918D;
+  --line:#E8DFCE; --line-2:#D9CDB5;
+  --ar:"Noto Kufi Arabic","Segoe UI",Tahoma,sans-serif;
+  --en:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+    --sand:#141B19; --card:#1B2422;
+    --amber:#D9A648; --amber-bg:#2E2618;
+    --ink:#EDE6D8; --ink-2:#A3ABA6; --ink-3:#79817D;
+    --line:#2B3633; --line-2:#3A4744;
+  }
+}
+:root[data-theme="dark"]{
+  --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+  --sand:#141B19; --card:#1B2422;
+  --amber:#D9A648; --amber-bg:#2E2618;
+  --ink:#EDE6D8; --ink-2:#A3ABA6; --ink-3:#79817D;
+  --line:#2B3633; --line-2:#3A4744;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--sand); color:var(--ink);
+  font-family:var(--en); font-size:16px; line-height:1.7;
+}
+html[lang="ar"] body{font-family:var(--ar); line-height:1.9}
+
+.wrap{max-width:760px; margin:0 auto; padding:26px 20px 80px}
+
+/* ------------------------------------------------------------- header */
+.top{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:30px}
+.brand{display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--ink)}
+.brand svg{width:26px; height:26px; fill:none; stroke:var(--teal)}
+.brand b{font-size:17px; letter-spacing:-.01em}
+.langs{display:flex; gap:0; border:1px solid var(--line-2); border-radius:9px; overflow:hidden}
+.langs button{
+  font:inherit; font-size:13px; font-weight:600; cursor:pointer; border:0;
+  background:transparent; color:var(--ink-2); padding:6px 13px;
+}
+.langs button[aria-pressed="true"]{background:var(--teal); color:#fff}
+.langs button:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
+
+/* -------------------------------------------------------------- draft */
+.draft{
+  background:var(--amber-bg); color:var(--ink); border-radius:12px;
+  padding:14px 16px; margin-bottom:28px; font-size:14px; line-height:1.65;
+  border-inline-start:3px solid var(--amber);
+}
+.draft b{color:var(--amber)}
+
+/* ------------------------------------------------------------ content */
+h1{font-size:29px; line-height:1.25; letter-spacing:-.015em; margin:0 0 6px; text-wrap:balance}
+.updated{color:var(--ink-3); font-size:13px; margin:0 0 30px}
+h2{
+  font-size:19px; line-height:1.35; margin:38px 0 12px; letter-spacing:-.01em;
+  padding-top:18px; border-top:1px solid var(--line);
+}
+h2:first-of-type{border-top:0; padding-top:0; margin-top:26px}
+h3{font-size:15.5px; margin:24px 0 8px}
+p{margin:0 0 14px}
+ul{margin:0 0 16px; padding-inline-start:22px}
+li{margin-bottom:8px}
+strong{font-weight:700}
+a{color:var(--teal-ink)}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em;
+  background:var(--teal-soft); border-radius:5px; padding:1px 6px;
+}
+.box{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:16px 18px; margin:0 0 18px;
+}
+.box p:last-child, .box ul:last-child{margin-bottom:0}
+.key{
+  background:var(--teal-soft); border-radius:12px; padding:16px 18px; margin:0 0 20px;
+  border-inline-start:3px solid var(--teal);
+}
+.key p:last-child{margin-bottom:0}
+
+/* Language blocks. Arabic is the default so a reader with JS disabled still
+   gets the language most of them read. */
+[data-lang]{display:none}
+html[lang="ar"] [data-lang="ar"]{display:block}
+html[lang="en"] [data-lang="en"]{display:block}
+
+footer{
+  margin-top:52px; padding-top:22px; border-top:1px solid var(--line);
+  font-size:13px; color:var(--ink-3);
+  display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center;
+}
+footer a{color:var(--ink-2)}
+
+@media print{
+  :root{--sand:#fff; --card:#fff; --ink:#111; --ink-2:#333; --ink-3:#666; --line:#ddd; --line-2:#bbb}
+  .top,.langs{display:none}
+  .wrap{padding:0; max-width:none}
+  h2{page-break-after:avoid}
+  .box,.key,.draft{page-break-inside:avoid}
+}

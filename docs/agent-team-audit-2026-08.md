@@ -116,7 +116,7 @@ Ordered by how much it blocks the four agents.
 | 4 | **Auth and accounts** | "Another account" as an attack path does not exist. Sessions are one browser's localStorage |
 | 5 | **AI in the request path** | AI red-teaming is against a dormant integration. The tests are real; the deployment is not |
 | 6 | **Legal-review governance** | Still blocked on who reviewed the 29 claims, when, and per-claim outcome |
-| 7 | **Terms / privacy / refund pages** | Needed for Moyasar onboarding and for anything Growth publishes |
+| 7 | ~~**Terms / privacy / refund pages**~~ **RESOLVED 22 Aug 2026** | Were needed for gateway onboarding and for anything Growth publishes. All three now exist at `/terms`, `/privacy` and `/refund`, bilingual, linked, and labelled as drafts pending legal review. Left in this table rather than deleted: a dated audit is a record, and a reader arriving at it later needs to know the item closed rather than assume it is still open |
 | 8 | **A production error signal** | Nothing tells you when a real reader hits a bug |
 | 9 | **Working CI and watchdog** | Account setting; both are written |
 
