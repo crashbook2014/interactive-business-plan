@@ -287,6 +287,22 @@ console.log("\n— the SQL-editor paste is still the migrations it claims to be"
      "and it points at the allowlist, which is where operators are named now");
 }
 
+/* ---- the setup guide must list every migration.
+   docs/backend-setup.md carries a table of what each migration creates. It
+   stopped at 0005 while the tree had eight, so anyone following it built a
+   database three migrations short and had no way to know. A doc that is
+   confidently incomplete is worse than one that says nothing.
+
+   Checked as a relationship: whatever files exist, the table names them. */
+{
+  const guide = readFileSync(path.join(DIR, "..", "..", "docs/backend-setup.md"), "utf8");
+  console.log("\n— the setup guide lists every migration that exists");
+  const all = readdirSync(DIR).filter(f => f.endsWith(".sql")).sort();
+  for (const f of all) {
+    ok(guide.includes(f), `${f} appears in docs/backend-setup.md`);
+  }
+}
+
 console.log(FAIL.length
   ? `\n${FAIL.length} FAILURES`
   : "\nthe schema holds — static analysis; rls.test.js runs the same SQL against a real Postgres");

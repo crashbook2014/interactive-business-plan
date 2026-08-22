@@ -175,9 +175,26 @@ you are getting:
 | `0003_accounts.sql` | identity on profiles, phone + consent, contracts, contract_analyses, `delete_my_account()` |
 | `0004_uploads.sql` | `uploads` — the scanned-contract ownership record |
 | `0005_admin.sql` | `admins`, `app_flags`, `flag_audit` — the founder console |
+| `0006_function_grants.sql` | revokes the EXECUTE grants Supabase hands out by default |
+| `0007_blockers.sql` | `launch_blockers` — the founder checklist, operator-only |
+| `0008_operator_allowlist.sql` | `admin_allowlist` + the trigger that promotes on first sign-in |
 
-Then, **in the dashboard**, add yourself to `public.admins` with role `owner`.
-There is no client write policy on that table, deliberately, so no page can
+### Becoming an operator
+
+**Nothing to do by hand.** This used to read "in the dashboard, add yourself to
+`public.admins` with role `owner`", which was the only way in and also a
+deadlock: `admins.user_id` references `auth.users`, so nobody could be made an
+operator before their first sign-in — and the console is what you sign in to.
+
+`0008` names operators by **email**, in `public.admin_allowlist`, and a trigger
+promotes a matching **confirmed** address the moment its `auth.users` row
+appears. It also promotes anyone already signed in, so it is correct whichever
+order those two things happen in.
+
+To add or remove an operator, edit that table in the SQL editor. It is RLS-on
+with no policies, so only the editor and the service role can see or change it.
+
+`public.admins` still has no client write policy, deliberately, so no page can
 grant itself access — including the console.
 
 ### Verify RLS actually holds

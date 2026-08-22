@@ -175,6 +175,15 @@ reads facts they could get off the deployed site anyway, and can change
 nothing. Hiding a button is not a permission, and `test/admin.test.js` checks
 the bytes rather than trusting the intention.
 
+That paragraph was not quite true until 22 August 2026. The blockers panel
+also rendered for anyone, and its rows — including that the legal register had
+not been through professional review — were a hardcoded array in
+`admin/admin.js`, a file anyone can fetch. Nothing there granted a capability,
+which is exactly why every RLS test passed while it was published: a
+disclosure is not a hole, and no policy test will find one. The rows now live
+in `public.launch_blockers` behind `is_admin('viewer')`, and the suite checks
+the shipped bytes for the phrases that must not appear.
+
 **The status panel needs no credentials, and reads the DEPLOYED files** —
 `/index.html`, `/app/index.html`, `/docs/legal-sources.md` — parsing the
 constants straight out of them. So it reports what readers are actually
@@ -217,9 +226,21 @@ overrides everything.
 
 ### Adding an operator
 
-Only in the Supabase dashboard: insert the user's `auth.users` id into
-`public.admins` with role `owner` or `viewer`. There is no client write policy
-on that table, so no page — including the console — can grant access to itself.
+Add their **email** to `public.admin_allowlist` in the Supabase SQL editor. A
+trigger on `auth.users` promotes a matching confirmed address on first sign-in,
+and back-fills anyone already signed in.
+
+This replaced "insert the user's `auth.users` id into `public.admins`", which
+could only be done after that person had already signed in — and until they
+were an operator the console showed them nothing to sign in for.
+
+Only a **confirmed** address is promoted. Without that, anyone who can type an
+allowlisted email into a sign-up form would become an operator.
+
+`public.admins` still has no client write policy, so no page — including the
+console — can grant access to itself. `admin_allowlist` has RLS on and no
+policies at all, so nothing reachable from a browser can read or change who is
+on it.
 
 ---
 
