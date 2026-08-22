@@ -183,6 +183,36 @@ const unpinned = definers.filter(m => !/set search_path\s*=\s*''/.test(m[0]));
 ok(definers.length > 0 && unpinned.length === 0,
    `all ${definers.length} security definer functions set search_path${unpinned.length ? " — missing on " + unpinned.map(m => m[1]).join(", ") : ""}`);
 
+/* ---- 7. the one-paste copy cannot go stale
+   tools/apply-all.sql is every migration concatenated for the Supabase SQL
+   Editor, for when the CLI is not available. A hand-kept copy of five files is
+   a copy that goes stale the first time one of them changes, and nothing would
+   say so — the same argument that guards corpus.json. */
+console.log("\n— the SQL-editor paste is still the migrations it claims to be");
+{
+  const { execFileSync } = require("node:child_process");
+  const fresh = execFileSync("node", ["-e",
+    `import(${JSON.stringify("file://" + path.join(DIR, "..", "..", "tools/make-sql-paste.mjs"))})` +
+    `.then(m => process.stdout.write(m.buildPaste()))`],
+    { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
+  const committed = readFileSync(path.join(DIR, "..", "..", "tools/apply-all.sql"), "utf8");
+  ok(fresh === committed,
+     "tools/apply-all.sql matches what the migrations generate today" +
+     (fresh === committed ? "" : " — run: node tools/make-sql-paste.mjs"));
+
+  /* Every migration present, in order, and each recorded for the CLI. */
+  for (const f of files) {
+    ok(committed.includes("-- " + f), `${f} is in the paste`);
+    const version = f.split("_")[0];
+    ok(new RegExp(`\\('${version}', '`).test(committed),
+       `and ${version} is recorded in schema_migrations, so db push will not re-run it`);
+  }
+  ok(/^begin;/m.test(committed) && /^commit;/m.test(committed),
+     "the whole thing is one transaction, so a failed re-run leaves the database unchanged");
+  ok(/public\.admins/.test(committed) && /^-- insert into public\.admins/m.test(committed),
+     "the become-an-operator step is present but commented out — it needs a user id that does not exist yet");
+}
+
 console.log(FAIL.length
   ? `\n${FAIL.length} FAILURES`
   : "\nthe schema holds — static analysis; rls.test.js runs the same SQL against a real Postgres");
