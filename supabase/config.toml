@@ -1,0 +1,105 @@
+# Wodouh — Supabase CLI project.
+#
+# WHY THIS FILE EXISTS. `supabase link` and `supabase db push` both expect a CLI
+# project, and this repo had migrations and functions but no config.toml — so
+# those commands would have complained rather than worked, on a project that was
+# already created and waiting.
+#
+# WHAT MATTERS MOST HERE is the [functions] block at the bottom. Read that one
+# before changing anything.
+
+# Overwritten by `supabase link --project-ref <your-ref>`. Left as a
+# placeholder rather than a guess, because a wrong ref here points db push at
+# somebody else's project.
+project_id = "wodouh"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+# A page of rows is plenty. The app reads single rows and small lists; a large
+# default is an invitation to fetch a table by accident.
+max_rows = 200
+
+[db]
+port = 54322
+shadow_port = 54320
+# Match this to what the project actually runs, or `db diff` compares against
+# the wrong engine and reports differences that are not real.
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+# Must match REDIRECT_URL in supabase/config.js VERBATIM. A mismatch here is
+# the single most common cause of "sign-in succeeds but the app never signs
+# in" — see docs/backend-setup.md.
+site_url = "https://alwodouh.com/app/index.html"
+additional_redirect_urls = ["http://127.0.0.1:8099/app/index.html"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+# There is NO PASSWORD PATH in this product. app/auth.js has no password field
+# at all — not hidden, absent — because a password that does not exist cannot be
+# reused, phished or leaked. Enabling this would create an authentication route
+# the app does not know about and nobody is watching.
+enable_signup = true
+
+[auth.email]
+enable_signup = false
+enable_confirmations = false
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+
+# Apple needs a paid Apple Developer account, so a fully configured project can
+# still have no Apple. app/auth.js checks APPLE_SIGNIN before rendering the
+# button — a dead sign-in button is worse than one fewer option.
+[auth.external.apple]
+enabled = false
+client_id = "env(SUPABASE_AUTH_APPLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_APPLE_SECRET)"
+
+# ---------------------------------------------------------------- functions
+#
+# THE SETTING THAT DECIDES WHETHER TWO OF THESE WORK AT ALL.
+#
+# Supabase's gateway verifies a JWT before your function runs. That default is
+# right for functions the APP calls, and wrong for functions the OUTSIDE WORLD
+# calls — and two of these are called by machines that have never heard of
+# Supabase:
+#
+#   webhook        Zid and Salla POST to it with an HMAC signature and no JWT.
+#                  Left at the default, the gateway returns 401 and the
+#                  function never runs — meaning its signature check, the thing
+#                  that actually secures it, never executes. The integration
+#                  would fail silently and completely.
+#
+#   oauth-callback A browser redirect from the merchant's storefront. Also no
+#                  JWT. Its security is a signed, expiring `state` parameter,
+#                  which it verifies itself.
+#
+# Turning verify_jwt off does NOT make these open: each one authenticates its
+# own caller, in code, by a method appropriate to who is calling. The gateway
+# check is simply the wrong check for them.
+#
+# analyze and upload stay at the default. They are called by the app with the
+# anon key, and requiring it is a free first filter on functions that cost real
+# money per call.
+
+[functions.analyze]
+verify_jwt = true
+
+[functions.upload]
+verify_jwt = true
+
+[functions.webhook]
+verify_jwt = false
+
+[functions.oauth-callback]
+verify_jwt = false

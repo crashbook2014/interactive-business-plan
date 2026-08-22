@@ -113,5 +113,54 @@ ok(Object.values(directives(find("/app/*").headers["content-security-policy"]))
      .every(v => !/supabase|https:\/\//.test(v)),
    "and no endpoint is currently allowed — this ships closed like everything else");
 
+/* ==================================================== supabase/config.toml
+   The same argument as `_headers` above, applied to a different file: this one
+   has no effect until someone runs `supabase link`, which is exactly why it
+   drifts unnoticed and exactly why it needs a test.
+
+   The setting that matters is verify_jwt. Supabase's gateway checks a JWT
+   BEFORE the function runs. That is right for functions the app calls and
+   wrong for functions the outside world calls — and getting it wrong is
+   silent in both directions:
+
+     left ON for webhook   → Zid and Salla get 401 from the gateway, the
+                             function never runs, its signature check never
+                             executes, and the integration fails completely
+                             while looking configured
+     turned OFF for analyze → an endpoint that spends real money per call stops
+                             requiring even the anon key */
+console.log("\n— the Edge Functions verify the right caller, by the right method");
+const toml = readFileSync(path.join(ROOT, "supabase/config.toml"), "utf8");
+
+/* Derived from the directory rather than a list here, so a function added
+   tomorrow without a decision about its caller fails this instead of shipping
+   on a default nobody chose. */
+const fns = require("node:fs")
+  .readdirSync(path.join(ROOT, "supabase/functions"), { withFileTypes: true })
+  .filter(d => d.isDirectory() && !d.name.startsWith("_"))
+  .map(d => d.name);
+
+/* Called by machines that have never heard of Supabase and carry no JWT. Each
+   authenticates its own caller: webhook by HMAC over the raw body,
+   oauth-callback by a signed expiring state parameter. */
+const EXTERNAL = new Set(["webhook", "oauth-callback"]);
+
+for (const fn of fns){
+  const block = toml.match(new RegExp(`\\[functions\\.${fn}\\][\\s\\S]*?verify_jwt\\s*=\\s*(true|false)`));
+  ok(!!block, `${fn}: config.toml states a verify_jwt decision rather than inheriting a default`);
+  if (!block) continue;
+  const off = block[1] === "false";
+  ok(off === EXTERNAL.has(fn), EXTERNAL.has(fn)
+    ? `${fn}: verify_jwt is off, because its caller has no Supabase JWT and it checks its own signature`
+    : `${fn}: verify_jwt is on, so the anon key is required before it can spend money`);
+}
+
+ok(/site_url\s*=\s*"https:\/\/alwodouh\.com\/app\/index\.html"/.test(toml),
+   "the auth site_url matches REDIRECT_URL verbatim — the usual cause of 'sign-in works but the app never signs in'");
+ok(/\[auth\.email\][\s\S]*?enable_signup\s*=\s*false/.test(toml),
+   "email and password sign-up stays off, because this product has no password path at all");
+ok(/\[auth\.external\.apple\][\s\S]*?enabled\s*=\s*false/.test(toml),
+   "Apple stays off until there is a paid developer account, so no dead sign-in button renders");
+
 console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nthe headers hold, and none of them is weaker than the tag it replaces");
 process.exit(FAIL.length ? 1 : 0);

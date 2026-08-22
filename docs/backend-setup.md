@@ -105,8 +105,55 @@ secrets.
 
 ```
 supabase link --project-ref YOUR-REF
+supabase migration list          # <- do this FIRST. See below.
 supabase db push
 ```
+
+### Check the migration names before the first push — 30 seconds, once
+
+`supabase/migrations/` uses `0001_init.sql` … `0005_admin.sql`. The CLI's own
+convention is a 14-digit timestamp (`20260822081500_init.sql`), and it records
+the leading digits as the migration **version** in
+`supabase_migrations.schema_migrations` on your project.
+
+**Run `supabase migration list` before `db push` and see what it says.**
+
+- **If the CLI lists all five happily**, leave the names alone. Mixed
+  conventions are harmless going forward: a future timestamped migration sorts
+  after `0005` either way.
+- **If the CLI rejects the names**, they need renaming to the timestamp form —
+  and *that is a job for right now, before the first push, not later.* Once
+  `db push` succeeds, `0001`…`0005` are written into your project's migration
+  table. Rename them afterwards and the CLI sees five brand-new migrations and
+  tries to run all of them again, against a database that already has those
+  tables. Renaming is free today and unpleasant tomorrow.
+
+This is written as a check rather than a pre-emptive rename because the CLI's
+behaviour here varies by version, and renaming five files plus every reference
+to them across the docs on an untested assumption is worse than asking the tool.
+
+## 2b. What `supabase/config.toml` already decides for you
+
+`supabase init` was never run here, so the repo had migrations and functions
+but no CLI project — `link` and `db push` would have complained. It exists now,
+and one setting in it is worth knowing about.
+
+**`verify_jwt` per function.** Supabase's gateway checks a JWT *before* your
+function runs. That is correct for functions the app calls and wrong for
+functions the outside world calls:
+
+| Function | verify_jwt | Why |
+|---|---|---|
+| `analyze` | **on** | Called by the app with the anon key. Requiring it is a free first filter on an endpoint that spends real money per call |
+| `upload` | **on** | Same, and it requires a signed-in user in its own code as well |
+| `webhook` | **off** | Zid and Salla POST with an HMAC signature and no JWT. Left on, the gateway returns 401, the function never runs, **its signature check never executes**, and the integration fails silently while looking configured |
+| `oauth-callback` | **off** | A browser redirect from the merchant's storefront. Secured by a signed, expiring `state` parameter it verifies itself |
+
+Turning it off does not make those two open — each authenticates its own caller
+by a method appropriate to who is calling. The gateway check is simply the
+wrong check for them. `test/headers.test.js` asserts this, and derives the
+function list from the directory, so a function added later without a decision
+about its caller fails the suite instead of shipping on a default nobody chose.
 
 All five, in order — `supabase db push` handles the ordering, but know what
 you are getting:
