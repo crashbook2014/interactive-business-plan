@@ -1,12 +1,18 @@
 # Wodouh — وضوح
 #
-# Everything here is public and meant to be found. The one thing deliberately
-# kept out of search results is the brand page: it is an internal reference for
-# how the identity is used, not something a person looking for help with an
-# employment contract should ever land on.
+# Everything here is public and meant to be found. Two things are deliberately
+# kept out of search results. The brand page is an internal reference for how
+# the identity is used, not something a person looking for help with an
+# employment contract should ever land on. The console is an operator's tool.
+#
+# NEITHER LINE IS A SECURITY CONTROL, and the console in particular does not
+# rely on one: it holds no credential, and every read and write it makes is
+# enforced by row level security in Postgres. This file keeps it out of search
+# results because it is noise to a reader, not because it is a secret.
 
 User-agent: *
 Allow: /
 Disallow: /brand/
+Disallow: /admin/
 
 Sitemap: https://alwodouh.com/sitemap.xml

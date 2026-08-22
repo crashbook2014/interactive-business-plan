@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Wodouh — console</title>
+
+<!-- THE PAGE IS NOT THE SECURITY CONTROL.
+     This URL is public and anyone may open it. Nothing here is protected by
+     being hard to find: every read and every write is enforced by row level
+     security in Postgres against public.admins, so a stranger who loads this
+     page sees the same status a stranger could read off the deployed site
+     anyway, and can change nothing. Hiding a button is not a permission.
+
+     connect-src 'self' covers the status panel, which works with no
+     credentials at all by reading the DEPLOYED files. Add your project host to
+     connect-src when you configure supabase/config.js — the same line the app
+     needs. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  connect-src 'self';
+  base-uri 'none';
+  form-action 'none';
+  frame-ancestors 'none'"/>
+
+<style>
+  :root{
+    --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
+    --sand:#F7F1E6; --card:#FDFAF3;
+    --amber:#C9922E; --amber-bg:#F6EAD2;
+    --red:#B4544A; --red-bg:#F3DFDC;
+    --green:#4E8F5B; --green-bg:#E2EEE2;
+    --ink:#2B3230; --ink-2:#5A625F; --line:#E8DFCE;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+      --sand:#141B19; --card:#1B2422;
+      --amber:#D9A648; --amber-bg:#2E2618;
+      --red:#C86F63; --red-bg:#2E1E1C;
+      --green:#6BAE78; --green-bg:#1A2A1E;
+      --ink:#EDE6D8; --ink-2:#A3ABA6; --line:#2B3633;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--sand);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       padding:20px 16px 64px;max-width:760px;margin-inline:auto}
+  h1{font-size:20px;margin:0 0 2px;letter-spacing:-.01em}
+  .sub{color:var(--ink-2);font-size:13px;margin:0 0 22px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);
+     margin:26px 0 8px;font-weight:700}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .tx{flex:1;min-width:0}
+  .row b{display:block;font-size:14px;font-weight:600}
+  .row small{display:block;color:var(--ink-2);font-size:12px;margin-top:2px}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .on{background:var(--green-bg);color:var(--green)}
+  .off{background:var(--line);color:var(--ink-2)}
+  .warn{background:var(--amber-bg);color:var(--amber)}
+  .bad{background:var(--red-bg);color:var(--red)}
+  .note{font-size:12.5px;color:var(--ink-2);margin:8px 2px 0;line-height:1.6}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
+         background:var(--card);color:var(--ink);padding:7px 13px;font-size:13px;font-weight:600}
+  button.go{background:var(--teal);border-color:var(--teal);color:#fff}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  a{color:var(--teal-ink)}
+  .empty{padding:16px 14px;color:var(--ink-2);font-size:13.5px;line-height:1.65}
+  .empty code{background:var(--sand);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
+  dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);
+         max-width:380px;padding:18px}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog input{width:100%;font:inherit;padding:8px 10px;border-radius:9px;
+               border:1px solid var(--line);background:var(--sand);color:var(--ink);margin:10px 0}
+  .dlg-act{display:flex;gap:8px;justify-content:flex-end}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<h1>Wodouh console</h1>
+<p class="sub" id="who">Reading the deployed site…</p>
+
+<h2>What is live right now</h2>
+<div class="card" id="status"></div>
+<p class="note">Read from the <b>deployed</b> files at this domain, not from anyone's
+laptop. If a row here disagrees with your local repo, the deploy is what readers see.</p>
+
+<h2>Switches</h2>
+<div class="card" id="flags"></div>
+
+<h2>Numbers</h2>
+<div class="card" id="numbers"></div>
+
+<h2>Your data</h2>
+<div class="card" id="data"></div>
+
+<h2>Recent changes</h2>
+<div class="card" id="audit"></div>
+
+<h2>What is blocking you</h2>
+<div class="card" id="blockers"></div>
+
+<dialog id="confirm">
+  <b id="cfTitle"></b>
+  <p class="note" id="cfBody"></p>
+  <input id="cfInput" autocomplete="off" spellcheck="false" placeholder=""/>
+  <div class="dlg-act">
+    <button onclick="document.getElementById('confirm').close()">Cancel</button>
+    <button class="go" id="cfGo">Confirm</button>
+  </div>
+</dialog>
+
+<!-- Gitignored and absent until the project exists. A 404 here is the normal,
+     shipping state: WODOUH_CONFIG stays undefined and every panel below says
+     so instead of failing. -->
+<script src="../supabase/config.js" onerror="window.__noConfig=1"></script>
+<script src="../app/auth.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

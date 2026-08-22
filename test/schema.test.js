@@ -72,18 +72,29 @@ for (const t of tables) {
      them, while WRITES happen only in an Edge Function. Fewer policies there
      is a narrower surface, not a gap — so the floor is "select is scoped",
      and anything more is a bonus. */
+  /* 0005's three tables are the strictest shape a client-reachable table can
+     take: RLS on, exactly the policies the product needs, and nothing else —
+     so every operation without a policy is denied. admins has no write policy
+     at all, which is why making yourself an operator requires the dashboard.
+     flag_audit has no write policy either, which is what makes the log
+     unforgeable: only the trigger writes it. */
   const PARTIAL = { profiles: 3, integration_providers: 1,
-                    integration_connections: 2, integration_events: 1 };
+                    integration_connections: 2, integration_events: 1,
+                    admins: 1, app_flags: 2, flag_audit: 1 };
   const need = PARTIAL[t] || 4;
   ok(ops.length >= need,
      `${t}: reachable by clients, so it carries ${ops.length}/${need} policies (${ops.join(", ") || "none"})`);
 }
 
-/* Public reference data: a catalogue every signed-in user may read. It has no
-   owner, so it is the one table where a policy legitimately does not name
-   auth.uid(). Named explicitly so a future unscoped policy on a table that DOES
-   have an owner still fails. */
-const REFERENCE = new Set(["integration_providers"]);
+/* Public reference data: a catalogue with no owner, where a READ legitimately
+   does not name auth.uid(). Named explicitly so a future unscoped policy on a
+   table that does have an owner still fails.
+
+   app_flags is here because every reader's app must know whether payments are
+   live before anyone signs in. Note what this exemption does NOT cover: it
+   applies to `for select` only, so the write policies on these tables are held
+   to the same standard as everywhere else. */
+const REFERENCE = new Set(["integration_providers", "app_flags"]);
 
 /* ---- 2. every policy is scoped, and updates cannot reassign a row */
 console.log("\n— no policy is open, and no update can hand a row to someone else");
@@ -91,10 +102,23 @@ const policies = [...code.matchAll(
   /create policy (\w+) on public\.(\w+)\s+for (\w+)([\s\S]*?);/g)];
 ok(policies.length >= 25, `${policies.length} policies parsed`);
 
-const unscoped = policies.filter(([, , tbl, , body]) =>
-  !REFERENCE.has(tbl) && !/auth\.uid\(\)/.test(body));
+/* A policy may scope directly, or through a function that scopes. Which
+   functions those are is DERIVED from the SQL rather than listed here: a
+   helper only counts if its own body names auth.uid(). So a future
+   `public.is_staff()` that forgot to check anything cannot launder an open
+   policy past this test. */
+const SCOPING_FNS = [...code.matchAll(/create or replace function public\.(\w+)\(([^)]*)\)([\s\S]*?)\$\$([\s\S]*?)\$\$/g)]
+  .filter(m => /auth\.uid\(\)/.test(m[4]))
+  .map(m => m[1]);
+const scoped = body =>
+  /auth\.uid\(\)/.test(body) ||
+  SCOPING_FNS.some(fn => new RegExp(`public\\.${fn}\\s*\\(`).test(body));
+
+const unscoped = policies.filter(([, , tbl, op, body]) =>
+  !(REFERENCE.has(tbl) && op === "select") && !scoped(body));
 ok(unscoped.length === 0,
-   `every policy scopes to auth.uid()${unscoped.length ? " — open: " + unscoped.map(p => p[1]).join(", ") : ""}`);
+   `every policy scopes to auth.uid(), directly or through a function that does${unscoped.length ? " — open: " + unscoped.map(p => p[1]).join(", ") : ""}`);
+ok(SCOPING_FNS.length > 0, `${SCOPING_FNS.length} scoping helpers verified to name auth.uid() themselves: ${SCOPING_FNS.join(", ")}`);
 
 const updates = policies.filter(p => p[3] === "update");
 const noCheck = updates.filter(p => !/with check/i.test(p[4]));
@@ -142,7 +166,11 @@ ok(/grant execute on function public\.delete_my_account\(\) to authenticated/.te
 /* Every security-definer function must pin search_path, or a caller can shadow
    the tables it references and run its body against their own. */
 console.log("\n— every security definer function pins its search path");
-const definers = [...code.matchAll(/create or replace function public\.(\w+)\(\)[\s\S]*?\$\$/g)]
+/* Parameters allowed in the match, not just `()`: the original only caught
+   zero-argument functions, so a security definer helper taking a parameter —
+   exactly what public.is_admin(text) is — would have slipped past the
+   search_path check entirely. */
+const definers = [...code.matchAll(/create or replace function public\.(\w+)\(([^)]*)\)[\s\S]*?\$\$/g)]
   .filter(m => /security definer/.test(m[0]));
 const unpinned = definers.filter(m => !/set search_path\s*=\s*''/.test(m[0]));
 ok(definers.length > 0 && unpinned.length === 0,

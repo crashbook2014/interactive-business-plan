@@ -2218,6 +2218,150 @@ window.WODOUH_CONFIG = Object.assign({
   ANALYZE_URL: ""
 }, window.WODOUH_CONFIG || {});
 
+/* ==================================================== RUNTIME FEATURE FLAGS
+ *
+ * The founder console (/admin/) can turn four features on and off without a
+ * deploy: payments, subscriptions, the AI read, and the lawyer desk. This is
+ * the half that lives in the reader's browser.
+ *
+ * WHAT THIS COSTS, STATED FIRST. Before this existed the app made ZERO network
+ * requests for a reader with no account, which is what made "nothing leaves
+ * your device" true with no qualification at all. Three rules keep that as
+ * close to true as a remote switch allows:
+ *
+ *   1. LAZY, NEVER ON BOOT. Nothing is fetched until a reader first reaches a
+ *      surface a flag governs — the paywall, the AI panel, the account screen.
+ *      Someone who opens the app, pastes a contract, reads their flags and
+ *      closes it has still made no request. That is the common path and it is
+ *      unchanged.
+ *   2. IT CARRIES NOTHING. A GET of a public table with the anon key. No
+ *      account, no cookie, no body, nothing about the reader or the document.
+ *   3. IT NEVER BLOCKS. 2-second timeout, and a failure is not an error state
+ *      the reader ever sees.
+ *
+ * FAILURE FALLS TO THE COMPILED DEFAULT, WHICH IS OFF.
+ * No config, no network, a timeout, a malformed response, a cache older than
+ * MAX_AGE — every one of them lands on the constant compiled into this file.
+ * All of those constants are false. So an attacker who could make this table
+ * unreachable could turn features OFF; there is no path by which they turn one
+ * ON, and that asymmetry is the whole safety argument.
+ *
+ * A CACHE THAT SAYS "ON" EXPIRES. Without MAX_AGE, turning payments off in the
+ * console would leave a reader who has been offline since yesterday still
+ * being charged. Twelve hours is the ceiling on how wrong a cached "on" can be.
+ *
+ * THE LAUNCH CURTAIN IS DELIBERATELY NOT HERE. Making it remote would mean a
+ * request from every visitor before they have consented to anything, for a
+ * switch that moves twice in a product's life. It stays a two-line deploy;
+ * the console shows its state and tells you what to change.
+ */
+const FLAG_MAX_AGE = 12 * 60 * 60 * 1000;
+const FLAG_TIMEOUT = 2000;
+const FLAG_CACHE = "wodouh.flags.v1";
+
+/* Loaded flags, or null while nothing has been loaded. Null is not "all off" —
+   it is "we know nothing", and every reader of it falls back to the compiled
+   constant rather than to false. An unreachable table must not switch off a
+   feature the owner enabled in config.js. */
+let flagValues = null;
+let flagPending = null;
+
+function flagsUrl(){
+  const c = window.WODOUH_CONFIG || {};
+  return typeof c.SUPABASE_URL === "string" && /^https:\/\//.test(c.SUPABASE_URL)
+      && typeof c.SUPABASE_ANON_KEY === "string" && c.SUPABASE_ANON_KEY
+    ? c.SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/app_flags?select=key,enabled"
+    : null;
+}
+
+/* Whatever comes back is data from the network, so it is rebuilt rather than
+   trusted: known keys only, booleans only. A flag the app does not know about
+   cannot appear, and a string cannot become truthy. */
+const FLAG_KEYS = ["payments", "subscriptions", "ai_analysis", "lawyer_desk"];
+function flagShape(rows){
+  const out = {};
+  if (!Array.isArray(rows)) return out;
+  for (const r of rows){
+    if (r && FLAG_KEYS.includes(r.key) && typeof r.enabled === "boolean") out[r.key] = r.enabled;
+  }
+  return out;
+}
+
+function flagCacheRead(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(FLAG_CACHE) || "null");
+    if (!raw || typeof raw.at !== "number") return null;
+    if (Date.now() - raw.at > FLAG_MAX_AGE) return null;
+    return flagShape(raw.rows);
+  } catch { return null; }
+}
+function flagCacheWrite(rows){
+  try { localStorage.setItem(FLAG_CACHE, JSON.stringify({ at: Date.now(), rows })); } catch {}
+}
+
+/* Idempotent. Called from every governed surface; fetches at most once per
+   page life, and resolves immediately when there is nothing to fetch. */
+function ensureFlags(){
+  if (flagPending) return flagPending;
+  const url = flagsUrl();
+  if (!url){
+    /* No project configured — the shipping default. Nothing is fetched, ever,
+       and the app behaves exactly as it did before flags existed. */
+    flagPending = Promise.resolve(false);
+    return flagPending;
+  }
+  const cached = flagCacheRead();
+  if (cached && Object.keys(cached).length){ flagValues = cached; applyFlags(); }
+
+  flagPending = (async () => {
+    const ctl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = setTimeout(() => ctl && ctl.abort(), FLAG_TIMEOUT);
+    try {
+      const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
+      const res = await fetch(url, {
+        headers: { apikey: key, authorization: "Bearer " + key },
+        signal: ctl ? ctl.signal : undefined,
+        cache: "no-store",
+      });
+      if (!res.ok) return false;
+      const rows = await res.json();
+      flagValues = flagShape(rows);
+      flagCacheWrite(rows);
+      applyFlags();
+      return true;
+    } catch {
+      /* Offline, blocked, slow, or a project that no longer exists. The
+         compiled default already holds; there is nothing to tell the reader
+         and nothing to retry in front of them. */
+      return false;
+    } finally { clearTimeout(timer); }
+  })();
+  return flagPending;
+}
+
+/* The one place a flag is read. `fallback` is the constant compiled into this
+   file, and it wins whenever we have not been told otherwise. */
+function flagOn(key, fallback){
+  return flagValues && typeof flagValues[key] === "boolean" ? flagValues[key] : fallback;
+}
+
+/* Flags arrive after the screen that needs them may already be on-screen, so
+   applying them writes the existing globals and re-renders. Writing the
+   globals rather than rewriting sixty call sites is deliberate: every
+   `SUBSCRIPTIONS_LIVE ? a : b` in this file keeps working untouched, which is
+   far less likely to go wrong than editing each one. */
+function applyFlags(){
+  if (!flagValues) return;
+  PAYMENT_LIVE       = flagOn("payments", PAYMENT_COMPILED);
+  SUBSCRIPTIONS_LIVE = flagOn("subscriptions", SUBSCRIPTIONS_COMPILED);
+  LAWYER_DESK.live   = flagOn("lawyer_desk", LAWYER_COMPILED);
+  const cur = document.querySelector(".screen.active");
+  const id = cur ? cur.id.replace("screen-", "") : "";
+  if (id === "paywall") renderPaywall();
+  if (id === "account") renderAccount();
+  if (id === "result") renderAiPanel();
+}
+
 /* ------------------------------------------------------------------ i18n */
 const T = {
   /* ---- accounts.
@@ -2504,6 +2648,12 @@ const T = {
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
   acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\n4 — «اقرأ عقدًا ممسوحًا ضوئيًا»: هذا الوحيد اللي يرفع الملف نفسه، مو نصه. نلجأ له فقط إذا كان عقدك صورة أو مسحًا ضوئيًا وما فيه نص نقدر نقرأه على جهازك. يتطلب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل، وفي كل الأحوال خلال ساعة. وما نعرض عليك أي مبلغ من عقد ممسوح — لأننا ما نقدر نتحقق منه.\n\nالأربعة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic. الثلاثة الأولى ما يُحفظ منها شيء في أي مرحلة؛ الرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
                     en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\n4 — \"Read a scanned contract\": the only one that uploads the FILE rather than its text. It is used only when your contract is a photo or a scan with no text we can read on your device. It requires signing in, the file is deleted from Anthropic's servers as soon as the analysis returns and within an hour in every case, and we show you no amount at all from a scan — because we cannot check one.\n\nAll four go through Wodouh's server to Anthropic's Claude model. Nothing is stored at any point for the first three; the fourth stores the file briefly and then deletes it. None of them can change any amount — all the arithmetic stays on your device. Decline all four and the assessment works in full."},
+  /* The flag check, described exactly. It is added to the privacy screen only
+     when a project is configured, because until then it never happens — and a
+     privacy screen that lists something the build cannot do is as wrong as one
+     that omits something it can. */
+  acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
+                      en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -6733,7 +6883,14 @@ function renderPrivacyCopy(){
   const line = document.querySelector('#screen-home [data-t="privacy_line"]');
   if (line) line.textContent = t(on ? "privacy_line_ai" : "privacy_line");
   const body = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
-  if (body) body.textContent = t(on ? "acc_privacy_b_ai" : "acc_privacy_b");
+  if (body){
+    /* The flag sentence is appended only where the fetch can actually occur.
+       flagsUrl() is the same test the fetch itself makes, so the copy and the
+       behaviour cannot disagree — which is the failure this whole pattern
+       exists to prevent. */
+    body.textContent = t(on ? "acc_privacy_b_ai" : "acc_privacy_b") +
+      (flagsUrl() ? "\n\n" + t("acc_privacy_flags") : "");
+  }
 }
 
 function analyzeUrl(){
@@ -6741,11 +6898,17 @@ function analyzeUrl(){
   return c && typeof c.ANALYZE_URL === "string" && /^https:\/\//.test(c.ANALYZE_URL)
     ? c.ANALYZE_URL : null;
 }
-function aiAvailable(){ return !!analyzeUrl(); }
+/* Two locks, and BOTH must be open. ANALYZE_URL is the credential — without it
+   there is nowhere to send anything and the feature cannot exist. The flag is
+   the switch on top of it, so the console can turn the AI off in seconds
+   without anyone editing config. With no flags loaded the credential decides
+   alone, exactly as it did before the console existed. */
+function aiAvailable(){ return !!analyzeUrl() && flagOn("ai_analysis", true); }
 
 let aiConsent = false, aiBusy = false, aiFindings = null, aiError = null;
 
 function renderAiPanel(){
+  ensureFlags();
   const host = document.getElementById("termAi");
   if (!host) return;
   /* Not configured: render nothing at all. No teaser, no "coming soon" — an
@@ -7650,7 +7813,12 @@ let billing = "month", planBack = "home", plan = "free";
    Flip this to true only when: PLANS_T enters ladderBreaks(), the lawyer
    features pass through sellable(), choosePlan() routes through the paywall
    and grantAndGo(), and FREE_QUESTIONS is actually gated on `plan`. */
-const SUBSCRIPTIONS_LIVE = false;
+/* The compiled default, and the floor. A flag may raise this at runtime; with
+   no flags loaded it is what the app uses, which is what makes an unreachable
+   flag table harmless. `let` rather than `const` because applyFlags() writes
+   it — every `SUBSCRIPTIONS_LIVE ? a : b` below then keeps working untouched. */
+const SUBSCRIPTIONS_COMPILED = false;
+let SUBSCRIPTIONS_LIVE = SUBSCRIPTIONS_COMPILED;
 let pwMode = "letter";
 /* Set to a plan id when the paywall is opened to sell a step up rather than a
    first purchase. Null on every ordinary entry. */
@@ -8685,7 +8853,8 @@ const ROOTS = TABS.map(x=>x.id);
 let lateralNav = false;
 function goTab(id){
   if (id === "timeline"){ tlOrigin = "tab"; renderTimeline(); }
-  if (id === "account") renderAccount();
+  /* The account screen shows subscription state, so it is a governed surface. */
+  if (id === "account"){ ensureFlags(); renderAccount(); }
   lateralNav = true;                 /* siblings cross-fade instead of pushing */
   show(id);
   lateralNav = false;
@@ -9414,12 +9583,14 @@ let packUntil = 0;
 
    Shipping the promise dark is the only version of "we built it" that does not
    put an unbacked guarantee in front of someone who has just lost their job. */
-const LAWYER_DESK = { live:false, turnaround:null };
+const LAWYER_COMPILED = false;
+const LAWYER_DESK = { live: LAWYER_COMPILED, turnaround: null };
 
 /* Payments are not live. One flag drives both the prototype note and the
    refund promise, so the two can never contradict each other on the same
    screen again — which they did, four lines apart. */
-const PAYMENT_LIVE = false;
+const PAYMENT_COMPILED = false;
+let PAYMENT_LIVE = PAYMENT_COMPILED;
 
 /* Prices are numbers, not two hand-written strings per plan. Two strings drift;
    a number can be checked. See ladderBreaks() below, and the invariant it
@@ -9549,6 +9720,11 @@ function pwBack(){
 }
 
 function openPaywall(){
+  /* First surface that a flag governs, so this is where the one request is
+     made. Not awaited: the paywall renders now from the compiled default and
+     applyFlags() re-renders it if the answer differs. A reader never waits on
+     the network to see a screen. */
+  ensureFlags();
   pwMode = "letter"; pwUpgrade = null; pwUpBack = null;
   if (has("letter")){ renderLetter(); show("letter"); return; }
   pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));   /* the intended choice */

@@ -123,6 +123,22 @@
     });
   }
 
+  /* How many rows match, without transferring any of them.
+     PostgREST returns the total in the content-range header when asked, so a
+     count is a header read rather than a table download — which matters
+     because the tables being counted hold people's employment situations. The
+     console is the only caller. */
+  function apiCount(path) {
+    var h = { apikey: cfg().SUPABASE_ANON_KEY, prefer: "count=exact", range: "0-0" };
+    if (session && session.access_token) h["authorization"] = "Bearer " + session.access_token;
+    return fetch(cfg().SUPABASE_URL + path, { headers: h }).then(function (r) {
+      var cr = r.headers.get("content-range") || "";
+      var m = cr.match(/\/(\d+)$/);
+      if (!r.ok || !m) throw new Error("count_failed");
+      return Number(m[1]);
+    });
+  }
+
   /* -------------------------------------------------------------- OAuth
      A redirect, not a popup. Popups are blocked on iOS Safari often enough
      that a popup-only flow is a flow that silently fails for a large share of
@@ -435,6 +451,13 @@
   }
 
   global.WodouhAuth = {
+    /* The PostgREST workhorse, exported so the founder console can read the
+       flag and audit tables through the same session handling, retries and
+       token refresh the app uses. It is not a wider capability than the console
+       already has: every call it makes is still bounded by row level security,
+       which is where the actual permission lives. */
+    api: api,
+    apiCount: apiCount,
     configured: configured,
     appleAvailable: appleAvailable,
     init: init,

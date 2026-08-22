@@ -162,6 +162,67 @@ suspect until it is green.
 
 ---
 
+## The founder console — /admin/
+
+One page: what is live, four switches, the numbers, the change log, and what is
+blocking launch. Reachable at `alwodouh.com/admin/`.
+
+**It is not protected by being hard to find.** The URL is public and anyone may
+open it. It carries no credential of any kind — no service key, no GitHub
+token — and every read and write goes through row level security in Postgres
+against `public.admins`. A stranger who opens it sees the status panel, which
+reads facts they could get off the deployed site anyway, and can change
+nothing. Hiding a button is not a permission, and `test/admin.test.js` checks
+the bytes rather than trusting the intention.
+
+**The status panel needs no credentials, and reads the DEPLOYED files** —
+`/index.html`, `/app/index.html`, `/docs/legal-sources.md` — parsing the
+constants straight out of them. So it reports what readers are actually
+getting, not what is in a working tree. On this project the difference between
+"pushed" and "live" has mattered repeatedly; this is the panel that answers the
+second one.
+
+### The switches, and what they cost
+
+Four features can be turned on and off without a deploy: payments,
+subscriptions, the AI read, the lawyer desk. They live in `public.app_flags`.
+
+The price is that the app now makes a request it did not make before. Three
+rules keep that as small as it can be:
+
+- **Lazy, never on boot.** Nothing is fetched until a reader first opens the
+  paywall, the account screen or the AI panel. Someone who opens the app, pastes
+  a contract and reads the result still makes no request at all.
+- **It carries nothing** about the reader or the document — a GET of a public
+  table with the anon key.
+- **It never blocks.** Two-second timeout, and a failure is invisible.
+
+**Every failure falls to off.** No config, no network, a timeout, a malformed
+body, an unknown key, a cache older than twelve hours — all of them land on the
+constant compiled into `app/index.html`, and all of those constants are false.
+Someone who could make the flag table unreachable could turn features OFF. There
+is no path by which they turn one ON.
+
+**The launch curtain is deliberately not a flag.** Making it remote would mean a
+request from every visitor before they consented to anything, for a switch that
+moves twice in a product's life. It stays two lines — `index.html` and
+`app/index.html` — and the console shows the state and flags a mismatch between
+them.
+
+### If the flags are unreachable
+
+Nothing to do. The app falls back to the compiled constants, which is the
+state it shipped in. To force it, deploy with the constant changed; that
+overrides everything.
+
+### Adding an operator
+
+Only in the Supabase dashboard: insert the user's `auth.users` id into
+`public.admins` with role `owner` or `viewer`. There is no client write policy
+on that table, so no page — including the console — can grant access to itself.
+
+---
+
 ## The watchdog
 
 `.github/workflows/watchdog.yml` — every six hours, and on demand from the
