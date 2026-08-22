@@ -4,7 +4,7 @@
  * executed — not once, anywhere. schema.test.js reads them as text, which
  * catches a missing policy and cannot catch a policy that does not compile, a
  * trigger that references a column that is not there, or a permission that is
- * granted by accident. This suite executes all five against PostgreSQL and
+ * granted by accident. This suite executes all of them against PostgreSQL and
  * then asks the database the questions that actually matter:
  *
  *   - is a viewer REFUSED a flag change, by Postgres rather than by the page
@@ -95,17 +95,23 @@ if (!available()) {
 }
 
 /* ---- build the database from nothing, every run */
-console.log("\n— applying the shim and all five migrations to a fresh database");
+console.log("\n— applying the shim and every migration to a fresh database");
 try {
   execFileSync("su", ["postgres", "-c", `dropdb --if-exists ${DB} && createdb ${DB}`], { stdio: "ignore" });
   psql(require("node:fs").readFileSync(path.join(ROOT, "test/pg-shim.sql"), "utf8"));
   const files = require("node:fs").readdirSync(path.join(ROOT, "supabase/migrations"))
     .filter(f => f.endsWith(".sql")).sort();
+  let applied = 0;
   for (const f of files) {
     psql(require("node:fs").readFileSync(path.join(ROOT, "supabase/migrations", f), "utf8"));
     console.log("  ok   " + f + " applied");
+    applied++;
   }
-  ok(files.length === 5, `all ${files.length} migrations executed without an error`);
+  /* Was `files.length === 5`, which failed the moment a sixth migration was
+     added — a count of the day, not a property. What must hold is that EVERY
+     file in the directory ran, whatever the number. */
+  ok(applied === files.length && applied > 0,
+     `all ${files.length} migrations executed without an error`);
 } catch (e) {
   console.log("  FAIL a migration did not apply:\n" + String(e.stderr || e.message).slice(0, 1200));
   process.exit(1);
@@ -234,6 +240,73 @@ const forgeNowWorks = refused(asUser(OWNER,
   `insert into public.flag_audit (key, to_enabled) values ('forged', true);`)) === null;
 psql(`drop policy tmp_open on public.flag_audit;`);
 ok(forgeNowWorks, "adding an insert policy to flag_audit lets a forgery through — so its absence is what stops one");
+
+/* ============================================ the operator allowlist (0008)
+   The chicken-and-egg this fixes: admins.user_id references auth.users, so
+   nobody could be made an operator before their first sign-in — and the
+   console is what you sign in to. Now an email is allowlisted in advance and a
+   trigger promotes it. Everything below runs the trigger for real, because a
+   trigger is exactly what reading the SQL cannot check. */
+console.log("\n— an allowlisted email becomes an operator on sign-in, and nobody else does");
+
+const NEWBIE = "55555555-5555-4555-8555-555555555555";
+const STRANGER = "66666666-6666-4666-8666-666666666666";
+const UNCONF = "77777777-7777-4777-8777-777777777777";
+const roleOf = id => psql(`select coalesce(max(role),'none') from public.admins where user_id='${id}';`).trim();
+
+psql(`insert into public.admin_allowlist (email, role) values ('newbie@example.com','owner')
+      on conflict (email) do nothing;`);
+
+/* Capitalised and padded on purpose: the same mailbox written the way a person
+   actually types it must still match, or the list fails silently at the one
+   moment somebody needs to get in. */
+psql(`insert into auth.users (id, email, email_confirmed_at)
+      values ('${NEWBIE}','  NewBie@Example.com ', now());`);
+ok(roleOf(NEWBIE) === "owner",
+   "an allowlisted address is promoted on insert, matching case-insensitively and trimmed");
+
+psql(`insert into auth.users (id, email, email_confirmed_at)
+      values ('${STRANGER}','stranger@example.com', now());`);
+ok(roleOf(STRANGER) === "none",
+   "an address that is not on the list is not promoted");
+
+/* THE ASSERTION THAT MATTERS MOST. If an unconfirmed address were enough,
+   anyone who can type an allowlisted email into a sign-up form becomes an
+   owner. */
+psql(`insert into public.admin_allowlist (email, role) values ('later@example.com','owner')
+      on conflict (email) do nothing;
+      insert into auth.users (id, email) values ('${UNCONF}','later@example.com');`);
+ok(roleOf(UNCONF) === "none",
+   "an UNCONFIRMED address is refused — knowing an allowlisted email is not enough to become an owner");
+
+/* And the update path, which is the one an insert-only trigger would miss:
+   for OAuth the confirmation frequently lands just after the row is created. */
+psql(`update auth.users set email_confirmed_at = now() where id='${UNCONF}';`);
+ok(roleOf(UNCONF) === "owner",
+   "and it IS promoted the moment the address is confirmed, so a late confirmation still works");
+
+/* An existing operator's role must survive re-signing in. */
+psql(`insert into public.admin_allowlist (email, role) values ('viewer@example.com','owner')
+      on conflict (email) do update set role='owner';
+      update auth.users set email_confirmed_at = now() where id='${VIEWER}';`);
+ok(roleOf(VIEWER) === "viewer",
+   "a role already set by hand outranks the list — re-signing in never silently promotes");
+
+ok(!!refused(asUser(A, `select * from public.admin_allowlist;`)) ||
+   psql(asUser(A, `select count(*) from public.admin_allowlist;`)).trim() === "0",
+   "an ordinary signed-in user cannot read the allowlist");
+ok(!!refused(asUser(OWNER, `insert into public.admin_allowlist (email) values ('me@example.com');`)),
+   "and not even an owner can add themselves to it from a client session");
+
+/* ================================= the launch checklist is operator-only */
+console.log("\n— the launch checklist is readable by operators and nobody else");
+ok(psql(asUser(A, `select count(*) from public.launch_blockers;`)).trim() === "0",
+   "an ordinary user sees zero blockers — an empty result, not an error");
+ok(Number(psql(asUser(VIEWER, `select count(*) from public.launch_blockers;`)).trim()) > 0,
+   "an operator sees them, so the zero above is the policy and not an empty table");
+ok(unchanged(VIEWER, `update public.launch_blockers set done=true where key='lawyer_review';`,
+   `select done from public.launch_blockers where key='lawyer_review';`, "f"),
+   "a viewer cannot tick one off");
 
 psql(`create policy tmp_admins on public.admins for insert to authenticated with check (true);`);
 const grantNowWorks = refused(asUser(A,

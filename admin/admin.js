@@ -16,6 +16,24 @@
  * tree. That distinction has mattered repeatedly on this project: "pushed" and
  * "live" are different claims, and only one of them is checkable from here.
  *
+ * It stays public deliberately. Everything it reports is derived from files
+ * that are already public, so a stranger could compute it themselves; hiding
+ * it would buy nothing and would cost the one panel that still works when the
+ * database does not.
+ *
+ * THE BLOCKERS PANEL IS THE OPPOSITE, AND USED TO GET THIS WRONG
+ *
+ * What is NOT ready is not a public fact. That list was once a hardcoded array
+ * in this file — served from a public URL, so a row stating in plain English
+ * that the legal register has not been through professional review was one
+ * `curl` away from anyone, on a product that gives Saudi employment-law
+ * guidance. (The sentence is not reproduced here: a comment explaining why a
+ * string must not ship is not a licence to ship it. My own test caught this
+ * comment on the first run.) It granted no
+ * capability, so row level security had nothing to say about it: a disclosure
+ * is not a hole, and it is fixed by not publishing, not by locking. The rows
+ * now live in public.launch_blockers behind is_admin('viewer').
+ *
  * WHAT IT WILL NOT DO
  *
  * There is no arbitrary SQL box. An endpoint that runs whatever SQL a browser
@@ -108,8 +126,14 @@
       split ? "MISMATCH" : (launched ? "OPEN" : "PRE-LAUNCH"),
       split ? "bad" : (launched ? "on" : "off"));
 
+    /* "Dark" is enough. The previous wording spelled out what happens instead,
+       which on a public page is an instruction rather than a status: anyone
+       reading it learned how to reach the paid product without paying. The
+       fact that payments are off IS derivable from the deployed constant —
+       but derivable and advertised are not the same thing, and only one of
+       them is a sentence someone can act on. */
     h += row("Payments", live.payments ? "Card payment is live — real charges"
-                                       : "Dark. The pay button simulates and grants access",
+                                       : "Dark. No real charge is taken",
              live.payments ? "ON" : "OFF", live.payments ? "on" : "off");
     h += row("Subscriptions", live.subs ? "Plans render on the account screen"
                                         : "Dark. No recurring plan is offered",
@@ -411,19 +435,50 @@
   }
 
   /* ====================================================== 6. blockers */
+
+  /* THE LABELS AND NOTES ARE NOT IN THIS FILE, AND THAT IS THE POINT.
+     They used to be a hardcoded array here. This file is served from a public
+     URL, so every row in it — including "Every register row needs a licensed
+     Saudi lawyer before real users" — was one `curl` away from anyone. On a
+     product that gives Saudi employment-law guidance, that is a published
+     admission that the legal content is unreviewed.
+
+     Nothing in that array granted a capability, so row level security had
+     nothing to say about it. It was a disclosure, not a hole, and the fix for
+     a disclosure is to stop publishing it. Refusing to DRAW the panel would
+     have been theatre while the strings were still fetchable — so they moved
+     to public.launch_blockers, behind is_admin('viewer').
+
+     What stays here is the key set, because a key is not a disclosure. */
+  var DERIVED = {
+    /* Three rows the browser knows better than the database does: they are
+       facts about the deployed configuration, not decisions someone records.
+       The stored `done` is overridden rather than kept in step by hand. */
+    supabase_project: function () { return !!(A && A.configured()); },
+    anthropic_key:    function () { return /^https:\/\//.test((window.WODOUH_CONFIG || {}).ANALYZE_URL || ""); },
+    apple_signin:     function () { return (window.WODOUH_CONFIG || {}).APPLE_SIGNIN === true; }
+  };
+
   function renderBlockers() {
-    var c = window.WODOUH_CONFIG || {};
-    var items = [
-      ["Supabase project", A && A.configured(), "Unblocks accounts, sync, the switches on this page, and the AI"],
-      ["Anthropic API key", /^https:\/\//.test(c.ANALYZE_URL || ""), "Set as a function secret, never in the browser. Unblocks Ask and the AI read"],
-      ["Payment processor", false, "Unblocks charging. Until then the pay button simulates"],
-      ["Apple Developer account", c.APPLE_SIGNIN === true, "Unblocks Apple sign-in. Google works without it"],
-      ["GitHub Actions billing", false, "Unblocks CI and the live watchdog. Pages deploys either way"],
-      ["Lawyer review", false, "Every register row needs a licensed Saudi lawyer before real users"]
-    ];
-    el("blockers").innerHTML = items.map(function (i) {
-      return row(i[0], i[2], i[1] ? "DONE" : "WAITING", i[1] ? "on" : "warn");
-    }).join("");
+    var host = el("blockers");
+    if (!A || !A.configured() || !A.user() || !role) {
+      host.innerHTML = empty("Sign in as an operator to see what is blocking launch.");
+      return;
+    }
+    A.api("/rest/v1/launch_blockers?select=key,label,note,done,sort&order=sort")
+      .then(function (rows) {
+        if (!rows || !rows.length) {
+          host.innerHTML = empty("No blockers recorded. If that looks wrong, the migrations may not have run.");
+          return;
+        }
+        host.innerHTML = rows.map(function (b) {
+          var done = DERIVED[b.key] ? DERIVED[b.key]() : b.done === true;
+          return row(b.label, b.note, done ? "DONE" : "WAITING", done ? "on" : "warn");
+        }).join("");
+      })
+      .catch(function () {
+        host.innerHTML = empty("Could not read the launch checklist.");
+      });
   }
 
   /* ========================================================== startup */

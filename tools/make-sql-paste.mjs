@@ -86,21 +86,29 @@ on conflict (version) do nothing;
 commit;
 
 -- ============================================================================
--- LAST STEP — after you have signed into the app once, and not before.
+-- BECOMING AN OPERATOR — nothing to do here any more.
 --
--- public.admins has NO client write policy, deliberately: nothing reachable
--- from a browser can grant console access, including the console itself. So
--- this is the one thing that has to happen here, in the dashboard.
+-- public.admins still has NO client write policy: nothing reachable from a
+-- browser can grant console access, including the console itself. What changed
+-- is WHERE the grant comes from. 0008 adds public.admin_allowlist, keyed by
+-- email, and a trigger on auth.users that promotes a matching CONFIRMED
+-- address on first sign-in. It also promotes anyone already signed in, so it
+-- is correct whichever order those two things happen in.
 --
--- Uncomment, put your own email in, and run it on its own.
+-- This block used to say "after you have signed into the app once, and not
+-- before" and hand you an INSERT to uncomment. That was the chicken-and-egg
+-- itself written down as a procedure: admins.user_id references auth.users,
+-- the console is what you sign in to, and until you were an operator it showed
+-- you nothing.
+--
+-- To add or remove an operator, edit public.admin_allowlist. It is RLS-on with
+-- no policies, so only this editor and the service role can see or change it.
 -- ============================================================================
 
--- insert into public.admins (user_id, role)
--- select id, 'owner' from auth.users where email = 'you@example.com'
--- on conflict (user_id) do update set role = 'owner';
-
--- Check it worked:
--- select u.email, a.role from public.admins a join auth.users u on u.id = a.user_id;
+-- Who is on the list, and who has actually been promoted:
+-- select a.email, a.role, (u.id is not null) as signed_in_yet
+--   from public.admin_allowlist a
+--   left join auth.users u on lower(btrim(u.email)) = a.email;
 `;
 
   return head + body + tail;

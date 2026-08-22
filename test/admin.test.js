@@ -144,6 +144,28 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   for (const [what, re] of SECRETS) ok(!re.test(both), `no ${what} appears in the console`);
   ok(!/\/rpc\/(exec|run)_?sql|["'`]\s*select .*from/i.test(adminJs),
      "no arbitrary SQL is sent from the page — Studio is linked instead");
+  /* A CREDENTIAL IS NOT THE ONLY THING THAT SHOULD NOT BE PUBLIC.
+     The list above catches keys. It did not catch the blockers panel, which
+     was a hardcoded array in admin.js naming everything not yet ready — "the
+     pay button simulates", "CI is unbilled", and "Every register row needs a
+     licensed Saudi lawyer before real users". This file is served from a
+     public URL, so all of it was one `curl` away.
+
+     It granted no capability, which is why every RLS assertion in this suite
+     passed while it was true. A disclosure is not a hole, and no policy test
+     will ever find one — only a check on the bytes shipped. That is this.
+
+     Phrases, not the array, so a reworded row is still caught. */
+  const NOT_PUBLIC = [
+    ["the lawyer-review status", /licensed Saudi lawyer|lawyer review/i],
+    ["that payment is simulated", /pay button simulates|simulates and grants/i],
+    ["the CI billing state", /Actions billing/i],
+  ];
+  for (const [what, re] of NOT_PUBLIC) {
+    ok(!re.test(both),
+       `${what} is not shipped in the console — what is NOT ready is not a public fact`);
+  }
+
   ok(/noindex/.test(adminHtml), "the page asks not to be indexed");
   ok(/default-src 'none'/.test(adminHtml) && /connect-src 'self'/.test(adminHtml),
      "and it ships its own content security policy");
@@ -193,7 +215,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(/Sign in/i.test(text),
        "and, signed out, it offers the sign-in that is the only way to become an operator");
   }
-  ok(/Waiting/i.test(text), "and the blockers panel names what is missing");
+  /* Was: "the blockers panel names what is missing". It does not any more, and
+     must not — signed out, there is nothing to name. */
+  ok(!/Waiting/i.test(text) && /operator/i.test(text),
+     "signed out, the blockers panel names nothing and asks for an operator");
 
   /* ---- 7a. the console must not offer a provider the project has not enabled.
      This shipped: admin.js rendered "Sign in with Google" unconditionally, so

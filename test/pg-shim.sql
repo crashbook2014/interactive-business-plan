@@ -76,9 +76,15 @@ alter default privileges in schema public
 --   record "new" has no field "raw_app_meta_data"
 -- which is a gap in this file rather than a bug in the migration — but it is
 -- exactly the class of thing no amount of reading the SQL would have found.
+-- email_confirmed_at was added when 0008 started reading it. GoTrue sets it
+-- when a provider asserts the address; the operator allowlist refuses to
+-- promote anyone without it, so a shim missing the column would have made that
+-- refusal untestable — and the trigger would have failed with "record new has
+-- no field email_confirmed_at", the same gap raw_app_meta_data left above.
 create table if not exists auth.users (
   id         uuid primary key default gen_random_uuid(),
   email      text,
+  email_confirmed_at timestamptz,
   raw_app_meta_data  jsonb not null default '{}'::jsonb,
   raw_user_meta_data jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()

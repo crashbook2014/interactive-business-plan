@@ -85,9 +85,13 @@ for (const t of tables) {
      at all, which is why making yourself an operator requires the dashboard.
      flag_audit has no write policy either, which is what makes the log
      unforgeable: only the trigger writes it. */
+  /* launch_blockers is the same shape as app_flags: an operator reads it, an
+     owner ticks a row off, and there is deliberately no insert or delete
+     because the key set belongs to the code that reads it. */
   const PARTIAL = { profiles: 3, integration_providers: 1,
                     integration_connections: 2, integration_events: 1,
-                    admins: 1, app_flags: 2, flag_audit: 1 };
+                    admins: 1, app_flags: 2, flag_audit: 1,
+                    launch_blockers: 2 };
   const need = PARTIAL[t] || 4;
   ok(ops.length >= need,
      `${t}: reachable by clients, so it carries ${ops.length}/${need} policies (${ops.join(", ") || "none"})`);
@@ -202,6 +206,39 @@ for (const [, fn] of code.matchAll(/create or replace function public\.(\w+)\([^
   ok(named, `${fn}: revoked from anon by name, not only from PUBLIC`);
 }
 
+/* ---- 6c. the operator allowlist */
+console.log("\n— who may operate the console is decided in the database, not the page");
+ok(/create table if not exists public\.admin_allowlist/.test(code),
+   "admin_allowlist exists, so an operator can be named before they first sign in");
+ok(/alter table public\.admin_allowlist enable row level security/.test(code)
+   && !/create policy \w+ on public\.admin_allowlist/.test(code),
+   "RLS is on and it has NO policy — no browser can read or write the list of operators");
+ok(/revoke all on public\.admin_allowlist from anon, authenticated/.test(code),
+   "and the client roles are revoked by name, not only from PUBLIC");
+/* The promotion must require a confirmed address. Matching on an unconfirmed
+   email would let anyone who can type an allowlisted address into a sign-up
+   form become an owner. */
+ok(/promote_allowlisted_admin[\s\S]*?new\.email_confirmed_at is null[\s\S]*?return new/.test(code),
+   "promotion requires a CONFIRMED email — an unconfirmed one is refused before any lookup");
+ok(/promote_allowlisted_admin[\s\S]*?lower\(btrim\(coalesce\(new\.email/.test(code),
+   "and the address is lowercased and trimmed, so a capitalised mailbox still matches");
+ok(/insert into public\.admins[\s\S]*?on conflict \(user_id\) do nothing/.test(code),
+   "an existing operator's role is never overwritten by the list");
+/* The trigger must fire on UPDATE too: for OAuth, email_confirmed_at is
+   frequently set just after the row is inserted, so insert-only would miss
+   exactly the case this exists for. */
+ok(/create trigger on_auth_user_allowlisted[\s\S]*?after insert or update of email, email_confirmed_at on auth\.users/.test(code),
+   "the trigger fires on update as well as insert, so a confirmation that lands late still promotes");
+
+/* ---- 6d. the launch checklist is not public */
+console.log("\n— what is not ready is operator-only");
+ok(/create policy launch_blockers_select on public\.launch_blockers\s+for select using \(public\.is_admin\('viewer'\)\)/.test(code),
+   "launch_blockers is readable only by an operator");
+ok(/create policy launch_blockers_update on public\.launch_blockers[\s\S]*?using \(public\.is_admin\('owner'\)\)[\s\S]{0,80}with check \(public\.is_admin\('owner'\)\)/.test(code),
+   "only an owner may tick one off, on the way in and on the way out");
+ok(!/create policy \w+ on public\.launch_blockers\s+for (insert|delete)/.test(code),
+   "and the key set cannot be added to or deleted from a browser");
+
 /* Every security-definer function must pin search_path, or a caller can shadow
    the tables it references and run its body against their own. */
 console.log("\n— every security definer function pins its search path");
@@ -241,8 +278,13 @@ console.log("\n— the SQL-editor paste is still the migrations it claims to be"
   }
   ok(/^begin;/m.test(committed) && /^commit;/m.test(committed),
      "the whole thing is one transaction, so a failed re-run leaves the database unchanged");
-  ok(/public\.admins/.test(committed) && /^-- insert into public\.admins/m.test(committed),
-     "the become-an-operator step is present but commented out — it needs a user id that does not exist yet");
+  /* Was: assert a commented-out INSERT is present. That step no longer exists
+     — 0008 promotes an allowlisted address on first sign-in — and an
+     instruction telling someone to do it by hand would now be wrong. */
+  ok(!/^-- insert into public\.admins/m.test(committed),
+     "the paste no longer hands out a manual become-an-operator INSERT");
+  ok(/public\.admin_allowlist/.test(committed),
+     "and it points at the allowlist, which is where operators are named now");
 }
 
 console.log(FAIL.length
