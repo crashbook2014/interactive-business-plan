@@ -25,11 +25,43 @@ local-only product it is today.
 
 | | | |
 |---|---|---|
-| **Region** | Frankfurt, `eu-central-1` | Chosen by the owner, 22 Aug 2026 |
-| **Tier** | Free now, upgrade before launch | Chosen by the owner, 22 Aug 2026 |
+| **Backend** | Supabase, kept | Owner, 22 Aug 2026 |
+| **Region** | Frankfurt, `eu-central-1` | Owner, 22 Aug 2026 |
+| **Tier** | Free now, upgrade before launch | Owner, 22 Aug 2026 |
 
 **Region cannot be changed later** without recreating the project and migrating
 the data.
+
+### Why Supabase, when the app has no dependency on it
+
+Written down because a decision without its reasoning gets reopened, and this
+one was reopened once already.
+
+The app is portable in principle: `package.json` has **zero runtime
+dependencies**, there is no Supabase SDK, and `app/auth.js` is 476 lines of
+plain `fetch`. What is *not* portable is the security model. **The 35 RLS
+policies in `supabase/migrations/` ARE the authorization model** — they are why
+`/admin/` can be a public page holding no credential, and why the audit log
+cannot be forged. Postgres refuses; the page does not.
+
+The alternatives worth considering — Firebase, Cloudflare D1, Appwrite — have
+no database-level row security. Moving to one means re-implementing all 35
+rules in application code, where a single missed check is a silent hole. That
+is a rewrite of the security model, not a port, and it would trade away the
+most defensible property this project has.
+
+The one real argument against Supabase is that it has **no Middle East
+region**, which is why the row above says Frankfurt. If counsel decides Saudi
+personal data must stay in or near the Kingdom, the answer is not a different
+backend-as-a-service — it is **managed Postgres in a Gulf region**, keeping all
+890 lines of SQL and all 35 policies, and rewriting only `app/auth.js` and the
+16 PostgREST call sites. Roughly a week.
+
+**The timing is the whole point.** With zero users that migration is a week of
+work and no data movement at all. After launch it is a PDPL data migration with
+real people's employment records in it. So this decision is cheap to revisit
+now and expensive to revisit later — which is an argument for getting the
+residency answer early, not for delaying the project.
 
 **The open question this leaves.** Frankfurt puts Saudi residents' personal data
 outside the Kingdom. `0003_accounts.sql` stores a phone number, a

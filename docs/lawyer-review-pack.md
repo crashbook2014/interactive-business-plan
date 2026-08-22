@@ -192,31 +192,56 @@ matches their copy. Please confirm that framing is accurate.
    a lawyer."* Is that sufficient for what the product actually does?
 3. **Anything we should stop saying**, regardless of whether it is technically
    correct.
-4. **PDPL and where the data sits. Added 22 August 2026, and the one item here
-   that is a live decision rather than a wording question.** The database will
-   be hosted in **Frankfurt (`eu-central-1`)**. Supabase offers no Saudi
-   region, and the region cannot be changed later without recreating the
-   project.
+4. **PDPL and where the data sits. Added 22 August 2026; sharpened the same
+   day. The one item here that is a live decision rather than a wording
+   question.**
 
-   What will be stored there about Saudi residents:
+   The database will be hosted in **Frankfurt (`eu-central-1`)**. Supabase
+   offers no Saudi region, and the region cannot be changed later without
+   recreating the project.
+
+   **Our position, so you are advising on a decision and not refereeing one.**
+   We treat residency as a compliance requirement to be documented correctly,
+   not as a claim we make to users. Nothing in the product says or implies that
+   data stays in the Kingdom, and we will not add such a claim without your
+   sign-off. We would rather document the right basis for a transfer than move
+   the data and say nothing.
+
+   What will be stored in Frankfurt about Saudi residents:
 
    - a **phone number**, and a separate **marketing-consent record** holding
      when consent was given and the exact wording shown at the time
      (`public.profiles`)
-   - **`original_filename`** — the name of the file the reader uploaded. In
-     Saudi practice these routinely read like `عقد-عبدالإله-أرامكو.pdf`, so
-     this is personal data about **two** parties, one of whom never agreed to
-     anything
+   - **`original_filename`** — the name of the file the reader uploaded
    - the **outcome** of an analysis: a score, which rules fired, a verdict key
 
-   What will **not** be stored there, by design and enforced in the schema:
-   contract text, PDF bytes, or quoted clauses.
+   What will **not** be stored, by design and enforced in the schema: contract
+   text, PDF bytes, or quoted clauses.
 
-   The questions: does this constitute a cross-border transfer requiring a
-   specific basis under PDPL, and if so which? Does the phone-number and
-   consent record change the answer? Is `original_filename` defensible given
-   the second party, or should it be dropped or hashed? And is anything
-   required of us before the first real user, rather than before scale?
+   **Three questions, in the order they matter to us:**
+
+   **(a) `original_filename`, which we think is the sharpest issue here.** In
+   Saudi practice these read like `عقد-عبدالإله-أرامكو.pdf` — the worker's
+   name and the employer's. It is therefore personal data about **two** people,
+   and **the second one never agreed to anything and does not know we hold it.**
+   It is also the only such field in the entire schema.
+
+   Storing it was a deliberate product decision: it makes a saved list
+   recognisable. We are asking directly, because the fix is cheap and we would
+   rather do it now than defend it later — **should we store it, hash it, or
+   drop it?** It is one column and about an hour of work, and the only thing a
+   reader loses is a recognisable name in a list. We are not changing it
+   without your answer.
+
+   **(b) What must we document, and where,** to rely on the Frankfurt transfer?
+   Does the phone number and the consent record change that analysis?
+
+   **(c) What is required before the FIRST real user,** as opposed to before
+   scale? We are pre-launch with no users and no data, which is the cheapest
+   moment in this product's life to change any of the above. Migrating the
+   database to a Gulf region today would cost about a week and move no data at
+   all; after launch it becomes a data migration with real employment records
+   in it. If your answer is "move it", tell us now and it is easy.
 
 ---
 
