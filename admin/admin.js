@@ -169,15 +169,45 @@
     return null;
   }
 
+  /* Do not offer a provider the project has not enabled.
+     Clicking it does not fail politely — Supabase answers the authorize
+     request with raw JSON, {"code":400,...,"msg":"Unsupported provider:
+     provider is not enabled"}, on a blank page with no way back. The app
+     already gates its buttons this way; the console did not, so the one
+     screen an operator uses was the one place that still handed them that
+     page.
+
+     Three states, matching app/index.html's renderProviders exactly:
+       google === false  the project says no — replace the button with the
+                         fix, because "turn it on in Supabase" is the entire
+                         content of that 400.
+       an answer, or none  leave the button alone. A blocked or slow
+                         /auth/v1/settings must never lock the owner out of
+                         their own console. */
+  function offerSignin(host) {
+    if (!A.providers) return;
+    A.providers().then(function (ext) {
+      if (!ext || ext.google !== false) return;
+      var btn = el("signin");
+      if (!btn || btn.closest("#flags") !== host) return;   /* re-rendered since */
+      host.innerHTML = empty(
+        "<b>Google sign-in is off in this project.</b> Turn it on in Supabase " +
+        "under <b>Authentication \u2192 Sign In / Providers \u2192 Google</b>: " +
+        "the toggle at the top must be on and saved, not just the client id and " +
+        "secret filled in. Then reload this page.");
+    }).catch(function () {});
+  }
+
   function renderFlags() {
     var host = el("flags");
     if (!A || !A.configured()) {
       host.innerHTML = empty(
         "<b>Not connected.</b> There is no Supabase project yet, so there is " +
-        "nothing to switch. Create one, copy <code>supabase/config.example.js</code> " +
-        "to <code>supabase/config.js</code>, run the migrations in " +
-        "<code>supabase/migrations/</code>, then add yourself to " +
-        "<code>public.admins</code> with role <code>owner</code>.<br><br>" +
+        "nothing to switch. Create one, run <code>node tools/setup-supabase.mjs</code> " +
+        "to write its URL and publishable key into <code>admin/config.js</code> and " +
+        "the app, paste <code>tools/apply-all.sql</code> into the SQL editor, then " +
+        "add yourself to <code>public.admins</code> with role <code>owner</code>." +
+        "<br><br>" +
         "Until then every switch is the constant compiled into the app, and " +
         "the panel above shows what those are.");
       return;
@@ -187,8 +217,10 @@
         '<div class="row"><span class="tx"></span>' +
         '<button class="go" id="signin">Sign in with Google</button></div>';
       el("signin").onclick = function () { A.signInWithGoogle(); };
+      offerSignin(host);
       return;
     }
+
     if (!role) {
       host.innerHTML = empty(
         "You are signed in, but this account is not an operator. Add its user " +

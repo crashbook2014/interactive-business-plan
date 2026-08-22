@@ -195,6 +195,49 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   }
   ok(/Waiting/i.test(text), "and the blockers panel names what is missing");
 
+  /* ---- 7a. the console must not offer a provider the project has not enabled.
+     This shipped: admin.js rendered "Sign in with Google" unconditionally, so
+     clicking it on a project with Google switched off left the owner on
+     Supabase's raw JSON — {"code":400,...,"msg":"Unsupported provider: provider
+     is not enabled"} — a blank page with no way back, on the one screen an
+     operator uses. The app had this gate; the console did not.
+
+     Three states, and the third is the one that matters most: a settings
+     endpoint that is slow, blocked, or unreachable must leave the button
+     alone. Hiding a working sign-in because a check failed would lock the
+     owner out of their own console — a worse failure than the one being
+     fixed. */
+  if (fileHasCfg) {
+    console.log("\n— the console offers Google only when the project enables it");
+    for (const c of [
+      { label: "the project reports google disabled", body: '{"external":{"google":false}}', button: false },
+      { label: "the project reports google enabled",  body: '{"external":{"google":true}}',  button: true  },
+      { label: "the settings endpoint is unreachable", body: null,                            button: true  },
+    ]) {
+      const probe = await browser.newPage();
+      await probe.route("**/auth/v1/settings*", r => c.body
+        ? r.fulfill({ status: 200, contentType: "application/json", body: c.body })
+        : r.abort());
+      await probe.goto(BASE + "/admin/");
+      await probe.waitForTimeout(1200);
+      const shown = await probe.evaluate(() => !!document.getElementById("signin"));
+      const body = await probe.evaluate(() => document.body.innerText);
+      await probe.close();
+      ok(shown === c.button, `when ${c.label}, the Google button is ${c.button ? "offered" : "withheld"}`);
+      if (!c.button) {
+        ok(/Sign In \/ Providers/.test(body),
+           "and the panel names the Supabase toggle, which is the entire content of that 400");
+      }
+    }
+  }
+
+  /* The console must send an operator back to the CONSOLE. It once carried
+     REDIRECT_URL pointing at the app, so Google signed you in and dropped you
+     in the product. Absent, app/auth.js falls back to this page's own URL. */
+  const back = await page.evaluate(() => (window.WODOUH_CONFIG || {}).REDIRECT_URL || null);
+  ok(back === null,
+     `the console sets no REDIRECT_URL, so Google returns to /admin/ and not to the app${back ? " — got " + back : ""}`);
+
   /* The status panel reads the deployed files, so it must have found the real
      constants rather than defaulting to something reassuring. */
   ok(/PRE-LAUNCH|OPEN|MISMATCH/.test(text), "the status panel read the launch state out of the deployed files");

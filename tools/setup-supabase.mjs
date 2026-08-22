@@ -146,11 +146,16 @@ function writeAdminConfig() {
     " * An empty object is a valid state — every panel then says it is not\n" +
     " * connected rather than failing, and the status panel still works, because\n" +
     " * it reads the deployed files at this origin and needs no credentials.\n" +
+    " *\n" +
+    " * NO REDIRECT_URL HERE, DELIBERATELY. app/auth.js falls back to\n" +
+    " * location.origin + location.pathname when the key is absent, which sends an\n" +
+    " * operator back to /admin/ after Google. Setting it to the app's URL — as this\n" +
+    " * file once did — signed you in and then dropped you in the product, on the\n" +
+    " * one screen where you had come to do something else.\n" +
     " */\n" +
     "window.WODOUH_CONFIG = Object.assign({\n" +
     "  SUPABASE_URL: " + q(host) + ",\n" +
-    "  SUPABASE_ANON_KEY: " + q(key) + ",\n" +
-    "  REDIRECT_URL: " + q(redirect) + "\n" +
+    "  SUPABASE_ANON_KEY: " + q(key) + "\n" +
     "}, window.WODOUH_CONFIG || {});\n");
 }
 
