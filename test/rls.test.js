@@ -308,6 +308,28 @@ ok(unchanged(VIEWER, `update public.launch_blockers set done=true where key='law
    `select done from public.launch_blockers where key='lawyer_review';`, "f"),
    "a viewer cannot tick one off");
 
+/* ======================================= the newest migrations re-run clean
+   A paste that errors the second time is a paste someone assumes did not work
+   the first, and pastes again. 0007 originally failed here: `create policy`
+   has no IF NOT EXISTS in Postgres, so the second run died on "policy already
+   exists". The BEGIN/COMMIT wrapper made it harmless and did not make it
+   look harmless.
+
+   Only the migrations added since the live project was built are checked.
+   0001 creates its tables without IF NOT EXISTS and is not re-runnable by
+   design — asserting otherwise would be asserting a property this project
+   does not have. */
+console.log("\n— a migration someone may paste twice survives being pasted twice");
+for (const f of ["0007_blockers.sql", "0008_operator_allowlist.sql"]) {
+  let err = null;
+  try {
+    psql(require("node:fs").readFileSync(path.join(ROOT, "supabase/migrations", f), "utf8"));
+  } catch (e) { err = String(e.stderr || e.message).split("\n").find(l => /ERROR/i.test(l)) || "failed"; }
+  ok(err === null, `${f} runs a second time without an error${err ? " — " + err : ""}`);
+}
+ok(Number(psql(`select count(*) from public.launch_blockers;`).trim()) === 6,
+   "and re-running did not duplicate or wipe the seeded rows");
+
 psql(`create policy tmp_admins on public.admins for insert to authenticated with check (true);`);
 const grantNowWorks = refused(asUser(A,
   `insert into public.admins (user_id, role) values ('${A}','owner');`)) === null;

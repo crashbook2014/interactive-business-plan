@@ -23,9 +23,10 @@
 -- nothing from that run is applied. An error message and an unchanged
 -- database, not a half-applied one.
 --
--- IT DOES NOT MAKE YOU AN OPERATOR. That needs your auth.users id, which does
--- not exist until you have signed into the app once. The snippet is at the
--- bottom, commented out.
+-- IT DOES MAKE YOU AN OPERATOR, if your address is in public.admin_allowlist
+-- (0008). The trigger there promotes an allowlisted, CONFIRMED email on first
+-- sign-in, and also promotes anyone already signed in — so this is correct
+-- whichever order those happen in.
 -- ============================================================================
 
 begin;
@@ -1064,12 +1065,20 @@ alter table public.launch_blockers enable row level security;
 -- for these rows. An operator sees them; everyone else gets an empty result
 -- rather than an error, which is the difference between "nothing to show you"
 -- and "something is here that you may not have".
+-- drop-then-create rather than a bare create, so this file can be pasted into
+-- the SQL editor twice without the second run failing on "policy already
+-- exists". create policy has no IF NOT EXISTS in Postgres, and a paste that
+-- errors the second time is a paste someone will assume did not work the
+-- first. Found by running it twice against a database already at 0006, which
+-- is the state the live project is in.
+drop policy if exists launch_blockers_select on public.launch_blockers;
 create policy launch_blockers_select on public.launch_blockers
   for select using (public.is_admin('viewer'));
 
 -- with check as well as using, for the reason 0005 gives: without it an owner
 -- could pass the test on the way in and write a row the policy would not have
 -- allowed on the way out.
+drop policy if exists launch_blockers_update on public.launch_blockers;
 create policy launch_blockers_update on public.launch_blockers
   for update using (public.is_admin('owner'))
   with check (public.is_admin('owner'));
