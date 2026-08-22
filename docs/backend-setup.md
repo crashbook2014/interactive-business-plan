@@ -115,28 +115,32 @@ supabase migration list          # <- do this FIRST. See below.
 supabase db push
 ```
 
-### Check the migration names before the first push — 30 seconds, once
+### The migration names are fine — settled 22 August 2026
 
-`supabase/migrations/` uses `0001_init.sql` … `0005_admin.sql`. The CLI's own
-convention is a 14-digit timestamp (`20260822081500_init.sql`), and it records
-the leading digits as the migration **version** in
-`supabase_migrations.schema_migrations` on your project.
+An earlier version of this page told you to check the filenames before pushing,
+because `0001_init.sql` … `0005_admin.sql` do not follow the CLI's own 14-digit
+timestamp convention and I could not be sure the CLI would accept them.
 
-**Run `supabase migration list` before `db push` and see what it says.**
+**It does.** Supabase CLI 2.115.0 was run against a local PostgreSQL 16 with
+the same five migrations and the shim in `test/pg-shim.sql`:
 
-- **If the CLI lists all five happily**, leave the names alone. Mixed
-  conventions are harmless going forward: a future timestamped migration sorts
-  after `0005` either way.
-- **If the CLI rejects the names**, they need renaming to the timestamp form —
-  and *that is a job for right now, before the first push, not later.* Once
-  `db push` succeeds, `0001`…`0005` are written into your project's migration
-  table. Rename them afterwards and the CLI sees five brand-new migrations and
-  tries to run all of them again, against a database that already has those
-  tables. Renaming is free today and unpleasant tomorrow.
+```
+Applying migration 0001_init.sql...   ... 0005_admin.sql...
+Finished supabase db push.
+```
 
-This is written as a check rather than a pre-emptive rename because the CLI's
-behaviour here varies by version, and renaming five files plus every reference
-to them across the docs on an untested assumption is worse than asking the tool.
+All five applied, and the CLI recorded them in
+`supabase_migrations.schema_migrations` as versions `0001`–`0005`. `--include-all`
+was **not** required — plain `supabase db push` picks them up.
+
+The resulting database was then checked rather than assumed: **16 tables, 35
+policies, row level security on every one, five feature flags seeded and all
+off** — and a `viewer` attempting to enable payments changed nothing, which is
+the owner-only rule holding in a CLI-built database and not only in a
+hand-applied one.
+
+**So: no rename, and no dry run needed.** Mixed conventions stay harmless going
+forward, because a future timestamped migration sorts after `0005` either way.
 
 ## 2b. What `supabase/config.toml` already decides for you
 
