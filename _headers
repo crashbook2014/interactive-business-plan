@@ -44,7 +44,7 @@
 
 # The app. Installable and offline, so worker-src and manifest-src are 'self'.
 /app/*
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src https://nkgjgpageqohalerccfu.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'
 
 # THE ONE THAT CANNOT BE DONE ANY OTHER WAY.
 #

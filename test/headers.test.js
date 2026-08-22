@@ -109,9 +109,16 @@ console.log("\n— the AI switch is documented as a two-file change");
 const hdrSrc = readFileSync(path.join(ROOT, "_headers"), "utf8");
 ok(/enable-ai-runbook/.test(hdrSrc),
    "the file points at the runbook, so nobody opens connect-src here and forgets the meta tag");
-ok(Object.values(directives(find("/app/*").headers["content-security-policy"]))
-     .every(v => !/supabase|https:\/\//.test(v)),
-   "and no endpoint is currently allowed — this ships closed like everything else");
+/* Both directions, like the meta tag it mirrors: closed when nothing is
+   configured, and naming exactly the configured host when something is. */
+{
+  const cfg = (readFileSync(path.join(ROOT, "app/index.html"), "utf8")
+    .match(/SUPABASE_URL:\s*"([^"]+)"/) || [])[1] || null;
+  const conn = directives(find("/app/*").headers["content-security-policy"])["connect-src"];
+  ok(cfg ? conn === cfg : !/supabase|https:\/\//.test(conn), cfg
+    ? `the header names exactly the configured project (${conn})`
+    : "and no endpoint is currently allowed — this ships closed like everything else");
+}
 
 /* ==================================================== supabase/config.toml
    The same argument as `_headers` above, applied to a different file: this one

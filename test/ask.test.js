@@ -251,7 +251,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      served here — the same single-host grant a real deployment would make. */
   await p.route("**/app/", async route => {
     const res = await route.fetch();
-    const body = (await res.text()).replace("connect-src 'none'", `connect-src ${AI_HOST}`);
+    const body = (await res.text())/* Whatever the policy currently is, not the literal "'none'" it used
+           to be. Once a real project was configured the app's connect-src
+           named that host, this replacement silently stopped matching, and
+           every stubbed AI request was blocked by a CSP the test believed it
+           had opened. */
+        .replace(/connect-src [^;]*/, `connect-src ${AI_HOST}`);
     await route.fulfill({ response: res, body });
   });
   let sent = [], reply = null;
@@ -286,7 +291,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     box.checked = true; box.dispatchEvent(new Event("change"));
     await askRun();
   });
-  ok(sent.length === 1, "ticking the box and pressing ask sends exactly one request");
+  /* `sent` counts requests to the ANALYZE endpoint. Once a project is
+     configured the app also does a lazy flag GET on governed surfaces, which is
+     a different request to a different URL and is asserted in admin.test.js —
+     counting it here would make this suite fail for a reason it is not about. */
+  ok(sent.length === 1, "ticking the box and pressing ask sends exactly one request to analyze");
   ok(sent[0].kind === "ask" && typeof sent[0].q === "string", "the request is an ask");
   /* The consent says the wage, dates and answers do not go. This is that
      sentence, checked against the wire. */

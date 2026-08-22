@@ -41,7 +41,12 @@ const AI_HOST = "https://stub.supabase.co";
 async function serveWithAiCsp(page){
   await page.route("**/app/", async route => {
     const res = await route.fetch();
-    const body = (await res.text()).replace("connect-src 'none'", `connect-src ${AI_HOST}`);
+    const body = (await res.text())/* Whatever the policy currently is, not the literal "'none'" it used
+           to be. Once a real project was configured the app's connect-src
+           named that host, this replacement silently stopped matching, and
+           every stubbed AI request was blocked by a CSP the test believed it
+           had opened. */
+        .replace(/connect-src [^;]*/, `connect-src ${AI_HOST}`);
     await route.fulfill({ response: res, body });
   });
 }
@@ -92,10 +97,23 @@ async function serveWithAiCsp(page){
   });
   ok(forced.findings === null, "forcing aiRun() produces no findings");
 
+  /* THE PROMISE THIS GUARDS, STATED PRECISELY. It was "zero off-origin
+     requests", which was true and is no longer, because a configured project
+     adds one lazy GET of the public feature-flag table when a governed screen
+     is opened. That request carries no account, no figures and no contract
+     text, and the privacy copy now says so.
+
+     So the assertion becomes the thing that actually matters and must never
+     change: NOTHING CARRYING THE READER OR THEIR DOCUMENT LEAVES. Anything
+     off-origin other than the flag read is a failure, and the flag read is
+     checked to be a bare GET of that one table. */
+  const FLAGS = /\/rest\/v1\/app_flags\?select=key,enabled$/;
   const offsite = reqs.filter(u => !u.startsWith(BASE));
-  ok(offsite.length === 0,
-     `zero off-origin requests in the shipping default (${offsite.length})`);
-  offsite.forEach(u => console.log("   leaked: " + u));
+  const unexpected = offsite.filter(u => !FLAGS.test(u));
+  ok(unexpected.length === 0,
+     `nothing about the reader or their contract leaves the device (${unexpected.length} unexpected of ${offsite.length} off-origin)`);
+  unexpected.forEach(u => console.log("   leaked: " + u));
+  if (offsite.length) console.log(`   (${offsite.length} allowed: the public feature-flag read)`);
   console.log(`   ${reqs.length} requests total, all same-origin`);
   await p.close();
 

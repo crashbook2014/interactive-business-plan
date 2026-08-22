@@ -308,8 +308,19 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      host here; the wildcard must never come back. */
   ok(!/\*\.supabase\.co/.test(csp),
      "no wildcard host in connect-src — a shared domain is not an allowlist");
-  ok(dir("connect-src") === "'none'",
-     `connect-src is closed while the AI is dormant (${dir("connect-src")})`);
+  /* The invariant is not "closed" — it is "closed unless a project is
+     configured, and then exactly that one host". The old assertion conflated
+     the AI being dormant with the network being shut, which stopped being the
+     same thing when runtime feature flags arrived. */
+  {
+    const cfg = (require("node:fs")
+      .readFileSync(require("node:path").join(__dirname, "..", "app/index.html"), "utf8")
+      .match(/SUPABASE_URL:\s*"([^"]+)"/) || [])[1] || null;
+    const got = dir("connect-src");
+    ok(cfg ? got === cfg : got === "'none'", cfg
+      ? `connect-src names exactly the configured project and nothing else (${got})`
+      : `connect-src is closed, because no project is configured (${got})`);
+  }
 
   /* Proven, not read: fetch from the page and watch for the violation event.
      The throw looks identical whether the policy blocked it or DNS did. */

@@ -375,13 +375,29 @@
 
   readDeployed().then(renderStatus);
 
+  /* Render FIRST, then let the session resolve. The previous order was
+     init().then(refreshRole).then(renderAll), so a project that could not be
+     reached — offline, paused on the free tier, or a network that blocks it —
+     rejected the chain and the page rendered nothing at all. Blank, no error,
+     nothing to act on. Found by pointing it at a real project from a machine
+     that cannot reach Supabase, which is exactly the state a paused free
+     project produces. */
+  renderAll();
   if (A && A.configured()) {
-    A.init().then(refreshRole).then(function () {
-      renderAll();
-      if (A.user() && role) loadFlags();
-    });
+    A.init()
+      .then(refreshRole)
+      .then(function () {
+        renderAll();
+        if (A.user() && role) loadFlags();
+      })
+      .catch(function () {
+        /* The status panel above needs no credentials and is already on
+           screen. Say the project is unreachable rather than implying it is
+           not configured — those are different problems with different fixes. */
+        var who = el("who");
+        if (who) who.textContent =
+          "Configured, but the project could not be reached. If it is on the free tier it may be paused — open the Supabase dashboard to resume it. Status below is read from the deployed site and is unaffected.";
+      });
     A.onChange(function () { refreshRole().then(renderAll); });
-  } else {
-    renderAll();
   }
 })();

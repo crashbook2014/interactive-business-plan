@@ -27,7 +27,7 @@
      never the wildcard. That is deliberate friction: turning on the one feature
      that sends contract text off the device should not be a config change
      alone. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src https://nkgjgpageqohalerccfu.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 
@@ -2225,6 +2225,12 @@ if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
  * docs/claude-analysis.md.
  */
 window.WODOUH_CONFIG = Object.assign({
+  SUPABASE_URL: "https://nkgjgpageqohalerccfu.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_RYzk7dHgfpv4ZlFN8sFWrQ_Uz3UhQIX",
+  REDIRECT_URL: "https://alwodouh.com/app/index.html",
+  /* Uncomment once supabase/functions/analyze is deployed AND you have read
+     docs/claude-analysis.md - it changes what the privacy copy must say.
+  ANALYZE_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/analyze", */
   ANALYZE_URL: ""
 }, window.WODOUH_CONFIG || {});
 

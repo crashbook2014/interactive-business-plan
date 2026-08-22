@@ -67,7 +67,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     url: flagsUrl(),
     pay: PAYMENT_LIVE, subs: SUBSCRIPTIONS_LIVE, lawyer: LAWYER_DESK.live,
   }));
-  ok(state.url === null, "flagsUrl() is null without a project, so there is nothing to fetch");
+  /* Both directions. Before a project existed this asserted null; that was
+     the state of the day, not a property. What must always hold is that the
+     URL exists exactly when the configuration does. */
+  const cfgUrl = await page.evaluate(() => (window.WODOUH_CONFIG || {}).SUPABASE_URL || null);
+  ok(cfgUrl ? String(state.url).startsWith(cfgUrl) : state.url === null, cfgUrl
+    ? "flagsUrl() points at the configured project and nowhere else"
+    : "flagsUrl() is null without a project, so there is nothing to fetch");
   ok(state.values === null, "no flags are loaded");
   ok(state.pay === false && state.subs === false && state.lawyer === false,
      "and all three switches read their compiled constant");
@@ -172,8 +178,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const b = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
     return b ? b.textContent : "";
   });
-  ok(privacy.length > 0 && !/single question|سؤالًا واحدًا/.test(privacy),
-     "unconfigured, the privacy screen does NOT mention a check that never happens");
+  /* The copy must describe the build, in both directions: mention the flag
+     check when it can happen, and stay silent when it cannot. */
+  const mentions = /single question|سؤالًا واحدًا/.test(privacy);
+  ok(privacy.length > 0 && mentions === !!cfgUrl, cfgUrl
+    ? "the privacy screen describes the flag check, because it now happens"
+    : "unconfigured, the privacy screen does NOT mention a check that never happens");
 
   /* ---- 8. the migration's shape, which is what actually enforces any of this */
   console.log("\n— the audit log cannot be written from a browser");

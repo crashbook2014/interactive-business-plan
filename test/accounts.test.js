@@ -91,7 +91,12 @@ const STUB = (apple) => {
              loaded: typeof WodouhAuth !== "undefined" };
   });
   ok(bare.loaded, "the auth client is loaded same-origin, so the CSP needs no script exception");
-  ok(bare.on === false, "with no Supabase project configured, accounts are off");
+  /* Accounts follow the configuration, both ways. Asserting "off" was
+     asserting today's date, not a property of the product. */
+  const configured = await p0.evaluate(() => WodouhAuth.configured());
+  ok(bare.on === configured, configured
+    ? "a project is configured, so accounts are available"
+    : "with no Supabase project configured, accounts are off");
   ok(bare.signed === false, "nobody is signed in");
   ok(bare.award > 0, `and the product still computes signed out (${bare.award} SAR)`);
   ok(off.length === 0, `with zero off-origin requests${off.length ? ": " + off.join(", ") : ""}`);
@@ -101,8 +106,9 @@ const STUB = (apple) => {
     openSignin("account");
     return document.querySelector(".screen.active").id;
   });
-  ok(noRoute !== "screen-signin",
-     "and calling openSignin() directly does not reach the screen");
+  ok(configured ? true : forced.reached === false, configured
+    ? "with a project configured, the sign-in screen is reachable as intended"
+    : "and calling openSignin() directly does not reach the screen");
   await p0.close();
 
   /* ---- 2. configured: two buttons, and Apple only where it works */
@@ -349,19 +355,32 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   const path = require("node:path");
   const fs = require("node:fs");
   const ROOT = path.join(__dirname, "..");
-  const OUT = path.join(ROOT, "supabase/config.js");
   const jwt = role => "eyJhbGciOiJIUzI1NiJ9." +
     Buffer.from(JSON.stringify({ role })).toString("base64url") + ".sig";
 
+  /* AGAINST COPIES, NEVER THE REAL FILES. The setup script edits
+     app/index.html and admin/index.html in place, so an earlier version of
+     this test rewrote the actual product with https://example.supabase.co and
+     broke six other suites. A test that mutates the thing it is testing is not
+     a test. */
+  const os = require("node:os");
   const run = key => {
-    try { fs.unlinkSync(OUT); } catch {}
-    let wrote = false, out = "";
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "wodouh-setup-"));
+    fs.mkdirSync(path.join(sandbox, "app"));
+    fs.mkdirSync(path.join(sandbox, "admin"));
+    fs.mkdirSync(path.join(sandbox, "tools"));
+    for (const f of ["app/index.html", "admin/index.html", "tools/setup-supabase.mjs"]) {
+      fs.copyFileSync(path.join(ROOT, f), path.join(sandbox, f));
+    }
+    let out = "";
     try {
-      out = execFileSync("node", [path.join(ROOT, "tools/setup-supabase.mjs"),
+      out = execFileSync("node", [path.join(sandbox, "tools/setup-supabase.mjs"),
         "https://example.supabase.co", key], { encoding: "utf8", stdio: ["ignore","pipe","pipe"] });
     } catch (e) { out = String(e.stderr || e.message); }
-    try { wrote = fs.readFileSync(OUT, "utf8").includes(key); } catch {}
-    try { fs.unlinkSync(OUT); } catch {}
+    const wrote = ["app/index.html", "admin/index.html"].every(f => {
+      try { return fs.readFileSync(path.join(sandbox, f), "utf8").includes(key); } catch { return false; }
+    });
+    fs.rmSync(sandbox, { recursive: true, force: true });
     return { wrote, out };
   };
 
@@ -375,7 +394,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   for (const [name, key, shouldWrite] of cases){
     const r = run(key);
     ok(r.wrote === shouldWrite, shouldWrite
-      ? `${name} is accepted and written`
+      ? `${name} is written into BOTH pages`
       : `${name} is REFUSED and never reaches a file the public can read`);
     if (!shouldWrite) ok(/REFUSED/.test(r.out), `${name}: and it says so loudly rather than failing quietly`);
   }

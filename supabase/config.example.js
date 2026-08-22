@@ -1,6 +1,20 @@
 /* Wodouh — public runtime configuration.
  *
- * Copy to config.js and fill in. config.js is gitignored.
+ * READ THIS FIRST: THIS FILE IS A REFERENCE, NOT A FILE THE APP LOADS.
+ *
+ * Nothing loads supabase/config.js. The app's configuration lives INLINE in
+ * app/index.html, and the console's inline in admin/index.html, because
+ * turning on the network and opening the CSP that permits it must land in the
+ * same diff where one reviewer sees both. A separate config.js was also
+ * gitignored, so it could never have reached the deployed site at all.
+ *
+ * TO CONFIGURE, run:
+ *
+ *     node tools/setup-supabase.mjs https://YOUR-REF.supabase.co sb_publishable_...
+ *
+ * That writes both files and opens both policies, refuses a secret key, and
+ * prints the one step only you can do (the redirect URL). This file stays as
+ * documentation of what each value means.
  *
  * Both values below are PUBLIC by design. The publishable key identifies the
  * project and grants no access on its own, because every table is protected by
