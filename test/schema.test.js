@@ -230,6 +230,38 @@ ok(/insert into public\.admins[\s\S]*?on conflict \(user_id\) do nothing/.test(c
 ok(/create trigger on_auth_user_allowlisted[\s\S]*?after insert or update of email, email_confirmed_at on auth\.users/.test(code),
    "the trigger fires on update as well as insert, so a confirmation that lands late still promotes");
 
+/* ---- 6c-bis. exactly who the migration makes an operator.
+   rls.test.js proves each of these addresses is promoted when it signs in.
+   This proves the list is EXACTLY these and nothing else — a fourth row
+   slipped into the seed would otherwise be discovered by a stranger finding
+   they can move your switches. Asserted against the migration source rather
+   than a live table, because the live table legitimately gains rows. */
+console.log("\n— the operator seed is exactly the three founder addresses");
+{
+  const seed = code.match(/insert into public\.admin_allowlist[\s\S]*?on conflict/i);
+  ok(!!seed, "0008 seeds the allowlist");
+  if (seed) {
+    const rows = [...seed[0].matchAll(/\('([^']+)',\s*'(\w+)'/g)].map(m => [m[1], m[2]]);
+    const EXPECTED = [
+      ["abdulelah@alwodouh.com", "owner"],
+      ["crashbook2014@gmail.com", "owner"],
+      ["abdulelah-alshi@hotmail.com", "owner"]
+    ];
+    ok(rows.length === EXPECTED.length,
+       `it seeds exactly ${EXPECTED.length} addresses (found ${rows.length})`);
+    for (const [email, role] of EXPECTED) {
+      ok(rows.some(r => r[0] === email && r[1] === role),
+         `${email} is seeded as ${role}`);
+    }
+    /* Lowercase and untrimmed addresses would never match the trigger's
+       lower(btrim(...)) lookup, so a capitalised seed row is a silent
+       lockout. The table's own CHECK enforces this too; asserted here so the
+       failure names the cause. */
+    ok(rows.every(r => r[0] === r[0].toLowerCase().trim()),
+       "every seeded address is already lowercase and trimmed, so the lookup matches");
+  }
+}
+
 /* ---- 6d. the launch checklist is not public */
 console.log("\n— what is not ready is operator-only");
 ok(/create policy launch_blockers_select on public\.launch_blockers\s+for select using \(public\.is_admin\('viewer'\)\)/.test(code),

@@ -308,6 +308,35 @@ ok(unchanged(VIEWER, `update public.launch_blockers set done=true where key='law
    `select done from public.launch_blockers where key='lawyer_review';`, "f"),
    "a viewer cannot tick one off");
 
+/* ============================ the three founder addresses, by name
+   Everything above proves the MECHANISM works, using invented addresses. That
+   is not the same claim as "these three specific people can get into the
+   console", which is the thing actually being relied on. A typo in one seeded
+   row would pass every test above and lock a founder out on launch day.
+
+   Signed in the way people really type an address — capitalised, with stray
+   whitespace — because that is the failure that would be silent. */
+console.log("\n— the three founder addresses each become an owner");
+const FOUNDERS = [
+  "Abdulelah@Alwodouh.com",
+  "  crashbook2014@GMAIL.com ",
+  "Abdulelah-Alshi@Hotmail.com"
+];
+for (const addr of FOUNDERS) {
+  const id = psql(`insert into auth.users (id, email, email_confirmed_at)
+                   values (gen_random_uuid(), '${addr.replace(/'/g, "''")}', now())
+                   returning id;`).trim().split("\n").pop();
+  const got = psql(`select coalesce(max(role),'none') from public.admins where user_id='${id}';`).trim();
+  ok(got === "owner", `${addr.trim()} is an owner (got ${got})`);
+}
+/* "And nobody else" is NOT asserted here. The blocks above deliberately insert
+   synthetic allowlist rows to exercise the trigger, so a count taken at this
+   point is polluted by the test's own fixtures — it failed on the first run
+   for exactly that reason. Who the migration SEEDS is a property of the
+   migration, and schema.test.js asserts the exact set against 0008's source
+   where nothing can add to it. This file answers the other question: what the
+   database actually does when those people sign in. */
+
 /* ======================================= the newest migrations re-run clean
    A paste that errors the second time is a paste someone assumes did not work
    the first, and pastes again. 0007 originally failed here: `create policy`
