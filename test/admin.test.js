@@ -151,12 +151,48 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* ---- 7. the console degrades honestly */
   console.log("\n— unconfigured, the console explains itself instead of breaking");
   const errors = [];
+  const cspViolations = [];
   page.on("pageerror", e => errors.push(e.message));
+  /* THE CHECK WHOSE ABSENCE LET THE CONSOLE SHIP BROKEN. The config was
+     written into admin/index.html as an INLINE script, and that page ships
+     `script-src 'self'` with no 'unsafe-inline', so the browser refused it.
+     WODOUH_CONFIG was never set and the console read "Not connected" — with
+     the correct values sitting in the file.
+
+     A pageerror listener does not see this: a refused script is not an
+     uncaught exception. Only the console message says so. */
+  page.on("console", m => {
+    if (/Content Security Policy/.test(m.text()) && !/frame-ancestors/.test(m.text())) {
+      cspViolations.push(m.text().slice(0, 120));
+    }
+  });
   await page.goto(BASE + "/admin/");
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(900);
+  ok(cspViolations.length === 0,
+     `no content security policy violation on load${cspViolations.length ? " — " + cspViolations[0] : ""}`);
   const text = await page.evaluate(() => document.body.innerText);
   ok(errors.length === 0, `it loads without a script error${errors.length ? " — " + errors[0] : ""}`);
-  ok(/Not connected/i.test(text), "the switches panel says it is not connected");
+  /* Assert the RESOLVED STATE, not the rendered string. "Not connected" was
+     true of an unconfigured build and equally true of a configured one whose
+     config the browser refused to execute — two different problems with two
+     different fixes, and the old assertion could not tell them apart. */
+  const resolved = await page.evaluate(() => ({
+    url: (window.WODOUH_CONFIG || {}).SUPABASE_URL || null,
+    configured: typeof WodouhAuth !== "undefined" && WodouhAuth.configured(),
+  }));
+  const fileHasCfg = readFileSync(path.join(ROOT, "admin/config.js"), "utf8").includes("SUPABASE_URL:");
+  ok(!!resolved.url === fileHasCfg, fileHasCfg
+    ? `the console's config actually EXECUTES in the browser (${resolved.url})`
+    : "the console has no config, and reports none");
+  ok(resolved.configured === fileHasCfg,
+     fileHasCfg ? "and it resolves as configured" : "and it resolves as unconfigured");
+  ok(fileHasCfg ? !/Not connected/i.test(text) : /Not connected/i.test(text),
+     fileHasCfg ? "so the switches panel no longer says it is not connected"
+                : "the switches panel says it is not connected");
+  if (fileHasCfg) {
+    ok(/Sign in/i.test(text),
+       "and, signed out, it offers the sign-in that is the only way to become an operator");
+  }
   ok(/Waiting/i.test(text), "and the blockers panel names what is missing");
 
   /* The status panel reads the deployed files, so it must have found the real

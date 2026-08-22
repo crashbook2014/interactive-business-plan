@@ -339,6 +339,53 @@ const STUB = (apple) => {
      "and names what does leave, in the same breath");
 
   await b.close();
+/* ==================================== the door, not just the room behind it
+   openSignin() existed with ZERO CALLERS. The sign-in screen was complete in
+   two languages and nothing in the app reached it, so an account could not be
+   created at all — which also meant nobody could ever become a console
+   operator, since that needs an auth.users row.
+
+   The old assertion called openSignin() directly and checked it was guarded.
+   That was never the broken part. This drives the UI instead: is there a
+   control a person can find and press, and does pressing it arrive somewhere. */
+console.log("\n— a person can actually find and reach sign-in");
+{
+  /* Its own browser: this block sits after the main one is closed. */
+  const db = await chromium.launch(launchOpts());
+  const d = await db.newPage({ viewport: { width: 390, height: 844 } });
+  await d.goto(APP);
+  await d.waitForFunction(() => typeof window.show === "function");
+  const state = await d.evaluate(() => {
+    obFinish(); goTab("account");
+    const box = document.getElementById("accAuth");
+    const btn = box && box.querySelector("button");
+    return {
+      configured: authOn(),
+      shown: !!box && getComputedStyle(box).display !== "none",
+      hasButton: !!btn,
+      label: btn ? btn.textContent.trim() : null,
+    };
+  });
+
+  ok(state.shown === state.configured, state.configured
+    ? "the account screen offers an account, because a project is configured"
+    : "no project, so the account screen offers nothing — as every optional surface does");
+
+  if (state.configured) {
+    ok(state.hasButton && !!state.label,
+       `there is a labelled control to press (${state.label})`);
+    const reached = await d.evaluate(() => {
+      document.querySelector("#accAuth button").click();
+      const a = document.querySelector(".screen.active");
+      return a ? a.id : null;
+    });
+    ok(reached === "screen-signin",
+       `and pressing it reaches the sign-in screen (${reached})`);
+  }
+  await d.close();
+  await db.close();
+}
+
 /* ============================================ the setup script's one job
    tools/setup-supabase.mjs writes supabase/config.js, and that file is served
    to every visitor. So the property worth pinning is narrow and absolute: a
@@ -369,7 +416,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
     fs.mkdirSync(path.join(sandbox, "app"));
     fs.mkdirSync(path.join(sandbox, "admin"));
     fs.mkdirSync(path.join(sandbox, "tools"));
-    for (const f of ["app/index.html", "admin/index.html", "tools/setup-supabase.mjs"]) {
+    for (const f of ["app/index.html", "admin/index.html", "admin/config.js", "tools/setup-supabase.mjs"]) {
       fs.copyFileSync(path.join(ROOT, f), path.join(sandbox, f));
     }
     let out = "";
@@ -377,7 +424,10 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
       out = execFileSync("node", [path.join(sandbox, "tools/setup-supabase.mjs"),
         "https://example.supabase.co", key], { encoding: "utf8", stdio: ["ignore","pipe","pipe"] });
     } catch (e) { out = String(e.stderr || e.message); }
-    const wrote = ["app/index.html", "admin/index.html"].every(f => {
+    /* The two places the script actually writes: the app's INLINE block, and
+       the console's EXTERNAL config file. The console cannot take an inline
+       one — its CSP is `script-src 'self'` and the browser refuses it. */
+    const wrote = ["app/index.html", "admin/config.js"].every(f => {
       try { return fs.readFileSync(path.join(sandbox, f), "utf8").includes(key); } catch { return false; }
     });
     fs.rmSync(sandbox, { recursive: true, force: true });

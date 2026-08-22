@@ -480,6 +480,7 @@
       font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .pay-methods svg{width:14px;height:14px;color:var(--teal)}
   .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
+  .acc-who{font-weight:600;margin:2px 0 12px;word-break:break-all}
   .legal-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
   .legal-links a{font-size:12.5px;color:var(--teal-ink);text-decoration:underline;text-underline-offset:2px}
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
@@ -1911,6 +1912,13 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   <!-- ACCOUNT (tab root) -->
   <section class="screen" id="screen-account">
     <h2 class="section-title" data-t="acc_title"></h2>
+    <!-- THE ONLY DOOR TO SIGN-IN IN THE WHOLE APP.
+         openSignin() existed for months with zero callers — the screen behind
+         it was complete, in two languages, and nothing reached it. The copy
+         below (au_title / au_sub) was written for exactly this offer and was
+         never wired to anything. Hidden entirely when no project is
+         configured, like every other optional surface here. -->
+    <div class="acc-sec acc-auth" id="accAuth" hidden></div>
     <div class="acc-plan" id="accPlan"></div>
     <div class="acc-sec">
       <h3 data-t="acc_pay_q"></h3>
@@ -2694,6 +2702,10 @@ const T = {
      that omits something it can. */
   acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
                       en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
+  acc_signin_cta:{ar:"سجّل دخولك",en:"Sign in"},
+  acc_signed_h:{ar:"حسابك",en:"Your account"},
+  acc_signed_anon:{ar:"مسجّل دخولك",en:"Signed in"},
+  acc_signout:{ar:"تسجيل الخروج",en:"Sign out"},
   ll_privacy:{ar:"سياسة الخصوصية",en:"Privacy Policy"},
   ll_terms:{ar:"شروط الاستخدام",en:"Terms of Service"},
   ll_refund:{ar:"سياسة الاسترجاع",en:"Refund Policy"},
@@ -8956,7 +8968,30 @@ function renderSources(){
   }).join("");
 }
 
+/* Signed out: the offer, in the words that were already written for it.
+   Signed in: who you are, and the way out. Nothing here gates a screen — the
+   app works signed out and always has. */
+function renderAccountAuth(){
+  const box = document.getElementById("accAuth");
+  if (!box) return;
+  if (!authOn()){ box.hidden = true; box.innerHTML = ""; return; }
+  box.hidden = false;
+  const u = WodouhAuth.user();
+  box.innerHTML = u
+    ? `<h3>${esc(t("acc_signed_h"))}</h3>
+       <p class="acc-who">${esc(u.email || t("acc_signed_anon"))}</p>
+       <button class="ghost" onclick="signOutNow()">${esc(t("acc_signout"))}</button>`
+    : `<h3>${esc(t("au_title"))}</h3>
+       <p>${esc(t("au_sub"))}</p>
+       <button class="primary" onclick="openSignin('account')">${esc(t("acc_signin_cta"))}</button>`;
+}
+function signOutNow(){
+  if (!authOn()) return;
+  Promise.resolve(WodouhAuth.signOut()).catch(()=>{}).then(()=>{ renderAccountAuth(); });
+}
+
 function renderAccount(){
+  renderAccountAuth();
   const cur = plan==="biz" ? t("pl_biz") : plan==="plus" ? t("pl_plus") : t("pl_basic");
   document.getElementById("accPlan").innerHTML =
     `<div class="acc-plan-row">

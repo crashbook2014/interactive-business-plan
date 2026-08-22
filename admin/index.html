@@ -22,7 +22,7 @@
   script-src 'self';
   style-src 'self' 'unsafe-inline';
   img-src 'self' data:;
-  connect-src 'self' https://nkgjgpageqohalerccfu.supabase.co;
+  connect-src 'self' https://nkgjgpageqohalerccfu.supabase.co https://nkgjgpageqohalerccfu.supabase.co https://nkgjgpageqohalerccfu.supabase.co;
   base-uri 'none';
   form-action 'none';
   frame-ancestors 'none'"/>
@@ -117,25 +117,20 @@ laptop. If a row here disagrees with your local repo, the deploy is what readers
   </div>
 </dialog>
 
-<!-- Inline, and written by tools/setup-supabase.mjs — not loaded from a
-     separate file. It was `<script src="../supabase/config.js">`, which is
-     gitignored, so it would never have existed on the deployed site: the
-     console would have read "Not connected" forever with nothing to explain
-     why. These values are public by design and they have to ship.
+<!-- An EXTERNAL file, not an inline block, and that is not a style choice.
+     This page ships `script-src 'self'` with no 'unsafe-inline', so an inline
+     config is REFUSED by the browser — which is exactly what happened: the
+     values were correct in the file, the script never executed, and the
+     console read "Not connected" forever with nothing to explain why.
 
-     Empty is a valid state: every panel then says it is not connected rather
-     than failing. -->
-<script>
-window.WODOUH_CONFIG = Object.assign({
-  SUPABASE_URL: "https://nkgjgpageqohalerccfu.supabase.co",
-  SUPABASE_ANON_KEY: "sb_publishable_RYzk7dHgfpv4ZlFN8sFWrQ_Uz3UhQIX",
-  REDIRECT_URL: "https://alwodouh.com/app/index.html",
-  /* Uncomment once supabase/functions/analyze is deployed AND you have read
-     docs/claude-analysis.md - it changes what the privacy copy must say.
-  ANALYZE_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/analyze", */
-  ANALYZE_URL: ""
-}, window.WODOUH_CONFIG || {});
-</script>
+     The app keeps its config inline because it stays a single file on purpose
+     and its own policy allows it. This page is already multi-file, so an
+     external config costs nothing and the policy stays strict.
+
+     Committed, because these values are public by design and the deployed
+     console cannot reach the project without them. Written by
+     tools/setup-supabase.mjs. -->
+<script src="config.js"></script>
 <script src="../app/auth.js"></script>
 <script src="admin.js"></script>
 </body>

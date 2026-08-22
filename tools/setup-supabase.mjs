@@ -33,6 +33,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const APP = path.join(ROOT, "app/index.html");
 const ADMIN = path.join(ROOT, "admin/index.html");
+const ADMIN_CFG = path.join(ROOT, "admin/config.js");
 
 const [, , rawUrl, key, ...rest] = process.argv;
 const redirect = rest[0] || "https://alwodouh.com/app/index.html";
@@ -118,10 +119,48 @@ const cspValue = (current, h) => /'self'/.test(current) ? "'self' " + h : h;
    and wrote one file at a time, so a failure on the second left the first
    already edited — a half-configured app, which is the state this script
    exists to prevent. Found by the guard firing for real. */
-function check(file, label) {
+function check(file, label, wantCfg) {
   const src = readFileSync(file, "utf8");
-  once(src, new RegExp(CFG.source, "g"), "the WODOUH_CONFIG block", label);
+  if (wantCfg) once(src, new RegExp(CFG.source, "g"), "the WODOUH_CONFIG block", label);
   once(src, new RegExp(CSP.source, "g"), "connect-src inside the CSP meta tag", label);
+}
+
+/* THE CONSOLE GETS A FILE, NOT AN INLINE BLOCK, and that is not a style
+   choice. admin/index.html ships `script-src 'self'` with no 'unsafe-inline',
+   so an inline config is REFUSED by the browser — which is exactly what
+   happened the first time this ran: correct values written into the file, the
+   script never executed, and the console reading "Not connected" forever with
+   nothing on screen to explain it.
+
+   The app keeps its config inline because it stays a single file on purpose
+   and its own policy permits it. The console is already multi-file, so an
+   external config costs nothing there and its policy stays strict. */
+function writeAdminConfig() {
+  writeFileSync(ADMIN_CFG,
+    "/* Wodouh — the founder console's public configuration.\n" +
+    " *\n" +
+    " * Written by tools/setup-supabase.mjs. COMMITTED ON PURPOSE: these values\n" +
+    " * are public by design, and the deployed console cannot reach the project\n" +
+    " * unless they ship with it.\n" +
+    " *\n" +
+    " * An empty object is a valid state — every panel then says it is not\n" +
+    " * connected rather than failing, and the status panel still works, because\n" +
+    " * it reads the deployed files at this origin and needs no credentials.\n" +
+    " */\n" +
+    "window.WODOUH_CONFIG = Object.assign({\n" +
+    "  SUPABASE_URL: " + q(host) + ",\n" +
+    "  SUPABASE_ANON_KEY: " + q(key) + ",\n" +
+    "  REDIRECT_URL: " + q(redirect) + "\n" +
+    "}, window.WODOUH_CONFIG || {});\n");
+}
+
+/* The console needs its policy opened, but has no config block to edit. */
+function editCsp(file, label) {
+  const before = readFileSync(file, "utf8");
+  const after = before.replace(CSP, (m, lead, current) => lead + cspValue(current, host));
+  if (after === before) die("connect-src did not change in " + label + ".");
+  writeFileSync(file, after);
+  return after.length - before.length;
 }
 
 function edit(file, label) {
@@ -139,21 +178,34 @@ function edit(file, label) {
 
   after = after.replace(CSP, (m, lead, current) => lead + cspValue(current, host));
 
-  if (after === before) die("Nothing changed in " + label + " - an anchor matched itself.");
+  /* Re-running with the same values is a legitimate thing to do — checking a
+     setup, or after a git checkout — and it produces an identical file. The
+     first version treated that as "an anchor matched itself" and died, which
+     is a guard firing on success. Only an unchanged file that does NOT already
+     carry the intended config is a real failure. */
+  if (after === before) {
+    if (before.indexOf("SUPABASE_URL: " + q(host)) === -1) {
+      die("Nothing changed in " + label + " and it does not already hold this project.\n" +
+          "An anchor matched itself. Fix this script rather than let it guess.");
+    }
+    console.log("  " + label + " already holds this project — left as is.");
+    return 0;
+  }
   writeFileSync(file, after);
   return after.length - before.length;
 }
 
-check(APP, "app/index.html");
-check(ADMIN, "admin/index.html");
+check(APP, "app/index.html", true);
+check(ADMIN, "admin/index.html", false);
 
 const d1 = edit(APP, "app/index.html");
-const d2 = edit(ADMIN, "admin/index.html");
+const d2 = editCsp(ADMIN, "admin/index.html");
+writeAdminConfig();
 const ref = host.slice("https://".length).split(".")[0];
 
 console.log("\n" +
-"Wrote the project into app/index.html (" + d1 + " bytes) and admin/index.html (" + d2 + " bytes),\n" +
-"and opened connect-src to " + host + " in both.\n" +
+"Wrote the project into app/index.html (inline, " + d1 + " bytes) and admin/config.js (new file),\n" +
+"and opened connect-src to " + host + " in both pages.\n" +
 "\n" +
 "COMMIT BOTH FILES. These values are public by design, and the deployed site\n" +
 "cannot reach your project until they ship.\n" +
