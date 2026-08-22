@@ -182,8 +182,14 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       .execFileSync("git", ["log", "-1", "--format=%cd", "--date=format:%Y-%m-%d", "--", "admin/"],
                     { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch { /* no git, no history — nothing to compare against */ }
-  const stamp = (adminJs.match(/var BUILD\s*=\s*"([\d-]+)"/) || [])[1] || null;
-  ok(!!stamp, `the console carries a build stamp${stamp ? " (" + stamp + ")" : ""}`);
+  /* Date, then an optional letter that increments within the day. The letter
+     matters: a bump from "2026-08-22c" to "2026-08-22" reads as going
+     backwards, and a stamp that cannot be ordered cannot answer "is this the
+     build I just pushed". Only the date is compared below; the shape is
+     asserted here so the letter cannot quietly become something else. */
+  const full = (adminJs.match(/var BUILD\s*=\s*"(\d{4}-\d{2}-\d{2}[a-z]?)"/) || [])[1] || null;
+  const stamp = full ? full.slice(0, 10) : null;
+  ok(!!stamp, `the console carries a build stamp${full ? " (" + full + ")" : ""}`);
   if (stamp && lastAdminCommit) {
     ok(stamp >= lastAdminCommit,
        `the build stamp (${stamp}) is not older than the last change to admin/ (${lastAdminCommit})`);

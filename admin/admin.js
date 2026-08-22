@@ -639,14 +639,21 @@
      was visible from the outside, and none is distinguishable from the
      others by looking at the page. So the page says.
 
-     BUILD is the date this file last changed. "Bumped by hand" was the
+     BUILD is the date this file last changed, plus a letter that increments
+     within the day. The letter is not decoration: the previous bump went from
+     "2026-08-22c" to "2026-08-22", which READS AS GOING BACKWARDS, and a
+     reader comparing a deployed stamp against a newer one could not tell
+     which was which. A version that cannot be ordered cannot answer "is this
+     the build I just pushed", which is the only question it is for.
+
+     "Bumped by hand" was the
      original plan and it lasted five commits before I forgot — which made the
      stamp report a build four commits old and unable to do the one job it
      exists for. admin.test.js now compares it against the last commit that
      touched admin/, so forgetting fails the suite instead of quietly
      producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-08-22";
+  var BUILD = "2026-08-22d";
 
   function renderConn() {
     var host = el("conn");
