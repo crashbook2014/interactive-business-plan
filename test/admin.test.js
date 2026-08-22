@@ -166,6 +166,29 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
        `${what} is not shipped in the console — what is NOT ready is not a public fact`);
   }
 
+  /* THE BUILD STAMP MUST NOT LIE ABOUT ITS OWN AGE.
+     It exists so a cached copy of admin.js is visible as a stale value rather
+     than invisible. I added it, then changed this directory five more times
+     without bumping it — so it reported a build four commits old and could not
+     do the one job it was added for. "Remember to bump it" had already failed
+     once by the time anyone looked.
+
+     So the stamp is checked against the last commit that touched admin/.
+     Skips where git history is unavailable, the same way rls.test.js skips
+     without Postgres — a check that cannot run must not fail someone's clone. */
+  let lastAdminCommit = null;
+  try {
+    lastAdminCommit = require("node:child_process")
+      .execFileSync("git", ["log", "-1", "--format=%cd", "--date=format:%Y-%m-%d", "--", "admin/"],
+                    { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch { /* no git, no history — nothing to compare against */ }
+  const stamp = (adminJs.match(/var BUILD\s*=\s*"([\d-]+)"/) || [])[1] || null;
+  ok(!!stamp, `the console carries a build stamp${stamp ? " (" + stamp + ")" : ""}`);
+  if (stamp && lastAdminCommit) {
+    ok(stamp >= lastAdminCommit,
+       `the build stamp (${stamp}) is not older than the last change to admin/ (${lastAdminCommit})`);
+  }
+
   ok(/noindex/.test(adminHtml), "the page asks not to be indexed");
   ok(/default-src 'none'/.test(adminHtml) && /connect-src 'self'/.test(adminHtml),
      "and it ships its own content security policy");
@@ -215,6 +238,28 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(/Sign in/i.test(text),
        "and, signed out, it offers the sign-in that is the only way to become an operator");
   }
+  /* ---- 7c. the links panel. A console is also the place you leave FROM, and
+     a panel of links that 404 is worse than no panel: it costs trust in every
+     other row on the page. "#soon" was in the first draft and is a CSS class
+     the launch flag toggles, not a route — it would have quietly reloaded the
+     front door. Every internal path is fetched here rather than eyeballed. */
+  console.log("\n— every link on the console goes somewhere real");
+  const hrefs = await page.evaluate(() =>
+    [...document.querySelectorAll("#links a")].map(a => ({
+      text: a.textContent.trim(), href: a.getAttribute("href"),
+      blank: a.getAttribute("target") === "_blank",
+      rel: a.getAttribute("rel") || ""
+    })));
+  ok(hrefs.length > 15, `the panel carries ${hrefs.length} links`);
+  ok(hrefs.every(h => h.href && h.href !== "#"), "none of them is empty or a bare hash");
+  ok(hrefs.filter(h => /^https?:/.test(h.href)).every(h => h.blank && /noopener/.test(h.rel)),
+     "every off-site link opens in a new tab with rel=noopener");
+  for (const h of hrefs.filter(h => h.href.startsWith("/"))) {
+    const res = await page.request.get(BASE + h.href.split("#")[0]).catch(() => null);
+    ok(!!res && res.status() < 400,
+       `"${h.text}" resolves (${h.href} → ${res ? res.status() : "no response"})`);
+  }
+
   /* Was: "the blockers panel names what is missing". It does not any more, and
      must not — signed out, there is nothing to name. */
   ok(!/Waiting/i.test(text) && /operator/i.test(text),

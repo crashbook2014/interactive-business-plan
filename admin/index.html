@@ -28,18 +28,29 @@
   frame-ancestors 'none'"/>
 
 <style>
+  /* A CONTROL ROOM, NOT A DOCUMENT.
+     This page was a 760px reading column: one panel under another, the way an
+     article is laid out. That is the wrong shape for the job. An operations
+     console is read by GLANCING — the question is "is anything wrong right
+     now", and the answer should arrive before you scroll. So: a fixed status
+     bar that is always true, one verdict tile that summarises everything, and
+     the panels in a grid where related things sit side by side.
+
+     It keeps the Wodouh palette rather than turning into generic slate-grey
+     admin furniture. This is a room in the same building. */
   :root{
     --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F7F1E6; --card:#FDFAF3;
+    --sand:#F7F1E6; --card:#FDFAF3; --chrome:#EFE7D8;
     --amber:#C9922E; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
     --green:#4E8F5B; --green-bg:#E2EEE2;
     --ink:#2B3230; --ink-2:#5A625F; --line:#E8DFCE;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   }
   @media (prefers-color-scheme: dark){
     :root{
       --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
-      --sand:#141B19; --card:#1B2422;
+      --sand:#0F1513; --card:#18201E; --chrome:#131A18;
       --amber:#D9A648; --amber-bg:#2E2618;
       --red:#C86F63; --red-bg:#2E1E1C;
       --green:#6BAE78; --green-bg:#1A2A1E;
@@ -49,23 +60,68 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--sand);color:var(--ink);
        font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-       padding:20px 16px 64px;max-width:760px;margin-inline:auto}
-  h1{font-size:20px;margin:0 0 2px;letter-spacing:-.01em}
-  .sub{color:var(--ink-2);font-size:13px;margin:0 0 22px}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);
-     margin:26px 0 8px;font-weight:700}
+       padding:0 0 64px}
+
+  /* ---- the bar. Always visible, because "what am I looking at and is it
+     reachable" must never require scrolling back up. */
+  .bar{position:sticky;top:0;z-index:5;background:var(--chrome);
+       border-bottom:1px solid var(--line);padding:10px 20px;
+       display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+  .bar .brand{font-size:15px;font-weight:700;letter-spacing:-.01em;margin-inline-end:auto}
+  .bar .brand span{color:var(--ink-2);font-weight:600}
+  .sub{color:var(--ink-2);font-size:12.5px;margin:0}
+  #conn{font-family:var(--mono);font-size:11.5px;letter-spacing:-.01em}
+
+  .wrap{max-width:1180px;margin-inline:auto;padding:20px 20px 0}
+
+  /* ---- the verdict. One tile, one sentence, the colour doing the work. */
+  .hero{border:1px solid var(--line);border-radius:16px;background:var(--card);
+        padding:18px 20px;display:flex;align-items:center;gap:18px;margin-bottom:22px}
+  .hero .dot{width:12px;height:12px;border-radius:999px;flex:none;
+             box-shadow:0 0 0 4px color-mix(in srgb,currentColor 18%,transparent)}
+  .hero .txt{flex:1;min-width:0}
+  /* display:block on both — they are spans, and inline spans ran the verdict
+     and its explanation together as "Pre-launchVisitors see the...". */
+  .hero .state{display:block;font-size:19px;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+  .hero .why{display:block;color:var(--ink-2);font-size:13px;margin-top:3px}
+  .hero.ok{color:var(--green)} .hero.hold{color:var(--amber)} .hero.bad{color:var(--red)}
+  .hero.ok .state,.hero.hold .state,.hero.bad .state{color:inherit}
+
+  /* ---- the grid. Panels that belong together sit together. */
+  .grid{display:grid;gap:20px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .span2{grid-column:1 / -1}
+  @media (max-width:820px){ .grid{grid-template-columns:1fr} .span2{grid-column:auto} }
+
+  section.panel{min-width:0}
+  h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2);
+     margin:0 0 8px;font-weight:700}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
   .row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
   .row:first-child{border-top:0}
   .row .tx{flex:1;min-width:0}
   .row b{display:block;font-size:14px;font-weight:600}
   .row small{display:block;color:var(--ink-2);font-size:12px;margin-top:2px}
-  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  /* Instrument readings, not prose: tabular figures so a column of counts does
+     not jitter as the numbers land. */
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;
+        font-family:var(--mono);font-variant-numeric:tabular-nums}
   .on{background:var(--green-bg);color:var(--green)}
   .off{background:var(--line);color:var(--ink-2)}
   .warn{background:var(--amber-bg);color:var(--amber)}
   .bad{background:var(--red-bg);color:var(--red)}
   .note{font-size:12.5px;color:var(--ink-2);margin:8px 2px 0;line-height:1.6}
+  /* Link chips. A console's job includes being the place you leave FROM, and
+     twenty destinations as full-height rows would be a page of scrolling. */
+  .lg{padding:12px 14px;border-top:1px solid var(--line)}
+  .lg:first-child{border-top:0}
+  .lg h3{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2);
+         margin:0 0 8px;font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chips a{display:inline-block;text-decoration:none;font-size:12.5px;font-weight:600;
+           padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+           background:var(--sand);color:var(--ink)}
+  .chips a:hover{border-color:var(--teal);color:var(--teal-ink)}
+  .chips a[data-ext]::after{content:" \2197";color:var(--ink-2);font-weight:400}
   button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
          background:var(--card);color:var(--ink);padding:7px 13px;font-size:13px;font-weight:600}
   button.go{background:var(--teal);border-color:var(--teal);color:#fff}
@@ -84,29 +140,63 @@
 </head>
 <body>
 
-<h1>Wodouh console</h1>
-<p class="sub" id="who">Reading the deployed site…</p>
-<p class="sub" id="conn"></p>
+<header class="bar">
+  <div class="brand">Wodouh <span>console</span></div>
+  <p class="sub" id="who">Reading the deployed site…</p>
+  <p class="sub" id="conn"></p>
+</header>
 
-<h2>What is live right now</h2>
-<div class="card" id="status"></div>
-<p class="note">Read from the <b>deployed</b> files at this domain, not from anyone's
-laptop. If a row here disagrees with your local repo, the deploy is what readers see.</p>
+<div class="wrap">
 
-<h2>Switches</h2>
-<div class="card" id="flags"></div>
+<!-- The one line that answers "is anything wrong right now". Filled by
+     renderHero() from the same deployed constants the status panel reads, so
+     it can never disagree with the rows below it. -->
+<div class="hero" id="hero">
+  <span class="dot" style="background:currentColor"></span>
+  <span class="txt"><span class="state">Reading the deployed site…</span></span>
+</div>
 
-<h2>Numbers</h2>
-<div class="card" id="numbers"></div>
+<div class="grid">
 
-<h2>Your data</h2>
-<div class="card" id="data"></div>
+  <section class="panel span2">
+    <h2>What is live right now</h2>
+    <div class="card" id="status"></div>
+    <p class="note">Read from the <b>deployed</b> files at this domain, not from anyone's
+    laptop. If a row here disagrees with your local repo, the deploy is what readers see.</p>
+  </section>
 
-<h2>Recent changes</h2>
-<div class="card" id="audit"></div>
+  <section class="panel">
+    <h2>Switches</h2>
+    <div class="card" id="flags"></div>
+  </section>
 
-<h2>What is blocking you</h2>
-<div class="card" id="blockers"></div>
+  <section class="panel">
+    <h2>What is blocking you</h2>
+    <div class="card" id="blockers"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Numbers</h2>
+    <div class="card" id="numbers"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Recent changes</h2>
+    <div class="card" id="audit"></div>
+  </section>
+
+  <section class="panel span2">
+    <h2>Your data</h2>
+    <div class="card" id="data"></div>
+  </section>
+
+  <section class="panel span2">
+    <h2>Everywhere else</h2>
+    <div class="card" id="links"></div>
+  </section>
+
+</div>
+</div>
 
 <dialog id="confirm">
   <b id="cfTitle"></b>

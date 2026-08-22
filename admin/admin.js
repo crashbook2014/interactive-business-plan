@@ -102,12 +102,52 @@
     });
   }
 
+  /* ONE VERDICT, ABOVE EVERYTHING.
+     The question this page exists to answer is "is anything wrong right now",
+     and a list of seven rows makes you assemble that answer yourself, every
+     time. So it is assembled here.
+
+     Derived from the SAME `live` object the rows below use — not from a second
+     read, and not from the flags table. A summary that can disagree with the
+     detail under it is worse than no summary, because it is the one people
+     will trust and stop scrolling. */
+  function renderHero() {
+    var host = el("hero");
+    if (!host) return;
+    var state, why, cls;
+
+    if (!live.appReached) {
+      cls = "hold"; state = "Cannot read the deployed site";
+      why = "Everything below is unknown rather than fine. If you are on a local server, that is expected.";
+    } else if (live.rootLaunched !== live.appLaunched) {
+      cls = "bad"; state = "The two curtain flags disagree";
+      why = "A visitor can reach an open app through a closed front door, or the reverse. Fix this before anything else.";
+    } else if (live.rootLaunched === true) {
+      cls = "ok"; state = "Live to the public";
+      why = "Real people can reach this. " +
+            (live.payments ? "Card payment is on — charges are real." : "Payments are off, so nothing is charged.");
+    } else {
+      cls = "hold"; state = "Pre-launch";
+      why = "Visitors see the coming-soon page. /app/#preview still opens the product.";
+    }
+
+    host.className = "hero " + cls;
+    host.innerHTML = '<span class="dot" style="background:currentColor"></span>' +
+      '<span class="txt"><span class="state">' + esc(state) + '</span>' +
+      '<span class="why">' + esc(why) + '</span></span>';
+  }
+
   function renderStatus() {
     if (!live.appReached) {
       el("status").innerHTML = empty(
         "Could not read the deployed app from this domain. If you are running " +
         "this from a local server, that is expected — open it on the real site " +
         "to see live state.");
+      /* The verdict must be right in THIS branch too. An early return that
+         skips it would leave the tile showing the last thing it said, which
+         on a page whose job is "is anything wrong" is the worst possible
+         failure: stale reassurance. */
+      renderHero();
       return;
     }
     var h = "";
@@ -160,6 +200,7 @@
       stale ? "bad" : (live.disputed ? "warn" : "on"));
 
     el("status").innerHTML = h;
+    renderHero();
   }
 
   /* ==================================================== 2. the switches */
@@ -285,9 +326,14 @@
 
     if (!role) {
       host.innerHTML = empty(
-        "You are signed in, but this account is not an operator. Add its user " +
-        "id to <code>public.admins</code> in the Supabase dashboard. That is " +
-        "deliberately the only way in — no page can grant itself access.");
+        "<b>You are signed in, but this account is not an operator.</b><br><br>" +
+        "Operators are named by email in <code>public.admin_allowlist</code>, and a " +
+        "trigger promotes a confirmed address on sign-in. If this address is on " +
+        "that list and you are still seeing this, migration <code>0008</code> has " +
+        "not been applied to the project yet — that is the likely cause, not " +
+        "anything about this account.<br><br>" +
+        "No page can grant itself access, including this one: " +
+        "<code>public.admins</code> has no write policy at all.");
       return;
     }
 
@@ -414,6 +460,103 @@
           "Studio does the same job behind Supabase's own auth.");
   }
 
+  /* ============================================== 4b. everywhere else
+     A console is also the place you leave FROM. Every destination that
+     matters to running this product, in one panel, so none of them is a
+     bookmark you have to have kept.
+
+     WHAT IS AND IS NOT HERE. The product links are pages any visitor can
+     already open, so they are shown to anyone. The operations links go to
+     consoles that each have their own sign-in — Supabase, GitHub, Google —
+     so the URL grants nothing on its own; what it saves is the thirty seconds
+     of finding the right project. Nothing here is a credential and nothing
+     describes what is unfinished, which is the line the blockers panel
+     crossed.
+
+     The project ref comes from the deployed config rather than being written
+     twice, so pointing this console at another project moves these links with
+     it. */
+  var LINKS_PRODUCT = [
+    ["Front door", "/"],
+    ["The app", "/app/#preview"],
+    /* No "coming soon" chip: #soon is a CSS class the launch flag toggles on
+       <html>, not a route, so the link would have quietly reloaded the front
+       door. Pre-launch the front door IS the coming-soon page. Checked rather
+       than assumed — every path in this list returns 200. */
+    ["Terms", "/terms/"],
+    ["Privacy", "/privacy/"],
+    ["Refunds", "/refund/"],
+    ["Brand", "/brand/"],
+    ["Legal register", "/docs/legal-sources.md"]
+  ];
+
+  /* github.com/<owner>/<repo> is here in a file anyone can fetch. It is a
+     deliberate call, not an oversight: it names a repository, which is not a
+     secret, a weakness, or a credential — a private repo simply 404s for
+     anyone without access. If you would rather it were not published, say so
+     and it moves into launch_blockers' table alongside the rest. */
+  var REPO = "crashbook2014/interactive-business-plan";
+
+  function supaLinks(ref) {
+    var base = "https://supabase.com/dashboard/project/" + ref;
+    return [
+      ["Table editor", base + "/editor"],
+      ["SQL editor", base + "/sql/new"],
+      ["Auth users", base + "/auth/users"],
+      ["Sign-in providers", base + "/auth/providers"],
+      ["URL configuration", base + "/auth/url-configuration"],
+      ["Edge functions", base + "/functions"],
+      ["Function secrets", base + "/settings/functions"],
+      ["Logs", base + "/logs/explorer"],
+      ["API keys", base + "/settings/api"]
+    ];
+  }
+
+  function chips(items) {
+    return '<div class="chips">' + items.map(function (i) {
+      var ext = /^https?:/.test(i[1]);
+      return '<a href="' + esc(i[1]) + '"' +
+        (ext ? ' target="_blank" rel="noopener noreferrer" data-ext="1"' : "") +
+        ">" + esc(i[0]) + "</a>";
+    }).join("") + "</div>";
+  }
+
+  function group(title, items) {
+    return '<div class="lg"><h3>' + esc(title) + "</h3>" + chips(items) + "</div>";
+  }
+
+  function renderLinks() {
+    var ref = projectRef();
+    var h = group("This product", LINKS_PRODUCT);
+
+    h += group("Supabase", ref ? supaLinks(ref) : [["Supabase dashboard", "https://supabase.com/dashboard"]]);
+
+    h += group("Code and deploys", [
+      ["Repository", "https://github.com/" + REPO],
+      ["Actions", "https://github.com/" + REPO + "/actions"],
+      ["Pages settings", "https://github.com/" + REPO + "/settings/pages"],
+      ["Commits on main", "https://github.com/" + REPO + "/commits/main"]
+    ]);
+
+    h += group("Identity and payments", [
+      ["Google Cloud credentials", "https://console.cloud.google.com/apis/credentials"],
+      ["Google OAuth consent", "https://console.cloud.google.com/auth/branding"],
+      ["Apple Developer", "https://developer.apple.com/account"],
+      ["Moyasar", "https://dashboard.moyasar.com"],
+      ["Tap Payments", "https://business.tap.company"]
+    ]);
+
+    h += group("The law this product cites", [
+      ["Labour Law (HRSD)", "https://hrsd.gov.sa"],
+      ["GOSI", "https://www.gosi.gov.sa"],
+      ["Qiwa", "https://qiwa.sa"],
+      ["Board of Grievances", "https://www.bog.gov.sa"],
+      ["Najiz", "https://najiz.sa"]
+    ]);
+
+    el("links").innerHTML = h;
+  }
+
   /* ================================================ 5. what changed */
   function renderAudit() {
     var host = el("audit");
@@ -496,10 +639,14 @@
      was visible from the outside, and none is distinguishable from the
      others by looking at the page. So the page says.
 
-     BUILD is a plain string bumped by hand when this file changes in a way
-     worth confirming reached the browser. If the line reports an old one, the
+     BUILD is the date this file last changed. "Bumped by hand" was the
+     original plan and it lasted five commits before I forgot — which made the
+     stamp report a build four commits old and unable to do the one job it
+     exists for. admin.test.js now compares it against the last commit that
+     touched admin/, so forgetting fails the suite instead of quietly
+     producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-08-22c";
+  var BUILD = "2026-08-22";
 
   function renderConn() {
     var host = el("conn");
@@ -528,6 +675,7 @@
           : "Signed out.";
     renderConn();
     renderFlags(); renderNumbers(); renderData(); renderAudit(); renderBlockers();
+    renderLinks();
   }
 
   readDeployed().then(renderStatus);
