@@ -134,6 +134,53 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(flags.every(v => v === false),
      "both pages carry the same flag, currently false");
 
+  /* ================================ 3. THE CURTAIN MUST NOT EAT A SIGN-IN
+     Supabase returns the session in the URL FRAGMENT, and app/auth.js reads it
+     from there. The curtain runs first, in the head. Before this was fixed it
+     saw `#access_token=...` — no `preview` — and replaced the page before
+     auth.js could read the token, so signing in was impossible while the
+     curtain was up. It failed looking exactly like a redirect-URL
+     misconfiguration, which is the most expensive way for a bug to look.
+
+     Both directions matter here: the callback gets through, AND the curtain
+     still holds for everyone else. The second half is what stops this fix
+     becoming the leak in failure mode 1 above. */
+  console.log("\n— an OAuth return gets back in, and nothing else does");
+
+  async function lands(hash) {
+    const q = await b.newPage();
+    await q.goto(BASE + "/app/" + hash);
+    await q.waitForTimeout(250);
+    const where = new URL(q.url());
+    const inside = /\/app\/?$/.test(where.pathname);
+    const h = where.hash;
+    await q.close();
+    return { inside, hash: h };
+  }
+
+  const cb = await lands("#access_token=fake.token.value&refresh_token=fake&expires_in=3600");
+  ok(cb.inside, "a sign-in callback is let through instead of bounced to the coming-soon page");
+
+  /* And the token does not stay in the address bar, because a URL carrying one
+     gets pasted into chats and left in history. What replaces it is the
+     preview key, so the next reload does not eject the reader again. */
+  ok(!/access_token/.test(cb.hash),
+     "the token is scrubbed from the address bar once it has been read");
+  ok(/preview/.test(cb.hash),
+     `and the preview key is put back, so a reload keeps them inside (${cb.hash || "empty"})`);
+
+  const err = await lands("#error=access_denied&error_description=nope");
+  ok(err.inside,
+     "a FAILED sign-in also gets through, so it can say what happened instead of vanishing");
+
+  /* The half that keeps the curtain a curtain. */
+  const bare = await lands("");
+  ok(!bare.inside, "a bare visit is still sent to the coming-soon page");
+  const noise = await lands("#something-else");
+  ok(!noise.inside, "and so is an unrelated hash — the door did not open generally");
+  const near = await lands("#access_tokenish=1");
+  ok(!near.inside, "a hash that merely resembles a callback does not get in");
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nthe curtain holds, and nothing behind it was lost");
   process.exit(FAIL.length ? 1 : 0);

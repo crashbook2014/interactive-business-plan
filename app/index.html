@@ -1422,7 +1422,24 @@
  * See docs/launch-checklist.md.
  */
 window.WODOUH_LAUNCHED = false;
-if (!window.WODOUH_LAUNCHED && !/(^|[#&])preview\b/.test(location.hash)) {
+/* AN OAUTH RETURN IS SOMEBODY COMING BACK IN, NOT SOMEBODY ARRIVING.
+ *
+ * Supabase hands the session back in the URL FRAGMENT, and app/auth.js reads
+ * it from there. This script runs first, in the head, so before that fix the
+ * curtain saw `#access_token=...` — no `preview` — and replaced the page
+ * before auth.js could ever read the token. Signing in was IMPOSSIBLE while
+ * the curtain was up, and it failed looking exactly like a redirect-URL
+ * misconfiguration, which is the most expensive way for a bug to look.
+ *
+ * Letting a callback through costs nothing this door was protecting. It is
+ * "a door the public will not find, not a security control" — and nobody
+ * arrives holding a Supabase access token by accident. `error=` is admitted
+ * for the same reason: a sign-in that failed should be able to say so instead
+ * of silently vanishing.
+ */
+const WODOUH_KEY = /(^|[#&])preview\b/.test(location.hash);
+const WODOUH_CALLBACK = /(^|[#&])(access_token|error|error_code)=/.test(location.hash);
+if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   /* replace(), not assign(): the back button should not bounce a visitor
      into a locked door they just left. */
   location.replace("../");

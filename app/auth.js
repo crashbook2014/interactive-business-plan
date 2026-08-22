@@ -176,8 +176,13 @@
       user: null
     };
     try {
-      history.replaceState(null, "", location.pathname + location.search);
-    } catch (e) { location.hash = ""; }
+      /* The token leaves the address bar — that is what this line is for. But
+         clearing the fragment outright also erased `#preview`, so the next
+         reload dropped the reader back outside the curtain they had just
+         signed in through. Put the key back while the curtain is up. */
+      var keep = window.WODOUH_LAUNCHED === false ? "#preview" : "";
+      history.replaceState(null, "", location.pathname + location.search + keep);
+    } catch (e) { location.hash = window.WODOUH_LAUNCHED === false ? "preview" : ""; }
     return true;
   }
 

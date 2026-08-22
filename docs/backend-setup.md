@@ -218,15 +218,40 @@ In **Authentication → Providers**:
   with Apple key (`.p8`), and your Team ID. Apple is the slowest of the three
   to get approved — start it first.
 
-In **Authentication → URL Configuration**, add the app URL to **Redirect
-URLs**, matching `REDIRECT_URL` in `config.js` verbatim:
+In **Authentication → URL Configuration** — both fields, and both matter:
 
-```
-https://alwodouh.com/app/index.html
-```
+| Field | Value |
+|---|---|
+| **Site URL** | `https://alwodouh.com` |
+| **Redirect URLs** | `https://alwodouh.com/app/index.html` |
+| | `http://127.0.0.1:8099/app/index.html` |
 
-A mismatch here is the single most common cause of "the login popup succeeds
-but the app never signs in".
+**Site URL is not decoration.** It is the fallback used whenever a redirect is
+not specified or does not match the allow list. Supabase ships it as
+`http://localhost:3000`, so leaving it means a failed match sends your reader
+to a port on their own machine.
+
+**The redirect entry must be the full URL, not the bare domain.** The app sends
+`REDIRECT_URL` from the inline config in `app/index.html`, which is
+`https://alwodouh.com/app/index.html`. An allow-list entry of
+`https://alwodouh.com` does not match a path beneath it, and every sign-in is
+rejected. This is the single most common cause of "the login succeeds but the
+app never signs in". The second local entry lets sign-in be exercised against
+`npm start` without touching production.
+
+### While the curtain is up
+
+Supabase returns the session in the URL **fragment**, and the launch curtain in
+`app/index.html` runs before `app/auth.js` can read it. Until 22 August 2026
+the curtain saw `#access_token=…`, found no `preview`, and replaced the page —
+so **signing in was impossible while `WODOUH_LAUNCHED` was false**, failing in a
+way that looked exactly like the redirect misconfiguration above.
+
+The curtain now recognises a callback (`access_token`, `error`, `error_code`)
+and lets it through, and `captureRedirect()` puts `#preview` back after
+scrubbing the token, so a reload does not eject the reader. `test/soon.test.js`
+holds both halves — and asserts the curtain still turns away a bare visit and
+an unrelated hash, which is what stops the fix becoming a leak.
 
 ## 4. Edge Functions
 
