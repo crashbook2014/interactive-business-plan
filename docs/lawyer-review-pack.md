@@ -192,6 +192,31 @@ matches their copy. Please confirm that framing is accurate.
    a lawyer."* Is that sufficient for what the product actually does?
 3. **Anything we should stop saying**, regardless of whether it is technically
    correct.
+4. **PDPL and where the data sits. Added 22 August 2026, and the one item here
+   that is a live decision rather than a wording question.** The database will
+   be hosted in **Frankfurt (`eu-central-1`)**. Supabase offers no Saudi
+   region, and the region cannot be changed later without recreating the
+   project.
+
+   What will be stored there about Saudi residents:
+
+   - a **phone number**, and a separate **marketing-consent record** holding
+     when consent was given and the exact wording shown at the time
+     (`public.profiles`)
+   - **`original_filename`** — the name of the file the reader uploaded. In
+     Saudi practice these routinely read like `عقد-عبدالإله-أرامكو.pdf`, so
+     this is personal data about **two** parties, one of whom never agreed to
+     anything
+   - the **outcome** of an analysis: a score, which rules fired, a verdict key
+
+   What will **not** be stored there, by design and enforced in the schema:
+   contract text, PDF bytes, or quoted clauses.
+
+   The questions: does this constitute a cross-border transfer requiring a
+   specific basis under PDPL, and if so which? Does the phone-number and
+   consent record change the answer? Is `original_filename` defensible given
+   the second party, or should it be dropped or hashed? And is anything
+   required of us before the first real user, rather than before scale?
 
 ---
 

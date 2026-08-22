@@ -1,10 +1,17 @@
 /* The database, checked as source.
  *
- * HONEST SCOPE FIRST: there is no Postgres in this environment, so none of
- * this SQL has been executed. What follows is static analysis — it reads every
+ * HONEST SCOPE FIRST. What follows is STATIC ANALYSIS — it reads every
  * migration and asserts the properties that, if missing, are silent. A missing
  * RLS policy does not error; it just lets one user read another's employment
  * situation, and nothing anywhere says so.
+ *
+ * Since 22 August 2026 it has a companion that does the other half:
+ * test/rls.test.js applies these migrations to a REAL PostgreSQL and asks the
+ * database whether the policies actually refuse what they should. Both are
+ * worth having. This file catches a table added with no policy at all — which
+ * a live test cannot see, because there is nothing to try. That one catches a
+ * policy that does not compile, a trigger reading a column that is not there,
+ * and a grant that quietly opens what a policy was meant to close.
  *
  * So these are the invariants worth pinning without a server:
  *
@@ -178,5 +185,5 @@ ok(definers.length > 0 && unpinned.length === 0,
 
 console.log(FAIL.length
   ? `\n${FAIL.length} FAILURES`
-  : "\nthe schema holds — NOTE: static analysis only, this SQL has never been executed");
+  : "\nthe schema holds — static analysis; rls.test.js runs the same SQL against a real Postgres");
 process.exit(FAIL.length ? 1 : 0);

@@ -1,28 +1,73 @@
 # Wodouh — backend setup
 
-Everything in `supabase/` and `app/js/` is written but **has never been run
-against a live project**. No Supabase project exists yet, and the environment
-this was authored in cannot reach `supabase.com`, `appleid.apple.com`,
-`api.zid.sa` or `accounts.salla.sa`. Treat the code as reviewed-but-unverified
-until you have completed the steps below and seen it work.
+**Last updated 22 August 2026.** This page was stale in a way that would have
+cost you an afternoon: it documented **two** migrations when there are **five**.
+Following the old version left a database with no accounts, no uploads, and
+none of the tables the founder console needs. Fixed below.
 
-What *is* verified: the app runs exactly as before with none of this
+No Supabase project exists yet. The environment this was authored in cannot
+reach `supabase.com` (the egress proxy returns 403 on CONNECT), so nothing here
+has been run against a live project.
+
+**What HAS been run, since 22 August 2026:** all five migrations execute
+against a real PostgreSQL 16, and row level security has been tested by asking
+the database rather than by reading the SQL. See `test/rls.test.js` and
+`npm test`. That covers the schema and the policies. It does not cover GoTrue,
+JWT verification or PostgREST, which only a live project can exercise.
+
+What is also verified: the app runs exactly as before with none of this
 configured. Sync is additive — if `config.js` is missing, the app is the
 local-only product it is today.
 
 ---
 
+## Decisions already taken
+
+| | | |
+|---|---|---|
+| **Region** | Frankfurt, `eu-central-1` | Chosen by the owner, 22 Aug 2026 |
+| **Tier** | Free now, upgrade before launch | Chosen by the owner, 22 Aug 2026 |
+
+**Region cannot be changed later** without recreating the project and migrating
+the data.
+
+**The open question this leaves.** Frankfurt puts Saudi residents' personal data
+outside the Kingdom. `0003_accounts.sql` stores a phone number, a
+marketing-consent record, and `original_filename` — which in Saudi routinely
+carries the worker's name and their employer's. Saudi PDPL restricts
+cross-border transfer of personal data. This is logged as an open item in
+`docs/lawyer-review-pack.md` and is not settled by any code here.
+
+**What the free tier does.** The project pauses after roughly a week with no
+activity. When it does, the console reads "unreadable" and every feature switch
+falls back to its compiled-off constant. Nothing breaks for a reader — that is
+the fail-safe behaving correctly — but the switches stop moving until you
+resume the project from the dashboard.
+
+---
+
 ## 1. Create the project
 
-1. Create a Supabase project (region: choose the closest to Saudi Arabia —
-   `eu-central-1` is usually the lowest latency option today).
-2. Copy `supabase/config.example.js` to `supabase/config.js` and fill in the
-   project URL and the **anon** key.
-3. `config.js` is gitignored. The anon key is safe in frontend source — it is
-   a JWT meaning "anonymous visitor" and grants nothing on its own, because
-   every table is protected by row level security. The **service_role** key is
-   the opposite: it bypasses RLS entirely and must never appear in the repo,
-   in `app/`, or in `web/`. It belongs only in Edge Function secrets.
+1. **supabase.com → New project.** Name `wodouh`, region **Frankfurt
+   (eu-central-1)**. Generate a strong database password and store it in a
+   password manager — it is not recoverable.
+2. **Settings → API**, and copy the **Project URL** and the **anon / public**
+   key.
+3. Point the app at it:
+
+   ```
+   node tools/setup-supabase.mjs https://YOUR-REF.supabase.co eyJhbGci...
+   ```
+
+   That writes `supabase/config.js` (gitignored), **refuses a service_role key
+   rather than saving one**, and prints the two follow-ups in step 3 below.
+
+The anon key is safe in frontend source: it is a JWT meaning "anonymous
+visitor" and grants nothing on its own, because every table is behind row level
+security — which `test/rls.test.js` now proves rather than asserts. The
+**service_role** key is the opposite. It bypasses RLS entirely and must never
+appear in the repo, in `app/`, or in `web/`. It belongs only in Edge Function
+secrets.
 
 ## 2. Run the migrations
 
@@ -31,30 +76,47 @@ supabase link --project-ref YOUR-REF
 supabase db push
 ```
 
-`0001_init.sql` creates profiles, analyses, letters, case_files and reminders.
-`0002_integrations.sql` adds the commerce integration tables.
+All five, in order — `supabase db push` handles the ordering, but know what
+you are getting:
+
+| Migration | What it creates |
+|---|---|
+| `0001_init.sql` | profiles, analyses, letters, case_files, reminders |
+| `0002_integrations.sql` | the Zid/Salla commerce tables, including `integration_secrets` |
+| `0003_accounts.sql` | identity on profiles, phone + consent, contracts, contract_analyses, `delete_my_account()` |
+| `0004_uploads.sql` | `uploads` — the scanned-contract ownership record |
+| `0005_admin.sql` | `admins`, `app_flags`, `flag_audit` — the founder console |
+
+Then, **in the dashboard**, add yourself to `public.admins` with role `owner`.
+There is no client write policy on that table, deliberately, so no page can
+grant itself access — including the console.
 
 ### Verify RLS actually holds
 
-Do not take the policies on trust. With two test accounts:
+**This is now automated.** `npm test` runs `test/rls.test.js`, which applies
+all five migrations to a local Postgres and asks the database directly: is a
+viewer refused a flag change, can an owner be refused an audit-log forgery, can
+user B reach user A's contract, is `integration_secrets` closed. Each assertion
+is also negative-tested — the suite opens the hole, confirms the database now
+allows it, and closes it again.
+
+Re-run the same questions against **your** project once it exists, because a
+local Postgres is not Supabase. With two test accounts:
 
 ```sql
--- as user A
-insert into analyses (user_id, doc_kind, score) values (auth.uid(), 'doc_emp', 70);
 -- as user B: must return zero rows, not A's row
-select * from analyses;
--- as user B: must fail
-update analyses set score = 0 where user_id <> auth.uid();
+select * from public.contracts;
+-- as user B: must change nothing
+update public.contracts set original_filename = 'mine';
+-- as any signed-in user: must return zero rows
+select * from public.integration_secrets;
+-- as a viewer: must change nothing
+update public.app_flags set enabled = true where key = 'payments';
 ```
 
 `integration_secrets` has RLS enabled and **no policies at all**. That is
 deliberate — with RLS on and no policy, neither `anon` nor `authenticated` can
-read or write it. Confirm:
-
-```sql
--- as any signed-in user: must return zero rows
-select * from integration_secrets;
-```
+read or write it.
 
 ## 3. Authentication
 

@@ -82,7 +82,15 @@ as $$
 $$;
 
 revoke all on function public.is_admin(text) from public;
-grant execute on function public.is_admin(text) to authenticated;
+-- anon as well as authenticated, and this was found by RUNNING it. Granting
+-- only to authenticated meant a signed-out request that touched any policy
+-- calling this — a stray read of flag_audit, an update attempt on app_flags —
+-- failed with "permission denied for function is_admin" instead of quietly
+-- returning nothing. Denial is correct in both cases; a loud error that names
+-- an internal function is a worse way to say it, and it makes a routine denial
+-- look like an outage. Nothing leaks: for a signed-out caller auth.uid() is
+-- null, so this returns false and says only that.
+grant execute on function public.is_admin(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------- flags
 -- WORLD-READABLE ON PURPOSE. Every reader's app needs to know whether payments
