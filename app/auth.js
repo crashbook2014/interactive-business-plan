@@ -67,6 +67,47 @@
      a dead sign-in button is worse than one fewer option. */
   function appleAvailable() { return configured() && cfg().APPLE_SIGNIN === true; }
 
+  /* WHICH PROVIDERS ARE ACTUALLY TURNED ON, asked rather than assumed.
+   *
+   * Apple was already gated on a config flag, with the reasoning that a dead
+   * sign-in button is worse than one fewer option. Google had no check at all,
+   * and that asymmetry sent the first real sign-in attempt to a raw JSON page:
+   *
+   *   {"code":400,"error_code":"validation_failed",
+   *    "msg":"Unsupported provider: provider is not enabled"}
+   *
+   * A reader who taps "sign in" and lands on that has no idea what happened
+   * and no way back. /auth/v1/settings is a public endpoint that says which
+   * external providers the project has enabled, so the answer is one lazy GET
+   * away rather than a second config flag to keep in step by hand.
+   *
+   * FAIL-SAFE IN THE DIRECTION OF SHOWING THE BUTTON. A failed fetch, a
+   * timeout, or a response shaped differently than expected all return null,
+   * and the caller then renders exactly what it rendered before this existed.
+   * Hiding a working sign-in because a check failed is a worse outcome than
+   * showing one that might. NOTE: the shape below could not be verified from
+   * the environment this was written in — which is precisely why it degrades
+   * to today's behaviour rather than trusting itself. */
+  var providerCache = null;
+  function providers() {
+    if (providerCache) return providerCache;
+    if (!configured()) return Promise.resolve(null);
+    var ctl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 2500);
+    providerCache = fetch(cfg().SUPABASE_URL + "/auth/v1/settings", {
+      headers: { apikey: cfg().SUPABASE_ANON_KEY },
+      signal: ctl ? ctl.signal : undefined
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var ext = d && d.external;
+        return ext && typeof ext === "object" ? ext : null;
+      })
+      .catch(function () { return null; })
+      .then(function (v) { clearTimeout(timer); return v; });
+    return providerCache;
+  }
+
   var session = null;      /* { access_token, refresh_token, expires_at, user } */
   var listeners = [];
 
@@ -473,6 +514,7 @@
     apiCount: apiCount,
     configured: configured,
     appleAvailable: appleAvailable,
+    providers: providers,
     init: init,
     user: user,
     onChange: onChange,

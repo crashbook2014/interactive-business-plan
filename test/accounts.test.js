@@ -386,6 +386,60 @@ console.log("\n— a person can actually find and reach sign-in");
   await db.close();
 }
 
+/* =========================== a provider that is off is not offered
+   The first real sign-in attempt landed on Supabase's raw JSON:
+
+     {"code":400,"error_code":"validation_failed",
+      "msg":"Unsupported provider: provider is not enabled"}
+
+   Apple was already gated on a config flag — "a dead sign-in button is worse
+   than one fewer option" — and Google had no check at all. That asymmetry is
+   what sent a reader to a JSON page with no idea what happened and no way
+   back.
+
+   The direction of the fail-safe is the part worth pinning: an unreachable or
+   unrecognised answer must leave the buttons ALONE. Hiding a working sign-in
+   because a check failed is a worse outcome than showing one that might. */
+console.log("\n— a sign-in provider the project has not enabled is not offered");
+{
+  const pb = await chromium.launch(launchOpts());
+  const cases = [
+    ["both off",     { external: { google: false, apple: false } }, false, true],
+    ["google on",    { external: { google: true,  apple: false } }, true,  false],
+    ["unreachable",  null,                                          true,  false],
+    ["odd shape",    { something: "else" },                         true,  false],
+  ];
+  for (const [name, body, wantGoogle, wantNotice] of cases) {
+    const d = await pb.newPage({ viewport: { width: 390, height: 844 } });
+    await d.route("**/auth/v1/settings", r => body
+      ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) })
+      : r.abort());
+    await d.goto(APP);
+    await d.waitForFunction(() => typeof window.show === "function");
+    const seen = await d.evaluate(async () => {
+      obFinish(); goTab("account");
+      const btn = document.querySelector("#accAuth button");
+      if (!btn) return null;
+      btn.click();
+      await new Promise(s => setTimeout(s, 700));
+      const vis = id => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== "none"; };
+      return { google: vis("auGoogle"), notice: vis("auNone"),
+               noticeText: (document.getElementById("auNone") || {}).textContent || "" };
+    });
+    if (!seen) { ok(false, `${name}: the account screen offered no way in`); await d.close(); continue; }
+    ok(seen.google === wantGoogle,
+       `${name}: the Google button is ${wantGoogle ? "shown" : "hidden"}`);
+    ok(seen.notice === wantNotice,
+       `${name}: ${wantNotice ? "the reader is told no sign-in is available" : "no needless notice"}`);
+    if (wantNotice) {
+      ok(/without an account|بدون حساب/.test(seen.noticeText),
+         `${name}: and the notice says the app still works without one, which is true`);
+    }
+    await d.close();
+  }
+  await pb.close();
+}
+
 /* ============================================ the setup script's one job
    tools/setup-supabase.mjs writes supabase/config.js, and that file is served
    to every visitor. So the property worth pinning is narrow and absolute: a

@@ -213,7 +213,28 @@ In **Authentication → Providers**:
 
 - **Email**: enable. Turn on "Confirm email".
 - **Google**: needs a Google Cloud project → OAuth consent screen → OAuth
-  client (Web). Authorized redirect URI is the one Supabase shows you.
+  client (Web). The **Authorized redirect URI** in Google Cloud is Supabase's
+  callback, not the app's:
+
+  ```
+  https://<your-project-ref>.supabase.co/auth/v1/callback
+  ```
+
+  Then paste the Client ID and Client Secret into Supabase →
+  Authentication → Sign In / Providers → Google, and **enable** it.
+
+  **Until it is enabled, `/authorize` answers:**
+
+  ```json
+  {"code":400,"error_code":"validation_failed",
+   "msg":"Unsupported provider: provider is not enabled"}
+  ```
+
+  Seeing that is good news about everything else: it means the app built the
+  right URL, reached the right project, and Supabase answered. Only the
+  provider is off. Since 22 August 2026 the app asks `/auth/v1/settings` which
+  providers are enabled and hides the ones that are not, so a reader never
+  reaches that page — but the app cannot enable one for you.
 - **Apple**: needs a *paid* Apple Developer account, a Services ID, a Sign in
   with Apple key (`.p8`), and your Team ID. Apple is the slowest of the three
   to get approved — start it first.

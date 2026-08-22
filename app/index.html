@@ -480,6 +480,9 @@
       font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
   .pay-methods svg{width:14px;height:14px;color:var(--teal)}
   .pay-methods i{font-style:normal;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-family:var(--en);font-weight:700}
+  .au-none{font-size:13.5px;color:var(--ink-2);line-height:1.7;background:var(--card);
+      border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin:4px 0 0}
+  .au-none[hidden]{display:none}
   .acc-who{font-weight:600;margin:2px 0 12px;word-break:break-all}
   .legal-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
   .legal-links a{font-size:12.5px;color:var(--teal-ink);text-decoration:underline;text-underline-offset:2px}
@@ -1855,6 +1858,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.3-.2-1.9H9v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.9 10.7a5.4 5.4 0 0 1 0-3.4V5H.9a9 9 0 0 0 0 8l3-2.3z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 .9 5l3 2.3C4.6 5.2 6.6 3.6 9 3.6z"/></svg>
         <span data-t="au_google"></span>
       </button>
+      <p class="au-none" id="auNone" hidden></p>
       <button class="au-btn apple" id="auApple" hidden onclick="doSignIn('apple')">
         <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M12.9 9.6c0-1.9 1.6-2.8 1.6-2.9-.9-1.3-2.2-1.4-2.7-1.5-1.2-.1-2.3.7-2.9.7-.6 0-1.5-.7-2.5-.7-1.3 0-2.5.7-3.1 1.9-1.3 2.3-.3 5.7 1 7.5.6.9 1.3 1.9 2.3 1.9 1 0 1.3-.6 2.4-.6s1.4.6 2.4.6c1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1 0 0-1.9-.7-1.9-2.9zM11.2 3.7c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.3 1.2-.5.6-.9 1.5-.8 2.4.9.1 1.8-.4 2.3-1.2z"/></svg>
         <span data-t="au_apple"></span>
@@ -2702,6 +2706,8 @@ const T = {
      that omits something it can. */
   acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
                       en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
+  au_none:{ar:"ما فيه طريقة تسجيل دخول مفعّلة الآن. التطبيق يشتغل كامل بدون حساب — الحساب فايدته الوحيدة إن شغلك يظل معك لو غيّرت جهازك.",
+           en:"No sign-in method is switched on right now. The app works in full without an account — the only thing an account adds is keeping your work if you change device."},
   acc_signin_cta:{ar:"سجّل دخولك",en:"Sign in"},
   acc_signed_h:{ar:"حسابك",en:"Your account"},
   acc_signed_anon:{ar:"مسجّل دخولك",en:"Signed in"},
@@ -5332,7 +5338,33 @@ function openSignin(back){
   if (ap) ap.hidden = !WodouhAuth.appleAvailable();
   const err = document.getElementById("auErr");
   if (err) err.hidden = true;
+  const none = document.getElementById("auNone");
+  if (none) none.hidden = true;
   show("signin");
+  renderProviders();
+}
+
+/* Hide a provider the project has not enabled, rather than let the reader
+   discover it by landing on Supabase's raw JSON error. Renders the buttons
+   first and corrects them when the answer arrives, so nobody waits on the
+   network to see a screen — and if the answer never arrives, what is on
+   screen is exactly what shipped before this existed. */
+function renderProviders(){
+  if (!authOn() || !WodouhAuth.providers) return;
+  WodouhAuth.providers().then(ext => {
+    if (!ext) return;                       /* unknown: leave it as it was */
+    const g = document.getElementById("auGoogle");
+    const ap = document.getElementById("auApple");
+    const none = document.getElementById("auNone");
+    const gOn = ext.google !== false;
+    const aOn = ext.apple !== false && WodouhAuth.appleAvailable();
+    if (g) g.hidden = !gOn;
+    if (ap) ap.hidden = !aOn;
+    if (none){
+      none.hidden = gOn || aOn;
+      none.textContent = t("au_none");
+    }
+  }).catch(()=>{});
 }
 function closeSignin(){ show(authBack, 1); }
 
