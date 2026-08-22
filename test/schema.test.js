@@ -165,10 +165,42 @@ ok(/contract_analyses_insert[\s\S]*?exists \([\s\S]*?from public\.contracts c[\s
 console.log("\n— a user can delete their own account");
 ok(/create or replace function public\.delete_my_account\(\)/.test(code),
    "delete_my_account() exists");
-ok(/revoke all on function public\.delete_my_account\(\) from public/.test(code),
-   "it is revoked from public");
 ok(/grant execute on function public\.delete_my_account\(\) to authenticated/.test(code),
    "and granted only to a signed-in user");
+
+/* ---- 6b. a revoke that names only PUBLIC does nothing, and looks identical
+   to one that works.
+
+   THIS IS WHY THIS BLOCK REPLACED A STRING MATCH. The old assertion here read
+   `revoke all on function public.delete_my_account() from public` and passed,
+   for months, while the function was CALLABLE BY ANON on the live project.
+   Supabase's default privileges grant EXECUTE on every new function in the
+   public schema to `anon` and `authenticated` as roles in their own right;
+   revoking from PUBLIC removes the PUBLIC grant and leaves those two alone.
+   Confirmed by querying has_function_privilege on the real database, which is
+   the only place the difference is visible.
+
+   So the property is not "a revoke appears" — it is "anon is named". Every
+   security definer function must either revoke from anon explicitly, or be on
+   the list below of functions deliberately left open, each with its reason. */
+console.log("\n— every security definer function is revoked from anon BY NAME");
+const ANON_ON_PURPOSE = {
+  /* Policies call it during signed-out requests. Without the grant a routine
+     denial surfaces as "permission denied for function is_admin" instead of
+     quietly returning nothing. auth.uid() is null for anon, so it returns
+     false and leaks nothing. 0005 records this at length. */
+  is_admin: "called by policies on signed-out requests; returns false for anon",
+};
+for (const [, fn] of code.matchAll(/create or replace function public\.(\w+)\([^)]*\)[\s\S]*?security definer/g)) {
+  if (ANON_ON_PURPOSE[fn]) {
+    ok(true, `${fn}: open to anon on purpose — ${ANON_ON_PURPOSE[fn]}`);
+    continue;
+  }
+  const named = new RegExp(
+    `revoke all on function public\\.${fn}\\([^)]*\\)\\s*\n?\\s*from [^;]*\\banon\\b`
+  ).test(code);
+  ok(named, `${fn}: revoked from anon by name, not only from PUBLIC`);
+}
 
 /* Every security-definer function must pin search_path, or a caller can shadow
    the tables it references and run its body against their own. */
