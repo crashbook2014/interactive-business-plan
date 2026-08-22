@@ -112,7 +112,18 @@ const CFG = /(window\.WODOUH_CONFIG = Object\.assign\(\{)[\s\S]*?(\}, window\.WO
    ships `connect-src 'self'` and must KEEP 'self': its status panel reads the
    deployed files at this origin, which is the one part of the console that
    works with no credentials at all. Replacing 'self' would have broken it. */
-const CSP = /(<meta http-equiv="Content-Security-Policy"[^>]*?connect-src )('none'|'self'|'self' https:\/\/[a-z0-9-]+\.supabase\.co|https:\/\/[a-z0-9-]+\.supabase\.co)/;
+/* CAPTURE THE WHOLE DIRECTIVE, UP TO THE SEMICOLON. The first version
+   alternated ('none'|'self'|'self' https://…). Regex alternation is
+   leftmost-first, so against `connect-src 'self' https://old.supabase.co` it
+   matched the bare 'self' and STOPPED — leaving the old host in the file and
+   prepending the new one. Re-running accumulated hosts, and the exact-once
+   guard could not see it, because the regex still matched exactly once.
+
+   Harmless as duplication. Not harmless as behaviour: point the app at a
+   different project and the previous project's origin stays allowed in
+   connect-src forever, which is a stale hole in the one directive that says
+   where this page may talk to. */
+const CSP = /(<meta http-equiv="Content-Security-Policy"[^>]*?connect-src )([^;"]+)/;
 const cspValue = (current, h) => /'self'/.test(current) ? "'self' " + h : h;
 
 /* PRE-FLIGHT EVERY FILE BEFORE WRITING ANY OF THEM. The first version checked

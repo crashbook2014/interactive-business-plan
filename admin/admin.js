@@ -184,17 +184,55 @@
        an answer, or none  leave the button alone. A blocked or slow
                          /auth/v1/settings must never lock the owner out of
                          their own console. */
+  /* Say why sign-in is unavailable, on THIS page. The whole point of the two
+     checks below is that this sentence exists somewhere the reader can act on
+     it, rather than as raw JSON on a Supabase URL with no way back. */
+  function refuse(host, msg) {
+    host.innerHTML = empty(
+      "<b>Google sign-in is not available on this project.</b><br>" +
+      (msg ? "<br>Supabase said: <code>" + esc(msg) + "</code><br>" : "") +
+      "<br>Turn it on under <b>Authentication \u2192 Sign In / Providers \u2192 " +
+      "Google</b>: the toggle at the top must be on and <b>saved</b>, not just " +
+      "the client id and secret filled in. Then reload this page.");
+  }
+
+  /* CHECK AT THE CLICK, NOT ONLY AT THE PAINT.
+     offerSignin below runs when the panel renders, and it fails open on
+     purpose — a slow or blocked /auth/v1/settings must never hide a working
+     sign-in. But failing open at paint time means the button can still be
+     there to click, and clicking it is a one-way navigation. So the same
+     question is asked again here, where the consequence actually is, and this
+     time it is awaited.
+
+     Then the request itself is pre-flighted, because the settings endpoint is
+     a claim about configuration and /authorize is the truth. If they
+     disagree — and a project can report a provider enabled while authorize
+     refuses it — only this catches it.
+
+     ANY INCONCLUSIVE ANSWER NAVIGATES. Not being able to check is not
+     evidence of failure, and refusing to try would turn a network hiccup into
+     a locked console. */
+  function attemptSignin(host) {
+    var btn = el("signin");
+    if (btn) { btn.disabled = true; btn.textContent = "Checking\u2026"; }
+    var settings = A.providers ? A.providers() : Promise.resolve(null);
+    settings.then(function (ext) {
+      if (ext && ext.google === false) return "provider is not enabled";
+      return A.preflight ? A.preflight("google") : null;
+    }).catch(function () { return null; })
+      .then(function (msg) {
+        if (msg) { refuse(host, msg); return; }
+        A.signInWithGoogle();
+      });
+  }
+
   function offerSignin(host) {
     if (!A.providers) return;
     A.providers().then(function (ext) {
       if (!ext || ext.google !== false) return;
       var btn = el("signin");
       if (!btn || btn.closest("#flags") !== host) return;   /* re-rendered since */
-      host.innerHTML = empty(
-        "<b>Google sign-in is off in this project.</b> Turn it on in Supabase " +
-        "under <b>Authentication \u2192 Sign In / Providers \u2192 Google</b>: " +
-        "the toggle at the top must be on and saved, not just the client id and " +
-        "secret filled in. Then reload this page.");
+      refuse(host, "provider is not enabled");
     }).catch(function () {});
   }
 
@@ -216,7 +254,7 @@
       host.innerHTML = empty("Sign in to see the switches.") +
         '<div class="row"><span class="tx"></span>' +
         '<button class="go" id="signin">Sign in with Google</button></div>';
-      el("signin").onclick = function () { A.signInWithGoogle(); };
+      el("signin").onclick = function () { attemptSignin(host); };
       offerSignin(host);
       return;
     }
@@ -396,12 +434,44 @@
       .catch(function () { role = null; });
   }
 
+  /* WHAT THE PROJECT ACTUALLY ANSWERED, in one line.
+     Three rounds were lost to not knowing which of these was true: the
+     project saying a provider is off, the probe never resolving, or a cached
+     build of this file running instead of the deployed one. None of the three
+     was visible from the outside, and none is distinguishable from the
+     others by looking at the page. So the page says.
+
+     BUILD is a plain string bumped by hand when this file changes in a way
+     worth confirming reached the browser. If the line reports an old one, the
+     answer is a hard reload, not another theory. */
+  var BUILD = "2026-08-22c";
+
+  function renderConn() {
+    var host = el("conn");
+    if (!host) return;
+    if (!A || !A.configured()) { host.textContent = "build " + BUILD + " · no project configured"; return; }
+    host.textContent = "build " + BUILD + " · checking the project\u2026";
+    A.providers().then(function (ext) {
+      if (!ext) {
+        host.textContent = "build " + BUILD + " · /auth/v1/settings did not answer " +
+          "(blocked, slow, or unreachable) — sign-in buttons are left showing on purpose";
+        return;
+      }
+      var on = Object.keys(ext).filter(function (k) { return ext[k] === true; });
+      host.textContent = "build " + BUILD + " · project reachable · providers enabled: " +
+        (on.length ? on.join(", ") : "none");
+    }).catch(function () {
+      host.textContent = "build " + BUILD + " · the provider check threw";
+    });
+  }
+
   function renderAll() {
     var u = A && A.user();
     el("who").textContent = !A || !A.configured()
       ? "Not connected to a project — status below is read from the deployed site."
       : u ? (u.email || "Signed in") + (role ? " · " + role : " · not an operator")
           : "Signed out.";
+    renderConn();
     renderFlags(); renderNumbers(); renderData(); renderAudit(); renderBlockers();
   }
 

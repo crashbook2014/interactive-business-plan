@@ -234,6 +234,72 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* The console must send an operator back to the CONSOLE. It once carried
      REDIRECT_URL pointing at the app, so Google signed you in and dropped you
      in the product. Absent, app/auth.js falls back to this page's own URL. */
+  /* ---- 7b. clicking sign-in must never end on Supabase's raw JSON.
+     THIS IS THE VIDEO. The render-time gate above fails open on purpose, so
+     when /auth/v1/settings is slow or blocked the button is still offered —
+     and clicking it navigated straight to
+     {"code":400,...,"msg":"Unsupported provider: provider is not enabled"}:
+     unstyled text on a Supabase URL, with no way back. Two rounds of fixes
+     did not catch it because no test ever CLICKED the button.
+
+     Each case below routes both endpoints and then clicks, asserting where
+     the browser ended up. The last two assert the fail-safe in the direction
+     of letting people in: an unreadable check must not become a locked
+     console. */
+  if (fileHasCfg) {
+    console.log("\n— clicking sign-in never dead-ends on raw JSON");
+    const REFUSAL = '{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}';
+    for (const c of [
+      { label: "settings never answers and the provider is off",
+        settings: "hang", authorize: "refuse", stays: true },
+      { label: "settings claims google is enabled but authorize refuses",
+        settings: '{"external":{"google":true}}', authorize: "refuse", stays: true },
+      { label: "both are healthy",
+        settings: '{"external":{"google":true}}', authorize: "redirect", stays: false },
+      { label: "the pre-flight itself fails",
+        settings: '{"external":{"google":true}}', authorize: "abort", stays: false },
+    ]) {
+      const probe = await browser.newPage();
+      await probe.route("**/auth/v1/settings*", r => c.settings === "hang"
+        ? new Promise(() => {})                       /* never resolves */
+        : r.fulfill({ status: 200, contentType: "application/json", body: c.settings }));
+      /* The navigation must be observable without actually leaving, so the
+         redirect target is fulfilled rather than followed. */
+      let navigated = false;
+      await probe.route("**/auth/v1/authorize*", r => {
+        if (r.request().resourceType() === "document") { navigated = true; return r.abort(); }
+        if (c.authorize === "abort") return r.abort();
+        return c.authorize === "refuse"
+          ? r.fulfill({ status: 400, contentType: "application/json", body: REFUSAL })
+          : r.fulfill({ status: 302, headers: { location: "https://accounts.google.com/o/oauth2/auth" }, body: "" });
+      });
+      await probe.goto(BASE + "/admin/");
+      await probe.waitForTimeout(600);
+      const btn = await probe.$("#signin");
+      ok(!!btn, `${c.label}: the button is offered, so there is something to click`);
+      if (btn) {
+        await btn.click();
+        await probe.waitForTimeout(5200);            /* past both aborts */
+        const body = await probe.evaluate(() => document.body.innerText);
+        if (c.stays) {
+          ok(!navigated, `${c.label}: the browser did NOT navigate to Supabase`);
+          ok(/Sign In \/ Providers/.test(body),
+             `${c.label}: and the page explains it, naming the Supabase toggle`);
+        } else {
+          ok(navigated, `${c.label}: sign-in is attempted anyway — an unreadable check is not a refusal`);
+        }
+      }
+      await probe.close();
+    }
+  }
+
+  /* Exactly one project origin may be reachable from the console. The setup
+     script used to leave the previous one behind on every re-run. */
+  const adminCsp = (readFileSync(path.join(ROOT, "admin/index.html"), "utf8")
+    .match(/<meta http-equiv="Content-Security-Policy"[^>]*?connect-src ([^;"]+)/) || [])[1] || "";
+  ok((adminCsp.match(/supabase\.co/g) || []).length === 1,
+     `connect-src names exactly one supabase.co origin — got "${adminCsp.trim()}"`);
+
   const back = await page.evaluate(() => (window.WODOUH_CONFIG || {}).REDIRECT_URL || null);
   ok(back === null,
      `the console sets no REDIRECT_URL, so Google returns to /admin/ and not to the app${back ? " — got " + back : ""}`);

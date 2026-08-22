@@ -192,14 +192,59 @@
      A redirect, not a popup. Popups are blocked on iOS Safari often enough
      that a popup-only flow is a flow that silently fails for a large share of
      this app's readers. */
+  /* Built once and exported, so anything that wants to CHECK this sign-in
+     before committing to it tests the same URL the navigation uses. A
+     pre-flight against a URL assembled a second time is a pre-flight of a
+     different request. */
+  function authorizeUrl(provider) {
+    var back = cfg().REDIRECT_URL || (location.origin + location.pathname);
+    return cfg().SUPABASE_URL + "/auth/v1/authorize" +
+      "?provider=" + encodeURIComponent(provider) +
+      "&redirect_to=" + encodeURIComponent(back);
+  }
+
   function signInWith(provider) {
     if (!configured()) return Promise.reject(new Error("not_configured"));
     if (provider === "apple" && !appleAvailable()) return Promise.reject(new Error("apple_unavailable"));
-    var back = cfg().REDIRECT_URL || (location.origin + location.pathname);
-    location.assign(cfg().SUPABASE_URL + "/auth/v1/authorize" +
-      "?provider=" + encodeURIComponent(provider) +
-      "&redirect_to=" + encodeURIComponent(back));
+    location.assign(authorizeUrl(provider));
     return new Promise(function () {});   /* navigating away */
+  }
+
+  /* WHY A PRE-FLIGHT EXISTS AT ALL.
+     GoTrue answers a disabled provider with 400 JSON — not a redirect — so a
+     plain navigation lands the reader on {"code":400,...,"msg":"Unsupported
+     provider: provider is not enabled"}: raw text, no styling, no way back.
+     Asking first turns that into a sentence on our own page.
+
+     It also catches the case no render-time check can: /auth/v1/settings
+     reporting a provider as enabled while /authorize refuses it. The settings
+     endpoint is a claim about configuration; this is the actual request.
+
+     RESOLVES "go" ON ANYTHING IT CANNOT READ. CORS, an offline moment, a
+     proxy — none of them are evidence that sign-in would fail, and refusing
+     to try would turn a network hiccup into a locked door. Only an explicit
+     4xx with a message stops the navigation. */
+  function preflight(provider) {
+    if (!configured()) return Promise.resolve(null);
+    var ctl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+    return fetch(authorizeUrl(provider), {
+      method: "GET",
+      redirect: "manual",
+      signal: ctl ? ctl.signal : undefined
+    })
+      .then(function (r) {
+        /* An opaqueredirect is the SUCCESS shape: the browser refused to
+           follow a 302 it was told not to follow, which means Google was
+           there to be redirected to. */
+        if (r.type === "opaqueredirect" || r.ok || r.status === 0) return null;
+        if (r.status < 400) return null;
+        return r.json().then(function (d) {
+          return (d && (d.msg || d.error_description || d.error)) || null;
+        }, function () { return null; });
+      })
+      .catch(function () { return null; })
+      .then(function (v) { clearTimeout(timer); return v; });
   }
 
   /* Supabase returns the session in the URL fragment. Read it, then REMOVE it
@@ -515,6 +560,8 @@
     configured: configured,
     appleAvailable: appleAvailable,
     providers: providers,
+    authorizeUrl: authorizeUrl,
+    preflight: preflight,
     init: init,
     user: user,
     onChange: onChange,

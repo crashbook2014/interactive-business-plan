@@ -153,6 +153,65 @@ const STUB = (apple) => {
   ok(withApple === true, "with APPLE_SIGNIN configured, Apple appears — no code change needed");
   await p2.close();
 
+  /* ---- 2b. a provider the project refuses must not become a dead end.
+     Supabase answers a disabled provider with 400 JSON, not a redirect, so a
+     plain navigation strands the reader on
+     {"code":400,...,"msg":"Unsupported provider: provider is not enabled"} —
+     raw text on a Supabase URL with no way back to the app. It happened on
+     the console more than once; this screen had the identical hole.
+
+     The last case is the one that protects readers from this fix: a
+     pre-flight that cannot answer must NOT block sign-in. Not being able to
+     check is not evidence of failure. */
+  console.log("\n— a refused provider is explained here, not on a Supabase error page");
+  for (const c of [
+    { label: "the project refuses the provider", pre: "refuse", signs: false },
+    { label: "the project allows it",            pre: "allow",  signs: true  },
+    { label: "the pre-flight throws",            pre: "throw",  signs: true  },
+  ]) {
+    const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
+    pg.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+    await pg.goto(APP);
+    await pg.waitForFunction(() => typeof window.show === "function");
+    await pg.evaluate(STUB, false);
+    const out = await pg.evaluate(async (mode) => {
+      window.WodouhAuth.preflight = () => mode === "throw"
+        ? Promise.reject(new Error("cors"))
+        : Promise.resolve(mode === "refuse" ? "Unsupported provider: provider is not enabled" : null);
+      openSignin("account");
+      doSignIn("google");
+      await new Promise(r => setTimeout(r, 150));
+      const err = document.getElementById("auErr");
+      return {
+        signed: window.__sent.some(x => x.fn === "google"),
+        errShown: !!err && !err.hidden,
+        errText: err ? err.textContent : "",
+        stillHere: document.querySelector(".screen.active").id,
+        /* Proves the string came from the T dictionary rather than being an
+           English literal spliced into the DOM — which is how a bilingual app
+           starts leaking one language into the other. */
+        fromDict: !!(err && err.textContent && err.textContent === t("au_off"))
+      };
+    }, c.pre);
+    ok(out.signed === c.signs,
+       `${c.label}: sign-in is ${c.signs ? "attempted" : "not attempted"}`);
+    if (!c.signs) {
+      ok(out.errShown && out.errText.length > 0,
+         `${c.label}: the reason is shown on the sign-in screen instead`);
+      ok(out.stillHere === "screen-signin",
+         `${c.label}: and the reader is still in the app`);
+      ok(!/try again|جرّب مرة ثانية/i.test(out.errText),
+         `${c.label}: it does not say "try again" — no number of attempts turns a switch on`);
+    }
+    if (!c.signs) {
+      ok(out.fromDict, `${c.label}: the wording comes from the T dictionary`);
+      /* The app opens in Arabic, so that is what this build must render. */
+      ok(/[\u0600-\u06FF]/.test(out.errText),
+         `${c.label}: and it is rendered in Arabic, the language the app opens in`);
+    }
+    await pg.close();
+  }
+
   /* ---- 3. the consent checkbox */
   console.log("\n— the marketing tick is unchecked, separate, and never implied");
   const box = await p.evaluate(() => {

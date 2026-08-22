@@ -2432,6 +2432,13 @@ const T = {
   au_del:{ar:"احذف حسابي وكل بياناتي",en:"Delete my account and all my data"},
   au_del_sure:{ar:"يُحذف نهائيًا وما يرجع. متأكد؟",en:"Permanently deleted, with no way back. Sure?"},
   au_err:{ar:"ما ضبط تسجيل الدخول. جرّب مرة ثانية.",en:"Sign-in didn't work. Try again."},
+  /* Said when the project itself refuses the provider, which is a different
+     thing from a sign-in that failed. "Try again" would be false advice: no
+     number of attempts fixes a switch that is off. The reader is not the
+     person who can fix it either, so this says what happened and stops —
+     without the Supabase instructions the console shows its owner. */
+  au_off:{ar:"تسجيل الدخول بهذه الطريقة غير متاح حاليًا. التطبيق يشتغل كامل بدون حساب.",
+          en:"This sign-in method isn't available right now. The app works fully without an account."},
 
   /* The local-data question. Their work moving to a server is exactly the kind
      of thing that gets asked, not assumed. */
@@ -5368,12 +5375,26 @@ function renderProviders(){
 }
 function closeSignin(){ show(authBack, 1); }
 
+/* ASK BEFORE NAVIGATING. Supabase answers a disabled provider with 400 JSON
+   rather than a redirect, so going straight there lands the reader on
+   {"code":400,...,"msg":"Unsupported provider: provider is not enabled"} —
+   raw text on a Supabase URL, no styling, no way back to this app. That
+   happened on the console, repeatedly, and this screen had the same hole.
+
+   The pre-flight resolves "go" on anything it cannot read, so a blocked or
+   slow network still attempts sign-in. Only an explicit refusal stops it. */
 function doSignIn(provider){
   if (!authOn()) return;
   const err = document.getElementById("auErr");
-  const go = provider === "apple" ? WodouhAuth.signInWithApple() : WodouhAuth.signInWithGoogle();
-  go.catch(() => {
-    if (err){ err.textContent = t("au_err"); err.hidden = false; }
+  const btn = document.getElementById(provider === "apple" ? "auApple" : "auGoogle");
+  const fail = key => { if (err){ err.textContent = t(key); err.hidden = false; } };
+  if (btn) btn.disabled = true;
+  const ask = WodouhAuth.preflight ? WodouhAuth.preflight(provider) : Promise.resolve(null);
+  ask.catch(() => null).then(refused => {
+    if (btn) btn.disabled = false;
+    if (refused){ fail("au_off"); return; }
+    const go = provider === "apple" ? WodouhAuth.signInWithApple() : WodouhAuth.signInWithGoogle();
+    go.catch(() => fail("au_err"));
   });
 }
 
