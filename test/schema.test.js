@@ -90,8 +90,12 @@ for (const t of tables) {
      because the key set belongs to the code that reads it. */
   const PARTIAL = { profiles: 3, integration_providers: 1,
                     integration_connections: 2, integration_events: 1,
+  /* scan_events has select and insert and deliberately no update or delete: a
+     reader who could delete their own rows would have a one-click reset of the
+     limit the table exists to record. Erasure is at account granularity, which
+     cascades from auth.users. */
                     admins: 1, app_flags: 2, flag_audit: 1,
-                    launch_blockers: 2 };
+                    launch_blockers: 2, scan_events: 2 };
   const need = PARTIAL[t] || 4;
   ok(ops.length >= need,
      `${t}: reachable by clients, so it carries ${ops.length}/${need} policies (${ops.join(", ") || "none"})`);

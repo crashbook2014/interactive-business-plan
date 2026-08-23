@@ -45,7 +45,7 @@
     <p>وما تحفظه في التطبيق دون تسجيل دخول يبقى في <strong>ذاكرة متصفحك وحدها</strong> (localStorage). إذا حذفت بيانات المتصفح أو حذفت التطبيق، ذهب معه كل شيء، ولا توجد عندنا نسخة.</p>
 
     <h2>الاستثناءات — أربعة، كلها اختيارية، ولكل واحدة موافقتها</h2>
-    <p>هذه هي الحالات الوحيدة التي يغادر فيها شيء جهازك. لا تعمل أي منها تلقائيًا، ولا تُفعَّل إلا بضغطك على موافقة مكتوب فيها ماذا سيُرسل. إذا رفضتها كلها، يعمل التطبيق كاملًا.</p>
+    <p>هذه هي الحالات الوحيدة التي يغادر فيها نص عقدك أو ملفه جهازك. لا تعمل أي منها تلقائيًا، ولا تُفعَّل إلا بضغطك على موافقة مكتوب فيها ماذا سيُرسل. إذا رفضتها كلها، يعمل التطبيق كاملًا.</p>
     <ol>
       <li><strong>«قراءة أعمق لعقدك»</strong> — يُرسل نص العقد وحده. بدون أرقامك ولا إجاباتك.</li>
       <li><strong>«مراجعة ثانية بالذكاء الاصطناعي»</strong> — يُرسل أكثر: تواريخك وأجرك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق التي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.</li>
@@ -55,11 +55,19 @@
     <p>الأربعة تمرّ عبر خادم وضوح إلى نموذج Claude من شركة Anthropic. الثلاثة الأولى لا يُحفظ منها شيء في أي مرحلة؛ والرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا يستطيع أي منها تغيير مبلغ — الحساب كله يبقى على جهازك.</p>
 
     <h2>سؤال واحد صغير عن الميزات</h2>
-    <p>حين تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا: أي الميزات مفعّلة الآن. لا يحمل هذا الطلب شيئًا عنك ولا عن عقدك — لا حسابك ولا أرقامك ولا نصّك — وإذا لم يصله جواب أكمل التطبيق عمله كأن شيئًا لم يكن. ولا يحدث هذا الطلب أصلًا إذا لم تفتح تلك الشاشات.</p>
+    <p>حين تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا: أي الميزات مفعّلة الآن. لا يحمل هذا الطلب شيئًا عنك ولا عن عقدك — لا حسابك ولا أرقامك ولا نصّك — وإذا لم يصله جواب أكمل التطبيق عمله كأن شيئًا لم يكن.</p>
+    <p>وشاشة تسجيل الدخول تسأل سؤالًا مشابهًا: أي طرق الدخول مفعّلة. وهو كذلك لا يحمل شيئًا عنك. نسأله عشان ما نعرض لك زر دخول يفشل لو ضغطته.</p>
+
+    <h2>قراءة عقد تحتاج حسابًا، ونحن نعدّ الفحص المجاني</h2>
+    <p>الباقة المجانية فحص عقد واحد في الشهر. وعشان يُحسب على شخص لا على متصفّح، نسجّل <strong>سطرًا واحدًا لكل فحص: حسابك وتاريخ الفحص ووقته</strong>. هذا كل السطر.</p>
+    <p><strong>لا</strong> نسجّل العقد، ولا نصّه، ولا اسم ملفه، ولا طوله، ولا درجته، ولا بنوده، ولا حتى نوع المستند. من يقرأ هذا الجدول يعرف أن حسابك فحص شيئًا في تاريخ معيّن، ولا يعرف عن ذلك الشيء ولا حرفًا. والتحليل نفسه يظل كاملًا على جهازك.</p>
+    <p>نحتفظ بهذه السطور ثلاثة عشر شهرًا، عشان سؤال «هذا الشهر» يقدر يرجع سنة كاملة للخلف. وحذف حسابك يحذفها معه.</p>
+    <p>ونقولها بصراحة: هذا <em>سجل</em> نحترمه، لا قفل. لأن عقدك يُقرأ على جهازك أنت، ما فيه خادم عندنا يقدر يمنع فحصًا أصلًا. الحساب يخلّي مسح المتصفح أو النافذة الخاصة ما تصفّر العدّاد — وما يعني أن العدّاد ما يُتجاوز أبدًا لمن أصرّ. اخترنا الضمان الأضعف لأن الأقوى يتطلّب إرسال عقدك لنا، وهذا آخر شيء يعد به هذا التطبيق.</p>
 
     <h2>إذا سجّلت الدخول</h2>
-    <p>الحساب اختياري تمامًا، ويشتري شيئًا واحدًا: مزامنة ما حفظته بين أجهزتك. التطبيق يعمل كاملًا بدونه.</p>
-    <p>عند تسجيل الدخول عبر Google أو Apple نحفظ:</p>
+    <p>الحاسبة ودليل الحقوق والتذكيرات والمساعد — كلها تشتغل بدون حساب. قراءة عقد تحتاج حسابًا، للسبب المذكور فوق.</p>
+    <p>تقدر تسجّل بـ Google أو Apple أو <strong>بأي بريد إلكتروني</strong>. الدخول بالبريد يرسل رمزًا من ٦ أرقام إلى عنوانك؛ ما فيه كلمة مرور، يعني ما فيه كلمة مرور نحفظها ولا أحد يسرقها. العنوان يُحفظ لدى مزوّد المصادقة (Supabase) ولدى الخدمة التي توصّل البريد.</p>
+    <p>عند تسجيل الدخول نحفظ:</p>
     <ul>
       <li>هويتك من المزوّد: الاسم والبريد والصورة، إن أتاحها</li>
       <li>تفضيلاتك: اللغة والمظهر</li>
@@ -125,11 +133,19 @@
     <p>All four go through Wodouh's server to Anthropic's Claude model. Nothing is stored at any point for the first three; the fourth stores the file briefly and then deletes it. None of them can change any amount — the arithmetic stays on your device.</p>
 
     <h2>One small question about features</h2>
-    <p>When you open the payment screen or your account, the app asks our servers one question: which features are switched on right now. That request carries nothing about you or your contract — no account, no figures, no text — and if no answer comes back the app carries on exactly as it would have. It does not happen at all if you never open those screens.</p>
+    <p>When you open the payment screen or your account, the app asks our servers one question: which features are switched on right now. That request carries nothing about you or your contract — no account, no figures, no text — and if no answer comes back the app carries on exactly as it would have.</p>
+    <p>The sign-in screen asks a similar one: which ways of signing in are switched on. It carries nothing about you either. It is asked so we never show you a sign-in button that would fail.</p>
+
+    <h2>Reading a contract needs an account, and we count the free one</h2>
+    <p>The free tier is one contract scan a month. To count it against a person rather than a browser, we record <strong>one row per scan: your account and the date and time</strong>. That is the whole record.</p>
+    <p>We do <strong>not</strong> record the contract, its text, its file name, its length, its score, its clauses, or what kind of document it was. Someone reading that table learns that your account scanned something on a date, and nothing at all about what you scanned. The analysis still happens entirely on your device.</p>
+    <p>We keep those rows for thirteen months, so a "this month" question can always look a full year back. Deleting your account deletes them with it.</p>
+    <p>Being honest about what this is: it is a <em>record</em> we honour, not a lock. Because your contract is read on your own device, no server of ours is in a position to stop a scan. Counting against an account means clearing your browser or opening a private window no longer resets the limit. It does not mean the limit cannot be circumvented by someone determined to. We chose the weaker guarantee because the stronger one would require sending your contract to us, which is the one thing this app promises never to do.</p>
 
     <h2>If you sign in</h2>
-    <p>An account is entirely optional and buys one thing: syncing what you have saved across your devices. The app works in full without one.</p>
-    <p>When you sign in with Google or Apple we store:</p>
+    <p>The calculator, the rights library, the reminders and the assistant all work without an account. Reading a contract needs one, for the reason above.</p>
+    <p>You can sign in with Google, with Apple, or with <strong>any email address</strong>. Email sign-in sends a six-digit code to that address; there is no password, so there is no password for us to store or for anyone to steal. The address is held by our authentication provider (Supabase) and by the service that delivers the mail.</p>
+    <p>When you sign in we store:</p>
     <ul>
       <li>your identity from the provider: name, email and avatar, where they are given</li>
       <li>your preferences: language and theme</li>

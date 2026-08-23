@@ -178,6 +178,7 @@ you are getting:
 | `0006_function_grants.sql` | revokes the EXECUTE grants Supabase hands out by default |
 | `0007_blockers.sql` | `launch_blockers` — the founder checklist, operator-only |
 | `0008_operator_allowlist.sql` | `admin_allowlist` + the trigger that promotes on first sign-in |
+| `0009_scans.sql` | `scan_events` — one row per free scan, so the monthly limit survives clearing storage |
 
 ### Becoming an operator
 

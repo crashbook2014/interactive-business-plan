@@ -164,6 +164,21 @@ async function seedTermination(p){
     obDone = true; nat = "sa"; scanUsed = { month:"", n:0 };
     owned = { review:null, letter:null, case:null }; packUntil = 0; packLeft = 0;
     if (lang === "ar") toggleLang();
+    /* Signed in with no scans used: the state a first-time reader is in after
+       creating an account, which is now required before any scan. Stubbed
+       because the project is not reachable from a test runner. */
+    scanServer = 0;
+    /* A STATEFUL stub, because a stub that always answers 0 is not a server.
+       useScan() increments optimistically and then re-reads — correct, since
+       the server is the truth — so a stub whose count never moves silently
+       undoes the increment and hands out a second free scan. Counting here
+       makes the test exercise what actually happens. */
+    window.__rows = 0;
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(window.__rows),
+      api: (p, o) => { if (o && o.method === "POST") window.__rows += 1;
+                       return Promise.resolve(null); } });
     analyze("employment");
     await new Promise(r => setTimeout(r, 2200));
     const card = document.querySelector(".score-card").textContent;

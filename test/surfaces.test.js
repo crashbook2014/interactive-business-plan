@@ -348,6 +348,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
    */
   console.log("\n— the letter bar appears, stays reachable, and opens the letter");
   const letter = await p.evaluate(async () => {
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     nat = "sa"; analyze("employment");
     await new Promise(r => setTimeout(r, 2800));
     const add = document.querySelector("[data-add]");

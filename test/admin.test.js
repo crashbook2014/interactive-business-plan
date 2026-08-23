@@ -79,12 +79,29 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "and all three switches read their compiled constant");
 
   /* ---- 3. the free path is still silent, end to end */
-  console.log("\n— a reader who never reaches a paid surface still makes no request");
+  /* THIS CLAIM NARROWED, and the narrowing is the honest half of a decision
+     made elsewhere. It read "a reader who never reaches a paid surface still
+     makes no request", and that was true while a scan needed no account. The
+     free scan is now one a month counted per person, so reaching a scan means
+     reaching a sign-in — and the sign-in screen asks the project which
+     providers are enabled, so a request leaves the device.
+
+     What still holds, and is the part that ever mattered: NOTHING ABOUT THE
+     CONTRACT OR THE READER GOES ANYWHERE. The probe is a bare GET for a list
+     of sign-in methods. So the assertion becomes: the only thing that leaves
+     is that probe, and it carries no body. */
+  console.log("\n— reaching a scan asks which sign-ins exist, and nothing else");
   requests.length = 0;
   await page.evaluate(() => { obFinish(); analyze("employment"); });
   await page.waitForTimeout(1200);
-  ok(external().length === 0,
-     `pasting a contract and reading the result sends nothing${external().length ? " — " + external().join(", ") : ""}`);
+  const out = external();
+  ok(out.every(u => /\/auth\/v1\/settings/.test(u)),
+     `the only request is the sign-in probe${out.length ? " — " + out.join(", ") : " (none at all)"}`);
+  const bodies = await page.evaluate(() => (window.__sentBodies || []).length);
+  ok(!bodies, "and nothing is posted — no contract, no text, no figures");
+  /* The contract itself must still never appear in a URL. */
+  ok(!out.some(u => /clause|contract|score|text=/i.test(u)),
+     "and no request names the document or its result");
 
   /* ---- 4. fail-safe, in every shape the network can fail */
   console.log("\n— every way this can go wrong lands on the compiled constant");

@@ -274,6 +274,10 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
     if (document.documentElement.lang !== "ar") toggleLang();
     nat = "sa"; show("home");
     document.getElementById("pasteBox").value = txt;
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
@@ -297,6 +301,10 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   /* An authored sample quote is bilingual and must still render — the two
      shapes share one code path and a regression would silently blank one. */
   const authored = await p.evaluate(async () => {
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     nat = "sa"; analyze("employment");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
@@ -310,6 +318,10 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   const evil = await p.evaluate(async (txt) => {
     nat = "sa"; show("home");
     document.getElementById("pasteBox").value = txt;
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
@@ -357,6 +369,10 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   const shown = (txt) => p.evaluate(async (t) => {
     nat = "sa"; show("home");
     document.getElementById("pasteBox").value = t;
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const conf = document.getElementById("dcConf");
@@ -403,6 +419,10 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   /* A curated sample is a known quantity and must not be labelled as if we
      had guessed at it. */
   const sample = await p.evaluate(async () => {
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth, {
+      configured: () => true, user: () => ({ id: "test-user" }),
+      apiCount: () => Promise.resolve(0),
+      api: () => Promise.resolve(null) });
     nat = "sa"; analyze("employment");
     await new Promise(r => setTimeout(r, 2800));
     return document.getElementById("dcConf").dataset.level;

@@ -136,8 +136,16 @@ const STUB = (apple) => {
   ok(screen.id === "screen-signin", "the screen opens when configured");
   ok(screen.google === true, "Google is offered");
   ok(screen.apple === false, "Apple is NOT offered without an Apple developer account — a dead button is worse than one fewer option");
-  ok(screen.pwFields === 0 && screen.emailFields === 0,
-     "there is no password or email field anywhere on the screen");
+  /* THE EMAIL HALF OF THIS INVERTED, deliberately. It read "no password or
+     email field anywhere", and the email half was true only while OAuth was
+     the only way in. Email sign-in is now a way in, so a missing email field
+     would be the defect.
+
+     The PASSWORD half stands, and is the part that mattered: a six-digit code
+     means no credential to store, to leak, to reset, or to hold in trust. */
+  ok(screen.pwFields === 0, "there is no password field anywhere on the screen");
+  ok(screen.emailFields === 1,
+     `and exactly one email field, for the code sign-in (${screen.emailFields})`);
   ok(/without an account/i.test(screen.text) || /بدون حساب/.test(screen.text),
      "and the screen says plainly that the app works without an account");
 
@@ -462,11 +470,17 @@ console.log("\n— a person can actually find and reach sign-in");
 console.log("\n— a sign-in provider the project has not enabled is not offered");
 {
   const pb = await chromium.launch(launchOpts());
+  /* Email is a provider too, and adding it changed what "nothing is enabled"
+     means. "both off" used to be every way in; with an email form on the same
+     screen it is not, and the notice must NOT appear — saying no sign-in is
+     available above a working sign-in is the same class of lie as offering a
+     button that 400s. Hence the fifth case: email alone is enough. */
   const cases = [
-    ["both off",     { external: { google: false, apple: false } }, false, true],
-    ["google on",    { external: { google: true,  apple: false } }, true,  false],
-    ["unreachable",  null,                                          true,  false],
-    ["odd shape",    { something: "else" },                         true,  false],
+    ["all off",      { external: { google: false, apple: false, email: false } }, false, true],
+    ["email only",   { external: { google: false, apple: false, email: true  } }, false, false],
+    ["google on",    { external: { google: true,  apple: false } },               true,  false],
+    ["unreachable",  null,                                                        true,  false],
+    ["odd shape",    { something: "else" },                                       true,  false],
   ];
   for (const [name, body, wantGoogle, wantNotice] of cases) {
     const d = await pb.newPage({ viewport: { width: 390, height: 844 } });
@@ -483,6 +497,7 @@ console.log("\n— a sign-in provider the project has not enabled is not offered
       await new Promise(s => setTimeout(s, 700));
       const vis = id => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== "none"; };
       return { google: vis("auGoogle"), notice: vis("auNone"),
+               mail: vis("auMailForm"),
                noticeText: (document.getElementById("auNone") || {}).textContent || "" };
     });
     if (!seen) { ok(false, `${name}: the account screen offered no way in`); await d.close(); continue; }
@@ -490,6 +505,11 @@ console.log("\n— a sign-in provider the project has not enabled is not offered
        `${name}: the Google button is ${wantGoogle ? "shown" : "hidden"}`);
     ok(seen.notice === wantNotice,
        `${name}: ${wantNotice ? "the reader is told no sign-in is available" : "no needless notice"}`);
+    /* The email form obeys the same three-state contract as the buttons: an
+       explicit false hides it, anything else leaves it alone. */
+    const wantMail = !(body && body.external && body.external.email === false);
+    ok(seen.mail === wantMail,
+       `${name}: the email form is ${wantMail ? "offered" : "withheld"}`);
     if (wantNotice) {
       ok(/without an account|بدون حساب/.test(seen.noticeText),
          `${name}: and the notice says the app still works without one, which is true`);

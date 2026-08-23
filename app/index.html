@@ -1138,6 +1138,16 @@
   .scan-lock p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
   .scan-lock .scan-left{font-size:12.5px;color:var(--ink-2);opacity:.85}
   .scan-lock .cta{margin-top:4px}
+  .au-sep{display:flex;align-items:center;gap:10px;margin:14px 0 2px;
+          color:var(--ink-2);font-size:12.5px}
+  .au-sep::before,.au-sep::after{content:"";flex:1;height:1px;background:var(--line)}
+  .au-mail{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .au-lab{font-size:13px;color:var(--ink-2)}
+  .au-mail input{font:inherit;padding:11px 12px;border-radius:12px;
+                 border:1px solid var(--line);background:var(--card);color:var(--ink)}
+  .au-btn.mail{justify-content:center}
+  .au-again{background:none;border:0;color:var(--teal-ink);font:inherit;
+            font-size:12.5px;text-decoration:underline;cursor:pointer;padding:4px}
   .acc-pack{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
   .plan.soon{opacity:.62;cursor:default}
   .plan.soon .radio{visibility:hidden}
@@ -1875,8 +1885,26 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M12.9 9.6c0-1.9 1.6-2.8 1.6-2.9-.9-1.3-2.2-1.4-2.7-1.5-1.2-.1-2.3.7-2.9.7-.6 0-1.5-.7-2.5-.7-1.3 0-2.5.7-3.1 1.9-1.3 2.3-.3 5.7 1 7.5.6.9 1.3 1.9 2.3 1.9 1 0 1.3-.6 2.4-.6s1.4.6 2.4.6c1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1 0 0-1.9-.7-1.9-2.9zM11.2 3.7c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.3 1.2-.5.6-.9 1.5-.8 2.4.9.1 1.8-.4 2.3-1.2z"/></svg>
         <span data-t="au_apple"></span>
       </button>
+      <!-- EMAIL, FOR EVERYONE WITHOUT A GOOGLE ACCOUNT. Two steps in one
+           block: the address, then the code that arrives. The second step is
+           hidden until the first succeeds, so the screen never shows a box
+           for a code nobody has been sent. -->
+      <div class="au-sep" id="auSep" hidden><span data-t="au_or"></span></div>
+      <form class="au-mail" id="auMailForm" hidden onsubmit="return false">
+        <label class="au-lab" for="auEmail" data-t="au_email_lab"></label>
+        <input id="auEmail" type="email" inputmode="email" autocomplete="email"
+               spellcheck="false" dir="ltr" placeholder="you@example.com"/>
+        <button class="au-btn mail" id="auMailGo" type="submit" onclick="sendMailCode()" data-t="au_email_go"></button>
+      </form>
+      <form class="au-mail" id="auCodeForm" hidden onsubmit="return false">
+        <label class="au-lab" for="auCode" id="auCodeLab"></label>
+        <input id="auCode" type="text" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" dir="ltr" placeholder="123456"/>
+        <button class="au-btn mail" id="auCodeGo" type="submit" onclick="verifyMailCode()" data-t="au_code_go"></button>
+        <button class="au-again" id="auAgain" type="button" onclick="sendMailCode()" data-t="au_again"></button>
+      </form>
     </div>
-    <p class="tq-skip au-skip" onclick="closeSignin()" data-t="au_skip"></p>
+    <p class="tq-skip au-skip" id="auSkip" onclick="closeSignin()" data-t="au_skip"></p>
     <div class="tm-sec au-what">
       <p><b data-t="au_what"></b></p>
       <p data-t="au_what_b"></p>
@@ -2432,11 +2460,23 @@ const T = {
      Offered where an account BUYS something and nowhere else. The app has
      always worked signed out and still does; nothing below gates a screen. */
   au_title:{ar:"احفظ شغلك",en:"Save your work"},
-  au_sub:{ar:"وضوح يشتغل بدون حساب، وراح يظل كذا. الحساب فايدته وحدة: شغلك يظل معك لو غيّرت جوالك أو مسحت المتصفح.",
-          en:"Wodouh works without an account and always will. An account does one thing: it keeps your work when you change phone or clear your browser."},
+  /* THIS SAID "works without an account AND ALWAYS WILL" until the free scan
+     started being counted per person. That was a forward promise, not a
+     description, and quietly deleting it would be the worse of the two ways
+     to break it. It is narrowed instead, to the part that is still true and
+     is most of the app: the calculator, the rights library, the reminders and
+     the assistant all still need nothing. Reading a contract needs an account
+     now, because one free scan a month has to be counted against somebody. */
+  au_sub:{ar:"الحاسبة ودليل الحقوق والتذكيرات والمساعد — كلها تشتغل بدون حساب، وراح تظل كذا. الحساب لازم لقراءة عقد، لأن الفحص المجاني الشهري لازم يُحسب على أحد.",
+          en:"The calculator, the rights library, the reminders and the assistant all work without an account, and always will. An account is needed to read a contract, because one free scan a month has to be counted against somebody."},
   au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
   au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
+  /* Hidden when the reader arrived here BECAUSE they asked to scan: offering
+     to "keep going without one" at the one door that requires one is an
+     invitation into a dead end. Still shown everywhere else, where it is
+     true. */
   au_skip:{ar:"لا شكرًا، أكمل بدون حساب",en:"No thanks — keep going without one"},
+  au_skip_scan:{ar:"رجوع",en:"Back"},
   au_what:{ar:"وش نحفظ؟",en:"What we save"},
   au_what_b:{ar:"نتيجة التقييم وخطاباتك وتذكيراتك. ما نحفظ نص عقدك ولا ملفه — هذي ما تطلع من جهازك أصلًا.",
              en:"Your assessment result, your letters and your reminders. Not your contract's text or file — those never leave your device in the first place."},
@@ -2449,8 +2489,21 @@ const T = {
      number of attempts fixes a switch that is off. The reader is not the
      person who can fix it either, so this says what happened and stops —
      without the Supabase instructions the console shows its owner. */
-  au_off:{ar:"تسجيل الدخول بهذه الطريقة غير متاح حاليًا. التطبيق يشتغل كامل بدون حساب.",
-          en:"This sign-in method isn't available right now. The app works fully without an account."},
+  au_or:{ar:"أو",en:"or"},
+  au_email_lab:{ar:"بريدك الإلكتروني",en:"Your email"},
+  au_email_go:{ar:"أرسل لي رمزًا",en:"Send me a code"},
+  au_code_lab:{ar:"أرسلنا رمزًا من ٦ أرقام إلى {e}",en:"We sent a 6-digit code to {e}"},
+  au_code_go:{ar:"ادخل",en:"Sign in"},
+  au_again:{ar:"ما وصلني — أرسله مرة ثانية",en:"Didn't arrive — send it again"},
+  au_sending:{ar:"جارٍ الإرسال…",en:"Sending…"},
+  au_checking:{ar:"جارٍ التحقق…",en:"Checking…"},
+  au_bad_email:{ar:"تأكد من البريد الإلكتروني.",en:"Check the email address."},
+  au_bad_code:{ar:"الرمز غير صحيح أو انتهت صلاحيته. اطلب واحدًا جديدًا.",
+               en:"That code is wrong or has expired. Ask for a new one."},
+  au_mail_err:{ar:"ما قدرنا نرسل الرمز الحين. جرّب بعد شوي.",
+               en:"We couldn't send the code just now. Try again shortly."},
+  au_off:{ar:"تسجيل الدخول بهذه الطريقة غير متاح حاليًا. جرّب البريد الإلكتروني.",
+          en:"This sign-in method isn't available right now. Try email instead."},
 
   /* The local-data question. Their work moving to a server is exactly the kind
      of thing that gets asked, not assumed. */
@@ -2725,7 +2778,7 @@ const T = {
      that omits something it can. */
   acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
                       en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
-  au_none:{ar:"ما فيه طريقة تسجيل دخول مفعّلة الآن. التطبيق يشتغل كامل بدون حساب — الحساب فايدته الوحيدة إن شغلك يظل معك لو غيّرت جهازك.",
+  au_none:{ar:"ما فيه طريقة تسجيل دخول مفعّلة الآن. الحاسبة ودليل الحقوق والتذكيرات تشتغل بدون حساب.",
            en:"No sign-in method is switched on right now. The app works in full without an account — the only thing an account adds is keeping your work if you change device."},
   acc_signin_cta:{ar:"سجّل دخولك",en:"Sign in"},
   acc_signed_h:{ar:"حسابك",en:"Your account"},
@@ -4818,6 +4871,8 @@ function pasteChanged(){
 
 /* ------------------------------------------------------------- analyze */
 function analyze(kind){
+  /* Before anything is read. See scanGate(). */
+  if (!scanGate(kind)) return;
   /* Which rules apply depends on the track, so ask before reading rather
      than after, and come straight back here with the same contract. */
   if (needsTrack(()=>analyze(kind))) return;
@@ -5462,6 +5517,17 @@ function openSignin(back){
   if (err) err.hidden = true;
   const none = document.getElementById("auNone");
   if (none) none.hidden = true;
+  /* Fresh every time: an address left in the box from a previous attempt, or
+     a code step still showing for a code that has since expired, are both
+     ways to start someone in a state they did not choose. */
+  auMail = "";
+  const eb = document.getElementById("auEmail");
+  if (eb) eb.value = "";
+  renderMailAuth();
+  /* "No thanks, keep going without one" is the wrong offer at the one door
+     that requires an account. It becomes a plain Back there. */
+  const skip = document.getElementById("auSkip");
+  if (skip) skip.textContent = t(authWant === "scan" ? "au_skip_scan" : "au_skip");
   show("signin");
   renderProviders();
 }
@@ -5480,15 +5546,99 @@ function renderProviders(){
     const none = document.getElementById("auNone");
     const gOn = ext.google !== false;
     const aOn = ext.apple !== false && WodouhAuth.appleAvailable();
+    /* Email is a provider too, and forgetting it here would print "no sign-in
+       method is enabled" on a screen with a working email form on it. */
+    const eOn = ext.email !== false;
     if (g) g.hidden = !gOn;
     if (ap) ap.hidden = !aOn;
+    mailOn = eOn;
+    renderMailAuth();
     if (none){
-      none.hidden = gOn || aOn;
+      none.hidden = gOn || aOn || eOn;
       none.textContent = t("au_none");
     }
   }).catch(()=>{});
 }
 function closeSignin(){ show(authBack, 1); }
+
+/* ------------------------------------------------------- EMAIL SIGN-IN
+   Two steps, one screen. The code box does not exist until a code has
+   actually been sent, so the screen never asks for something nobody has. */
+let auMail = "";
+/* Starts true so the form is there before /auth/v1/settings answers — the
+   same fail-open the Google button uses. A check that has not come back is
+   not a reason to hide a working door. */
+let mailOn = true;
+function renderMailAuth(){
+  const on = !!(authOn() && WodouhAuth.sendEmailCode && mailOn);
+  const sep = document.getElementById("auSep");
+  const f1 = document.getElementById("auMailForm");
+  const f2 = document.getElementById("auCodeForm");
+  if (!sep || !f1 || !f2) return;
+  sep.hidden = !on;
+  f1.hidden = !on || !!auMail;
+  f2.hidden = !on || !auMail;
+  if (auMail){
+    document.getElementById("auCodeLab").textContent =
+      t("au_code_lab").replace("{e}", auMail);
+  }
+}
+
+function mailErr(key){
+  const err = document.getElementById("auErr");
+  if (!err) return;
+  err.textContent = t(key);
+  err.hidden = false;
+}
+
+function sendMailCode(){
+  const box = document.getElementById("auEmail");
+  const btn = document.getElementById("auMailGo");
+  const err = document.getElementById("auErr");
+  if (err) err.hidden = true;
+  if (!box || !btn) return;
+  btn.disabled = true; btn.textContent = t("au_sending");
+  WodouhAuth.sendEmailCode(box.value)
+    .then(addr => {
+      auMail = addr;
+      renderMailAuth();
+      const c = document.getElementById("auCode");
+      if (c){ c.value = ""; c.focus(); }
+    })
+    .catch(e => {
+      /* A malformed address and a mail server that would not take it are
+         different problems with different fixes, so they are told apart
+         rather than sharing one shrug. */
+      mailErr(String(e && e.message) === "bad_email" ? "au_bad_email" : "au_mail_err");
+    })
+    .then(() => { btn.disabled = false; btn.textContent = t("au_email_go"); });
+}
+
+function verifyMailCode(){
+  const box = document.getElementById("auCode");
+  const btn = document.getElementById("auCodeGo");
+  const err = document.getElementById("auErr");
+  if (err) err.hidden = true;
+  if (!box || !btn) return;
+  btn.disabled = true; btn.textContent = t("au_checking");
+  WodouhAuth.verifyEmailCode(auMail, box.value)
+    .then(() => { auMail = ""; renderMailAuth(); afterSignIn(); })
+    .catch(() => mailErr("au_bad_code"))
+    .then(() => { btn.disabled = false; btn.textContent = t("au_code_go"); });
+}
+
+/* Where a reader lands once they are in. Coming from the scan gate they get
+   what they came for; from anywhere else, back where they were. */
+let authWant = null;
+function afterSignIn(){
+  const want = authWant; authWant = null;
+  /* The count is per account, so it has to be read before the resumed scan
+     decides whether it is free. */
+  loadScanCount().then(() => {
+    if (want === "scan"){ resumeScan(); return; }
+    show(authBack, 1);
+  });
+}
 
 /* ASK BEFORE NAVIGATING. Supabase answers a disabled provider with 400 JSON
    rather than a redirect, so going straight there lands the reader on
@@ -5631,7 +5781,7 @@ function migrateNo(){ migrateDone(); }
 
 function initAuth(){
   if (!authOn()) return;
-  WodouhAuth.onChange(u => { authUser = u; renderAccount(); });
+  WodouhAuth.onChange(u => { authUser = u; loadScanCount().then(renderAccount); });
   WodouhAuth.init().then(u => {
     authUser = u;
     renderAccount();
@@ -10139,12 +10289,36 @@ function packLive(){
    opening a private window. The copy says "one free scan a month"; it does
    not claim to enforce it, because it cannot. */
 const SCANS_FREE = 1;
+/* The device-local counter, kept ONLY for a build with no project configured.
+   Where there is an account the count lives in public.scan_events, because
+   clearing site data or opening a private window resets anything held here —
+   which made the limit decorative. */
 let scanUsed = { month:"", n:0 };
+/* null = not asked yet. A number = what the server said. Never guessed: an
+   unknown count must not silently become zero, or a reader with no scans left
+   would get another one every time the network hiccupped. */
+let scanServer = null;
+
+function monthStartISO(){
+  const d = new Date();
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1)).toISOString();
+}
+
+/* Asked once when a session appears, and after each scan is recorded. */
+function loadScanCount(){
+  if (!authOn() || !WodouhAuth.user()) { scanServer = null; return Promise.resolve(null); }
+  return WodouhAuth.apiCount(
+      "/rest/v1/scan_events?select=id&created_at=gte." + encodeURIComponent(monthStartISO()))
+    .then(n => { scanServer = Number.isFinite(n) ? n : null; return scanServer; })
+    .catch(() => { scanServer = null; return null; });
+}
 function thisMonth(){
   const d = new Date();
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
 }
 function scansLeft(){
+  /* The server's answer wins wherever there is one. */
+  if (scanServer !== null) return Math.max(0, SCANS_FREE - scanServer);
   if (scanUsed.month !== thisMonth()) return SCANS_FREE;
   return Math.max(0, SCANS_FREE - scanUsed.n);
 }
@@ -10152,6 +10326,46 @@ function useScan(){
   const mo = thisMonth();
   if (scanUsed.month !== mo) scanUsed = { month:mo, n:0 };
   scanUsed.n += 1;
+  /* Recorded against the account as well, where there is one. The row is a
+     user id and a timestamp — nothing about the document. Optimistically
+     counted locally first, so the limit holds even if the write fails and the
+     reader is not handed a second scan by a dropped request. */
+  if (authOn() && WodouhAuth.user()){
+    if (scanServer !== null) scanServer += 1;
+    WodouhAuth.api("/rest/v1/scan_events", { method:"POST", body:{ user_id: WodouhAuth.user().id } })
+      .then(loadScanCount).catch(() => {});
+  }
+}
+
+/* THE GATE, INSIDE analyze() RATHER THAN AT ITS FOUR CALLERS.
+   Four buttons reach a scan today and a fifth will exist eventually. A guard
+   repeated at each call site is a guard the next route forgets — the same
+   argument the entitlement grant makes about downgrades.
+
+   An UNCONFIGURED build is untouched: with no project there is no account to
+   count against, so gating would lock the reader out of a product that has
+   nothing to sell them. */
+let pendingScan = null;
+function scanGate(kind){
+  if (!authOn()) return true;
+  if (reviewUnlocked()) return true;
+  if (!WodouhAuth.user()){
+    pendingScan = kind;
+    authWant = "scan";
+    openSignin("home");
+    return false;
+  }
+  if (scansLeft() <= 0){
+    pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
+    pwUpgrade = null; pwUpBack = null;
+    renderPaywall(); show("paywall");
+    return false;
+  }
+  return true;
+}
+function resumeScan(){
+  const k = pendingScan; pendingScan = null;
+  if (k) analyze(k); else show(authBack, 1);
 }
 
 /* Does this reader get the WHOLE review, or the scan?

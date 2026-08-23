@@ -272,6 +272,55 @@
     return true;
   }
 
+  /* ------------------------------------------------- EMAIL, WITHOUT GOOGLE
+     A SIX-DIGIT CODE, NOT A MAGIC LINK, and that is a deliberate choice for
+     this product's readers. A magic link is opened by whatever browser the
+     mail app decides to use — Gmail and WhatsApp both open their own — and a
+     session created there is not a session in the browser that asked for it.
+     The reader ends up signed in somewhere they are not looking. A code is
+     typed back into the tab that is already open, so it cannot land in the
+     wrong place.
+
+     `shouldCreateUser: true` because this IS the sign-up: there is no separate
+     registration, and asking someone to register and then sign in is two
+     doors where one will do. */
+  function sendEmailCode(email) {
+    if (!configured()) return Promise.reject(new Error("not_configured"));
+    var addr = String(email || "").trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(addr)) return Promise.reject(new Error("bad_email"));
+    return api("/auth/v1/otp", {
+      method: "POST", anon: true,
+      body: { email: addr, create_user: true }
+    }).then(function () { return addr; });
+  }
+
+  /* The code comes back as a real session, the same shape the OAuth redirect
+     produces, so everything downstream — init(), onChange, api() — is
+     unchanged. type "email" is the one GoTrue uses for a sign-in code; it is
+     not the same as "signup" or "recovery" and sending the wrong one fails
+     with a message about the token, not about the type. */
+  function verifyEmailCode(email, code) {
+    if (!configured()) return Promise.reject(new Error("not_configured"));
+    var addr = String(email || "").trim().toLowerCase();
+    var tok = String(code || "").replace(/\D/g, "");
+    if (tok.length < 6) return Promise.reject(new Error("bad_code"));
+    return api("/auth/v1/verify", {
+      method: "POST", anon: true,
+      body: { type: "email", email: addr, token: tok }
+    }).then(function (d) {
+      if (!d || !d.access_token) throw new Error("bad_code");
+      session = {
+        access_token: d.access_token,
+        refresh_token: d.refresh_token,
+        expires_at: Date.now() + (d.expires_in || 3600) * 1000,
+        user: d.user || null
+      };
+      save();
+      emit();
+      return session.user;
+    });
+  }
+
   function refresh(token) {
     return api("/auth/v1/token?grant_type=refresh_token", {
       method: "POST", anon: true, body: { refresh_token: token }
@@ -560,6 +609,8 @@
     configured: configured,
     appleAvailable: appleAvailable,
     providers: providers,
+    sendEmailCode: sendEmailCode,
+    verifyEmailCode: verifyEmailCode,
     authorizeUrl: authorizeUrl,
     preflight: preflight,
     init: init,
