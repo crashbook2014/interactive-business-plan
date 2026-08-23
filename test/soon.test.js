@@ -48,7 +48,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     nat = "sa";
     term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
       end:"2026-01-31", wage:12000, ctype:"indef" });
-    owned.term = "plan_term_full";
+    owned.case = "plan_case";
     return { onApp: location.pathname.includes("/app/"), award: Math.round(termAward()) };
   });
   ok(live.onApp, "the key keeps you on the app rather than bouncing you out");

@@ -1129,6 +1129,18 @@
   .pcard .price{margin-top:12px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
   .pcard .price b{font-family:var(--en);font-size:27px;color:var(--ink);font-variant-numeric:tabular-nums}
   .pcard .price i{font-style:normal;font-size:12.5px;color:var(--ink-2)}
+  /* The scan's edge. Deliberately quiet — it sits under a real finding, and a
+     loud upsell directly beneath a genuine warning reads as using the warning
+     to sell, which is the thing this whole shape exists to avoid. */
+  .scan-lock{border:1px dashed var(--line);border-radius:14px;padding:16px;
+             margin-top:12px;background:var(--card)}
+  .scan-lock b{display:block;font-size:15px;margin-bottom:6px}
+  .scan-lock p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+  .scan-lock .scan-left{font-size:12.5px;color:var(--ink-2);opacity:.85}
+  .scan-lock .cta{margin-top:4px}
+  .acc-pack{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
+  .plan.soon{opacity:.62;cursor:default}
+  .plan.soon .radio{visibility:hidden}
   .pcard ul{list-style:none;margin-top:14px;display:grid;gap:7px}
   .pcard li{font-size:13px;color:var(--ink);display:flex;gap:9px;align-items:flex-start;line-height:1.55}
   .pcard li svg{flex:none;width:15px;height:15px;margin-top:3px;color:var(--green)}
@@ -1719,7 +1731,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <button class="back" onclick="show(pwBack(),1)"><span class="bk" aria-hidden="true">‹</span><span id="pwBackLabel"></span></button>
     <h2 class="section-title" data-t="pw_title"></h2>
     <p class="pw-note" data-t="pw_free_note"></p>
-    <div class="preview">
+    <div class="preview" id="pwPreview">
       <div class="ltr-head" id="pwPreviewHead"></div>
       <div class="body" id="pwPreviewIntro"></div>
       <div class="locked-row">
@@ -2858,7 +2870,10 @@ const T = {
      product now names the product it is selling. */
   pw_pay:{ar:"احصل على خطابي",en:"Get my letter"},
   pw_pay_case:{ar:"احصل على ملفي",en:"Get my case file"},
-  pw_pay_term:{ar:"اعرض تقييمي",en:"Show my assessment"},
+  /* Names the assessment first, because that is what the reader came for —
+     even though the product they are buying also contains the case file and
+     the employer letter. Both are named on the card beneath. */
+  pw_pay_term:{ar:"اعرض تقييمي كامل",en:"Show my full assessment"},
   pw_pay_up:{ar:"أضف الملف والخطاب",en:"Add the file and letter"},
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
   /* Back labels that name where the button actually goes. "Back to score" sat
@@ -2902,13 +2917,49 @@ const T = {
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   plan_letter_d:{ar:"نص كامل قابل للتعديل، بالعربي والإنجليزي، مبني على البنود التي اخترتها",
                  en:"Full editable text in Arabic and English, built from the points you chose"},
-  plan_pack:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"},
-  /* This used to sell "6 months of reminders + unlimited questions". Both are
-     free to every reader and always have been — trackOrView and openAssist
-     have no payment check. It now names something that is genuinely withheld
-     and genuinely delivered: further letters for further contracts. */
-  plan_pack_d:{ar:"هذا الخطاب، وأي خطاب لعقد جديد خلال 6 أشهر",
-               en:"This letter, plus a letter for any new contract for 6 months"},
+  /* THE REVIEW PRODUCTS. The full read is paid from August 2026; the scan
+     above it stays free. */
+  plan_review:{ar:"المراجعة الكاملة",en:"Full contract review"},
+  plan_review_d:{ar:"كل بند، وكل ملاحظة، مع مصدرها من النظام — لعقد واحد",
+                 en:"Every clause, every flag, each with its source in the law — for one contract"},
+  /* Five reviews, twelve months. Both numbers are said here, at the point of
+     sale, and not only in the Terms — a limit a buyer meets for the first time
+     after paying is a limit they were not told. */
+  plan_reviews5:{ar:"باقة خمس مراجعات",en:"Five-review pack"},
+  plan_reviews5_d:{ar:"خمس مراجعات كاملة تستخدمها وقت ما تبي، صالحة 12 شهرًا",
+                   en:"Five full reviews, used whenever you like, valid for 12 months"},
+  plan_biz:{ar:"وضوح أعمال",en:"Wodouh for business"},
+  plan_biz_d:{ar:"مراجعات بلا حد لمستخدم واحد — لفرق الموارد البشرية والوسطاء والمكاتب",
+              en:"Unlimited reviews for one seat — for HR teams, brokers and firms"},
+  plan_month:{ar:"شهريًا",en:"/month"},
+  plan_bundle:{ar:"الحزمة الكاملة",en:"Full bundle"},
+  plan_bundle_d:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض — أقل من مجموعها",
+                 en:"The full review, the case file and the negotiation letter — for less than their sum"},
+  /* LISTED, NOT SELLABLE. The price is real; the capability is not built. The
+     card says so rather than letting a reader discover it at checkout. */
+  plan_draft:{ar:"صياغة عقد",en:"Contract drafting"},
+  plan_draft_d:{ar:"عقد مكتوب من الصفر لحالتك",en:"A contract written from scratch for your situation"},
+  plan_soon:{ar:"قريبًا",en:"Not yet available"},
+  plan_soon_d:{ar:"ما زلنا نبنيه. السعر معروض عشان تعرف وش الجاي، وما تقدر تشتريه الحين.",
+               en:"Still being built. The price is shown so you know what is coming; it cannot be bought yet."},
+  /* THE SCAN'S HONEST EDGE. Names what is missing by KIND, never by count —
+     see renderResult(). "The rest of the clauses" is true whether there are
+     two or twenty, and it is not a number that pays us more for being bigger. */
+  /* Says the kind of thing found, never how many. See renderDecision. */
+  dc_why_scan:{ar:"فيه بنود تستاهل تراجعها قبل التوقيع",
+               en:"There are clauses here worth reading before you sign"},
+  acc_pack_left:{ar:"باقي لك {n} مراجعات من الباقة، تنتهي في {d}.",
+                 en:"{n} reviews left in your pack. They expire on {d}."},
+  pw_rev_title:{ar:"المراجعة الكاملة لعقدك",en:"The full review of your contract"},
+  pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانيون دائمًا.",
+               en:"The score, the decision and the first flag are always free."},
+  pw_pay_rev:{ar:"افتح المراجعة",en:"Unlock the review"},
+  scan_lock_t:{ar:"هذي فحص سريع",en:"That was a quick scan"},
+  scan_lock_b:{ar:"بقية بنود عقدك — كل بند وحالته وسنده من النظام — تجيك في المراجعة الكاملة.",
+               en:"The rest of your contract's clauses — each one, its state, and where it sits in the law — come with the full review."},
+  scan_left1:{ar:"لك فحص مجاني واحد كل شهر.",en:"You get one free scan a month."},
+  scan_left0:{ar:"استخدمت فحصك المجاني لهذا الشهر.",en:"You've used this month's free scan."},
+  scan_cta:{ar:"افتح المراجعة الكاملة —",en:"Unlock the full review —"},
   plan_best:{ar:"الأفضل قيمة",en:"Best value"},
   cost_note:{ar:"يعني ما تقدر تترك خلال {m} — أي ما يعادل {v}.",
              en:"That's {m} you can't leave during — about {v}."},
@@ -2967,6 +3018,15 @@ const T = {
   pl_cta_biz:{ar:"جرّب 14 يومًا مجانًا",en:"Start 14-day trial"},
   pl_enterprise:{ar:"فريق أكبر من 20؟ تواصل معنا لتسعير المنشآت.",en:"Team over 20? Talk to us about enterprise pricing."},
   f_score:{ar:"تقييم العقد والتنبيهات",en:"Contract score and flags"},
+  /* The catalogue's feature lines. Each names something the reader actually
+     gets or does not, in the words the rest of the app uses for it. */
+  f_scan1:{ar:"فحص مجاني واحد كل شهر",en:"One free scan a month"},
+  f_full:{ar:"المراجعة الكاملة: كل بند بمصدره",en:"The full review: every clause with its source"},
+  f_5reviews:{ar:"خمس مراجعات كاملة",en:"Five full reviews"},
+  f_12mo:{ar:"صالحة 12 شهرًا من الشراء",en:"Valid for 12 months from purchase"},
+  f_case:{ar:"ملف القضية وخطاب صاحب العمل",en:"Case file and employer letter"},
+  f_unlimited:{ar:"مراجعات بلا حد",en:"Unlimited reviews"},
+  f_seat1:{ar:"مستخدم واحد",en:"One seat"},
   f_clauses:{ar:"شرح البنود بلغة بسيطة",en:"Plain-language clause explanations"},
   f_q3:{ar:"3 أسئلة مجانية لكل عقد",en:"3 free assistant questions per contract"},
   f_qmax:{ar:"أسئلة بلا حدود للمساعد",en:"Unlimited assistant questions"},
@@ -3643,17 +3703,13 @@ const T = {
      them. */
   pw_term_more:{ar:"يفتح التقييم كامل: كل بند وحالته، والمبالغ المحتملة بمصادرها، والمطالبات.",
                 en:"Unlocks the full assessment: every section and its state, the potential amounts with their sources, and the claims."},
-  plan_term:{ar:"التقييم",en:"The assessment"},
-  plan_term_d:{ar:"التقييم كامل بالمبالغ ومصادرها",en:"The full assessment with amounts and sources"},
-  plan_term_full:{ar:"التقييم مع الملف والخطاب",en:"Assessment, case file and letter"},
-  plan_term_full_d:{ar:"كل ما سبق، مع ملف الحالة وخطاب صاحب العمل بأربع نبرات",
-                    en:"Everything above, plus the case file and the employer letter in four tones"},
+
   pw_case_title:{ar:"ملف القضية",en:"The case file"},
   pw_case_free:{ar:"الحساب والتقييم مجانيان — الملف المنسّق إضافة اختيارية.",
                 en:"The calculation and assessment are free — the assembled file is optional."},
   plan_case:{ar:"ملف القضية",en:"Case file"},
-  plan_case_d:{ar:"ملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، وقائمة مستنداتك",
-               en:"A formatted bilingual file: the facts, the claim in figures, and your document list"},
+  plan_case_d:{ar:"التقييم كامل، وملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، مستنداتك، وخطاب صاحب العمل",
+               en:"The full assessment, plus a formatted bilingual file: the facts, the claim in figures, your documents, and the employer letter"},
   plan_case_lawyer:{ar:"الملف + محامٍ مرخّص",en:"File + licensed lawyer"},
   plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال 24 ساعة",
                       en:"A Saudi lawyer reviews your file and replies within 24h"},
@@ -4591,7 +4647,7 @@ function applyLang(){
      from the same state rather than keeping stale strings. */
   if (term){
     renderTermHow(); renderTermQ(); renderTermEv(); renderAiPanel();
-    if (has("term") && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
+    if (has("case") && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
   }
   if (current){
     renderResult(false); renderClauses(); renderFeedback();
@@ -4786,10 +4842,16 @@ function analyze(kind){
      authored, not matched, so switching track must not rewrite them. */
   current.srcText = pastedText;
   fbState = "ask";
-  /* A new contract is a new letter, so the single-letter tier is spent. The
-     pack was sold as covering further contracts for six months, so it is the
-     one thing that survives this reset — that is what was bought. */
-  if (!packLive()) owned.letter = null;
+  /* A new contract is a new letter and a new review, so the single-contract
+     tiers are spent. The pack and the business plan survive, because covering
+     further contracts is exactly what they were sold as. */
+  owned.letter = null;
+  if (owned.review === "plan_review") owned.review = null;
+  else if (packLive()) packLeft -= 1;
+  /* The free scan is counted here, where a contract is actually read, rather
+     than when the result screen renders — that would charge a reader for
+     scrolling back to something they already paid for. */
+  if (!reviewUnlocked()) useScan();
   pwPlan = 0;
   letterSet = new Set();
   runLoading(()=>{
@@ -4927,8 +4989,19 @@ function renderDecision(){
      finding is framed as what they can still act on. */
   document.getElementById("dcLabel").textContent = t(signedMode ? "dc_"+d+"_s" : "dc_"+d);
 
+  /* NO COUNT ON THE FREE SCAN, and this was found by looking at the screen
+     rather than by any test. The lock panel below deliberately withholds a
+     number — "the rest of your clauses", never "4 more problems" — because
+     the moment a bigger number is worth more money, the score stops meaning
+     anything. This line was printing "1 red and 3 amber" directly above it,
+     which announced the count the panel was carefully not stating.
+
+     Paid, the breakdown is exactly what a reader wants: they have the clauses
+     it refers to. Free, they have one, so a tally of the others is a sales
+     figure wearing a finding's clothes. */
   let why;
   if (d === "safe") why = t("dc_why_none");
+  else if (!reviewUnlocked()) why = t("dc_why_scan");
   else {
     const parts = [];
     if (reds) parts.push(countNoun("dc_red", reds));
@@ -5025,7 +5098,29 @@ function renderResult(reset){
   applyNextStep(decide(current));
   const wrap = document.getElementById("flags");
   wrap.innerHTML = "";
-  current.clauses.forEach((c,idx)=>{
+  /* THE SCAN / REVIEW BOUNDARY.
+     Unlocked, every clause renders as it always has. Locked, exactly ONE
+     renders — in full, with its advice and its source, indistinguishable from
+     what a paying reader sees. It is the most severe finding, not the least:
+     a teaser that leads with the mildest thing it found would be selling by
+     omission.
+
+     What is NOT shown is a number. No "4 more problems", no count in the
+     locked panel below. The moment a bigger number is worth more money, the
+     score stops meaning anything, and the score is the entire product. */
+  const full = reviewUnlocked();
+  const SEV = { bad:0, warn:1, ok:2 };
+  /* Carry the TRUE index alongside each clause. letterSet and addBtnHtml are
+     keyed by position in current.clauses, so handing the loop a sorted array's
+     position would have added a different clause to the letter than the one
+     the reader tapped. Sorting a list whose index is a key is exactly where
+     that goes wrong. */
+  const ordered = (full
+    ? current.clauses.map((c, i) => ({ c, i }))
+    : current.clauses.map((c, i) => ({ c, i }))
+        .sort((a, b) => (SEV[a.c.s] ?? 9) - (SEV[b.c.s] ?? 9))
+        .slice(0, 1));
+  ordered.forEach(({ c, i: idx }, pos)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s;
     const adv = adviceFor(c);
@@ -5043,9 +5138,29 @@ function renderResult(reset){
          </span>
        </button>
        <div class="advice">${quoteHtml(c)}<p>${c.p[lang]}</p>${tip}</div>`;
-    div.style.setProperty("--d", Math.min(idx,6)*40 + "ms");
+    div.style.setProperty("--d", Math.min(pos,6)*40 + "ms");
     wrap.appendChild(div);
   });
+  /* What the scan withholds, said plainly and WITHOUT A NUMBER. The reader is
+     told the shape of what is missing — the rest of the clauses, each with
+     its source — not how many problems were found. See reviewUnlocked(). */
+  if (!full){
+    const lock = document.createElement("div");
+    lock.className = "scan-lock";
+    const left = scansLeft();
+    lock.innerHTML =
+      `<b>${esc(t("scan_lock_t"))}</b>` +
+      `<p>${esc(t("scan_lock_b"))}</p>` +
+      `<p class="scan-left">${esc(left > 0 ? t("scan_left1") : t("scan_left0"))}</p>` +
+      `<button class="cta" id="scanBuy">${esc(t("scan_cta"))} ${esc(priceLabel(PLANS_REVIEW[0].amt))}</button>`;
+    wrap.appendChild(lock);
+    const buy = document.getElementById("scanBuy");
+    if (buy) buy.onclick = () => {
+      pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
+      pwUpgrade = null; pwUpBack = null;
+      renderPaywall(); show("paywall");
+    };
+  }
   /* Red flags are the reason the user opened the app — they stay open by
      default; everything else collapses so the verdict reads at a glance. */
   wrap.querySelectorAll(".flag.red").forEach(f=>{
@@ -6060,7 +6175,7 @@ function openCasePaywall(){
      difference" button, and a back control that said "calculator" while
      pointing at the termination flow. The price and the entitlement were both
      right; every word around them was wrong. */
-  pwMode = "case"; pwPlan = 0; pwUpgrade = null; pwUpBack = null;
+  pwMode = "case"; pwOrigin = "case"; pwPlan = 0; pwUpgrade = null; pwUpBack = null;
   renderPaywall(); show("paywall");
 }
 
@@ -6779,7 +6894,10 @@ function assessmentSafe(){
 }
 
 async function openTermResult(){
-  if (!has("term")){ pwMode = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); return; }
+  /* The assessment used to be its own 145 SAR product, gating a RESULT rather
+     than a document — the only thing in the app that did. It is now part of
+     the case file, so the entitlement asked for here is the case one. */
+  if (!has("case")){ pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); return; }
 
   /* The brief asks for the second pass to run before the result is presented,
      so it does — but never at the cost of the reader seeing their assessment.
@@ -6933,15 +7051,14 @@ function renderTermResult(){
 }
 
 function renderTermSteps(){
-  /* The employer letter and the case file are what separates the 145 SAR tier
-     from the 295 SAR one. They used to be wired unconditionally, which is why
-     the two tiers delivered the same thing. Where the reader holds only the
-     assessment, the button becomes an honest upgrade priced at the difference
-     — never a dead control, and never a silent downgrade. */
-  const full = has("term", "plan_term_full");
-  const up = upgradeCost("term", "plan_term_full");
-  const gate = go => full ? go : () => openUpgrade("term", "plan_term_full", "termnext");
-  const label = k => full ? t(k) : t("tm_n_locked").replace("{p}", priceLabel(up));
+  /* There is no longer a tier inside termination to upgrade to. The assessment
+     and the documents were 145 and 295; both are now the case file at 349, so
+     anyone who reaches this screen holds all of it. The gate stays — as a
+     check, not as an upsell — because a route added later must not be able to
+     hand out documents nobody bought. */
+  const full = has("case");
+  const gate = go => full ? go : () => { pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); };
+  const label = k => t(k);
   const steps = [
     ["tm_n1", "tm_n1_b", null],
     ["tm_n2", "tm_n2_b", [t("tm_n2_cta"), () => { renderTermEv(); show("termev"); }]],
@@ -7831,7 +7948,7 @@ function buildTermPreview(){
 function renderTermDoc(){
   /* Entitlement is checked at the renderer as well as at the button, so a
      route added later cannot quietly hand out a tier that was not bought. */
-  if (!term || !has("term", "plan_term_full")) return;
+  if (!term || !has("case")) return;
   document.getElementById("termDocBody").textContent = buildTermDoc();
   document.getElementById("termDocFoot").textContent = t("lt_foot");
   document.getElementById("termDocCopy").textContent = t("cf_copy");
@@ -7891,7 +8008,7 @@ function buildTermLtr(){
 }
 
 function renderTermLtr(){
-  if (!term || !has("term", "plan_term_full")) return;
+  if (!term || !has("case")) return;
   renderTermTone();
   document.getElementById("termLtrBody").textContent =
     t("tm_l_to") + "\n\n" + buildTermLtr();
@@ -7932,13 +8049,35 @@ let pwMode = "letter";
    first purchase. Null on every ordinary entry. */
 let pwUpgrade = null;
 
+/* THE CATALOGUE SCREEN — August 2026.
+   The consumer subscription is gone. It was 50 SAR/month, and a monthly bill
+   is the wrong shape for a reader who signs a contract every few years: most
+   of what it collected would have come from people not using it. The prepaid
+   pack replaces it — same money available, paid once, spent when there is
+   actually a contract to read.
+
+   Business keeps a subscription because it is the one buyer whose usage is
+   genuinely monthly: an HR team, a broker or a firm doing first-pass triage
+   sees contracts weekly.
+
+   Prices are read from the same constants the paywall uses — LAZILY, as
+   functions. Reading them directly here threw "Cannot access PLANS_REVIEW
+   before initialization": this table is defined earlier in the file than the
+   catalogue it quotes, so the initializer ran first. Two copies of a figure is
+   how a price screen comes to disagree with a checkout, so the answer is to
+   defer the read, not to duplicate the number. */
 const PLANS_T = [
-  { id:"free", name:"pl_basic", desc:"pl_free_d", m:0, y:0,
-    on:["f_score","f_clauses","f_q3"], off:["f_qmax","f_draft","f_remind"] },
-  { id:"plus", name:"pl_plus", desc:"pl_plus_d", m:50, y:500, hi:true, tag:"pl_popular",
-    on:["f_score","f_clauses","f_qmax","f_draft","f_remind"], off:["f_seats","f_tmpl"] },
-  { id:"biz",  name:"pl_biz",  desc:"pl_biz_d",  m:390, y:3900, biz:true, seat:true, tag:"pl_teams",
-    on:["f_qmax","f_draft","f_seats","f_tmpl","f_redline","f_api","f_lawyer"], off:[] }
+  { id:"free", name:"pl_basic", desc:"pl_free_d", m:0,
+    on:["f_score","f_scan1","f_q3"], off:["f_full","f_draft","f_case"] },
+  { id:"pack", name:"plan_reviews5", desc:"plan_reviews5_d",
+    m:() => PLANS_REVIEW[1].amt, once:true, hi:true, tag:"plan_best",
+    on:["f_full","f_5reviews","f_12mo"], off:["f_seats","f_unlimited"] },
+  { id:"draft", name:"plan_draft", desc:"plan_draft_d",
+    m:() => PLANS_DRAFT[0].amt, once:true, soon:true, tag:"plan_soon",
+    on:["f_draft"], off:[] },
+  { id:"biz",  name:"plan_biz",  desc:"plan_biz_d",
+    m:() => PLANS_REVIEW[2].amt, biz:true, seat:true, tag:"pl_teams",
+    on:["f_unlimited","f_full","f_case","f_seat1"], off:[] }
 ];
 
 const TICK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>';
@@ -7953,38 +8092,38 @@ function openPlans(from){
 
 function renderPlans(){
   document.getElementById("plBackLabel").textContent = t(planBack==="assist" ? "as_title" : "back_home");
+  /* The monthly/annual toggle is gone. It offered an annual price for every
+     tier, and there is no annual price any more: the pack is bought once and
+     Business is monthly. Rendering a toggle that changes nothing, or worse
+     invents a yearly figure nobody set, is how a price screen starts lying. */
   const seg = document.getElementById("billSeg");
-  seg.innerHTML = "";
-  [["month","pl_month"],["year","pl_year"]].forEach(([k,lbl])=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = billing===k ? "on" : "";
-    b.innerHTML = t(lbl) + (k==="year" ? `<span class="save">${t("pl_save")}</span>` : "");
-    b.onclick = ()=>{ billing = k; renderPlans(); };
-    seg.appendChild(b);
-  });
+  if (seg){ seg.innerHTML = ""; seg.hidden = true; }
   const wrap = document.getElementById("planCards");
   wrap.innerHTML = "";
   PLANS_T.forEach(pl=>{
     const card = document.createElement("div");
     card.className = "pcard" + (pl.hi?" hi":"") + (pl.biz?" biz":"");
-    const amount = billing==="month" ? pl.m : pl.y;
-    const unit = billing==="month" ? t("pl_permo") : t("pl_peryr");
+    const amount = typeof pl.m === "function" ? pl.m() : pl.m;
+    const unit = pl.once ? "" : t("pl_permo");
     const price = amount === 0
       ? `<b>${t("pl_free")}</b>`
       : `<b>${fmtNum(amount)}</b><i>${lang==="ar"?"ر.س":"SAR"}${unit}</i>` +
         (pl.seat ? `<i>· ${t("pl_seat")}</i>` : "");
     const feats = pl.on.map(f=>`<li>${TICK}<span>${t(f)}</span></li>`).join("") +
                   pl.off.map(f=>`<li class="off">${DASH}<span>${t(f)}</span></li>`).join("");
-    const owned = plan === pl.id;
-    const cta = pl.id==="free" ? t("pl_cta_free") : pl.id==="plus" ? t("pl_cta_plus") : t("pl_cta_biz");
+    const held = plan === pl.id;
+    const cta = pl.soon ? t("plan_soon")
+              : pl.id==="free" ? t("pl_cta_free")
+              : pl.id==="biz" ? t("pl_cta_biz") : t("pl_cta_plus");
     card.innerHTML =
       (pl.tag ? `<span class="tag">${t(pl.tag)}</span>` : "") +
-      `<h3>${t(pl.name)}</h3><div class="d">${t(pl.desc)}</div>
+      `<h3>${t(pl.name)}</h3><div class="d">${t(pl.soon ? "plan_soon_d" : pl.desc)}</div>
        <div class="price">${price}</div>
        <ul>${feats}</ul>
-       <button class="cta${owned?" owned":""}">${owned ? t("pl_cta_free") : cta}</button>`;
-    card.querySelector(".cta").onclick = ()=>choosePlan(pl.id);
+       <button class="cta${held?" owned":""}"${pl.soon?" disabled":""}>${held ? t("pl_cta_free") : cta}</button>`;
+    /* Listed, not sellable — the same rule the paywall applies. The price is
+       honest about what is coming; the button does not pretend it is here. */
+    if (!pl.soon) card.querySelector(".cta").onclick = ()=>choosePlan(pl.id);
     wrap.appendChild(card);
   });
 }
@@ -9045,14 +9184,25 @@ function signOutNow(){
 
 function renderAccount(){
   renderAccountAuth();
-  const cur = plan==="biz" ? t("pl_biz") : plan==="plus" ? t("pl_plus") : t("pl_basic");
+  /* What the reader HOLDS, not which marketing tier they are on. A pack buyer
+     with no way to see how many reviews are left, or when they lapse, has
+     bought a promise they cannot check — and "12 months" stops being a term
+     and becomes a surprise. */
+  const cur = owned.review === "plan_biz" ? t("plan_biz")
+            : packLive() ? t("plan_reviews5")
+            : owned.review === "plan_review" ? t("plan_review")
+            : t("pl_basic");
+  const packNote = packLive()
+    ? `<p class="acc-pack">${esc(t("acc_pack_left").replace("{n}", fmtNum(packLeft))
+        .replace("{d}", new Date(packUntil).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-GB")))}</p>`
+    : "";
   document.getElementById("accPlan").innerHTML =
     `<div class="acc-plan-row">
        <span><small>${t("acc_plan")}</small><b>${cur}</b></span>
        ${SUBSCRIPTIONS_LIVE
          ? `<button class="mini-cta" onclick="openPlans('account')">${t("pl_title")}</button>`
          : ""}
-     </div>`;
+     </div>` + packNote;
   document.getElementById("accNotLawyer").textContent = t("as_not_lawyer");
   document.getElementById("accLangLabel").textContent = t("acc_lang") + " · " + (lang==="ar" ? "English" : "عربي");
   renderSources();
@@ -9071,7 +9221,7 @@ function saveState(){
       obDone,
       migAsked,
       usedCodes,
-      owned, packUntil,
+      owned, packUntil, packLeft, scanUsed,
       askUsed,
       term,
       contracts: myContracts.slice(0,8),
@@ -9122,7 +9272,7 @@ function loadState(){
        flow's own list, so a hand-edited payload cannot mint a tier the code
        has never heard of. It can still grant itself a real one — that is the
        documented client-side limitation, unchanged by this. */
-    owned = { letter:null, case:null, term:null };
+    owned = { review:null, letter:null, case:null };
     if (d.owned && typeof d.owned === "object"){
       Object.keys(owned).forEach(mode => {
         const id = d.owned[mode];
@@ -9131,6 +9281,27 @@ function loadState(){
     }
     packUntil = (typeof d.packUntil === "number" && isFinite(d.packUntil) && d.packUntil > 0)
       ? Math.min(d.packUntil, Date.now() + PACK_DAYS * 86400000) : 0;
+    /* Clamped to the pack size for the same reason packUntil is clamped to the
+       window: a hand-edited payload may not mint credits that were never
+       sold. It can still grant itself a real product — the documented
+       client-side limitation, unchanged by this. */
+    packLeft = 0;
+    if (typeof d.packLeft === "number" && isFinite(d.packLeft))
+      packLeft = Math.min(Math.max(0, Math.floor(d.packLeft)), PACK_CREDITS * 4);
+    /* An expired pack holds nothing, whatever the stored count says. */
+    if (packUntil <= Date.now()) packLeft = 0;
+
+    /* The free scan's monthly counter. Same shape as askUsed above, and the
+       same suspicion: a NaN here would make scansLeft() return NaN and lock
+       the reader out of the free tier entirely, which is a worse failure than
+       an extra free scan. */
+    scanUsed = { month:"", n:0 };
+    if (d.scanUsed && typeof d.scanUsed === "object"){
+      const mo = typeof d.scanUsed.month === "string" && /^\d{4}-\d{2}$/.test(d.scanUsed.month)
+        ? d.scanUsed.month : "";
+      const n = Number(d.scanUsed.n);
+      if (mo) scanUsed = { month: mo, n: Number.isFinite(n) ? Math.min(Math.max(0, Math.floor(n)), 999) : 0 };
+    }
 
     /* A stored answer set is untrusted like everything else here: it outlives
        versions and can be hand-edited. Rebuild it field by field onto a blank
@@ -9700,10 +9871,16 @@ let pwPlan = 0;
 
    The value stored here is a plan id, checked against the flow's own plan
    list on the way in and on the way out of localStorage. */
-let owned = { letter:null, case:null, term:null };
-/* The pack's six-month window for further contracts. A timestamp rather than a
-   flag, because "for 6 months" is a promise with an end date. */
+/* `term` is gone: the assessment merged into the case file, so there is no
+   entitlement to hold separately. `review` is new — the full contract read is
+   a paid product now, where it used to be the free part of the app. */
+let owned = { review:null, letter:null, case:null };
+/* The prepaid pack: five reviews with an end date. A timestamp rather than a
+   flag, because "12 months" is a promise with an end date — and a count,
+   because five is a promise about quantity. Both are stated at the point of
+   sale, not only in Terms. */
 let packUntil = 0;
+let packLeft = 0;
 
 /* THE LAWYER TIERS.
    They promise a licensed Saudi lawyer reviewing the output within 24 hours.
@@ -9741,41 +9918,105 @@ function renderPayMarks(){
 /* Prices are numbers, not two hand-written strings per plan. Two strings drift;
    a number can be checked. See ladderBreaks() below, and the invariant it
    enforces: no bundle may ever cost less than something it contains. */
-function priceLabel(amt){ return fmtNum(amt) + " " + t("eos_sar"); }
+function priceLabel(amt, monthly){
+  return fmtNum(amt) + " " + t("eos_sar") + (monthly ? " " + t("plan_month") : "");
+}
 
-/* Consumers sign contracts episodically, so a monthly plan fights the usage
-   pattern. The middle option is sold at the life event instead, and sits
-   between an anchor above and a bare minimum below. */
+/* THE CATALOGUE — August 2026. Founder decision; see docs/pricing.md for the
+   reasoning and what it replaced.
+   
+   Three things changed shape, not just price:
+     - the full review became a paid product, and the scan above it free
+     - the termination assessment stopped being sold on its own and is now
+       part of the case file, which is the thing it was always a step toward
+     - the consumer subscription became a prepaid pack, because consumers sign
+       contracts episodically and a monthly bill fights that pattern
+   
+   Every figure is a number, never a hand-written string beside one. Two
+   strings drift; a number can be checked, and ladderBreaks() below checks
+   them against each other. */
+
+/* The review, and the ways to hold more than one of it. */
+const PLANS_REVIEW = [
+  { name:"plan_review", desc:"plan_review_d", amt:199, pop:true },
+  /* Five reviews at 140 each. Priced as a pack rather than a subscription:
+     nobody signs a contract monthly, so a monthly bill would be paid by people
+     not using it, which is a business that resents its own customers. */
+  { name:"plan_reviews5", desc:"plan_reviews5_d", amt:699, pop:false,
+    contains:["plan_review"], credits:5 },
+  /* B2B, and the one place a subscription genuinely fits: an HR team, a
+     broker or a firm doing first-pass triage sees contracts weekly. */
+  { name:"plan_biz", desc:"plan_biz_d", amt:799, pop:false,
+    contains:["plan_review"], monthly:true, sub:true }
+];
+
+/* Documents the reader takes away. */
 const PLANS = [
-  { name:"plan_letter", desc:"plan_letter_d", amt:65,  pop:false },
-  { name:"plan_pack",   desc:"plan_pack_d",   amt:130, pop:true, tag:"plan_best",
-    contains:["plan_letter"] },
-  { name:"plan_lawyer", desc:"plan_lawyer_d", amt:195, pop:false,
+  { name:"plan_letter", desc:"plan_letter_d", amt:149, pop:true },
+  { name:"plan_lawyer", desc:"plan_lawyer_d", amt:399, pop:false,
     contains:["plan_letter"], lawyer:true }
 ];
-/* A claim has money on the table, so the file prices well above the letter.
-   It was 325, which put it above the 295 termination bundle that contains a
-   case file — the cheaper item strictly containing the dearer one. */
+
+/* The case file now carries the termination assessment inside it. They were
+   sold separately at 145 and 295; the assessment was a step toward the file
+   rather than a destination, and two prices for one journey is a decision the
+   reader should not have to make mid-crisis. */
 const PLANS_CASE = [
-  { name:"plan_case", desc:"plan_case_d", amt:245, pop:false },
-  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", amt:395, pop:true,
+  { name:"plan_case", desc:"plan_case_d", amt:349, pop:true },
+  { name:"plan_case_lawyer", desc:"plan_case_lawyer_d", amt:749, pop:false,
     contains:["plan_case"], lawyer:true }
 ];
-/* The termination assessment is priced on its own: it is the only paid thing
-   in the app that gates a result rather than a document. */
-const PLANS_TERM = [
-  { name:"plan_term", desc:"plan_term_d", amt:145, pop:false },
-  { name:"plan_term_full", desc:"plan_term_full_d", amt:295, pop:true,
-    contains:["plan_term"] }
+
+/* Drafting a contract from nothing. LISTED, NOT SELLABLE: this repository
+   cannot draft a contract, and every clause such a thing produced would be a
+   legal claim needing the same sourcing discipline as the register. Shown so
+   the price is honest about existing; `soon` keeps it unbuyable, the same way
+   `lawyer` does for the tiers above. */
+const PLANS_DRAFT = [
+  { name:"plan_draft", desc:"plan_draft_d", amt:249, pop:false, soon:true }
 ];
-const PLAN_SETS = { letter:PLANS, case:PLANS_CASE, term:PLANS_TERM };
+
+/* Everything the reader can take away, at less than the sum. Crosses what were
+   separate flows, which is why the grant writes more than one entitlement.
+
+   IT APPEARS IN EVERY FLOW, as the same object, and that is not decoration:
+   its own `bundle` mode had no entry point, so nothing in the app could ever
+   have sold it. A product that lives only in a plan set nobody opens is a
+   price nobody sees. Offered where the reader already is — deciding whether
+   one document is worth 149 — is also where "all three for 549" is a real
+   question rather than an advert. */
+const BUNDLE = { name:"plan_bundle", desc:"plan_bundle_d", amt:549, tag:"plan_best",
+                 contains:["plan_review","plan_case","plan_letter"],
+                 grants:{ review:"plan_review", case:"plan_case", letter:"plan_letter" } };
+const PLANS_BUNDLE = [BUNDLE];
+
+/* IT IS NOT SPLICED INTO THE FLOW ARRAYS, and that was the first attempt.
+   Those arrays are an ORDINAL LADDER — has() and upgradeCost() read position
+   as tier height, so a higher index means "includes everything below it".
+   Inserting the bundle made the letter flow [149, 549, 399], which is not
+   monotonic, and told has() that the 399 lawyer tier included bundle-level
+   access to the case file and the review. It does not.
+
+   The bundle is orthogonal to those tiers, not above them: it grants three
+   named products outright via `grants`. So it is added to what is OFFERED,
+   in offeredPlans() below, and stays out of the ladder that computes
+   entitlement. */
+
+/* PLANS_DRAFT is deliberately NOT a paywall mode. Nothing in the app can reach
+   a contract-drafting flow, because there is no such flow — a mode with no
+   entry point is dead code that looks like a feature. It lives on the
+   catalogue screen instead, where a price for something not yet built is
+   information rather than a broken door. It stays in ladderBreaks() below, so
+   its figure is still checked against the others. */
+const PLAN_SETS = { review:PLANS_REVIEW, letter:PLANS, case:PLANS_CASE,
+                    bundle:PLANS_BUNDLE };
 
 /* The containment invariant, in code rather than in a document nobody rereads.
    docs/pricing.md justified each price alone and never checked one against
    another, which is how a 295 bundle came to contain a 325 product. Returns
    the offending pairs; the tests assert it is empty. */
 function ladderBreaks(){
-  const all = [].concat(PLANS, PLANS_CASE, PLANS_TERM);
+  const all = [].concat(PLANS_REVIEW, PLANS, PLANS_CASE, PLANS_DRAFT, PLANS_BUNDLE);
   const by = Object.create(null);
   all.forEach(p => { by[p.name] = p; });
   const bad = [];
@@ -9786,10 +10027,32 @@ function ladderBreaks(){
   return bad;
 }
 
-/* A tier the reader can never be sold is not offered. */
+/* A tier the reader can never be sold is not offered — with one deliberate
+   exception. A `lawyer` tier is HIDDEN, because promising a licensed review
+   this repository cannot deliver is a lie. A `soon` tier is SHOWN and cannot
+   be bought, because its price is honest information about what is coming and
+   nothing about it is promised for today. The difference is whether the reader
+   would be misled by seeing it. */
 function sellable(p){ return !p.lawyer || LAWYER_DESK.live; }
+function buyable(p){ return sellable(p) && !p.soon; }
+/* What a flow offers = its own ladder, plus the bundle. Kept separate from
+   PLAN_SETS because that is the ladder entitlement is computed against; see
+   the note above BUNDLE. The bundle is not offered in its own `bundle` mode
+   (it would appear twice) and not while upgrading (an upgrade offers exactly
+   the tier not yet held). */
+function offeredPlans(mode){
+  const set = (PLAN_SETS[mode] || PLANS).slice();
+  if (mode !== "bundle" && PLAN_SETS[mode]) set.push(BUNDLE);
+  return set;
+}
 function activePlans(){
-  const set = (PLAN_SETS[pwMode] || PLANS).filter(sellable);
+  const set = offeredPlans(pwMode).filter(sellable);
+  /* The default selection must land on something buyable, or the pay button
+     would be priced against a product that cannot be sold. */
+  if (!pwUpgrade && set[pwPlan] && set[pwPlan].soon){
+    const first = set.findIndex(buyable);
+    if (first >= 0) pwPlan = first;
+  }
   if (!pwUpgrade) return set;
   /* An upgrade offers one thing at the difference, never the full price a
      second time and never a tier already held. */
@@ -9855,14 +10118,71 @@ function buildLetter(){
 
 /* The pack was sold as "your letter, plus further letters for new contracts for
    six months". That is a promise with an end date, so it is stored as one. */
-function packLive(){ return owned.letter === "plan_pack" && Date.now() < packUntil; }
-const PACK_DAYS = 182;
+/* The pack moved from the letter flow to the review flow, and from "further
+   letters for six months" to "five reviews for twelve". Live means BOTH the
+   window is open and there is something left in it — an expired pack with
+   credits and a live pack with none are equally empty, and a check that read
+   only one of them would let one of those through. */
+function packLive(){
+  return owned.review === "plan_reviews5" && Date.now() < packUntil && packLeft > 0;
+}
+
+/* WHAT THE FREE SCAN IS.
+   One a month: the score, the decision, and ONE named flag explained in full.
+   Not a count of problems. That distinction is the whole trade — a teaser
+   that says "we found 4 things" earns more by finding more, and the moment
+   that is true the score stops meaning anything. Showing one real finding
+   proves the product works without ever making a bigger number worth more
+   money. docs/pricing.md carries the reasoning.
+
+   The cap is device-local and therefore bypassable by clearing storage or
+   opening a private window. The copy says "one free scan a month"; it does
+   not claim to enforce it, because it cannot. */
+const SCANS_FREE = 1;
+let scanUsed = { month:"", n:0 };
+function thisMonth(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function scansLeft(){
+  if (scanUsed.month !== thisMonth()) return SCANS_FREE;
+  return Math.max(0, SCANS_FREE - scanUsed.n);
+}
+function useScan(){
+  const mo = thisMonth();
+  if (scanUsed.month !== mo) scanUsed = { month:mo, n:0 };
+  scanUsed.n += 1;
+}
+
+/* Does this reader get the WHOLE review, or the scan?
+   Business is unlimited. The pack is unlimited until its credits or its year
+   run out. A single review is what it says on the card: one contract.
+
+   HONEST LIMITATION, STATED RATHER THAN HIDDEN: none of this is enforced
+   anywhere but this browser. A reader who edits localStorage grants
+   themselves a product. That was already true of every tier here and is not
+   made worse by this; it is fixed by entitlements living server-side, which
+   belongs with real payments and does not exist yet. */
+function reviewUnlocked(){
+  if (owned.review === "plan_biz") return true;
+  if (owned.review === "plan_reviews5") return packLive();
+  return owned.review === "plan_review";
+}
+/* Twelve months. It was 182 — the old pack promised six. */
+const PACK_DAYS = 365;
+const PACK_CREDITS = 5;
 
 /* Where the paywall's back button goes. An upgrade is entered from wherever the
    reader already was, so it returns there rather than to the flow's start. */
+/* pwOrigin exists because `case` is now entered from TWO flows — the case
+   builder and the termination assessment, which used to have a mode of its
+   own. Without it, buying the case file from a termination would drop the
+   reader into the case builder they never opened. */
+let pwOrigin = null;
 function pwBack(){
   if (pwUpgrade && pwUpBack) return pwUpBack;
-  return pwMode === "case" ? "case" : pwMode === "term" ? "termev" : "result";
+  if (pwOrigin === "term") return "termev";
+  return pwMode === "case" ? "case" : pwMode === "review" ? "result" : "result";
 }
 
 function openPaywall(){
@@ -9889,21 +10209,30 @@ let pwUpBack = null;
 function renderPaywall(){
   /* Only the revealed portion is rendered; the withheld points never enter
      the DOM before payment. */
-  const isCase = pwMode === "case", isTerm = pwMode === "term";
+  const isCase = pwMode === "case", isTerm = pwOrigin === "term",
+        isReview = pwMode === "review";
   /* The two modes have different plan lists — three for the letter, two for the
      case file — so an index carried across a mode switch can point past the end
      and leave the pay button reading "Pay undefined". Every entry point happens
      to reset it today; clamping here, above the guard, makes that a property of
      the paywall rather than of the callers remembering. */
   pwPlan = Math.max(0, Math.min(pwPlan, activePlans().length - 1));
-  if (isTerm ? !term : isCase ? !eosData : (!current || !selected().length)) return;
-  const titleKey = pwUpgrade ? "pw_up_title" : isTerm ? "pw_term_title" : isCase ? "pw_case_title" : "pw_title";
-  const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"  : "pw_free_note";
+  /* The review branch is separate because its precondition is different, and
+     omitting it rendered an EMPTY PAYWALL: the letter guard requires chosen
+     negotiation points, and a reader buying the full read of their contract
+     has not chosen any. The screen appeared with no plans and no price.
+     Caught by opening it, not by reading it. */
+  if (isTerm ? !term : isCase ? !eosData : isReview ? !current
+      : (!current || !selected().length)) return;
+  const titleKey = pwUpgrade ? "pw_up_title" : isTerm ? "pw_term_title"
+                 : isCase ? "pw_case_title" : isReview ? "pw_rev_title" : "pw_title";
+  const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"
+                 : isReview ? "pw_rev_free" : "pw_free_note";
   document.querySelector('#screen-paywall [data-t="pw_title"]').textContent = t(titleKey);
   document.querySelector('#screen-paywall [data-t="pw_free_note"]').textContent = t(freeKey);
   /* "Back to score" sat here regardless of where the button actually went. */
   document.getElementById("pwBackLabel").textContent =
-    t(isCase ? "back_case" : isTerm ? "back_ev" : "back_score");
+    t(isTerm ? "back_ev" : isCase ? "back_case" : "back_score");
   /* A refund promise and "no real payment happens" were rendering four lines
      apart. One flag, so only the true one can appear. */
   document.getElementById("pwGuarantee").hidden = !PAYMENT_LIVE;
@@ -9935,6 +10264,17 @@ function renderPaywall(){
          : remaining === 1 ? t("pw_more1")
          : t("pw_more").replace("{n}", fmtNum(remaining));
   }
+  /* THE PREVIEW IS THE LETTER'S, and only the letter's. On the review paywall
+     it rendered "To: The HR department" above a locked row promising "the
+     complete letter, formatted and ready to send" — a preview of a different
+     product entirely, on the screen selling the contract read. Nothing in the
+     tests could see it; it took opening the screen and looking.
+
+     Hidden rather than replaced: what the review withholds is already stated
+     twice on this screen, in the note under the title and on the card itself,
+     and a third telling would be filler. */
+  const prev = document.getElementById("pwPreview");
+  if (prev) prev.hidden = isReview;
   document.getElementById("pwPreviewIntro").textContent = shown;
   document.getElementById("pwLockLine").textContent = rest;
   renderPwShape(isTerm, isCase);
@@ -9943,20 +10283,30 @@ function renderPaywall(){
   activePlans().forEach((pl,i)=>{
     const b = document.createElement("button");
     b.className = "plan" + (i===pwPlan ? " sel" : "");
+    const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>
-       <span style="flex:1"><b>${t(pl.name)}${pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}</b><span>${t(pl.desc)}</span></span>
-       <span class="price">${priceLabel(pl.amt)}</span>`;
-    b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
+       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
+       <span class="price">${priceLabel(pl.amt, pl.monthly)}</span>`;
+    /* An unbuyable card is inert rather than absent: it can be read and not
+       selected, so its price informs without becoming a dead control that
+       looks like it should work. */
+    if (soon){ b.disabled = true; b.classList.add("soon"); }
+    else b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
     wrap.appendChild(b);
   });
   renderRedeem();
   const pay = document.getElementById("payBtn");
   const chosen = activePlans()[pwPlan];
-  pay.disabled = false;
+  pay.disabled = !chosen || !buyable(chosen);
   /* One key here read "Get my letter" on a 245 SAR case file and on a
      termination assessment. The button now names what it sells. */
-  pay.textContent = t(pwUpgrade ? "pw_pay_up" : isCase ? "pw_pay_case" : isTerm ? "pw_pay_term" : "pw_pay")
+  /* isTerm is tested BEFORE isCase, and the order is the point. Both are true
+     when the case file is bought from a termination — it is one product now —
+     but the reader arrived asking what they are owed, not asking for a file.
+     Naming it "case file" there answers a question they did not ask. */
+  pay.textContent = t(pwUpgrade ? "pw_pay_up" : isTerm ? "pw_pay_term"
+                    : isCase ? "pw_pay_case" : isReview ? "pw_pay_rev" : "pw_pay")
     + " " + priceLabel(chosen ? chosen.amt : 0);
 }
 
@@ -10086,8 +10436,19 @@ function grantAndGo(){
      who has paid. */
   if (chosen){
     const want = chosen.up ? pwUpgrade : chosen.name;
-    const held = owned[pwMode];
-    if (!held || planIndex(pwMode, want) >= planIndex(pwMode, held)) owned[pwMode] = want;
+    const plan = offeredPlans(pwMode).find(p => p.name === want);
+    /* THE BUNDLE CROSSES MODES, which nothing before it did. Writing
+       owned[pwMode] alone would have set owned.bundle — a mode no flow ever
+       asks about — and granted the buyer nothing they paid for. */
+    if (plan && plan.grants){
+      Object.keys(plan.grants).forEach(mode => {
+        const id = plan.grants[mode], held = owned[mode];
+        if (!held || planIndex(mode, id) >= planIndex(mode, held)) owned[mode] = id;
+      });
+    } else {
+      const held = owned[pwMode];
+      if (!held || planIndex(pwMode, want) >= planIndex(pwMode, held)) owned[pwMode] = want;
+    }
   }
   /* `< Date.now()`, not `!packUntil`. The original guard was protecting an
      ACTIVE window from being extended on a re-render, and it did that — but it
@@ -10096,19 +10457,29 @@ function grantAndGo(){
      and received the 65 SAR product, and the only customer who ever repurchases
      the pack is the one it was built for. Comparing to now preserves the
      original protection and fixes the case it never considered. */
-  if (owned.letter === "plan_pack" && packUntil < Date.now())
-    packUntil = Date.now() + PACK_DAYS * 86400000;
+  /* `< Date.now()`, not `!packUntil`, for the reason the six-month version
+     recorded: the original guard protected an ACTIVE window from being
+     extended on a re-render and did that, but also refused to refresh an
+     EXPIRED one, so a repeat buyer paid for a window that had already lapsed.
+     Comparing to now keeps the protection and fixes the case it never
+     considered. Credits are ADDED rather than reset, so buying a second pack
+     while the first is live does not destroy what is left of it. */
+  if (owned.review === "plan_reviews5"){
+    if (packUntil < Date.now()){ packUntil = Date.now() + PACK_DAYS * 86400000; packLeft = PACK_CREDITS; }
+    else packLeft += PACK_CREDITS;
+  }
   const wasUpgrade = !!pwUpgrade, backTo = pwUpBack;
   pwUpgrade = null; pwUpBack = null;
   saveState();
   /* An upgrade returns the reader to the step they were on, now unlocked,
      rather than dropping them back at the top of a result they have read. */
   if (wasUpgrade && backTo){
-    if (pwMode === "term") renderTermResult();
+    if (pwOrigin === "term") renderTermResult();
     show(backTo);
     return;
   }
-  if (pwMode === "term"){ renderTermResult(); show("termres"); return; }
+  if (pwOrigin === "term"){ pwOrigin = null; renderTermResult(); show("termres"); return; }
+  if (pwMode === "review"){ renderResult(); show("result"); return; }
   if (pwMode === "case"){ renderCaseDoc(); show("casedoc"); return; }
   renderLetter();
   show("letter");

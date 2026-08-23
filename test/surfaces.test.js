@@ -258,22 +258,27 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* ---------------------------------------------- business tier */
   console.log("\n— business tier");
   const biz = await p.evaluate(() => {
-    openPlans("home");
+    /* openPlans is guarded on SUBSCRIPTIONS_LIVE, which is compiled false, so
+       the screen is rendered directly. The guard itself is asserted in
+       commerce.test.js — this suite is checking the surface renders. */
+    renderPlans();
     const cards = document.querySelectorAll("#planCards .pcard").length;
     const seg = document.querySelectorAll("#billSeg button").length;
-    const monthly = document.getElementById("planCards").textContent;
-    document.querySelectorAll("#billSeg button")[1].click();
-    const yearly = document.getElementById("planCards").textContent;
     renderBiz();
-    return { cards, seg, changed: monthly !== yearly,
+    return { cards, seg,
              stats: document.querySelectorAll("#bizStats > *").length,
              contracts: document.querySelectorAll("#bizContracts > *").length,
              seats: document.querySelectorAll("#bizSeats > *").length,
+             cardText: document.getElementById("planCards").textContent,
              bizText: document.getElementById("screen-biz").textContent };
   });
-  ok(biz.cards === 3, `plans screen renders 3 cards (got ${biz.cards})`);
-  ok(biz.seg === 2, "billing has a monthly/yearly toggle");
-  ok(biz.changed, "switching to yearly changes the prices shown");
+  ok(biz.cards === 4, `the catalogue renders 4 cards (got ${biz.cards})`);
+  /* The monthly/annual toggle went with the consumer subscription: the pack is
+     bought once and Business is monthly, so there is no annual figure to show
+     and inventing one would have been the price screen's first lie. */
+  ok(biz.seg === 0, `and no billing toggle, because no annual price exists (got ${biz.seg})`);
+  ok(/699|٦٩٩/.test(biz.cardText) && /799|٧٩٩/.test(biz.cardText),
+     "the pack and the business price are both on it");
   ok(biz.stats > 0 && biz.contracts > 0 && biz.seats > 0, "business workspace renders all three sections");
   ok(!/undefined|NaN/.test(biz.bizText), "business workspace contains no undefined or NaN");
 

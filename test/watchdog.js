@@ -108,7 +108,7 @@ const CASE = {
         unpaidMonths: 2, gotEos: false, gotSettle: false,
         docs: ["d_contract", "d_letter"],
       });
-      owned.term = "plan_term_full";
+      owned.case = "plan_case";
       await openTermResult();
       const screen = document.getElementById("screen-termres");
       return {

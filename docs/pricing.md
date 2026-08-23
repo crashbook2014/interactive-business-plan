@@ -1,6 +1,6 @@
 # Wodouh pricing — evidence, reasoning, and what still needs testing
 
-Last reviewed: July 2026.
+Last reviewed: 22 August 2026.
 
 This file exists so the prices stop being folklore. Everything below is either
 a cited comparable or an explicitly-flagged assumption.
@@ -23,20 +23,88 @@ anchor is the one form of dishonesty this brand cannot survive.
 
 ## The prices and why
 
-| Item | Price | Reasoning | Confidence |
-|---|---|---|---|
-| Score, flags, clause explanations, EOS calculator | **Free** | The verdict must never be shaded by revenue. If we earned more by finding more risk, the score stops meaning anything. This is a positioning decision, not a growth tactic. | High |
-| Negotiation letter | **65 SAR** | ~0.6% of an average monthly wage; ~1/6th of the cheapest consultation. | **Low — test this first** |
-| Job-change pack | **130 SAR** | The letter, plus a letter for any new contract for six months. Sold at the life event rather than as a subscription, because consumers sign contracts episodically. Positioned as the intended choice between 65 and 195. | Low |
-| Letter + lawyer review | 195 SAR | Still under the cheapest direct consultation while including a lawyer, because the lawyer receives a prepared file and spends less time. Margin is the marketplace cut. | Medium |
-| Termination assessment | 145 SAR | The only paid thing in the app that gates a result rather than a document. | Low |
-| Case file | **245 SAR** *(was 325)* | Roughly a quarter to a sixth of attorney document review, against a claim often worth five figures. Lowered to end a containment break — see below. | Medium-high |
-| Assessment + case file + letter | 295 SAR | The termination bundle. Must stay above every part it contains. | Medium |
-| Case file + lawyer | **395 SAR** *(was 520)* | Mid-range of a consultation, but delivers the assembled file as well as the review. | Medium |
-| Wodouh+ | 50 SAR/month (500/year) | Still under the $20–40 global band. The subscription's job is retention, not margin. Annual is exactly ten months, so "two months free" is literally true. | Medium |
-| Business | 390 SAR/month per 5 seats (3,900/year) | 78 SAR/seat, still cheap for B2B. Priced for a beachhead, not capture. | **Low — do real discovery** |
+*Superseded by the August 2026 catalogue below. Kept because the reasoning
+behind a price that was replaced is part of why the replacement was chosen.*
+
+<details><summary>The July 2026 list</summary>
+
+| Item | Price |
+|---|---|
+| Score, flags, clause explanations, EOS calculator | Free, unlimited |
+| Negotiation letter | 65 |
+| Job-change pack | 130 |
+| Letter + lawyer review | 195 |
+| Termination assessment | 145 |
+| Case file | 245 |
+| Assessment + case file + letter | 295 |
+| Case file + lawyer | 395 |
+| Wodouh+ | 50/month |
+| Business | 390/month per 5 seats |
+
+</details>
 
 All prices are VAT-inclusive (15%) and stated as such in the product.
+
+## August 2026 — the current catalogue
+
+Founder decision. Not a repricing: the shape changed.
+
+| Item | Price | Reasoning | Confidence |
+|---|---|---|---|
+| Quick scan | **Free**, 1/month | Score, decision, and **one named flag explained in full**. Acquisition, not a price. | Medium |
+| Full contract review | **199** | Every clause with its source. ~2% of an average monthly wage; half the cheapest consultation. | **Low — test first** |
+| Letter drafting | **149** | Was 65. The letter is a finished document, not a lead magnet. | Low |
+| Contract drafting | **249** | **Listed, not sellable.** No such capability exists. | n/a |
+| Case file build | **349** | Now includes the termination assessment. | Medium |
+| Full bundle | **549** | Review + case + letter. Their sum is 697, so the bundle saves 148. | Medium |
+| Five-review pack | **699** | 140 a review. Replaces the consumer subscription. 12-month expiry. | Low |
+| Letter + lawyer | **399** | Inside the 400–1,000 consultation band. Dark until a lawyer exists. | Medium |
+| Case file + lawyer | **749** | The lawyer receives an assembled file, not a blank brief. Dark. | Medium |
+| أعمال / Business | **799/month** | Unlimited reviews, one seat. | **Low — do discovery** |
+
+### Three shape changes, and why
+
+**The full review became paid, and the scan above it free.** Previously the
+whole review was free and unlimited. This is the largest change here and the
+one with a cost: see the principle below.
+
+**The termination assessment stopped being sold on its own.** It was 145 alone
+or 295 with the case file and letter. It was a step toward the file rather than
+a destination, and asking someone mid-crisis to choose between two prices for
+one journey is a decision they should not have to make. One product, 349.
+
+**The consumer subscription became a prepaid pack.** A monthly bill is the
+wrong shape for someone who signs a contract every few years: most of what it
+collected would come from people not using it, which is a business that
+resents its own customers. Business keeps a subscription, because an HR team, a
+broker or a firm doing triage genuinely sees contracts weekly.
+
+### The principle this changed, stated rather than deleted
+
+This file used to say:
+
+> The verdict must never be shaded by revenue. If we earned more by finding
+> more risk, the score stops meaning anything.
+
+Moving the review behind a price does not by itself break that. **A teaser that
+counted problems would.** "We found 4 issues — pay to see them" makes a bigger
+number worth more money, and that is the exact mechanism the principle names.
+
+So the free scan shows **one real finding, explained in full, with its source** —
+and states no count anywhere. Not in the lock panel, and not in the decision
+line above it, which was printing "1 red and 3 amber" until it was caught by
+opening the screen. `test/commerce.test.js` asserts both.
+
+The principle now reads: **the verdict is free and never counts what it is
+withholding.** Weaker than "everything is free". Still true, and still the
+thing that makes the score worth reading.
+
+### The free cap is honest, not enforced
+
+One scan a month, counted in the browser. Clearing storage or opening a private
+window resets it. The copy says "you get one free scan a month"; it does not
+claim we prevent a second. Enforcing it would require an account before the
+first thing anyone tries, which costs more trust than the scans are worth.
 
 ## July 2026 — 30% uplift
 
@@ -92,10 +160,15 @@ only customers confirm a price. Specifically unproven:
 
 - Whether Saudi consumers will pay **anything** for a legal output from an
   unknown brand, at any price.
-- Whether the letter converts better at 49, 65, or 89, and whether the 130 pack
-  outperforms the bare letter as expected.
-- Whether businesses see 390/month as trivial (likely) or as an unbudgeted
-  line item requiring procurement (also likely, and slower).
+- Whether the letter converts better at 149 than at 65 — a 2.3× rise, tested
+  on nobody.
+- **Whether charging for the review at all suppresses the top of the funnel
+  more than it earns.** The free unlimited review was the acquisition engine;
+  one scan a month is a much narrower door.
+- Whether the 699 pack outperforms the 199 single, or whether asking for 3.5×
+  up front from a first-time buyer simply loses them.
+- Whether businesses see 799/month as trivial (possible) or as an unbudgeted
+  line item requiring procurement (likely, and slower).
 - Whether the refund promise increases conversion enough to cover its cost.
 
 ## The test to run

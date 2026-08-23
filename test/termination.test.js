@@ -76,7 +76,7 @@ async function art87Certainty(p){
     term = blankTerm();
     term.how = how;
     Object.assign(term, extra);
-    owned.term = "plan_term_full";
+    owned.case = "plan_case";
     renderTermHow(); renderTermQ(); renderTermEv(); renderTermResult();
     renderTermDoc(); renderTermLtr();
     return {
@@ -124,7 +124,7 @@ async function art87Certainty(p){
         for (const L of ["ar","en"]){
           lang = L; nat = track;
           term = Object.assign(blankTerm(), base, { how:h });
-          owned.term = "plan_term_full";
+          owned.case = "plan_case";
           let err = null;
           try { renderTermResult(); renderTermDoc(); renderTermLtr(); }
           catch(e){ err = e.message; }
@@ -178,7 +178,7 @@ async function art87Certainty(p){
     nat = "sa"; lang = "en";
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01", end:"2026-01-01",
       wage:10000, leaveDays:10, unpaidMonths:1, ctype:"indef", docs:["d_contract"] });
-    owned.term = null;
+    owned.case = null;
     openTermResult();
     const html = document.getElementById("screen-paywall").innerHTML;
     return { onPaywall: document.getElementById("screen-paywall").classList.contains("active"),
@@ -260,7 +260,7 @@ async function art87Certainty(p){
                    ctype:"indef", wage:12000, basic:12000 };
     const run = extra => {
       term = Object.assign(blankTerm(), base, extra || {});
-      owned.term = "plan_term_full"; renderTermResult();
+      owned.case = "plan_case"; renderTermResult();
       const el = document.querySelector("#termMoney .tm-rise");
       const money = document.getElementById("termMoney");
       const tot = money.querySelector(".r.tot");
@@ -274,7 +274,7 @@ async function art87Certainty(p){
     };
     const out = { skipped: run(), marriage: run({ exc87:"marriage" }), none: run({ exc87:"none" }) };
     if (lang === "en") toggleLang();
-    term = Object.assign(blankTerm(), base); owned.term = "plan_term_full"; renderTermResult();
+    term = Object.assign(blankTerm(), base); owned.case = "plan_case"; renderTermResult();
     const arEl = document.querySelector("#termMoney .tm-rise");
     out.ar = { has: !!arEl, text: arEl ? arEl.textContent.trim() : "" };
     return out;

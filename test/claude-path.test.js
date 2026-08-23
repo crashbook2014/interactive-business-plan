@@ -246,7 +246,7 @@ async function serveWithAiCsp(page){
     nat = "sa"; lang = "en"; applyLang();
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01",
       end:"2026-01-01", wage:10000, ctype:"indef", leaveDays:10, docs:["d_contract"] });
-    owned.term = "plan_term_full"; aiRvConsent = true;      /* consent alone must not be enough */
+    owned.case = "plan_case"; aiRvConsent = true;      /* consent alone must not be enough */
     const t0 = Date.now();
     await openTermResult();
     return { ms: Date.now() - t0, on: aiReviewOn(), state: aiRvState,
@@ -293,7 +293,7 @@ async function serveWithAiCsp(page){
       leaveDays:14, unpaidMonths:2, otherAmt:3000, gotEos:false, gotSettle:false,
       reason:"Restructuring, per Mr Alharbi at ACME Ltd",
       docs:["d_contract","d_letter"] });
-    owned.term = "plan_term_full"; aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
+    owned.case = "plan_case"; aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
     return JSON.stringify(termLines().map(l => [l.key, l.amt]));
   });
 

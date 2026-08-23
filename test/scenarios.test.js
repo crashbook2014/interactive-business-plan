@@ -139,7 +139,7 @@ const SCENARIOS = [
       const run = (L) => {
         lang = L; nat = track;
         term = Object.assign(blankTerm(), fields);
-        owned.term = "plan_term_full";
+        owned.case = "plan_case";
         applyLang();
         renderTermResult();
         renderTermDoc();
@@ -297,7 +297,7 @@ const SCENARIOS = [
   for (const sc of SCENARIOS) {
     const cmp = await p2.evaluate(async ([track, fields]) => {
       const build = () => { nat = track; lang = "en";
-        term = Object.assign(blankTerm(), fields); owned.term = "plan_term_full"; };
+        term = Object.assign(blankTerm(), fields); owned.case = "plan_case"; };
       build(); aiRvConsent = false; aiRvState = "idle"; aiRvResult = null;
       await openTermResult();
       const before = JSON.stringify(termLines().map(l => [l.key, Math.round(l.amt)]));
