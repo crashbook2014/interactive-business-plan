@@ -152,12 +152,30 @@
 
      Three states, as everywhere else here. A network failure is "unknown", not
      "missing" — reporting a migration as unapplied because the wifi dropped is
-     the kind of confidently wrong answer this row exists to end. */
+     the kind of confidently wrong answer this row exists to end.
+
+     0008 IS DELIBERATELY NOT PROBED, and this is not an oversight. Its table,
+     admin_allowlist, has row level security on with no policy at all AND its
+     grants revoked from anon and authenticated, precisely so no browser can
+     learn who may operate this product. A table in that state may be dropped
+     from PostgREST's schema cache entirely, in which case it answers "could
+     not find the table" — the exact answer a table that was never created
+     gives. A probe of it would therefore report 0008 as PENDING on a project
+     where it had run perfectly, which is worse than not asking: it would send
+     someone to fix something that was never broken.
+
+     0007 stands in for it, and legitimately. The three pending migrations ship
+     as one paste, so launch_blockers being present is evidence the paste
+     happened. Evidence, not proof — which is why the panel below says what it
+     saw rather than what it concluded. */
   var MIGRATION_PROBES = [
     { table:"app_flags",       upto:"0005" },
     { table:"launch_blockers", upto:"0007" },
     { table:"scan_events",     upto:"0009" }
   ];
+  /* The one 0007 answers for. Named once so the operator panel and the
+     migrations panel cannot come to disagree about which table that is. */
+  var PASTE_WITNESS = "launch_blockers";
   var MISSING = /could not find the table|does not exist|PGRST205|http_404/i;
 
   function probeTable(name) {
@@ -364,7 +382,78 @@
     }).catch(function () {});
   }
 
+  /* Bumped by every renderFlags(), so an in-flight probe can tell whether the
+     panel it was asked about is still the panel on screen. */
+  var flagsGen = 0;
+
+  /* WHY THIS PANEL ASKS THE DATABASE A QUESTION BEFORE IT SAYS ANYTHING.
+     It used to say: operators are named in admin_allowlist, and "if this
+     address is on that list, 0008 has probably not been applied". Every word
+     of that was true and it still sent the reader nowhere, because it named
+     two possible causes and could not tell them apart — while the same page,
+     three cards down, was already asking the database which migrations had
+     run. A page that holds the answer and prints the guess is worse than one
+     that has neither, because the guess is believed.
+
+     So: one probe, then one definite sentence. And the address is shown,
+     because "if this address is on that list" is unanswerable by someone who
+     cannot see which address they are signed in as. It is the reader's own
+     email on the reader's own screen — nothing is disclosed that the account
+     menu does not already show.
+
+     The third branch matters as much as the other two. When the probe cannot
+     reach the database, this says so and stops. It does not fall back to the
+     old guess, because a guess that appears only when the evidence is missing
+     is exactly the guess most likely to be wrong. */
+  function notOperator(host) {
+    /* renderFlags() rewrites this host's innerHTML, it does not replace the
+       element — so comparing the element against el("flags") when the probe
+       returns would compare a thing to itself and guard nothing. A counter is
+       the only thing that actually changes across a re-render. */
+    var gen = ++flagsGen;
+    var u = A.user() || {};
+    var addr = u.email ? "<code>" + esc(u.email) + "</code>" : "this account";
+    var head = "<b>You are signed in, but this account is not an operator.</b>" +
+               "<br><br>Signed in as " + addr + ".<br><br>";
+    var floor = "<br><br>No page can grant itself access, including this one: " +
+                "<code>public.admins</code> has no write policy at all.";
+
+    host.innerHTML = empty(head + "Checking whether the migrations have run\u2026");
+
+    probeTable(PASTE_WITNESS).then(function (r) {
+      if (gen !== flagsGen) return;                    /* re-rendered since */
+      var body;
+      if (r === "no") {
+        body = "<b>The migrations have not been applied.</b> " +
+          "<code>public." + esc(PASTE_WITNESS) + "</code> does not exist in this " +
+          "project, so the paste that also creates the operator allowlist " +
+          "(<code>0008</code>) has not run either. This is the cause, and it is " +
+          "not about this account.<br><br>" +
+          "Supabase dashboard \u2192 SQL Editor \u2192 paste " +
+          "<code>tools/apply-all.sql</code> \u2192 Run, then reload this page. " +
+          "It is safe to run more than once.";
+      } else if (r === "yes") {
+        body = "<b>The migrations have run</b> \u2014 so this is about the " +
+          "address, not the database. To become an operator, " + addr + " must " +
+          "be listed in <code>public.admin_allowlist</code> <em>and</em> its " +
+          "email must be confirmed; the trigger promotes it on sign-in and " +
+          "backfills anyone already signed in.<br><br>" +
+          "The usual answer is that this is a different address from the one on " +
+          "the list. Check it character for character \u2014 the list is " +
+          "compared lowercased and trimmed, so case and stray spaces are not " +
+          "the problem, but a different mailbox is.";
+      } else {
+        body = "<b>Could not ask the database</b> whether the migrations have " +
+          "run, so nothing is concluded from that. It could be the paste or it " +
+          "could be the address; this page will not guess between them. Reload " +
+          "when the connection is back.";
+      }
+      host.innerHTML = empty(head + body + floor);
+    });
+  }
+
   function renderFlags() {
+    flagsGen++;
     var host = el("flags");
     if (!A || !A.configured()) {
       host.innerHTML = empty(
@@ -387,18 +476,7 @@
       return;
     }
 
-    if (!role) {
-      host.innerHTML = empty(
-        "<b>You are signed in, but this account is not an operator.</b><br><br>" +
-        "Operators are named by email in <code>public.admin_allowlist</code>, and a " +
-        "trigger promotes a confirmed address on sign-in. If this address is on " +
-        "that list and you are still seeing this, migration <code>0008</code> has " +
-        "not been applied to the project yet — that is the likely cause, not " +
-        "anything about this account.<br><br>" +
-        "No page can grant itself access, including this one: " +
-        "<code>public.admins</code> has no write policy at all.");
-      return;
-    }
+    if (!role) { notOperator(host); return; }
 
     var byKey = {};
     (flagRows || []).forEach(function (r) { byKey[r.key] = r; });
@@ -456,13 +534,28 @@
     });
   }
 
+  /* The same guess lived here too, in the same panel: "if the migrations have
+     not been run yet, app_flags does not exist — that is the likely cause".
+     It was a guess about an answer the error already contained. PostgREST
+     names a missing table in its message, so this branch can say which of the
+     two things happened instead of offering both and choosing neither.
+
+     Removing one hedge and leaving its twin two hundred lines away would have
+     shipped a page that diagnoses or guesses depending on which request failed
+     first — which is worse than guessing consistently. */
   function loadFlags() {
     return A.api("/rest/v1/app_flags?select=key,enabled,updated_at,note")
       .then(function (rows) { flagRows = rows; renderFlags(); return rows; })
-      .catch(function () {
-        el("flags").innerHTML = empty(
-          "Could not read the switches. If the migrations have not been run yet, " +
-          "<code>public.app_flags</code> does not exist — that is the likely cause.");
+      .catch(function (e) {
+        var gone = MISSING.test(String(e && e.message));
+        el("flags").innerHTML = empty(gone
+          ? "<b>The migrations have not been applied.</b> " +
+            "<code>public.app_flags</code> does not exist in this project, so " +
+            "there are no switches to read. Supabase dashboard \u2192 SQL Editor " +
+            "\u2192 paste <code>tools/apply-all.sql</code> \u2192 Run, then reload."
+          : "<b>Could not read the switches.</b> The table exists as far as this " +
+            "page can tell; the request itself failed. Nothing is concluded from " +
+            "that \u2014 reload when the connection is back.");
       });
   }
 
@@ -725,7 +818,7 @@
      touched admin/, so forgetting fails the suite instead of quietly
      producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-08-23a";
+  var BUILD = "2026-08-23b";
 
   function renderConn() {
     var host = el("conn");

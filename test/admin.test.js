@@ -241,6 +241,112 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
        `${c.label}: the migration row reads ${c.want.source}${c.not.test(txt) ? " — but also " + c.not.source : ""}`);
   }
 
+  /* ---- the not-an-operator panel. WHY THIS IS TESTED BY DRIVING THE PAGE.
+     The panel used to name two possible causes — "the migrations have not run"
+     and "this address is not on the list" — and could not tell them apart, so
+     it hedged. A reader who had already applied the migrations was sent to
+     apply them again. The page can now ask, so it must not hedge; and the one
+     failure that matters is the third branch silently falling back to a guess
+     when the probe cannot answer.
+
+     Asserted on the RENDERED TEXT, not on the source, because "the source
+     contains a sentence" has been wrong here before: a string can exist in the
+     file and never reach the screen, and a panel that renders nothing at all
+     would pass every source-level check ever written for it. */
+  console.log("\n— signed in but not an operator: the panel diagnoses, it does not guess");
+  const USER = { id: "00000000-0000-0000-0000-000000000001", email: "someone@example.com" };
+  for (const c of [
+    { label: "migrations not applied", blockers: { status: 404,
+        body: JSON.stringify({ message: "Could not find the table 'public.launch_blockers' in the schema cache" }) },
+      want: /have not been applied/, not: /about the address|Could not ask/ },
+    { label: "migrations applied",     blockers: { status: 200, body: "[]" },
+      want: /about the address/,      not: /have not been applied|Could not ask/ },
+    { label: "database unreachable",   blockers: "abort",
+      want: /Could not ask the database/, not: /have not been applied|about the address/ },
+  ]) {
+    const op = await browser.newPage();
+    await op.route("**/auth/v1/token**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ access_token: "a", refresh_token: "b", expires_in: 3600, user: USER }) }));
+    await op.route("**/auth/v1/user**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(USER) }));
+    /* No role: the account is signed in and is not an operator. This is the
+       state the panel exists for, and PostgREST expresses it as an empty
+       array rather than an error, exactly as it would in production. */
+    /* ORDER MATTERS AND IT IS THE OPPOSITE OF WHAT IT LOOKS LIKE. Playwright
+       matches routes in REVERSE registration order, so the catch-all is
+       registered FIRST and the specific handlers after it. Registered the
+       other way round, the catch-all swallows launch_blockers, every case
+       gets a 200, and all three "cases" silently test the same branch — which
+       is exactly what happened on the first run of this test. */
+    await op.route("**/rest/v1/**", r => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+    await op.route("**/rest/v1/admins**", r => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+    await op.route("**/rest/v1/launch_blockers**", r => c.blockers === "abort" ? r.abort()
+      : r.fulfill({ status: c.blockers.status, contentType: "application/json", body: c.blockers.body }));
+    await op.addInitScript(() => {
+      try {
+        localStorage.setItem("wodouh.session.v1", JSON.stringify({
+          refresh_token: "b",
+          user: { id: "00000000-0000-0000-0000-000000000001", email: "someone@example.com" }
+        }));
+      } catch (e) {}
+    });
+    await op.goto(BASE + "/admin/");
+    await op.waitForTimeout(1800);
+    const txt = await op.evaluate(() => (document.getElementById("flags") || {}).textContent || "");
+    await op.close();
+    ok(/not an operator/.test(txt), `${c.label}: the panel renders at all`);
+    ok(txt.includes(USER.email),
+       `${c.label}: it shows which address is signed in, so "is it on the list" is answerable`);
+    ok(c.want.test(txt) && !c.not.test(txt),
+       `${c.label}: it says ${c.want.source}${c.not.test(txt) ? " — but ALSO " + c.not.source : ""}`);
+  }
+
+  /* THE SECOND WRITER TO THE SAME PANEL. loadFlags() also rewrites #flags when
+     its own read fails, and it carried an identical hedge — "if the migrations
+     have not been run, app_flags does not exist, that is the likely cause".
+     Fixing one and leaving the other would give a page that diagnoses or
+     guesses depending on which request happened to fail first.
+
+     Asserted by rendering, not by grepping the source for the old sentence:
+     the removed string still appears in this file as a comment explaining why
+     it was removed, so a source-level check would pass on prose and prove
+     nothing about behaviour. That exact mistake has been made in this suite
+     before. */
+  {
+    const fp = await browser.newPage();
+    await fp.route("**/auth/v1/token**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ access_token: "a", refresh_token: "b", expires_in: 3600, user: USER }) }));
+    await fp.route("**/auth/v1/user**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(USER) }));
+    await fp.route("**/rest/v1/**", r => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+    /* loadFlags() runs only for a real operator — `if (A.user() && role)` — so
+       this branch is unreachable without a role, and a test that forgot it
+       would assert against the signed-out panel and pass for the wrong reason. */
+    await fp.route("**/rest/v1/admins**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify([{ role: "owner" }]) }));
+    await fp.route("**/rest/v1/app_flags**", r => r.fulfill({ status: 404, contentType: "application/json",
+      body: JSON.stringify({ message: "Could not find the table 'public.app_flags' in the schema cache" }) }));
+    await fp.addInitScript(() => {
+      try {
+        localStorage.setItem("wodouh.session.v1", JSON.stringify({
+          refresh_token: "b",
+          user: { id: "00000000-0000-0000-0000-000000000001", email: "someone@example.com" }
+        }));
+      } catch (e) {}
+    });
+    await fp.goto(BASE + "/admin/");
+    await fp.waitForTimeout(1800);
+    const txt = await fp.evaluate(() => (document.getElementById("flags") || {}).textContent || "");
+    await fp.close();
+    ok(/have not been applied/.test(txt) && !/likely/.test(txt),
+       "when the switch table is missing the panel says so outright, instead of offering a likely cause");
+  }
+  /* 0008's table is deliberately unreadable by any browser, so probing it
+     would report a false PENDING on a project where it had run. If someone
+     adds it to the probe list later, this fails and says why. */
+  ok(!/admin_allowlist/.test((adminJs.match(/var MIGRATION_PROBES[\s\S]*?\];/) || [""])[0]),
+     "admin_allowlist is not probed — RLS-with-no-policy can answer like a missing table");
+
   ok(/noindex/.test(adminHtml), "the page asks not to be indexed");
   ok(/default-src 'none'/.test(adminHtml) && /connect-src 'self'/.test(adminHtml),
      "and it ships its own content security policy");
