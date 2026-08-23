@@ -212,6 +212,35 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
        `the build stamp (${stamp}) is not older than the last change to admin/ (${lastAdminCommit})`);
   }
 
+  /* ---- the migration row. THE QUESTION THAT COST THE MOST TIME.
+     "Not an operator", dark switches and a free-scan limit that did nothing
+     were three symptoms of one cause — migrations in the repository that had
+     never been applied — and nothing on this page could see it, so each was
+     diagnosed separately and wrongly.
+
+     PostgREST tells the two apart without credentials: a missing table says
+     "could not find the table"; an existing one whose RLS refuses you says 200
+     and an empty array. The third state is the one that matters most: a
+     network failure must read UNKNOWN, never "not applied". */
+  console.log("\n— the console can tell what the database actually has");
+  for (const c of [
+    { label: "tables missing", status: 404,
+      body: JSON.stringify({ message: "Could not find the table 'public.x' in the schema cache" }),
+      want: /PENDING/, not: /APPLIED/ },
+    { label: "tables present", status: 200, body: "[]", want: /APPLIED/, not: /PENDING/ },
+    { label: "unreachable",    abort: true, want: /UNKNOWN/, not: /PENDING|APPLIED/ },
+  ]) {
+    const mp = await browser.newPage();
+    await mp.route("**/rest/v1/**", r => c.abort ? r.abort()
+      : r.fulfill({ status: c.status, contentType: "application/json", body: c.body }));
+    await mp.goto(BASE + "/admin/");
+    await mp.waitForTimeout(1500);
+    const txt = await mp.evaluate(() => (document.getElementById("migrations") || {}).textContent || "");
+    await mp.close();
+    ok(c.want.test(txt) && !c.not.test(txt),
+       `${c.label}: the migration row reads ${c.want.source}${c.not.test(txt) ? " — but also " + c.not.source : ""}`);
+  }
+
   ok(/noindex/.test(adminHtml), "the page asks not to be indexed");
   ok(/default-src 'none'/.test(adminHtml) && /connect-src 'self'/.test(adminHtml),
      "and it ships its own content security policy");

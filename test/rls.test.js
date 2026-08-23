@@ -356,8 +356,18 @@ for (const f of ["0007_blockers.sql", "0008_operator_allowlist.sql"]) {
   } catch (e) { err = String(e.stderr || e.message).split("\n").find(l => /ERROR/i.test(l)) || "failed"; }
   ok(err === null, `${f} runs a second time without an error${err ? " — " + err : ""}`);
 }
-ok(Number(psql(`select count(*) from public.launch_blockers;`).trim()) === 6,
-   "and re-running did not duplicate or wipe the seeded rows");
+/* Counted from the MIGRATION, not written here as a number. It was 6, a
+   seventh blocker was added, and this assertion failed for a change that was
+   entirely correct — a count of the day rather than the property, which is
+   that re-running must neither duplicate nor wipe whatever the file seeds. */
+{
+  const src = require("node:fs").readFileSync(
+    path.join(ROOT, "supabase/migrations/0007_blockers.sql"), "utf8");
+  const seeded = (src.match(/^\s*\('[a-z_]+',\s*'/gm) || []).length;
+  const live = Number(psql(`select count(*) from public.launch_blockers;`).trim());
+  ok(seeded > 0 && live === seeded,
+     `re-running neither duplicated nor wiped the seeded rows (${live} of ${seeded})`);
+}
 
 psql(`create policy tmp_admins on public.admins for insert to authenticated with check (true);`);
 const grantNowWorks = refused(asUser(A,

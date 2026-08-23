@@ -137,6 +137,68 @@
       '<span class="why">' + esc(why) + '</span></span>';
   }
 
+  /* WHICH MIGRATIONS HAVE ACTUALLY RUN.
+     This is the question that cost the most time on this project: the console
+     said "not an operator", the app's switches stayed dark, and the free-scan
+     limit did nothing — all three because migrations existed in the repository
+     and had never been applied to the project. Nothing on this page could see
+     that, so every symptom was diagnosed separately and wrongly.
+
+     PostgREST distinguishes the two cases for free and WITHOUT CREDENTIALS: a
+     table that does not exist answers "could not find the table"; a table that
+     exists but whose row level security refuses you answers 200 with an empty
+     array. So an anonymous probe of one table per migration says exactly how
+     far the database has got.
+
+     Three states, as everywhere else here. A network failure is "unknown", not
+     "missing" — reporting a migration as unapplied because the wifi dropped is
+     the kind of confidently wrong answer this row exists to end. */
+  var MIGRATION_PROBES = [
+    { table:"app_flags",       upto:"0005" },
+    { table:"launch_blockers", upto:"0007" },
+    { table:"scan_events",     upto:"0009" }
+  ];
+  var MISSING = /could not find the table|does not exist|PGRST205|http_404/i;
+
+  function probeTable(name) {
+    return A.api("/rest/v1/" + encodeURIComponent(name) + "?select=*&limit=1")
+      .then(function () { return "yes"; })
+      .catch(function (e) { return MISSING.test(String(e && e.message)) ? "no" : "unknown"; });
+  }
+
+  function renderMigrations() {
+    var host = el("migrations");
+    if (!host) return;
+    if (!A || !A.configured()) {
+      host.innerHTML = row("Migrations", "No project configured, so there is nothing to have run",
+                           "N/A", "off");
+      return;
+    }
+    host.innerHTML = row("Migrations", "Checking what the database actually has\u2026", "\u2026", "off");
+    Promise.all(MIGRATION_PROBES.map(function (m) { return probeTable(m.table); }))
+      .then(function (r) {
+        if (r.indexOf("unknown") >= 0) {
+          host.innerHTML = row("Migrations",
+            "Could not ask the database. Nothing is concluded from that.", "UNKNOWN", "warn");
+          return;
+        }
+        var last = null, missing = null;
+        MIGRATION_PROBES.forEach(function (m, i) {
+          if (r[i] === "yes") last = m.upto;
+          else if (!missing) missing = m.upto;
+        });
+        if (!missing) {
+          host.innerHTML = row("Migrations", "Everything in supabase/migrations has been applied",
+                               "APPLIED", "on");
+        } else {
+          host.innerHTML = row("Migrations",
+            (last ? "Applied up to " + last + ". " : "None applied. ") +
+            missing + " onwards has not run \u2014 paste tools/apply-all.sql into the SQL editor",
+            "PENDING", "bad");
+        }
+      });
+  }
+
   function renderStatus() {
     if (!live.appReached) {
       el("status").innerHTML = empty(
@@ -200,6 +262,7 @@
       stale ? "bad" : (live.disputed ? "warn" : "on"));
 
     el("status").innerHTML = h;
+    renderMigrations();
     renderHero();
   }
 
@@ -662,7 +725,7 @@
      touched admin/, so forgetting fails the suite instead of quietly
      producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-08-22d";
+  var BUILD = "2026-08-23a";
 
   function renderConn() {
     var host = el("conn");

@@ -161,6 +161,10 @@
   <section class="panel span2">
     <h2>What is live right now</h2>
     <div class="card" id="status"></div>
+    <!-- Separate card: what the database has, as opposed to what the deployed
+         files say. The two disagreeing is the single most common way this
+         product looks broken, so they sit side by side rather than merged. -->
+    <div class="card" id="migrations" style="margin-top:12px"></div>
     <p class="note">Read from the <b>deployed</b> files at this domain, not from anyone's
     laptop. If a row here disagrees with your local repo, the deploy is what readers see.</p>
   </section>

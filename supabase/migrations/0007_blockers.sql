@@ -79,12 +79,19 @@ insert into public.launch_blockers (key, label, note, done, sort) values
    'Unblocks accounts, sync, the switches on this page, and the AI', false, 1),
   ('anthropic_key', 'Anthropic API key',
    'Set as a function secret, never in the browser. Unblocks Ask and the AI read', false, 2),
+  -- Added 23 Aug 2026 with email sign-in. Supabase''s built-in sender is
+  -- capped at a handful of messages an hour and is not for production: without
+  -- a real SMTP provider, email sign-in works in testing and then silently
+  -- fails for most real users, which looks like a broken app rather than a
+  -- mail limit.
+  ('email_smtp', 'Email delivery (SMTP)',
+   'Sign-in codes need a real sender. Without one, most sign-in emails never arrive', false, 3),
   ('payment_processor', 'Payment processor',
-   'Unblocks charging. Until then the pay button simulates', false, 3),
+   'Unblocks charging. Until then the pay button simulates', false, 4),
   ('apple_signin', 'Apple Developer account',
-   'Unblocks Apple sign-in. Google works without it', false, 4),
+   'Unblocks Apple sign-in. Google and email work without it', false, 5),
   ('actions_billing', 'GitHub Actions billing',
-   'Unblocks CI and the live watchdog. Pages deploys either way', false, 5),
+   'Unblocks CI and the live watchdog. Neither has ever run. Pages deploys either way', false, 6),
   ('lawyer_review', 'Lawyer review',
-   'Every register row needs a licensed Saudi lawyer before real users', false, 6)
+   'Every register row needs a licensed Saudi lawyer before real users', false, 7)
 on conflict (key) do nothing;
