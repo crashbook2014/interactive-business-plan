@@ -206,6 +206,64 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
        "and a figure in no row is still refused — the check widened, it did not soften");
   }
 
+  /* ---- the 24 August code review: the guarantee the Terms actually make.
+     terms/index.html states, in both languages, that no article number and no
+     riyal figure is shown unless it appears in a verified source. Both checks
+     were keyed on a WORD, so dropping the word dropped the check. Every row
+     below was measured against the grader at 939e8c0 and every one was SHOWN
+     with tier=verified. */
+  console.log("\n— the figure and citation rules do not depend on the model's phrasing");
+  if (capAr) {
+    const stray = [
+      /* 61300 and not 45000: 45,000 is the GOSI cap and IS in the row cited
+         here, so an answer stating it is correctly allowed. A first draft of
+         this test used it and failed for that reason — the figure has to be
+         one the row does not contain, or the case proves nothing. */
+      ["a bare figure in no cited row",       "You are owed 61300.",                         "money"],
+      ["the same, in Arabic",                 "المستحق لك هو 61300 تقريبا.",                  "money"],
+      ["a separated figure without a unit",   "Your award comes to 61,300.",                 "money"],
+      ["an article named by the law, not the word", "Under 77 of the Labor Law you may claim.", "citation"],
+      ["'Art 77' with no full stop",          "Art 77 applies here.",                        "citation"],
+      ["an article named in Arabic prose",    "بموجب 77 من نظام العمل يحق لك ذلك.",           "citation"],
+    ];
+    for (const [label, answer, why] of stray) {
+      const g = gradeAnswer({ tier:"verified", answer, cites:[capAr.id] }, lookup);
+      ok(g.tier === "refused" && g.reason === why,
+         `${label} is refused (${g.tier}${g.reason ? "/" + g.reason : ""})`);
+    }
+
+    /* AND THE OTHER HALF, which matters as much: a rule that refuses
+       everything is not a working rule, it is a broken feature. These must all
+       still come through. */
+    const fine = [
+      ["the cap quoted with its unit",  "The contributable wage is capped at SAR 45,000 per month.", [capAr.id]],
+      ["the cap quoted bare",           "The cap is 45000 a month.",                                 [capAr.id]],
+      ["the cap quoted from the Arabic","الحد الأقصى للأجر الخاضع للاشتراك 45,000 ريال شهريًا.",      [capAr.id]],
+    ];
+    for (const [label, answer, cites] of fine) {
+      const g = gradeAnswer({ tier:"verified", answer, cites }, lookup);
+      ok(g.tier === "verified", `${label} is still allowed through (${g.tier}${g.reason ? "/" + g.reason : ""})`);
+    }
+    /* A year is not an amount. Four corpus rows date something, and treating
+       2025 as riyals would refuse an answer that cited them correctly. */
+    const yearRow = committed.rows.find(r => /(19|20)\d\d/.test(r.claim));
+    if (yearRow) {
+      const g = gradeAnswer({ tier:"verified",
+        answer: yearRow.claim.slice(0, 200), cites:[yearRow.id] }, lookup);
+      ok(g.tier === "verified",
+         `a row's own text, quoted back with its date, is not read as money (${g.tier}${g.reason ? "/" + g.reason : ""})`);
+    }
+    /* And the pollution: citing a row must not license every number in its
+       prose as an amount. art-75 says "employer 60 days, employee 30 days". */
+    const notice = committed.rows.find(r => /60/.test(r.claim) && /30/.test(r.claim));
+    if (notice) {
+      const g = gradeAnswer({ tier:"verified",
+        answer: "You are owed SAR 60 for this.", cites:[notice.id] }, lookup);
+      ok(g.tier === "refused" && g.reason === "money",
+         `a day count in a cited row does not license it as an amount (${g.tier}${g.reason ? "/" + g.reason : ""})`);
+    }
+  }
+
   /* ---- 6. the scanners themselves */
   console.log("\n— the scanners the rules are built on");
   ok(articlesIn("see Article 84 and art. 85 and المادة ٨٧").sort().join(",") === "84,85,87",

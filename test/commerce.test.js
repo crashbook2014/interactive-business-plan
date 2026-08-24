@@ -132,6 +132,59 @@ async function seedTermination(p){
      between a policy and an argument. */
   ok(/199/.test(refund), "and says which rate a part-used pack is refunded at");
 
+  /* THE REFUND FORMULA MUST NOT GO NEGATIVE. Charging used reviews at 199
+     against a 699 pack produces −97 at four used, which as written told the
+     customer they owed us money. The figures are recomputed here rather than
+     read, so the page and the arithmetic cannot drift apart. */
+  {
+    const src = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const packAmt = (src.match(/name:"plan_reviews5"[\s\S]{0,120}?amt:(\d+)/) || [])[1];
+    const oneAmt  = (src.match(/name:"plan_review"[\s\S]{0,120}?amt:(\d+)/) || [])[1];
+    ok(!!packAmt && !!oneAmt, `both prices read from the catalogue (${packAmt}, ${oneAmt})`);
+    const credits = +((src.match(/PACK_CREDITS\s*=\s*(\d+)/) || [])[1] || 0);
+    ok(credits > 0, `and the credit count (${credits})`);
+    let negative = null, stated = [];
+    for (let used = 1; used <= credits; used++){
+      const owed = +packAmt - used * +oneAmt;
+      if (owed < 0 && negative === null) negative = used;
+      if (owed > 0) stated.push(String(owed));
+    }
+    ok(negative !== null,
+       `the un-floored formula does go negative, at ${negative} used — so the page must say what happens`);
+    ok(/never less than nothing|no refund|ولا يقل|لا يوجد ردّ/.test(refund),
+       "the refund page states the floor rather than leaving the arithmetic to run negative");
+    const missing = stated.filter(n => !refund.includes(n));
+    ok(missing.length === 0,
+       `and every positive refund figure is worked out on the page${missing.length ? " — missing " + missing.join(", ") : " (" + stated.join(", ") + ")"}`);
+    ok(!/-\s*97|−97/.test(refund), "no negative figure appears on the page");
+  }
+
+  /* THE TERMS MUST DESCRIBE WHAT IS ACTUALLY SOLD. terms/index.html was last
+     touched the day before the August catalogue landed and described a product
+     with only one-time purchases, while the app sells a recurring monthly plan
+     and a pack that expires. A gateway reads this page during approval. */
+  console.log("\n— the Terms describe every kind of thing the app sells");
+  {
+    const terms = readFileSync(path.join(ROOT, "terms/index.html"), "utf8");
+    const src2 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const sub = src2.match(/name:"(\w+)"[^}]*sub:true/);
+    ok(!!sub, `the catalogue does sell a subscription (${sub && sub[1]})`);
+    for (const [what, en, ar] of [
+      ["the recurring charge", /subscription|recurring/i, /اشتراك/],
+      ["its billing period",   /each calendar month|monthly/i, /كل شهر|شهري/],
+      ["how to cancel",        /cancel/i, /إلغاء|تلغيه/],
+      ["the pack's expiry",    /twelve months/i, /اثني عشر شهرًا/],
+      ["that unused reviews lapse", /expire/i, /ينتهي|تنتهي/],
+    ]) {
+      ok(en.test(terms) && ar.test(terms),
+         `the Terms state ${what}, in both languages` +
+         (en.test(terms) ? "" : " — missing in English") +
+         (ar.test(terms) ? "" : " — missing in Arabic"));
+    }
+    ok(/renews automatically|until you cancel/i.test(terms),
+       "and that it renews until cancelled rather than lapsing on its own");
+  }
+
   /* --------------------------------- the pricing doc names every real price */
   console.log("\n— docs/pricing.md is not folklore");
 
@@ -629,6 +682,206 @@ async function seedTermination(p){
   ok(!/non-refundable|غير قابل للاسترجاع|لا يُسترجع/i.test(refundAr),
      "and the refund page contains no blanket non-refundable clause that would contradict it");
   ok(/14/.test(refundAr), "the refund window is stated as a number rather than left vague");
+
+  /* ================================================================
+     The 24 August code review. Each of these was measured against the
+     tree at 939e8c0 BEFORE the fix, and each failed there. */
+
+  /* DERIVED FROM THE CATALOGUE, never written out by hand. A second copy of a
+     price in a test is a price that drifts, and the difference between two of
+     them is exactly the kind of figure that goes stale silently. */
+  const BUNDLE_LESS_REVIEW = await p.evaluate(
+    () => BUNDLE.amt - PLANS_REVIEW.find(x => x.name === "plan_review").amt);
+
+  console.log("\n— buying something else never tops up the review pack");
+  /* THE DEFECT: the top-up read owned.review — what the reader HOLDS — with no
+     reference to what they had just bought, so every purchase of anything
+     credited a pack they already had. Measured before the fix: 5 → 10 → 15. */
+  const topup = await p.evaluate(() => {
+    owned = { review:null, letter:null, case:null }; packUntil = 0; packLeft = 0;
+    const buy = (mode, name) => {
+      pwMode = mode; pwOrigin = mode; pwUpgrade = null;
+      pwPlan = activePlans().findIndex(x => x.name === name);
+      grantAndGo();
+    };
+    const seen = {};
+    buy("review", "plan_reviews5"); seen.afterPack = packLeft;
+    buy("letter", "plan_letter");   seen.afterLetter = packLeft;
+    buy("case",   "plan_case");     seen.afterCase = packLeft;
+    /* And the case the guard must NOT break: a real second pack still credits. */
+    buy("review", "plan_reviews5"); seen.afterSecondPack = packLeft;
+    return seen;
+  });
+  ok(topup.afterPack === 5, `the pack grants five reviews (${topup.afterPack})`);
+  ok(topup.afterLetter === 5,
+     `a 149 letter grants none of them (${topup.afterLetter})`);
+  ok(topup.afterCase === 5,
+     `nor does a 349 case file (${topup.afterCase})`);
+  ok(topup.afterSecondPack === 10,
+     `but buying the pack again really does add five (${topup.afterSecondPack})`);
+
+  console.log("\n— the bundle is never priced at nothing");
+  /* THE DEFECT: upgradeCost() resolved the wanted tier in PLAN_SETS, which
+     deliberately excludes the bundle, so planIndex returned -1 and the function
+     fell through to `return 0`. activePlans() then offered 549 for free. */
+  const bundlePrice = await p.evaluate(() => {
+    owned = { review:null, letter:null, case:null };
+    const scratch = { review: upgradeCost("review","plan_bundle"),
+                      letter: upgradeCost("letter","plan_bundle"),
+                      case:   upgradeCost("case","plan_bundle") };
+    owned.review = "plan_review";
+    const holdingReview = upgradeCost("review","plan_bundle");
+    /* Every offer in every mode, checked for a zero — the property, not the
+       one instance that broke. */
+    const zeros = [];
+    ["review","letter","case","bundle"].forEach(m => {
+      pwMode = m; pwUpgrade = null;
+      activePlans().forEach(x => { if (!(x.amt > 0)) zeros.push(m + "/" + x.name); });
+    });
+    pwMode = "review"; pwUpgrade = "plan_bundle";
+    const offered = activePlans().map(x => x.name + ":" + x.amt);
+    pwUpgrade = null;
+    return { scratch, holdingReview, zeros, offered, full: BUNDLE.amt };
+  });
+  ok(bundlePrice.scratch.review === bundlePrice.full &&
+     bundlePrice.scratch.letter === bundlePrice.full &&
+     bundlePrice.scratch.case === bundlePrice.full,
+     `holding nothing, the bundle costs its full price in every mode (${JSON.stringify(bundlePrice.scratch)})`);
+  ok(bundlePrice.holdingReview === BUNDLE_LESS_REVIEW,
+     `holding the 199 review it costs the difference, ${BUNDLE_LESS_REVIEW} (${bundlePrice.holdingReview})`);
+  ok(bundlePrice.zeros.length === 0,
+     `no plan in any mode is offered at zero${bundlePrice.zeros.length ? " — " + bundlePrice.zeros.join(", ") : ""}`);
+  ok(!/plan_bundle:0\b/.test(bundlePrice.offered.join(" ")),
+     `and the upgrade offer carries a real price (${bundlePrice.offered.join(", ")})`);
+
+  console.log("\n— the upgrade has a door, and it grants all three products");
+  /* THE DEFECT: openUpgrade() was called from nowhere in the product, so every
+     branch downstream of pwUpgrade was unreachable — which is how the bundle
+     came to price at zero without anyone noticing. */
+  const upsell = await p.evaluate(() => {
+    nat = "saudi";
+    owned = { review:"plan_review", letter:null, case:null };
+    current = SAMPLES.employment; current.srcText = null;
+    renderResult();
+    const tease = document.getElementById("bundleUp");
+    const out = { shown: !!tease, text: tease ? tease.innerText.replace(/\s+/g," ").trim() : "" };
+    if (tease) {
+      tease.onclick();
+      out.upgrade = pwUpgrade;
+      out.priced = activePlans().map(x => x.amt);
+      pwPlan = 0; grantAndGo();
+      out.owned = JSON.parse(JSON.stringify(owned));
+      out.landed = (document.querySelector(".screen.active") || {}).id;
+    }
+    /* Nothing left to add — the row must not appear. */
+    owned = { review:"plan_review", letter:"plan_letter", case:"plan_case" };
+    renderResult();
+    out.shownWhenComplete = !!document.getElementById("bundleUp");
+    return out;
+  });
+  ok(upsell.shown, "a reader holding only the review is offered the rest");
+  ok(upsell.upgrade === "plan_bundle", `the control opens the bundle upgrade (${upsell.upgrade})`);
+  ok(JSON.stringify(upsell.priced) === JSON.stringify([BUNDLE_LESS_REVIEW]),
+     `at the difference and not the full price (${JSON.stringify(upsell.priced)})`);
+  ok(upsell.owned && upsell.owned.review && upsell.owned.letter && upsell.owned.case,
+     `and paying grants all three (${JSON.stringify(upsell.owned)})`);
+  ok(!upsell.shownWhenComplete,
+     "a reader who already holds all three is not sold them again");
+  /* The rendered text, because this is where a duplicated copy key showed up:
+     pw_up_title and pw_pay_up are the same six words in Arabic, so using both
+     printed the title twice. Only visible by reading the output. */
+  {
+    const words = upsell.text.split(" ").filter(Boolean);
+    const half = words.slice(0, Math.floor(words.length / 2)).join(" ");
+    ok(!(half && upsell.text.indexOf(half) !== upsell.text.lastIndexOf(half)),
+       `the upsell does not repeat itself (${upsell.text})`);
+  }
+
+  console.log("\n— paying at the scan limit analyses the contract you paid for");
+  /* THE DEFECT, and the worst one found: scanGate() interrupts a scan two ways.
+     The sign-in branch recorded pendingScan and resumed it; the paywall branch
+     set five pieces of paywall state and recorded nothing. Measured before the
+     fix: the reader paid 199 and was shown the PREVIOUS contract's result. */
+  const paidScan = await p.evaluate(() => {
+    const B = [
+      "EMPLOYMENT CONTRACT",
+      "This agreement is made between the Employer and the Employee.",
+      "Article 1. Basic salary: 8,000 SAR per month.",
+      "Article 2. Probation period: 180 days from the start date.",
+      "Article 3. Non-compete: the employee shall not compete for 5 years in any territory.",
+      "Article 4. Termination: the employer may terminate at any time without notice.",
+      "Article 5. Annual leave: 15 days per year.",
+      "Article 6. Working hours: 12 hours per day, six days a week.",
+      "Signed by both parties."
+    ].join("\n");
+    nat = "saudi";
+    authOn = () => true;
+    window.WodouhAuth = Object.assign({}, window.WodouhAuth || {}, {
+      user: () => ({ id: "u1", email: "a@b.c" }),
+      api: () => Promise.resolve(null),
+      apiCount: () => Promise.resolve(1)
+    });
+    scanServer = 1;                                  /* the month's scan is used */
+    owned = { review:null, letter:null, case:null }; packLeft = 0; packUntil = 0;
+    current = SAMPLES.employment;                    /* contract A is on screen */
+    const wasA = current.doc;
+    document.getElementById("pasteBox").value = B;
+    analyze("pasted");                               /* they try to scan B */
+    const atGate = { screen: (document.querySelector(".screen.active")||{}).id,
+                     pending: pendingScan };
+    pwPlan = activePlans().findIndex(x => x.name === "plan_review");
+    grantAndGo();                                    /* they pay 199 */
+    return { wasA, atGate };
+  });
+  ok(paidScan.atGate.screen === "screen-paywall",
+     `the scan limit sends the reader to the paywall (${paidScan.atGate.screen})`);
+  ok(paidScan.atGate.pending === "pasted",
+     `and records what they were trying to read (${paidScan.atGate.pending})`);
+  await p.waitForTimeout(2600);                      /* runLoading() is animated */
+  const landed = await p.evaluate(() => ({
+    screen: (document.querySelector(".screen.active") || {}).id,
+    doc: (current || {}).doc,
+    isB: !!(current && current.srcText && /Non-compete/.test(current.srcText)),
+    clauses: ((current && current.clauses) || []).length,
+    pending: pendingScan
+  }));
+  ok(landed.isB,
+     `after paying, the contract analysed is the one they paid for, not ${paidScan.wasA} (doc=${landed.doc})`);
+  ok(landed.clauses > 0, `and it produced a real reading (${landed.clauses} clauses)`);
+  ok(landed.screen !== "screen-paywall",
+     `the reader is not bounced back to the paywall they just paid at (${landed.screen})`);
+  ok(landed.pending === null, "and the pending scan is cleared, so it cannot run twice");
+
+  console.log("\n— the case file is spent on a new assessment, and says so");
+  /* THE DEFECT: owned.case was cleared nowhere, so the 349 case file was bought
+     once and kept for life while the 149 letter was metered per contract. */
+  /* DRIVES THE REAL CALCULATOR. An earlier draft of this test re-ran the
+     signature comparison inline, which tested a copy of the logic rather than
+     the logic — it would have passed with the fix reverted. calcEos() is the
+     function that actually assigns eosData, so that is what gets called. */
+  const caseScope = await p.evaluate(() => {
+    const run = (start, end, wage) => {
+      document.getElementById("eosStart").value = start;
+      document.getElementById("eosEnd").value = end;
+      document.getElementById("eosWage").value = String(wage);
+      calcEos();
+    };
+    nat = "saudi"; eosHow = "term";
+    run("2020-01-01", "2026-01-01", 10000);      /* the assessment they buy against */
+    owned = { review:null, letter:null, case:"plan_case" };
+    const before = has("case");
+    run("2020-01-01", "2026-01-01", 10000);      /* same numbers, recomputed */
+    const afterSameRecompute = has("case");
+    run("2019-01-01", "2026-08-01", 12000);      /* a genuinely different case */
+    const afterNew = has("case");
+    return { before, afterSameRecompute, afterNew };
+  });
+  ok(caseScope.before, "a bought case file is held");
+  ok(!caseScope.afterNew, "a genuinely different assessment spends it");
+  ok(caseScope.afterSameRecompute,
+     "but recomputing the same assessment does not take it away");
+  ok(/for one assessment/i.test(app) && /لتقييم واحد/.test(app),
+     "and the card says so before the reader pays, in both languages");
 
   /* ---- what the paywall says it accepts is a claim about the gateway */
   console.log("\n— the payment marks on screen match the declared list");

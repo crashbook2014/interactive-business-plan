@@ -18,6 +18,37 @@ is not in this list.
 
 ---
 
+## Status: all eleven fixed — 24 August 2026
+
+Every finding below was fixed the same day, on the owner's instruction to fix
+all of them. **The line numbers in this report point at the tree as it was
+reviewed (`939e8c0`) and no longer resolve** — that is deliberate, so the record
+of what was wrong stays readable.
+
+| | Finding | Fix |
+|---|---|---|
+| C1 | Pack topped up by any purchase | `creditPack(want)` — gated on the product bought, not the one held |
+| C2 | Paid scan never ran | `pendingScan` set in the paywall branch; `resumeScan()` after `saveState()` |
+| H1 | Grader keyed on a word | bare 4-digit figures are money; article patterns widened; `allowedNums` from `moneyIn()` of the row |
+| H2 | Terms silent on the subscription | monthly plan and pack sections added, both languages |
+| M1 | Bundle priced at 0 | `upgradeCost()` resolves against `offeredPlans()`; a 0-cost upgrade is never sellable |
+| M2 | Upgrade path had no door | wired to the review result for a reader holding only the review |
+| M3 | Refund formula went negative | floored at zero, with every figure worked on the page |
+| M4 | Case file never spent | per assessment, by input signature; stated on the card in both languages |
+| M5 | Month boundary mixed clocks | one clock; proven under `TZ=Asia/Riyadh` |
+| L1 | Stale duplicated comment | removed with C1 |
+| L2 | 29 vs 30 verified claims | note added to the register naming the strict count |
+
+**21 new assertions**, each negative-tested against `939e8c0` and each failing
+there. 22 suites and the type-check green; the upsell and upgrade paywall driven
+and screenshotted in both languages.
+
+**Two carry the owner's call and are marked in the commit:** H2 is legal wording
+and M4 is a pricing decision. Both are implemented as reviewable drafts, and M4
+is one line to reverse.
+
+---
+
 ## Verdict
 
 **Do not switch payments on until C1 and C2 are fixed.** Everything else here

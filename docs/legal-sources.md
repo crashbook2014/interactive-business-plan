@@ -53,6 +53,20 @@ never with a Labor Law article number, because it is a different statute.
 
 ## Claim register
 
+> **Counting these rows: the answer is 29, not 30.**
+>
+> Thirty rows below contain the string `✅ verified`, but one of them — Article
+> **81** — reads `✅ verified as to the grounds; the award consequence is a
+> reading`. That is a partial verification, and every strict consumer excludes
+> it: `tools/make-corpus.mjs` requires the status cell to be *exactly*
+> `✅ verified`, the founder console matches `✅ verified |` so the tick must be
+> followed straight by the column break, and `corpus.json` therefore holds
+> **29** rows. A loose `grep` for the tick counts 30 and is wrong.
+>
+> Use the corpus count, or the console's. Both are the strict one. This note
+> exists because the number was miscounted in a published roadmap on
+> 24 Aug 2026 by exactly that loose grep.
+
 | Claim as stated in the app | الادعاء كما يظهر في التطبيق | Article | Status | Checked against |
 |---|---|---|---|---|
 | End-of-service: half-month wage per year for the first five years, full month per year thereafter, on the last wage, pro-rata for partial years | مكافأة نهاية الخدمة: نصف أجر شهر عن كل سنة من السنوات الخمس الأولى، وأجر شهر كامل عن كل سنة بعدها، على أساس الأجر الأخير، وبنسبة ما قضاه العامل من السنة عن أجزاء السنة | **84** | ✅ verified | [HRSD](https://www.hrsd.gov.sa/en/knowledge-centre/articles/317), [WIPO Lex](https://www.wipo.int/wipolex/en/legislation/details/14685) |

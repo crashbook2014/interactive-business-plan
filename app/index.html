@@ -3761,8 +3761,14 @@ const T = {
   pw_case_free:{ar:"الحساب والتقييم مجانيان — الملف المنسّق إضافة اختيارية.",
                 en:"The calculation and assessment are free — the assembled file is optional."},
   plan_case:{ar:"ملف القضية",en:"Case file"},
-  plan_case_d:{ar:"التقييم كامل، وملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، مستنداتك، وخطاب صاحب العمل",
-               en:"The full assessment, plus a formatted bilingual file: the facts, the claim in figures, your documents, and the employer letter"},
+  /* "For one assessment" is said HERE, at the point of sale, for the reason
+     plan_review_d says "for one contract": a limit the reader meets for the
+     first time after paying is the failure this project keeps writing tests
+     against. The file is per assessment because the letter is per contract —
+     one purchase covering every future case would undercut the bundle and was
+     never what this was sold as. */
+  plan_case_d:{ar:"التقييم كامل، وملف منسّق بالعربي والإنجليزي: الوقائع، المطالبة بالأرقام، مستنداتك، وخطاب صاحب العمل — لتقييم واحد",
+               en:"The full assessment, plus a formatted bilingual file: the facts, the claim in figures, your documents, and the employer letter — for one assessment"},
   plan_case_lawyer:{ar:"الملف + محامٍ مرخّص",en:"File + licensed lawyer"},
   plan_case_lawyer_d:{ar:"محامٍ سعودي يراجع ملفك ويرد خلال 24 ساعة",
                       en:"A Saudi lawyer reviews your file and replies within 24h"},
@@ -5216,6 +5222,48 @@ function renderResult(reset){
       renderPaywall(); show("paywall");
     };
   }
+  /* THE DOOR THE UPGRADE NEVER HAD.
+     openUpgrade() existed, was covered by commerce.test.js, and was called from
+     nowhere in the product — so pwUpgrade could never be set, and every branch
+     downstream of it was unreachable: the pw_up_title and pw_pay_up copy in
+     both languages, activePlans()'s `up` branch, grantAndGo()'s return path,
+     and upgradeCost() itself. That is how upgradeCost() came to price the
+     bundle at 0 in all three modes without anyone noticing.
+
+     Here is where it belongs, and the copy says so: pw_up_title reads "Add the
+     case file and letter", which is the bundle offered to someone who has just
+     paid for the review and holds neither of the other two. They are shown the
+     difference, not 549 a second time.
+
+     Guarded on the PRICE, not on the tiers held — upgradeCost() returning 0
+     means unpriceable or already covered, and neither is a thing to sell.
+     activePlans() carries the same guard, so a mistake here cannot give the
+     catalogue away either. */
+  if (full && sellable(BUNDLE) && !has("letter") && !has("case")){
+    const diff = upgradeCost("review", "plan_bundle");
+    if (diff > 0){
+      const up = document.createElement("button");
+      up.className = "letter-tease";
+      up.id = "bundleUp";
+      up.innerHTML =
+        `<span class="lock" aria-hidden="true">` +
+          `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" ` +
+               `stroke-linecap="round" stroke-linejoin="round">` +
+            `<path d="M4 7h16v13H4z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>` +
+        /* The sub-line takes the BUNDLE'S OWN description, not pw_pay_up.
+           pw_pay_up is the button label on the paywall and in Arabic it is
+           the same six words as pw_up_title — so using both here printed
+           "أضف الملف والخطابأضف الملف والخطاب", the title twice in a row.
+           Caught by reading the rendered text, not the source. */
+        `<span><b>${esc(t("pw_up_title"))}</b>` +
+        `<span>${esc(t("plan_bundle_d"))} · ${esc(priceLabel(diff))}</span></span>` +
+        `<span class="go" aria-hidden="true">` +
+          `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" ` +
+               `stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>`;
+      wrap.appendChild(up);
+      up.onclick = () => openUpgrade("review", "plan_bundle", "result");
+    }
+  }
   /* Red flags are the reason the user opened the app — they stay open by
      default; everything else collapses so the verdict reads at a glance. */
   wrap.querySelectorAll(".flag.red").forEach(f=>{
@@ -6091,6 +6139,21 @@ function calcEos(){
   }
   eosSrc.hidden = false;
   eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
+  /* THE CASE FILE IS PER ASSESSMENT, like the letter is per contract.
+     analyze() spends owned.letter and owned.review on a new contract, and
+     owned.case was spent nowhere at all — so the 149 letter was metered per use
+     while the 349 case file, the dearer product, was bought once and kept for
+     life. Nothing sold it that way: it carries neither `credits` nor `monthly`,
+     the two markers this catalogue uses for "more than once".
+
+     COMPARED, NOT CLEARED UNCONDITIONALLY. This runs on every recompute,
+     including a reader who nudges a date and recalculates the same case, or who
+     simply returns to the calculator. Revoking a paid product for that would be
+     its own defect. The signature is the four inputs the file is actually built
+     from, so only a genuinely different assessment spends the entitlement. */
+  const sig = [sd, ed, wage, eosHow].join("|");
+  if (owned.case && caseSig && caseSig !== sig){ owned.case = null; saveState(); }
+  caseSig = sig;
   /* The figure counts up to exactly the computed total; the value and its
      formatting are unchanged, only its arrival. */
   { const amtEl = document.querySelector("#eosOut .amt"), cur = t("eos_sar");
@@ -6174,6 +6237,10 @@ function addClaimClock(endDate){
    The post-signing counterpart to the negotiation letter: the same
    build-as-you-go mechanic, aimed at recovery instead of negotiation. */
 let eosData = null, caseDocs = new Set(), leaveDays = 0;
+/* Which assessment the held case file was bought against. Not persisted: it is
+   set the moment the calculator runs, and a reader returning after a reload
+   recomputes before they can reach the case file at all. */
+let caseSig = null;
 
 const CASE_DOCS = ["d_contract","d_letter","d_pay","d_wps","d_msgs","d_leave"];
 
@@ -10208,7 +10275,17 @@ function activePlans(){
      second time and never a tier already held. */
   const want = set.filter(p => p.name === pwUpgrade);
   if (!want.length) return set;
-  return [Object.assign({}, want[0], { amt: upgradeCost(pwMode, pwUpgrade), up:true })];
+  const diff = upgradeCost(pwMode, pwUpgrade);
+  /* A GUARD ON THE PROPERTY, NOT ON THE ONE INSTANCE THAT BROKE.
+     upgradeCost() returning 0 means one of two things: the reader already holds
+     something worth at least as much, or the tier could not be priced at all.
+     Neither is a thing to sell. Returning the ordinary set falls back to full
+     prices, which is the safe direction — a reader who is over-offered can
+     decline, where a reader handed a 549 product for nothing cannot be undone.
+     This is here so that a future entry point wired up wrongly cannot give the
+     catalogue away, which is precisely how the bundle-at-zero survived. */
+  if (!(diff > 0)) return set;
+  return [Object.assign({}, want[0], { amt: diff, up:true })];
 }
 /* Entitlement, asked as a question rather than read as a flag.
    `tier` names the least tier that unlocks the thing being asked about. */
@@ -10223,10 +10300,23 @@ function has(mode, tier){
   return i >= 0 && need >= 0 && i >= need;
 }
 /* What it costs to move up, so the reader is shown the difference rather than
-   the full price a second time. */
+   the full price a second time.
+
+   RESOLVED AGAINST offeredPlans(), NOT PLAN_SETS. The tier held is a rung on
+   the mode's own ladder, so it is looked up there. The tier WANTED is whatever
+   the paywall put in front of the reader, and that set is wider: it includes
+   the bundle, which is deliberately kept out of PLAN_SETS because it is
+   orthogonal to the ladder rather than a rung on it.
+
+   Reading both from PLAN_SETS meant planIndex() returned -1 for the bundle,
+   `want` came back undefined, and the function fell through to its `return 0`.
+   activePlans() then offered the 549 bundle at 0 SAR in all three modes.
+   Nothing shipped could reach it — but activePlans() is written to construct
+   exactly that offer, so it was one wired-up button from being live. */
 function upgradeCost(mode, tier){
-  const held = owned[mode] ? (PLAN_SETS[mode] || PLANS)[planIndex(mode, owned[mode])] : null;
-  const want = (PLAN_SETS[mode] || PLANS)[planIndex(mode, tier)];
+  const ladder = PLAN_SETS[mode] || PLANS;
+  const held = owned[mode] ? ladder[planIndex(mode, owned[mode])] : null;
+  const want = offeredPlans(mode).find(p => p.name === tier);
   if (!want) return 0;
   return Math.max(0, want.amt - (held ? held.amt : 0));
 }
@@ -10299,9 +10389,23 @@ let scanUsed = { month:"", n:0 };
    would get another one every time the network hiccupped. */
 let scanServer = null;
 
+/* The first instant of THIS month where the reader lives, expressed as an
+   instant the server can compare against.
+
+   It used to feed the LOCAL year and month into Date.UTC, which produces
+   midnight UTC on the 1st — a different moment from midnight local on the 1st
+   everywhere except UTC itself. thisMonth() and the reader's own sense of "this
+   month" are local, so in UTC+3 the two disagreed by three hours every month:
+   a scan at 01:00 local on the 1st fell before the UTC boundary and was never
+   counted, and a scan at 22:00 local on the last day fell after it and was
+   charged to the month that had not started yet.
+
+   new Date(y, m, 1) builds the local instant; toISOString() converts it. One
+   clock throughout, which is the only way the boundary the server counts from
+   is the boundary the reader experiences. */
 function monthStartISO(){
   const d = new Date();
-  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1)).toISOString();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
 }
 
 /* Asked once when a session appears, and after each scan is recorded. */
@@ -10356,6 +10460,13 @@ function scanGate(kind){
     return false;
   }
   if (scansLeft() <= 0){
+    /* REMEMBER WHAT THEY WERE TRYING TO READ. The branch above already does
+       this for sign-in; this one did not, and the asymmetry cost the reader
+       the thing they paid for. They hit the limit on contract B, paid 199, and
+       were shown contract A's result — because nothing had recorded that B was
+       what they came for. Five pieces of paywall state were set here and the
+       only one that mattered to the reader was missing. */
+    pendingScan = kind;
     pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
     pwUpgrade = null; pwUpBack = null;
     renderPaywall(); show("paywall");
@@ -10639,6 +10750,35 @@ async function redeem(){
    redemption land here, so entitlement cannot be granted two different ways
    that drift apart — which is how the tier came to be recorded in one place
    and never read in another. */
+/* THE PACK TOP-UP, GATED ON WHAT WAS BOUGHT.
+   This used to sit further down grantAndGo() reading `owned.review` — what the
+   reader HOLDS — with no reference to what they had just purchased. So every
+   purchase of anything topped up a pack the reader already had: hold the 699
+   pack, buy a 149 letter, receive five more reviews. Measured at 5 → 10 → 15
+   before this changed. It was the only defect in the catalogue that scaled with
+   how much a customer spent, which meant it rewarded the best customers most.
+
+   `want` is the product actually bought. The bundle grants plan_review and
+   never plan_reviews5, so a bundle purchase correctly does not credit a pack
+   either — the old test read owned.review AFTER the grant and could not tell
+   the two apart.
+
+   `< Date.now()`, not `!packUntil`: the original guard protected an ACTIVE
+   window from being extended on a re-render and did that, but also refused to
+   refresh an EXPIRED one, so a repeat buyer paid for a window that had already
+   lapsed. Comparing to now keeps the protection and fixes the case it never
+   considered. Credits are ADDED rather than reset, so buying a second pack
+   while the first is live does not destroy what is left of it. */
+function creditPack(bought){
+  if (bought !== "plan_reviews5") return;
+  if (packUntil < Date.now()){
+    packUntil = Date.now() + PACK_DAYS * 86400000;
+    packLeft = PACK_CREDITS;
+  } else {
+    packLeft += PACK_CREDITS;
+  }
+}
+
 function grantAndGo(){
   const chosen = activePlans()[pwPlan];
   /* Monotonic: a grant may only ever move a reader up. Writing unconditionally
@@ -10663,28 +10803,18 @@ function grantAndGo(){
       const held = owned[pwMode];
       if (!held || planIndex(pwMode, want) >= planIndex(pwMode, held)) owned[pwMode] = want;
     }
-  }
-  /* `< Date.now()`, not `!packUntil`. The original guard was protecting an
-     ACTIVE window from being extended on a re-render, and it did that — but it
-     also refused to refresh an EXPIRED one, so buying the pack a second time
-     granted a window that had already lapsed. The repeat buyer paid 130 SAR
-     and received the 65 SAR product, and the only customer who ever repurchases
-     the pack is the one it was built for. Comparing to now preserves the
-     original protection and fixes the case it never considered. */
-  /* `< Date.now()`, not `!packUntil`, for the reason the six-month version
-     recorded: the original guard protected an ACTIVE window from being
-     extended on a re-render and did that, but also refused to refresh an
-     EXPIRED one, so a repeat buyer paid for a window that had already lapsed.
-     Comparing to now keeps the protection and fixes the case it never
-     considered. Credits are ADDED rather than reset, so buying a second pack
-     while the first is live does not destroy what is left of it. */
-  if (owned.review === "plan_reviews5"){
-    if (packUntil < Date.now()){ packUntil = Date.now() + PACK_DAYS * 86400000; packLeft = PACK_CREDITS; }
-    else packLeft += PACK_CREDITS;
+    creditPack(want);
   }
   const wasUpgrade = !!pwUpgrade, backTo = pwUpBack;
   pwUpgrade = null; pwUpBack = null;
   saveState();
+  /* THE SCAN THEY PAID FOR RUNS NOW, and deliberately after saveState() rather
+     than before it. analyze() re-enters scanGate(), which asks reviewUnlocked()
+     — so the entitlement has to be written first or the reader is bounced
+     straight back to the paywall they have just paid at. resumeScan() is reused
+     rather than re-implemented: it already clears pendingScan and already does
+     nothing when there is none. */
+  if (pendingScan){ resumeScan(); return; }
   /* An upgrade returns the reader to the step they were on, now unlocked,
      rather than dropping them back at the top of a result they have read. */
   if (wasUpgrade && backTo){
