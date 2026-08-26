@@ -439,6 +439,40 @@
   .letter-tease span{font-size:12.5px;color:var(--ink-2)}
   .letter-tease .go{margin-inline-start:auto;color:var(--amber);display:flex}
 
+  /* Reads as a label, not as a second heading — the clause name stays the
+     thing you scan for. Colour matches the row so it reinforces the tint
+     rather than repeating it in a different key. */
+  .flag .sev-label{
+    display:block;font-size:12px;line-height:1.3;margin-top:2px;font-weight:600;
+    color:var(--ink-2);
+  }
+  .flag.red .sev-label{color:var(--red)}
+  .flag.amber .sev-label{color:var(--amber)}
+  .flag.green .sev-label{color:var(--green)}
+
+  /* Suggestion and track chips inside an assistant message. Sized to the 44px
+     touch minimum the rest of the app holds to, and wrapping rather than
+     scrolling sideways — long Arabic labels must never clip. */
+  /* Tertiary. No card, no border, no price — nothing that reads as an option
+     in the list above it. */
+  .pw-biz{
+    display:block;width:100%;background:none;border:0;cursor:pointer;
+    font:inherit;font-size:13px;color:var(--ink-2);text-align:center;
+    padding:14px 8px;min-height:44px;text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .pw-biz:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:8px}
+
+  .as-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .as-chip{
+    font:inherit;font-size:13.5px;line-height:1.35;min-height:44px;
+    padding:10px 14px;border-radius:var(--r-lg);cursor:pointer;
+    background:var(--card);color:var(--teal-deep);
+    border:1px solid var(--teal);text-align:start;
+  }
+  .as-chip:active{transform:scale(.97)}
+  .as-chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
   .pw-note{text-align:center;font-size:12.5px;color:var(--green);font-weight:700;margin:2px 0 12px}
   html[lang="ar"] .pw-note{font-weight:400;font-size:14px}
   .preview{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:22px;overflow:hidden;box-shadow:var(--e2),var(--edge)}
@@ -1207,7 +1241,12 @@
 
   .caps{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
   .caps::-webkit-scrollbar{display:none}
+  /* 44px, the same touch minimum the rest of the app holds to. These sat at
+     37px — the one control group in the product below it, and the first
+     thing a reader taps on the assistant screen. Measured at 390x844 and
+     430x932 in both languages. */
   .caps button{flex:none;font-size:12.5px;color:var(--teal);background:var(--teal-soft);
+    min-height:44px;display:inline-flex;align-items:center;
       border:1px solid transparent;border-radius:999px;padding:7px 13px;white-space:nowrap}
   .caps button:hover{border-color:var(--teal)}
 
@@ -1873,8 +1912,8 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
        nothing routes here otherwise and no entry point renders. -->
   <section class="screen" id="screen-signin">
     <button class="back" onclick="closeSignin()"><span class="bk" aria-hidden="true">‹</span><span data-t="back"></span></button>
-    <h2 class="section-title" data-t="au_title"></h2>
-    <p class="pw-note" data-t="au_sub"></p>
+    <h2 class="section-title" id="auTitle"></h2>
+    <p class="pw-note" id="auSub"></p>
     <div class="au-acts">
       <button class="au-btn" id="auGoogle" onclick="doSignIn('google')">
         <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.3-.2-1.9H9v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.9 10.7a5.4 5.4 0 0 1 0-3.4V5H.9a9 9 0 0 0 0 8l3-2.3z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 .9 5l3 2.3C4.6 5.2 6.6 3.6 9 3.6z"/></svg>
@@ -2460,6 +2499,20 @@ const T = {
      Offered where an account BUYS something and nowhere else. The app has
      always worked signed out and still does; nothing below gates a screen. */
   au_title:{ar:"احفظ شغلك",en:"Save your work"},
+  /* THE HEADLINE THAT DESCRIBED THE WRONG MOMENT.
+     The reader has just pasted their contract and pressed analyse. What
+     happens next is that they are stopped — and the screen said "Save your
+     work", which describes something they are not doing and have nothing yet
+     to do it to. The body copy underneath was already honest about the reason;
+     the headline contradicted it.
+
+     "Create your free account to see your results" is what is actually
+     happening, and it says the result exists — which it does: the contract has
+     been read on their device before this screen appears. */
+  au_title_scan:{ar:"سوِّ حسابك المجاني عشان تشوف النتيجة",
+                 en:"Create your free account to see your results"},
+  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، وهو اللي يخلّي حد الفحص المجاني الشهري يُحسب على أحد. عقدك نفسه ما يطلع من جهازك.",
+               en:"Your first contract scan is free. An account keeps that result available to you, and it is what lets the one-free-scan-a-month limit be counted against somebody. Your contract itself never leaves your device."},
   /* THIS SAID "works without an account AND ALWAYS WILL" until the free scan
      started being counted per person. That was a forward promise, not a
      description, and quietly deleting it would be the worse of the two ways
@@ -3849,6 +3902,16 @@ const T = {
   as_send:{ar:"أرسل",en:"Send"},
   as_thinking:{ar:"أفكر…",en:"Thinking…"},
   as_refs:{ar:"مرجع",en:"Reference"},
+  /* WHAT CAN BE ASKED, written as a reader would ask it and phrased so the
+     engine actually matches it — these strings are fed back through ask()
+     verbatim, so a chip that did not match would be a chip that fails. Pinned
+     by a test for exactly that reason. */
+  as_sug_notice:{ar:"كم مدة الإشعار؟",en:"What is my notice period?"},
+  as_sug_eos:{ar:"كيف تُحسب مكافأة نهاية الخدمة؟",en:"How is end-of-service calculated?"},
+  as_sug_prob:{ar:"كم فترة التجربة؟",en:"How long is probation?"},
+  as_sug_resign:{ar:"وش يصير لو استقلت؟",en:"What happens if I resign?"},
+  pw_biz_link:{ar:"تراجع عقود لشركة؟ اعرف وضوح أعمال ←",
+               en:"Reviewing contracts for a company? See Wodouh for business →"},
   as_left:{ar:"باقي لك {n} أسئلة مجانية",en:"{n} free questions left"},
   as_left1:{ar:"باقي لك سؤال مجاني واحد",en:"1 free question left"},
   as_quota_t:{ar:"خلصت أسئلتك المجانية",en:"You've used your free questions"},
@@ -4692,6 +4755,7 @@ function applyLang(){
   renderHomeReminders();
   renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
   renderPrivacyCopy();
+  renderSigninCopy();
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -5189,10 +5253,16 @@ function renderResult(reset){
     const tip = adv
       ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${srcLine}${addBtnHtml(idx)}`
       : srcLine;
+    /* SEVERITY IN WORDS, NOT ONLY IN COLOUR.
+       The dot and the tint carried the whole meaning of a row: a reader with
+       any red-green colour difficulty — around 1 in 12 men — saw a list of
+       clause names with no severity at all, and so did anyone reading in
+       bright sun. actionLabel() is the same wording the legend above already
+       uses, so nothing new is invented and the two cannot drift. */
     div.innerHTML =
       `<button aria-expanded="false" onclick="toggleFlag(this)">
          <span class="dot">${ICONS[c.s]}</span>
-         <span class="ttl"><h4>${c.t[lang]}</h4></span>
+         <span class="ttl"><h4>${c.t[lang]}</h4><span class="sev-label">${esc(actionLabel(c.s))}</span></span>
          <span class="chev" aria-hidden="true">
            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"
                 stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg>
@@ -5576,8 +5646,25 @@ function openSignin(back){
      that requires an account. It becomes a plain Back there. */
   const skip = document.getElementById("auSkip");
   if (skip) skip.textContent = t(authWant === "scan" ? "au_skip_scan" : "au_skip");
+  /* Same test as the skip label above, for the same reason: this door is
+     opened for two different purposes and only one of them is "save". */
+  renderSigninCopy();
   show("signin");
   renderProviders();
+}
+
+/* WHY THIS IS A FUNCTION AND NOT data-t ON THE ELEMENTS.
+   applyLang() rewrites every [data-t] node from its key, so leaving the key on
+   these two would mean the correct headline appeared, and then reverted to
+   "Save your work" the moment the reader tapped عربي — on the one screen where
+   the wrong headline costs a conversion. The copy depends on WHY the door
+   opened, which is state, not a static key. Called from openSignin() and from
+   applyLang() so both paths agree. */
+function renderSigninCopy(){
+  const scanDoor = authWant === "scan";
+  const ttl = document.getElementById("auTitle"), sb = document.getElementById("auSub");
+  if (ttl) ttl.textContent = t(scanDoor ? "au_title_scan" : "au_title");
+  if (sb)  sb.textContent  = t(scanDoor ? "au_sub_scan"   : "au_sub");
 }
 
 /* Hide a provider the project has not enabled, rather than let the reader
@@ -8466,6 +8553,37 @@ function msgEl(m){
     b.onclick = ()=>{ if (current && negotiables().length) openLetterFlow(); else show("home",1); };
     d.appendChild(b);
   }
+  /* THE READER MUST BE ABLE TO ACT ON A REFUSAL, not just read it.
+     Both of these messages previously ended in a full stop and left the reader
+     to guess the next move — which, on a question they had already asked once,
+     is where they leave. */
+  if (m.needTrack){
+    /* One tap, and the question they just asked is answered with it. Setting
+       the track re-runs their own words rather than making them retype. */
+    const row = document.createElement("div");
+    row.className = "as-chips";
+    [["sa","nat_sa_short"],["nonsa","nat_nonsa_short"]].forEach(([v,lbl])=>{
+      const c = document.createElement("button");
+      c.className = "as-chip";
+      c.textContent = t(lbl);
+      c.onclick = ()=>{ setNat(v); if (m.q) ask(m.q); };
+      row.appendChild(c);
+    });
+    d.appendChild(row);
+  } else if (m.miss){
+    /* What CAN be asked, in the reader's language, drawn from the topics the
+       engine really covers — not an invitation to guess again. */
+    const row = document.createElement("div");
+    row.className = "as-chips";
+    ASK_SUGGESTIONS.forEach(k=>{
+      const c = document.createElement("button");
+      c.className = "as-chip";
+      c.textContent = t(k);
+      c.onclick = ()=>ask(t(k));
+      row.appendChild(c);
+    });
+    d.appendChild(row);
+  }
   return d;
 }
 
@@ -8519,9 +8637,16 @@ function submitAsk(e){
   ask(v);
 }
 
+/* THE QUOTA IS SPENT ON AN ANSWER, NEVER ON A FAILURE.
+   `asked++` ran here, before answer() had been called, so a question the
+   engine could not match still cost the reader one of three. Measured: asking
+   "Can my employer fire me without notice?" — squarely this product's subject
+   — returned "I didn't quite catch that" AND dropped the counter to 2. Being
+   charged for a failure is the version of this that a reader remembers.
+
+   The increment moved to the point where an answer actually exists. */
 function ask(text){
   if (asked >= FREE_QUESTIONS) return;
-  asked++;
   chat.push({ who:"user", text });
   const box = document.getElementById("chat");
   box.appendChild(msgEl({ who:"user", text }));
@@ -8531,8 +8656,9 @@ function ask(text){
   document.getElementById("askInput").disabled = true;
   setTimeout(()=>{
     const a = answer(text);
+    if (!a.miss) asked++;              /* only a real answer costs a question */
     typing.remove();
-    const m = { who:"bot", ...a };
+    const m = { who:"bot", q:text, ...a };
     chat.push(m);
     box.appendChild(msgEl(m));
     buzz(6);
@@ -8560,7 +8686,7 @@ const KB = [
        en:"No. The end-of-service award and GOSI are separate systems. The award is paid by your employer under Articles 84 and 85, and it is not reduced by, offset against, or replaced by GOSI contributions. If you are told otherwise, ask for it in writing."},
     r:{ar:"نظام التأمينات الاجتماعية مع المادتين 84 و85",en:"Social Insurance Law read with Articles 84 and 85"} },
 
-  { k:/(نهاية الخدمة|مكافأة|end of service|eosb|gratuity)/i,
+  { k:/(نهاية الخدمة|مكافأة|end[\s-]?of[\s-]?service|eosb|gratuity)/i,
     a:{ar:"مكافأة نهاية الخدمة تُحسب عادة نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على أساس آخر أجر. طريقة إنهاء العقد (استقالة أو إنهاء من صاحب العمل) تغيّر المستحق.",
        en:"End-of-service pay is generally half a month for each of the first five years, then a full month per year after that, based on your final wage. How the contract ends — resignation or employer termination — changes what you're owed."},
     r:{ar:"نظام العمل السعودي — المادتان 84 و85",en:"Saudi Labor Law — Articles 84 & 85"} },
@@ -8576,7 +8702,7 @@ const KB = [
     a:{ar:"الحد الأقصى 180 يومًا، ولازم تكون فترة التجربة منصوصة صراحة في العقد — إذا ما ذُكرت، ما فيه فترة تجربة. وأعياد الفطر والأضحى والإجازات المرضية ما تُحسب ضمنها، ولأي من الطرفين إنهاء العقد خلالها.\n\nنقطة لم نتحقق منها: هل يقدر صاحب العمل ينص على 180 يومًا من البداية، أو لازم 90 يومًا ثم تمديد باتفاق مكتوب؟ الصياغة تغيّرت مع تعديلات 2025 ولم نستطع تأكيدها من النص الرسمي — راجعها قبل ما تبني عليها.",
        en:"The ceiling is 180 days, and probation has to be stated explicitly in your contract — if it isn't there, there is no probation. Eid holidays and sick leave don't count toward it, and either side may end the contract during it.\n\nOne thing we have not confirmed: whether an employer may state 180 days from the outset, or must set 90 and then extend by written agreement. The wording changed with the 2025 amendments and we could not verify the current text against an official source — check it before relying on that difference."},
     r:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"} },
-  { k:/(الإشعار|إشعار|notice period|notice)/i, nat:"sa",
+  { k:/(الإشعار|إشعار|الإنذار|إنذار|notice period|notice)/i, nat:"sa",
     a:{ar:"في العقود غير محددة المدة ولمن يتقاضى أجرًا شهريًا، الإشعار ليس متساويًا: صاحب العمل عليه إشعارك قبل 60 يومًا، وأنت عليك إشعاره قبل 30 يومًا. يجوز الاتفاق على مدة أطول لا أقصر.",
        en:"For an indefinite contract paid monthly the notice is not symmetrical: the employer must give you 60 days, and you must give the employer 30. You can agree to longer, never shorter."},
     r:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"} },
@@ -8620,7 +8746,7 @@ const KB = [
   /* ---- Non-Saudi workers. Same claims as the analyzer rules, registered in
      docs/legal-sources.md before shipping. */
 
-  { k:/(الإشعار|إشعار|notice period|notice|إنهاء مبكر|early termination)/i, nat:"nonsa",
+  { k:/(الإشعار|إشعار|الإنذار|إنذار|notice period|notice|إنهاء مبكر|early termination)/i, nat:"nonsa",
     a:{ar:"عقدك محدد المدة، فمدد الإشعار في المادة 75 خاصة بالعقود غير محددة المدة وما تنطبق عليك. الأصل أن العقد يمشي لنهاية مدته؛ وإذا أُنهي مبكرًا بغير سبب مشروع، تستحق أجر المدة الباقية من العقد بحد أدنى أجر شهرين.",
        en:"Your contract is fixed-term, so the Article 75 notice periods — which are for indefinite contracts — don't reach you. Your contract runs to its end date; if it's ended early without valid reason, you're owed the wages for the remaining term, with a floor of two months."},
     r:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"} },
@@ -8643,7 +8769,7 @@ const KB = [
   /* ---- Developments after the February 2025 amendments. Absent until the
      31 July 2026 re-verification found them. */
 
-  { k:/(استقال|استقالة|resign|resignation)/i,
+  { k:/(استقال|استقالة|استقلت|أستقيل|استقيل|resign|resignation|quit)/i,
     a:{ar:"الاستقالة صارت معرَّفة في النظام وسببًا مشروعًا لإنهاء العقد. والأهم: إذا قدّمت استقالتك وما ردّ صاحب العمل خلال ثلاثين يومًا، تُعدّ مقبولة حكمًا — ما يقدر يعلّقك بلا رد.",
        en:"Resignation is now defined in the law and is a lawful ground for ending a contract. More useful to you: if you resign and your employer doesn't respond within 30 days, it is deemed accepted — they cannot leave you hanging by staying silent."},
     r:{ar:"نظام العمل السعودي — المادة 79",en:"Saudi Labor Law — Article 79"} },
@@ -8704,6 +8830,9 @@ const CAP_Q = {
 };
 
 const FREE_QUESTIONS = 3;
+/* Offered whenever the engine could not answer, and on the empty screen. Kept
+   as copy keys rather than literals so both languages stay in one place. */
+const ASK_SUGGESTIONS = ["as_sug_notice","as_sug_eos","as_sug_prob","as_sug_resign"];
 let asked = 0, chat = [];
 
 /* Contract-aware answers: summarize, risks, and applicable laws all read the
@@ -8757,9 +8886,30 @@ function answer(q){
       : "I can draft a negotiation letter built from your contract's clauses, a resignation letter, or a non-renewal notice. The negotiation letter is the common one:", draft:true };
   const hit = KB.find(e=>forTrack(e) && e.k.test(q));
   if (hit) return { text: hit.a[lang], refs: hit.r ? [hit.r] : [] };
-  return { text: lang==="ar"
-    ? "ما فهمت السؤال تمامًا. جرّب تسأل عن بند معيّن — مثل «فترة التجربة» أو «مدة الإشعار» أو «مكافأة نهاية الخدمة» — أو اطلب مني ألخّص عقدك."
-    : "I didn't quite catch that. Try asking about a specific topic — probation, notice period, end-of-service pay — or ask me to summarize your contract." };
+
+  /* WHY THIS BRANCH EXISTS, AND THE BUG IT NAMES.
+     forTrack() hides every entry carrying nat:"sa" or nat:"nonsa" unless the
+     reader has chosen a track. A reader who skipped that question — and the
+     Ask entry is reachable in exactly that state — therefore had the most
+     asked question in Saudi employment, the notice period, answered with
+     "I didn't quite catch that". The knowledge was there; the reader was
+     filtered out of it.
+
+     Measured with no track chosen: 4 of 7 ordinary questions answered, and
+     every notice-period phrasing in both languages missed.
+
+     So a match that exists but is filtered is reported as what it is — a
+     question we can answer once we know which rules apply — never as a
+     question we did not understand. `miss` is returned either way so the
+     caller can decide whether the reader's quota was really spent. */
+  const blocked = !nat && KB.some(e => e.nat && e.k.test(q));
+  if (blocked) return { needTrack: true, miss: true, text: lang==="ar"
+    ? "أقدر أجاوبك على هذا، بس الجواب يختلف بين السعودي والمقيم — خصوصًا في نوع العقد ومدة الإشعار والتعويض. أي وحدة تنطبق عليك؟"
+    : "I can answer this, but the answer differs for Saudis and residents — on contract type, notice and compensation. Which one applies to you?" };
+
+  return { miss: true, text: lang==="ar"
+    ? "ما أبي أخمّن في سؤال نظامي. جرّب تسأل عن بند معيّن — مثل «فترة التجربة» أو «مدة الإشعار» أو «مكافأة نهاية الخدمة» — أو اطلب مني ألخّص عقدك."
+    : "I don't want to guess about a legal question. Try asking about a specific topic — probation, notice period, end-of-service pay — or ask me to summarize your contract." };
 }
 
 /* ----------------------------------------------------- file intake ----
@@ -10263,7 +10413,19 @@ function offeredPlans(mode){
   return set;
 }
 function activePlans(){
-  const set = offeredPlans(pwMode).filter(sellable);
+  /* BUSINESS IS NOT A CONSUMER DECISION.
+     "Wodouh for business — unlimited reviews for one seat, for HR teams,
+     brokers and firms" was the third of four options shown to someone who had
+     just found a problem in their OWN employment contract, at 799 a month
+     against a 199 one-off. It is a different buyer, a different budget and a
+     different moment, and putting it in that list makes the reader do the work
+     of ruling it out while they are worried about their job.
+
+     Filtered from what is OFFERED, never from PLAN_SETS or offeredPlans() —
+     grantAndGo() resolves a purchase against those, so removing it there would
+     break the business purchase rather than relocate it. It keeps its own
+     entry, and the paywall carries a quiet line pointing at it. */
+  const set = offeredPlans(pwMode).filter(sellable).filter(p => !p.sub);
   /* The default selection must land on something buyable, or the pay button
      would be priced against a product that cannot be sold. */
   if (!pwUpgrade && set[pwPlan] && set[pwPlan].soon){
@@ -10620,6 +10782,18 @@ function renderPaywall(){
     else b.onclick = ()=>{ pwPlan = i; renderPaywall(); };
     wrap.appendChild(b);
   });
+  /* A tertiary text link, deliberately: the business reader recognises
+     themselves and taps it, and the consumer reads past it. It sits below the
+     plans rather than among them so it can never be mistaken for one of the
+     things being chosen between. */
+  if (isReview){
+    const biz = document.createElement("button");
+    biz.className = "pw-biz";
+    biz.id = "pwBiz";
+    biz.textContent = t("pw_biz_link");
+    biz.onclick = ()=>{ renderBiz(); show("biz"); };
+    wrap.appendChild(biz);
+  }
   renderRedeem();
   const pay = document.getElementById("payBtn");
   const chosen = activePlans()[pwPlan];

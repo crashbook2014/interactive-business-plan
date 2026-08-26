@@ -426,6 +426,147 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(ghosts.visible.length === 0,
      `and every one of them computes to display:none${ghosts.visible.length ? " — ON SCREEN: " + ghosts.visible.join(", ") : ""}`);
 
+  /* ==================================================================
+     The 24 August UX pass. Each block below was measured against the
+     tree BEFORE the change and failed there. */
+
+  console.log("\n— Ask Wodouh never charges for a question it could not answer");
+  {
+    const q = await p.evaluate(() => {
+      lang = "en"; applyLang(); nat = "sa"; asked = 0; chat = [];
+      openAssist("rights");
+      const before = FREE_QUESTIONS - asked;
+      /* A question the engine genuinely cannot place. */
+      const miss = answer("what colour is the sky");
+      /* And one it can. */
+      const hit = answer("What is my notice period?");
+      return { before, missFlag: !!miss.miss, hitFlag: !!hit.miss };
+    });
+    ok(q.missFlag, "an unanswerable question is reported as a miss");
+    ok(!q.hitFlag, "and a real one is not");
+    /* Driven, not reasoned about: the counter is what the reader sees. */
+    const seen = await p.evaluate(async () => {
+      lang = "en"; applyLang(); nat = "sa"; asked = 0; chat = [];
+      openAssist("rights");
+      const read = () => (document.getElementById("quota") || {}).textContent || "";
+      const start = read();
+      ask("what colour is the sky");
+      await new Promise(r => setTimeout(r, 1000));
+      const afterMiss = read();
+      ask("What is my notice period?");
+      await new Promise(r => setTimeout(r, 1000));
+      return { start, afterMiss, afterHit: read() };
+    });
+    ok(seen.start === seen.afterMiss,
+       `a failed question leaves the quota untouched (${seen.start} → ${seen.afterMiss})`);
+    ok(seen.afterHit !== seen.afterMiss,
+       `and an answered one spends it (${seen.afterMiss} → ${seen.afterHit})`);
+  }
+
+  console.log("\n— a reader with no track chosen is asked, not stonewalled");
+  {
+    /* THE BUG THIS PINS. forTrack() hides every nat:"sa"/"nonsa" entry until a
+       track is chosen, and Ask is reachable before that — so the most asked
+       question in Saudi employment came back as "I didn't quite catch that".
+       The knowledge was there; the reader was filtered out of it. */
+    const r = await p.evaluate(() => {
+      nat = null;
+      const a = answer("How long is the notice period?");
+      const ar = answer("ما هي مدة الإشعار؟");
+      nat = "sa";
+      const withTrack = answer("How long is the notice period?");
+      return { needTrack: !!a.needTrack, needTrackAr: !!ar.needTrack,
+               answeredWithTrack: !withTrack.miss };
+    });
+    ok(r.needTrack && r.needTrackAr,
+       "with no track it offers to ask which rules apply, in both languages");
+    ok(r.answeredWithTrack, "and once a track is set the same question answers");
+  }
+
+  console.log("\n— every suggestion chip is a question the engine can answer");
+  {
+    /* A chip is fed back through ask() verbatim, so a chip that does not match
+       is a chip that fails in the reader's hands. Checked in both languages
+       and both tracks — two of the four failed when first written. */
+    const bad = await p.evaluate(() => {
+      const out = [];
+      for (const l of ["en", "ar"]) for (const tr of ["sa", "nonsa"]) {
+        lang = l; applyLang(); nat = tr;
+        ASK_SUGGESTIONS.forEach(k => {
+          const txt = t(k);
+          if ((answer(txt) || {}).miss) out.push(l + "/" + tr + ": " + txt);
+        });
+      }
+      return out;
+    });
+    ok(bad.length === 0,
+       `all ${4 * 4} chip/language/track combinations answer${bad.length ? " — FAILING: " + bad.join(" | ") : ""}`);
+  }
+
+  console.log("\n— the sign-in wall describes the moment it actually interrupts");
+  {
+    const r = await p.evaluate(() => {
+      const read = () => (document.getElementById("auTitle") || {}).textContent || "";
+      lang = "en"; applyLang(); authWant = "scan"; openSignin("home");
+      const scanEn = read();
+      /* The trap: these used to be data-t nodes, so applyLang() reverted the
+         headline the moment the reader tapped عربي — on the one screen where
+         the wrong headline costs the conversion. */
+      lang = "ar"; applyLang();
+      const scanAr = read();
+      lang = "en"; applyLang(); authWant = null; openSignin("account");
+      return { scanEn, scanAr, saveEn: read() };
+    });
+    ok(/results/i.test(r.scanEn) && !/save your work/i.test(r.scanEn),
+       `blocking a scan, it says a result is waiting (${r.scanEn})`);
+    ok(r.scanAr && r.scanAr !== r.scanEn && !/Save your work/i.test(r.scanAr),
+       `and survives a language switch in Arabic (${r.scanAr})`);
+    ok(/save/i.test(r.saveEn),
+       `while the ordinary account door still offers to save (${r.saveEn})`);
+  }
+
+  console.log("\n— the business tier is not a consumer purchase decision");
+  {
+    const r = await p.evaluate(() => {
+      lang = "en"; applyLang(); nat = "sa";
+      owned = { review:null, letter:null, case:null };
+      current = SAMPLES.employment; current.srcText = null;
+      pwMode = "review"; pwOrigin = "review"; pwUpgrade = null; pwPlan = 0;
+      renderPaywall(); show("paywall");
+      return { offered: activePlans().map(x => x.name),
+               subsOffered: activePlans().filter(x => x.sub).length,
+               link: !!document.getElementById("pwBiz"),
+               /* it must still be a real product, or this relocated nothing */
+               inCatalogue: PLANS_REVIEW.some(x => x.name === "plan_biz"),
+               grantable: !!offeredPlans("review").find(x => x.name === "plan_biz") };
+    });
+    ok(r.subsOffered === 0,
+       `no subscription sits in the consumer paywall (${r.offered.join(", ")})`);
+    ok(r.link, "a separate, tertiary door to the business page is offered instead");
+    ok(r.inCatalogue && r.grantable,
+       "and the product still exists and can still be granted — relocated, not deleted");
+  }
+
+  console.log("\n— severity is never carried by colour alone");
+  {
+    for (const L of ["en", "ar"]) {
+      const rows = await p.evaluate(l => {
+        lang = l; applyLang(); nat = "sa";
+        owned = { review:"plan_review", letter:null, case:null };
+        current = SAMPLES.employment; current.srcText = null; renderResult();
+        return [...document.querySelectorAll("#flags .flag")].map(f => ({
+          sev: ((f.querySelector(".sev-label") || {}).textContent || "").trim(),
+          cls: [...f.classList].find(c => ["red","amber","green"].includes(c)) }));
+      }, L);
+      ok(rows.length > 0, `${L}: the result renders flags (${rows.length})`);
+      ok(rows.every(x => x.sev.length > 0),
+         `${L}: every one states its severity in words, not only in colour`);
+      ok(new Set(rows.map(x => x.cls + "=" + x.sev)).size ===
+         new Set(rows.map(x => x.cls)).size,
+         `${L}: and the wording is consistent for a given severity`);
+    }
+  }
+
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all surface checks passed"));
   await b.close();
