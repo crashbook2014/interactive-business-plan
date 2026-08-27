@@ -289,7 +289,12 @@
 
   /* onboarding */
   #screen-onboard{justify-content:flex-end;min-height:calc(100vh - 90px)}
-  .ob-skip{align-self:flex-end;color:var(--ink-2);font-size:13.5px;font-weight:700;padding:8px 4px}
+  /* 44px touch minimum, applied to the four control groups measured below it
+     at 390x844 and 430x932. None of these was unusable, but each was under the
+     size the rest of the app already holds to, and the legal links were half
+     of it. */
+  .ob-skip{align-self:flex-end;color:var(--ink-2);font-size:13.5px;font-weight:700;
+           padding:8px 12px;min-height:44px;display:inline-flex;align-items:center}
   html[lang="ar"] .ob-skip{font-size:15px;font-weight:400}
   .ob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 8px}
   .ob-art{width:190px;height:190px;margin-bottom:28px;position:relative;display:flex;align-items:center;justify-content:center}
@@ -519,7 +524,8 @@
   .au-none[hidden]{display:none}
   .acc-who{font-weight:600;margin:2px 0 12px;word-break:break-all}
   .legal-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
-  .legal-links a{font-size:12.5px;color:var(--teal-ink);text-decoration:underline;text-underline-offset:2px}
+  .legal-links a{font-size:12.5px;color:var(--teal-ink);text-decoration:underline;
+    text-underline-offset:2px;min-height:44px;display:inline-flex;align-items:center}
   .demo-tag{text-align:center;font-size:11.5px;color:var(--ink-2);margin-top:8px}
   .acc-anchor{text-align:center;font-size:12px;color:var(--ink);background:var(--teal-soft);
       border-radius:var(--r-sm);padding:9px 12px;margin-top:12px;line-height:1.6}
@@ -828,9 +834,15 @@
   .tab.on svg{stroke-width:2.3}
 
   /* home: trust line, sample disclosure, saved contracts */
-  .privacy-line{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:start;
-      margin-top:12px;padding:2px;color:var(--ink-2);font-size:12px;line-height:1.6}
-  .privacy-line svg{flex:none;width:15px;height:15px;margin-top:2px;color:var(--teal)}
+  /* min-height, because the tap target was depending on the LANGUAGE. This
+     line wraps to two lines in English (~44px) and fits on one in Arabic
+     (~25px), so the same control was comfortably tappable for one reader and
+     under half the minimum for the other. Height should not be a translation
+     side effect. */
+  .privacy-line{display:flex;align-items:center;gap:8px;width:100%;text-align:start;
+      margin-top:12px;padding:4px 2px;min-height:44px;
+      color:var(--ink-2);font-size:12px;line-height:1.6}
+  .privacy-line svg{flex:none;width:15px;height:15px;color:var(--teal)}
   .privacy-line span{flex:1;border-bottom:1px solid var(--line);padding-bottom:1px}
   .samples-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
       margin-top:20px;padding:11px;border:1px solid var(--line);border-radius:var(--r-md);
@@ -1037,6 +1049,7 @@
   .tq span{flex:1;font-size:13.5px;color:var(--ink)}
   .tq .yn{display:flex;gap:6px}
   .tq .yn button{border:1px solid var(--line);background:var(--sand);border-radius:999px;
+    min-height:44px;display:inline-flex;align-items:center;justify-content:center;
       padding:6px 14px;font-size:12.5px;color:var(--ink-2);min-width:52px}
   .tq .yn button.on{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
   .verdict-box{border-radius:var(--r-lg);padding:14px 15px;margin-top:6px}
@@ -1146,7 +1159,8 @@
   .nat-chip:hover .nat-swap{color:var(--teal-ink)}
   .nat-chip:active{opacity:.7}
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
-  .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700}
+  .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700;
+    min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   html[lang="ar"] .seg button{font-weight:400;font-size:15px}
   .seg button.on{background:var(--teal);color:var(--on-teal)}
   .seg .save{font-size:10.5px;background:var(--amber-bg);color:var(--amber-ink);border-radius:999px;padding:1px 7px;margin-inline-start:6px}
@@ -1171,7 +1185,29 @@
   .scan-lock b{display:block;font-size:15px;margin-bottom:6px}
   .scan-lock p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
   .scan-lock .scan-left{font-size:12.5px;color:var(--ink-2);opacity:.85}
-  .scan-lock .cta{margin-top:4px}
+  /* THE BUTTON THAT SELLS THE PRODUCT, and it had no button styling at all.
+     `.cta` has no base rule in this stylesheet — it is only ever styled inside
+     `.pcard` — so here it inherited nothing: no background, no padding, no
+     height. Measured 27px tall with 0 padding, rendering as a line of teal
+     text in the middle of the lock panel. The single most important control in
+     the funnel did not look like a control.
+
+     Matched to `.primary`, which is what every other primary action in the app
+     uses, rather than inventing a fourth button style. */
+  .scan-lock .cta{
+    margin-top:12px;width:100%;background:var(--teal);color:var(--on-teal);
+    font-weight:700;font-size:15.5px;border-radius:var(--r-lg);padding:15px 16px;
+    min-height:48px;box-shadow:var(--e2);transition:opacity .15s,box-shadow .18s;
+    /* The English label wraps to two lines at 390px and broke as
+       "…review — 199" / "SAR", splitting the price across the fold. balance
+       moves the break to the em dash instead. Arabic fits on one line and is
+       unaffected. */
+    text-wrap:balance;
+  }
+  html[lang="ar"] .scan-lock .cta{font-weight:400;font-size:16.5px}
+  .scan-lock .cta:hover{box-shadow:var(--e3)}
+  .scan-lock .cta:active{transform:scale(.985)}
+  .scan-lock .cta:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
   .au-sep{display:flex;align-items:center;gap:10px;margin:14px 0 2px;
           color:var(--ink-2);font-size:12.5px}
   .au-sep::before,.au-sep::after{content:"";flex:1;height:1px;background:var(--line)}

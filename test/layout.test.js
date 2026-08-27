@@ -183,6 +183,96 @@ async function geometry(p){
   ok(!en.hScroll, "no horizontal scroll in LTR");
   await p.close();
 
+  /* ==================================================================
+     Touch targets, both viewports the brief names, both languages.
+     A sweep of every screen found four control groups under the 44px minimum
+     the rest of the app already held to — and one of them, the privacy line on
+     home, was under it ONLY IN ARABIC, because the English text wraps to two
+     lines and the Arabic does not. Height should never be a translation side
+     effect, which is why this runs in both. */
+  console.log("\n— every control meets the 44px touch minimum, in both languages");
+  {
+    const SCENES = {
+      onboard: `nat=null;obDone=false;obIndex=0;natGate=false;renderOnboard();show("onboard");`,
+      home:    `nat="sa";obDone=true;show("home");`,
+      result:  `nat="sa";obDone=true;owned={review:null,letter:null,case:null};
+                current=SAMPLES.employment;current.srcText=null;renderResult();show("result");`,
+      paywall: `nat="sa";obDone=true;owned={review:null,letter:null,case:null};
+                current=SAMPLES.employment;current.srcText=null;
+                pwMode="review";pwOrigin="review";pwUpgrade=null;pwPlan=0;
+                renderPaywall();show("paywall");`,
+      eos:     `nat="sa";obDone=true;show("eos");
+                document.getElementById("eosStart").value="2020-01-01";
+                document.getElementById("eosEnd").value="2026-01-01";
+                document.getElementById("eosWage").value="9000";eosHow="term";calcEos();`,
+      account: `nat="sa";obDone=true;goTab("account");`,
+      assist:  `nat="sa";obDone=true;asked=0;chat=[];openAssist("rights");`,
+    };
+    for (const vw of [390, 430]) {
+      for (const L of ["en", "ar"]) {
+        const pg = await b.newPage({ viewport: { width: vw, height: vw === 390 ? 844 : 932 } });
+        const errs = []; pg.on("pageerror", e => errs.push(e.message.slice(0, 90)));
+        await pg.goto(APP); await pg.waitForTimeout(500);
+        await pg.evaluate(l => { if (lang !== l) { lang = l; applyLang(); } }, L);
+        for (const [name, code] of Object.entries(SCENES)) {
+          await pg.evaluate(code);
+          /* AFTER the transition. Measuring during it reads a scaled ancestor
+             and reports 43px for a control that is really 44 — which sent an
+             earlier pass chasing a bug that did not exist. */
+          await pg.waitForTimeout(700);
+          const r = await pg.evaluate(() => {
+            const scr = document.querySelector(".screen.active");
+            if (!scr) return { small: ["NO ACTIVE SCREEN"], hScroll: false };
+            const small = [...scr.querySelectorAll("button, a")]
+              .filter(e => { if (e.closest(".sr-only")) return false;
+                const b = e.getBoundingClientRect();
+                return b.height > 0 && b.height < 44; })
+              .map(e => (e.textContent || "").trim().replace(/\s+/g, " ").slice(0, 22)
+                        + " " + Math.round(e.getBoundingClientRect().height) + "px");
+            return { small: [...new Set(small)],
+                     hScroll: document.documentElement.scrollWidth > window.innerWidth + 1 };
+          });
+          ok(r.small.length === 0,
+             `${vw} ${L} ${name}: every control is at least 44px${r.small.length ? " — " + r.small.join(", ") : ""}`);
+          ok(!r.hScroll, `${vw} ${L} ${name}: the page does not scroll sideways`);
+        }
+        ok(errs.length === 0, `${vw} ${L}: no page errors${errs.length ? " — " + errs[0] : ""}`);
+        await pg.close();
+      }
+    }
+  }
+
+  /* The single most important control in the funnel had no button styling at
+     all: `.cta` has no base rule in this stylesheet, so inside .scan-lock it
+     inherited nothing — 27px tall, no background, no padding, rendering as a
+     line of text. Asserted on the computed style, not on the class list. */
+  console.log("\n— the free-scan paywall button looks like a button");
+  {
+    const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
+    await pg.goto(APP); await pg.waitForTimeout(500);
+    for (const L of ["en", "ar"]) {
+      const r = await pg.evaluate(l => {
+        lang = l; applyLang(); nat = "sa"; obDone = true;
+        owned = { review:null, letter:null, case:null };
+        current = SAMPLES.employment; current.srcText = null;
+        renderResult(); show("result");
+        const el = document.getElementById("scanBuy");
+        if (!el) return null;
+        const c = getComputedStyle(el), b = el.getBoundingClientRect();
+        return { h: b.height, bg: c.backgroundColor, pad: parseFloat(c.paddingTop),
+                 w: b.width, parentW: el.parentElement.clientWidth };
+      }, L);
+      ok(!!r, `${L}: the unlock button renders`);
+      if (r) {
+        ok(r.h >= 44, `${L}: it is at least 44px tall (${Math.round(r.h)})`);
+        ok(r.pad >= 10, `${L}: it has real padding (${r.pad}px)`);
+        ok(!/rgba\(0, 0, 0, 0\)|transparent/.test(r.bg), `${L}: it has a filled background (${r.bg})`);
+        ok(r.w > r.parentW * 0.8, `${L}: and spans its panel (${Math.round(r.w)} of ${r.parentW})`);
+      }
+    }
+    await pg.close();
+  }
+
   await b.close();
   if (FAIL.length){
     console.log(`\n${FAIL.length} FAILURES`);
