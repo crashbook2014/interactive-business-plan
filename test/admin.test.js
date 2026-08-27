@@ -537,6 +537,41 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(/PRE-LAUNCH|OPEN|MISMATCH/.test(text), "the status panel read the launch state out of the deployed files");
   ok(/verified/.test(text), "and the register row counted the verified claims");
 
+  /* THE COUNTER MUST COUNT ROWS, NOT MENTIONS.
+     The console scanned the whole register for the tick, so any PROSE carrying
+     the same literal moved the number — and it did. A note added to
+     legal-sources.md warning readers not to miscount these rows quoted the
+     console's own matcher, and pushed the console from 29 to 30. A counter that
+     a sentence about counting can move is not a counter.
+
+     Asserted three ways: against the register's real rows, against the corpus
+     built from the same file, and against a register with adversarial prose
+     spliced in. */
+  console.log("\n— the verified count reads rows, and prose cannot move it");
+  {
+    const register = readFileSync(path.join(ROOT, "docs/legal-sources.md"), "utf8");
+    const corpus = JSON.parse(readFileSync(
+      path.join(ROOT, "supabase/functions/_shared/corpus.json"), "utf8"));
+    /* The exact expression the console uses, lifted from its source so the two
+       cannot drift apart — a re-implementation here would prove nothing. */
+    const countRows = md => md.split("\n").filter(l => l.charAt(0) === "|")
+      .filter(l => /✅\s*verified\s*\|/.test(l)).length;
+    const real = countRows(register);
+    ok(real === corpus.rows.length,
+       `the console's count matches the corpus built from the same file (${real} vs ${corpus.rows.length})`);
+    /* Prose that quotes the matcher, indented, quoted and inline. */
+    const poisoned = register.replace("## Claim register",
+      ["> a note that mentions `✅ verified |` inline",
+       "    ✅ verified | in an indented block",
+       "✅ verified | at the start of a line",
+       "", "## Claim register"].join("\n"));
+    ok(countRows(poisoned) === real,
+       `prose containing the literal does not change it (${countRows(poisoned)} vs ${real})`);
+    /* And the console really uses this shape, not a whole-file scan. */
+    ok(/\.split\(\s*["'`]\\n["'`]\s*\)[\s\S]{0,220}charAt\(0\)\s*===\s*"\|"/.test(adminJs),
+       "and the console counts per table row rather than scanning the document");
+  }
+
   /* ---- 7b. the privacy screen describes the flag check, but only where it
      can happen. A privacy screen that lists something this build cannot do is
      as wrong as one that omits something it can. */

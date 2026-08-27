@@ -89,8 +89,19 @@
       live.appReached   = !!app;
 
       /* The register, read the same way the register asks to be read: a row
-         counts as verified only if a human ticked it. */
-      live.verified = (reg.match(/✅\s*verified\s*\|/g) || []).length;
+         counts as verified only if a human ticked it.
+
+         COUNTED PER TABLE ROW, not per occurrence in the file. The old pattern
+         scanned the whole document, so ANY prose containing the same literal
+         inflated the count — and it did: a note added to legal-sources.md on
+         24 Aug, warning readers not to miscount these rows, quoted the console's
+         own matcher and pushed the console from 29 to 30. A counter that a
+         sentence about counting can move is not a counter.
+
+         A row starts at the line beginning with a pipe. Anchoring there means
+         the register's prose can say anything it likes about the format. */
+      var rows = reg.split("\n").filter(function (l) { return l.charAt(0) === "|"; });
+      live.verified = rows.filter(function (l) { return /✅\s*verified\s*\|/.test(l); }).length;
       live.disputed = (reg.match(/⚠️\s*\*\*DISPUTED/g) || []).length;
       var d = reg.match(/Last reviewed:\s*\*\*([^*]+)\*\*/);
       live.reviewed = d ? d[1].trim() : null;
@@ -818,7 +829,7 @@
      touched admin/, so forgetting fails the suite instead of quietly
      producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-08-23b";
+  var BUILD = "2026-08-27a";
 
   function renderConn() {
     var host = el("conn");

@@ -59,9 +59,10 @@ never with a Labor Law article number, because it is a different statute.
 > **81** — reads `✅ verified as to the grounds; the award consequence is a
 > reading`. That is a partial verification, and every strict consumer excludes
 > it: `tools/make-corpus.mjs` requires the status cell to be *exactly*
-> `✅ verified`, the founder console matches `✅ verified |` so the tick must be
-> followed straight by the column break, and `corpus.json` therefore holds
-> **29** rows. A loose `grep` for the tick counts 30 and is wrong.
+> `✅ verified`, the founder console requires the tick to be followed straight by
+> the column break, and it counts only lines that begin a table row — so this
+> note cannot inflate it. `corpus.json` therefore holds **29** rows, and a loose
+> `grep` for the tick counts more and is wrong.
 >
 > Use the corpus count, or the console's. Both are the strict one. This note
 > exists because the number was miscounted in a published roadmap on
