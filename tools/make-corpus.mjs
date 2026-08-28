@@ -42,7 +42,7 @@ const OUT = join(root, "supabase", "functions", "_shared", "corpus.json");
 
 /* Markdown that is presentation, not content. The model reads the claim as a
    sentence; asterisks and link syntax are noise that shows up in quotes. */
-function plain(s){
+export function plain(s){
   return s
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\*\*/g, "")
@@ -69,13 +69,24 @@ function idFor(article, seen){
   return n === 1 ? base : `${base}-${n}`;
 }
 
-export function buildCorpus(md){
+/* THE ONE PLACE THE REGISTER IS READ.
+   Exported because a second consumer now exists — tools/make-seo.mjs builds the
+   public answer pages from the same rows. Two parsers over one file is two
+   definitions of "verified", and the whole point of the strict rule is that
+   there is exactly one.
+
+   Each row carries its RAW cells as well as the cleaned fields, because the
+   consumers legitimately want different columns: the corpus deliberately drops
+   the sources ("a URL in the corpus is a URL a completion can put in front of
+   someone as a source it never opened"), while the public pages exist to show
+   exactly those links. */
+export function verifiedRows(md){
   const lines = md.split("\n");
   const start = lines.findIndex(l => /^##\s+Claim register/.test(l));
   if (start < 0) throw new Error("no '## Claim register' heading in the register");
 
   const rows = [], seen = {};
-  let disputed = 0, header = 0;
+  let excluded = 0, header = 0;
   for (let i = start + 1; i < lines.length; i++){
     const line = lines[i];
     if (/^##\s/.test(line)) break;
@@ -88,8 +99,8 @@ export function buildCorpus(md){
     const status = plain(cells[3]);
     /* Anything that is not a clean tick is out. A row mid-dispute, a row
        marked partly verified, a row someone annotated — all excluded. The
-       corpus is the conservative reading of the register, always. */
-    if (!/^✅\s*verified$/i.test(status)){ disputed++; continue; }
+       conservative reading of the register, always. */
+    if (!/^✅\s*verified$/i.test(status)){ excluded++; continue; }
 
     const article = articleOf(cells[2]);
     const id = idFor(article, seen);
@@ -98,11 +109,18 @@ export function buildCorpus(md){
        untranslated verified row cannot be compiled, so it cannot reach an
        Arabic reader as English. */
     if (!claim_ar) throw new Error(`row "${id}" is verified but has no Arabic claim`);
-    rows.push({ id, article, claim: plain(cells[0]), claim_ar });
+    rows.push({ id, article, claim: plain(cells[0]), claim_ar, sourcesCell: cells[4] ?? "" });
   }
+  if (!rows.length) throw new Error("no verified rows found in the register");
+  return { rows, excluded };
+}
 
-  if (!rows.length) throw new Error("no verified rows found — refusing to write an empty corpus");
-  return { generated_from: "docs/legal-sources.md", verified: rows.length, excluded: disputed, rows };
+export function buildCorpus(md){
+  const { rows, excluded } = verifiedRows(md);
+  /* The sources column is dropped here, deliberately — see verifiedRows. */
+  const clean = rows.map(({ id, article, claim, claim_ar }) => ({ id, article, claim, claim_ar }));
+  return { generated_from: "docs/legal-sources.md", verified: clean.length,
+           excluded, rows: clean };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)){

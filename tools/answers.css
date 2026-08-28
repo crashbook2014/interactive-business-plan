@@ -1,0 +1,51 @@
+/* Wodouh — the little that /answers and /how-we-verify need beyond the policy
+ * stylesheet they share with /terms, /privacy and /refund.
+ *
+ * SOURCE OF TRUTH. This file is copied to /answers/answers.css by
+ * tools/make-seo.mjs, which deletes and rebuilds that directory. Edit it here.
+ *
+ * The pages carry no script at all, so the language switch is a link to the
+ * paired URL rather than a toggle, and it is styled to look like the toggle a
+ * reader saw on the policies.
+ */
+
+.langs span,
+.langs a{
+  font-size:13px; font-weight:600; padding:6px 13px; text-decoration:none;
+  display:inline-flex; align-items:center; min-height:34px;
+}
+.langs span{background:var(--teal); color:#fff}
+.langs a{color:var(--ink-2)}
+.langs a:hover{background:var(--teal-soft); color:var(--teal-ink)}
+
+/* The article line under the answer. Present or absent, it is a statement:
+   either the number the register holds, or the plain fact that there is none. */
+.cite{font-size:14px; color:var(--ink-2); margin:0 0 26px}
+
+.sources{list-style:none; padding:0}
+.sources li{margin-bottom:10px}
+.sources a{word-break:break-word}
+
+.tool{margin-top:32px}
+.tool h2{margin-top:0; padding-top:0; border-top:0; font-size:17px}
+.cta{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:44px; padding:0 22px; border-radius:11px;
+  background:var(--teal); color:#fff; font-weight:700; text-decoration:none;
+}
+.cta:hover{background:var(--teal-ink)}
+
+.disclaimer{
+  font-size:13px; line-height:1.65; color:var(--ink-3);
+  margin-top:30px; text-wrap:pretty;
+}
+
+.answer-list{list-style:none; padding:0; margin:26px 0 0}
+.answer-list li{
+  margin:0; border-top:1px solid var(--line);
+}
+.answer-list a{
+  display:block; padding:15px 2px; min-height:44px;
+  text-decoration:none; color:var(--ink); font-weight:600; line-height:1.5;
+}
+.answer-list a:hover{color:var(--teal-ink)}
