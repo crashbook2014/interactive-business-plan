@@ -38,11 +38,13 @@ jobs:
         id: watch
         continue-on-error: true
         run: |
+          # No hardcoded fallback. The default lives in test/watchdog.js and is
+          # read from CNAME, so the deployed domain is stated once. This line
+          # used to name the github.io path, which with a custom domain
+          # configured is a redirect at best — and nothing ever caught it,
+          # because this workflow has never run.
           URL="${{ github.event.inputs.url }}"
-          if [ -z "$URL" ]; then
-            URL="https://crashbook2014.github.io/interactive-business-plan"
-          fi
-          node test/watchdog.js "$URL" 2>&1 | tee watchdog.log
+          node test/watchdog.js $URL 2>&1 | tee watchdog.log
           echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       # One issue, reopened and updated rather than a new one every six hours —

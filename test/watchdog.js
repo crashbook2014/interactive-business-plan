@@ -10,10 +10,23 @@
  * Everything here is checked against what a browser actually loaded, not
  * against the repository.
  */
+const fs = require("node:fs");
+const path = require("node:path");
 const { playwright, launchOpts } = require("./_env.js");
 const { chromium } = playwright();
 
-const BASE = (process.argv[2] || process.env.WODOUH_URL || "").replace(/\/$/, "");
+/* The deployed origin. Defaults to the domain in CNAME, which is where Pages
+   actually serves this site — the workflow used to default to the github.io
+   path instead, and with a custom domain configured that is a redirect at best.
+   Read from the file rather than written out twice, so the two cannot drift. */
+function deployedOrigin(){
+  try {
+    const c = fs.readFileSync(path.join(__dirname, "..", "CNAME"), "utf8").trim();
+    if (c) return "https://" + c.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  } catch (e) {}
+  return "";
+}
+const BASE = (process.argv[2] || process.env.WODOUH_URL || deployedOrigin()).replace(/\/$/, "");
 if (!BASE) {
   console.error("Usage: node test/watchdog.js <site url>");
   process.exit(2);
@@ -66,7 +79,24 @@ const CASE = {
   console.log("\n2. The app boots");
   let booted = false;
   try {
-    await page.goto(BASE + "/app/", { waitUntil: "load", timeout: 30000 });
+    /* THROUGH THE CURTAIN, with #preview — the same key the suites use and the
+       same one a human uses. Without it this walked the PRE-LAUNCH page: the
+       guard in app/index.html sends anyone without the key to the coming-soon
+       front door, window.show never exists, and the watchdog reported "the
+       app's own JavaScript initialised — FAIL".
+
+       That is not hypothetical. Run against the real files it fails exactly
+       that way, which means the moment Actions billing is fixed this job would
+       have opened an issue every six hours until launch day — a watchdog that
+       cries wolf on every run is one nobody reads, which is the same as not
+       having one.
+
+       A fragment, not a query string, for the reason test/_env.js records: the
+       document request stays exactly "/app/", so nothing that matches on the
+       path stops matching. And #preview keeps working after launch — the guard
+       is `!LAUNCHED && !KEY`, so the key satisfies it either way and this line
+       needs no second edit on launch day. */
+    await page.goto(BASE + "/app/#preview", { waitUntil: "load", timeout: 30000 });
     await page.waitForFunction(() => typeof window.show === "function", { timeout: 15000 });
     booted = true;
   } catch (e) {

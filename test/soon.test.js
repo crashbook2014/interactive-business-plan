@@ -181,6 +181,46 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const near = await lands("#access_tokenish=1");
   ok(!near.inside, "a hash that merely resembles a callback does not get in");
 
+  /* THE WATCHDOG HAS TO KNOW ABOUT THE CURTAIN TOO.
+     It walked "/app/" with no key, so the guard above sent it to the
+     coming-soon page, window.show never appeared, and it reported "the app's
+     own JavaScript initialised — FAIL". Run against the real files it failed
+     exactly that way — which means the moment Actions billing is fixed, this
+     job would have opened an issue every six hours until launch day. A
+     watchdog that cries wolf on every run is one nobody reads.
+
+     Nothing caught it because the workflow has never executed. So the curtain
+     suite, which owns this rule, now owns the consequence of it as well. */
+  console.log("\n— the watchdog goes through the curtain, not into it");
+  {
+    const { readFileSync, existsSync } = require("node:fs");
+    const path = require("node:path");
+    const root = path.join(__dirname, "..");
+    const wd = readFileSync(path.join(root, "test/watchdog.js"), "utf8");
+
+    /* Every navigation the watchdog makes to the app must carry the key. */
+    const gotos = [...wd.matchAll(/page\.goto\(\s*BASE\s*\+\s*"([^"]+)"/g)].map(m => m[1]);
+    const appGotos = gotos.filter(u => u.startsWith("/app"));
+    ok(appGotos.length > 0, `the watchdog navigates to the app (${gotos.join(", ") || "none"})`);
+    const bare = appGotos.filter(u => !/#.*\bpreview\b/.test(u));
+    ok(bare.length === 0,
+       `and every such navigation carries #preview${bare.length ? " — BARE: " + bare.join(", ") : ""}`);
+
+    /* And it must point at the domain Pages actually serves. */
+    ok(existsSync(path.join(root, "CNAME")), "CNAME exists, so a custom domain is configured");
+    const cname = readFileSync(path.join(root, "CNAME"), "utf8").trim();
+    ok(/CNAME/.test(wd),
+       `the watchdog's default origin is read from CNAME rather than written out (${cname})`);
+    /* COMMENTS STRIPPED FIRST. The comment explaining why the github.io URL
+       was removed contains the string "github.io", so scanning the whole file
+       failed on its own explanation — the same trap the register's verified
+       count fell into on 24 Aug. Assert against the YAML that executes. */
+    const wf = readFileSync(path.join(root, ".github/workflows/watchdog.yml"), "utf8")
+      .split("\n").filter(l => !/^\s*#/.test(l)).join("\n");
+    ok(!/github\.io/.test(wf),
+       "and no executing line hardcodes a github.io URL that the custom domain supersedes");
+  }
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nthe curtain holds, and nothing behind it was lost");
   process.exit(FAIL.length ? 1 : 0);
