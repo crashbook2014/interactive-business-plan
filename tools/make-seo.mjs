@@ -104,6 +104,16 @@ function dateAr(date){
   return `${m[1]} ${name} ${m[3]}`;
 }
 
+/* The register writes its "Last reviewed" date the same way ("31 July 2026").
+   sitemap.xml wants ISO (2026-07-31). Same closed set of months as dateAr, so
+   an unknown month fails the build rather than silently omitting <lastmod>. */
+function isoDate(date){
+  const m = date.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  const idx = m && Object.keys(MONTHS).indexOf(m[2].toLowerCase());
+  if (!m || idx < 0) throw new Error(`cannot render "${date}" as ISO — see isoDate in tools/make-seo.mjs`);
+  return `${m[3]}-${String(idx + 1).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+}
+
 function slugOf(claim, cite, seen){
   const kebab = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const base = [kebab(topicOf(claim, 6)) || "saudi-employment", cite && cite.slug]
@@ -152,6 +162,48 @@ function citation(article){
   return hit;
 }
 
+/* THE <title>, KEPT NEAR SERP LENGTH.
+ *
+ * Google truncates a rendered title around ~60 characters (~580px). The
+ * naive form — topic + " — Saudi Labor Law, Article NN | Wodouh" — comfortably
+ * clears that on any topic phrase longer than a few words, because topicOf()
+ * grows the phrase until it is unique (see build()) and the citation suffix
+ * alone can run 30+ characters.
+ *
+ * So the suffix degrades in three steps, each tried only if the one before it
+ * still doesn't fit a 60-character budget: the full citation ("Saudi Labor
+ * Law, Article 84"), then the short one ("Article 84"), then — only if even
+ * that doesn't fit — the topic itself is cut at a word boundary with an
+ * ellipsis. A short topic that already fits at step one is untouched: this is
+ * adaptive, not a blanket truncation.
+ */
+const TITLE_SITE = { en: "Wodouh", ar: "وضوح" };
+const TITLE_GENERIC = { en: "Saudi employment", ar: "العمل في السعودية" };
+const TITLE_BUDGET = 60;
+function buildTitle(topic, cite, lang){
+  const site = TITLE_SITE[lang];
+  const suffixFull = cite ? (lang === "ar" ? cite.fullAr : cite.fullEn) : TITLE_GENERIC[lang];
+  const suffixShort = cite ? (lang === "ar" ? cite.shortAr : cite.shortEn) : suffixFull;
+  const assemble = (top, suf) => `${top} — ${suf} | ${site}`;
+
+  let title = assemble(topic, suffixFull);
+  if (title.length <= TITLE_BUDGET) return title;
+
+  title = assemble(topic, suffixShort);
+  if (title.length <= TITLE_BUDGET) return title;
+
+  const fixedLen = ` — ${suffixShort} | ${site}`.length + 1; /* +1 for the ellipsis */
+  const maxTopicLen = Math.max(10, TITLE_BUDGET - fixedLen);
+  let cut = topic;
+  if (cut.length > maxTopicLen){
+    cut = cut.slice(0, maxTopicLen);
+    const lastSpace = cut.lastIndexOf(" ");
+    if (lastSpace > 10) cut = cut.slice(0, lastSpace);
+    cut = cut.replace(/[،,:؛.—-]+$/, "") + "…";
+  }
+  return assemble(cut, suffixShort);
+}
+
 /* --------------------------------------------------------- the strings
  *
  * Every user-visible string that is NOT a claim lives here, in both languages,
@@ -165,8 +217,7 @@ const S = {
     site: "Wodouh",
     q: (t, c) => c ? `${t} — what does ${c.shortEn} say?`
                    : `${t} — what are the rules in Saudi Arabia?`,
-    title: (t, c) => c ? `${t} — ${c.fullEn} | Wodouh`
-                       : `${t} — Saudi employment | Wodouh`,
+    title: (t, c) => buildTitle(t, c, "en"),
     articleLabel: c => c.fullEn,
     noArticle: "No article number. The register records this claim without one, and Wodouh never adds a number the source does not carry.",
     checked: d => `Last re-checked ${d}.`,
@@ -189,8 +240,7 @@ const S = {
     site: "وضوح",
     q: (t, c) => c ? `${t} — ماذا تقول ${c.shortAr}؟`
                    : `${t} — ما القواعد في السعودية؟`,
-    title: (t, c) => c ? `${t} — ${c.fullAr} | وضوح`
-                       : `${t} — العمل في السعودية | وضوح`,
+    title: (t, c) => buildTitle(t, c, "ar"),
     articleLabel: c => c.fullAr,
     noArticle: "بلا رقم مادة. السجل يوثّق هذا الادعاء دون رقم، ووضوح لا يضيف رقمًا لا يحمله المصدر.",
     checked: d => `آخر إعادة تحقّق: ${d}.`,
@@ -254,7 +304,9 @@ ${jsonld ? `<script type="application/ld+json">\n${JSON.stringify(jsonld, null, 
     </div>
   </div>
 
+  <main>
 ${body}
+  </main>
 
   <footer>
     <a href="/answers/${lang === "ar" ? "ar/" : ""}">${t.allAnswers}</a>
@@ -446,14 +498,20 @@ const STATIC = [
 ];
 
 function sitemap(pairs){
-  /* pairs: [{ en, ar, pri }] — one entry per language, each declaring the
-     other. Reciprocal or not at all: a one-way alternate is a claim search
-     engines act on and we would not be honouring. */
-  const url = (loc, freq, pri, alts) =>
+  /* pairs: [{ en, ar, pri, lastmod }] — one entry per language, each declaring
+     the other. Reciprocal or not at all: a one-way alternate is a claim search
+     engines act on and we would not be honouring.
+
+     lastmod on the generated pairs comes from the register's own "Last
+     reviewed" date — the same date each page prints as "Last re-checked" — so
+     it is never invented. The five STATIC urls are not built by this script
+     and carry no verification date to source a <lastmod> from, so they are
+     left without one rather than guessing. */
+  const url = (loc, freq, pri, alts, lastmod) =>
 `  <url>
     <loc>${ORIGIN + loc}</loc>${alts ? "\n" + alts : ""}
     <changefreq>${freq}</changefreq>
-    <priority>${pri}</priority>
+    <priority>${pri}</priority>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}
   </url>`;
 
   const alts = (en, ar) =>
@@ -462,10 +520,10 @@ function sitemap(pairs){
     <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + en}"/>`;
 
   const body = [
-    ...STATIC.map(s => url(s.loc, s.freq, s.pri, null)),
+    ...STATIC.map(s => url(s.loc, s.freq, s.pri, null, null)),
     ...pairs.flatMap(p => [
-      url(p.en, "monthly", p.pri, alts(p.en, p.ar)),
-      url(p.ar, "monthly", p.pri, alts(p.en, p.ar))
+      url(p.en, "monthly", p.pri, alts(p.en, p.ar), p.lastmod),
+      url(p.ar, "monthly", p.pri, alts(p.en, p.ar), p.lastmod)
     ])
   ].join("\n");
 
@@ -543,10 +601,11 @@ export function build(md){
   files.push(howPage("en", rows.length, excluded, date),
              howPage("ar", rows.length, excluded, date));
 
+  const lastmod = isoDate(date);
   const pairs = [
-    ...rows.map(r => ({ en: `/answers/${r.slug}/`, ar: `/answers/${r.slug}/ar/`, pri: "0.7" })),
-    { en: "/answers/", ar: "/answers/ar/", pri: "0.8" },
-    { en: "/how-we-verify/", ar: "/how-we-verify/ar/", pri: "0.5" }
+    ...rows.map(r => ({ en: `/answers/${r.slug}/`, ar: `/answers/${r.slug}/ar/`, pri: "0.7", lastmod })),
+    { en: "/answers/", ar: "/answers/ar/", pri: "0.8", lastmod },
+    { en: "/how-we-verify/", ar: "/how-we-verify/ar/", pri: "0.5", lastmod }
   ];
 
   return { rows, excluded, date, files, sitemap: sitemap(pairs) };

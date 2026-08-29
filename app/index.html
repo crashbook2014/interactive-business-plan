@@ -1546,8 +1546,36 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   location.replace("../");
 }
 </script>
+<!-- Same identity anchor as index.html — mirrored, not duplicated content;
+     this is metadata about the site, not a claim about this specific page. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Organization", "name": "Wodouh", "alternateName": "وضوح",
+      "url": "https://alwodouh.com/", "logo": "https://alwodouh.com/assets/og-cover.png" },
+    { "@type": "WebSite", "name": "Wodouh", "alternateName": "وضوح", "url": "https://alwodouh.com/" }
+  ]
+}
+</script>
 </head>
 <body>
+
+<!-- The redirect above only runs where JS runs. Most AI-search crawlers
+     (GPTBot, ClaudeBot, PerplexityBot) do not execute it, and everything
+     below this point in the real page is empty until JS fills it in — so
+     without this block those crawlers see nothing at all on the URL the
+     sitemap lists at the highest priority. Text below is copied verbatim
+     from this file's own T dictionary (desk_title/desk_sub, lib_title/lib_sub
+     at ~3135/2799) — nothing invented, nothing this page cannot back up. -->
+<noscript>
+  <main style="max-width:40em;margin:2em auto;padding:0 1em;font-family:system-ui,sans-serif;line-height:1.6">
+    <h1>Read your contract clearly — before you sign.</h1>
+    <p>Wodouh explains employment, rental and freelance contracts in plain language, flags risks, and gives you a clear summary.</p>
+    <h2>Common employment questions</h2>
+    <p>Short, sourced answers — for Saudis and residents. See the <a href="../answers/">full answers library</a>.</p>
+  </main>
+</noscript>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <g id="mark-lens" fill="none">
