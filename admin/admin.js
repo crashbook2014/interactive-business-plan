@@ -77,16 +77,21 @@
     return Promise.all([
       fetch("../index.html", { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; }),
       fetch("../app/index.html", { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; }),
-      fetch("../docs/legal-sources.md", { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; })
+      fetch("../docs/legal-sources.md", { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; }),
+      /* The root page's curtain flag was externalised to assets/curtain.js
+         when index.html's CSP dropped 'unsafe-inline' — it is no longer
+         literal text in index.html itself, so it has to be read from here too. */
+      fetch("../assets/curtain.js", { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; })
     ]).then(function (res) {
-      var root = res[0], app = res[1], reg = res[2];
-      live.rootLaunched = grab(root, /window\.WODOUH_LAUNCHED\s*=\s*(true|false)/, asBool);
+      var root = res[0], app = res[1], reg = res[2], curtain = res[3];
+      live.rootLaunched = grab(root + curtain, /window\.WODOUH_LAUNCHED\s*=\s*(true|false)/, asBool);
       live.appLaunched  = grab(app,  /window\.WODOUH_LAUNCHED\s*=\s*(true|false)/, asBool);
       live.payments     = grab(app,  /const PAYMENT_COMPILED\s*=\s*(true|false)/, asBool);
       live.subs         = grab(app,  /const SUBSCRIPTIONS_COMPILED\s*=\s*(true|false)/, asBool);
       live.lawyer       = grab(app,  /const LAWYER_COMPILED\s*=\s*(true|false)/, asBool);
       live.codes        = /const REDEEM_HASHES\s*=\s*\[\s*\]/.test(app) ? 0 : (app ? 1 : null);
       live.appReached   = !!app;
+      live.analyzeUrl   = grab(app, /ANALYZE_URL:\s*"(https:\/\/[^"]+)"/, function (v) { return v; });
 
       /* The register, read the same way the register asks to be read: a row
          counts as verified only if a human ticked it.
@@ -319,8 +324,11 @@
      front of a reader rather than here. */
   function unmet(f) {
     if (f.key === "ai_analysis") {
-      var c = window.WODOUH_CONFIG || {};
-      return /^https:\/\//.test(c.ANALYZE_URL || "") ? null : f.needs;
+      /* window.WODOUH_CONFIG is THIS page's own global — admin/index.html
+         never sets it, so this always read empty regardless of what is
+         actually deployed. What matters is the live app's config, already
+         fetched and parsed into live.analyzeUrl by readDeployed(). */
+      return /^https:\/\//.test(live.analyzeUrl || "") ? null : f.needs;
     }
     if (f.key === "payments") return f.needs;      /* no gateway is wired yet */
     return null;
@@ -774,7 +782,10 @@
        facts about the deployed configuration, not decisions someone records.
        The stored `done` is overridden rather than kept in step by hand. */
     supabase_project: function () { return !!(A && A.configured()); },
-    anthropic_key:    function () { return /^https:\/\//.test((window.WODOUH_CONFIG || {}).ANALYZE_URL || ""); },
+    /* Same fix as unmet() above: window.WODOUH_CONFIG is this page's own
+       global, which admin/index.html never sets. What is actually deployed
+       lives in live.analyzeUrl, parsed from app/index.html by readDeployed(). */
+    anthropic_key:    function () { return /^https:\/\//.test(live.analyzeUrl || ""); },
     apple_signin:     function () { return (window.WODOUH_CONFIG || {}).APPLE_SIGNIN === true; }
   };
 
