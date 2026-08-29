@@ -7462,6 +7462,15 @@ function analyzeUrl(){
   return c && typeof c.ANALYZE_URL === "string" && /^https:\/\//.test(c.ANALYZE_URL)
     ? c.ANALYZE_URL : null;
 }
+/* The gateway in front of every Edge Function enforces verify_jwt, and an
+   anon apikey is what satisfies that for a reader who never signed in — the
+   same header, for the same reason, as the flagsUrl() fetch above. Without
+   it every analyze call gets UNAUTHORIZED_NO_AUTH_HEADER before the function
+   ever runs; proven directly against the deployed gateway this session. */
+function analyzeHeaders(extra){
+  const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
+  return Object.assign({ "content-type": "application/json" }, key ? { apikey: key } : {}, extra || {});
+}
 /* Two locks, and BOTH must be open. ANALYZE_URL is the credential — without it
    there is nowhere to send anything and the feature cannot exist. The flag is
    the switch on top of it, so the console can turn the AI off in seconds
@@ -7719,7 +7728,7 @@ async function askRun(){
     if (askCtxConsent && askCtx()) body.ctx = askCtx();
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: analyzeHeaders(),
       body: JSON.stringify(body)
     });
     const d = await res.json().catch(() => null);
@@ -7794,7 +7803,7 @@ async function aiRun(){
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: analyzeHeaders(),
       body: JSON.stringify({ kind: "contract", text: text.slice(0, 40000) })
     });
     const data = await res.json().catch(() => null);
@@ -7880,7 +7889,7 @@ async function crRun(){
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: analyzeHeaders(),
       /* The track the reader chose, sent as context. A resident and a Saudi
          get different findings on the same contract — passport retention,
          Iqama fees, sponsorship transfer and return airfare only apply to
@@ -8141,7 +8150,7 @@ async function aiReview(){
   try {
     const res = await fetch(analyzeUrl(), {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: analyzeHeaders(),
       signal: ctrl.signal,
       body: JSON.stringify({ kind: "review", assessment: reviewPayload() })
     });
