@@ -386,6 +386,7 @@ async function serveWithAiCsp(page){
   });
   ok(stalled.state === "timeout", `a stalled endpoint times out (${stalled.state})`);
   ok(stalled.money > 0, "the assessment still renders in full after a timeout");
+  if (!/unaffected/i.test(stalled.text)) console.log("DEBUG termReview.textContent:", JSON.stringify(stalled.text));
   ok(/unaffected/i.test(stalled.text), "it says the assessment was unaffected");
   await p4.close();
 
