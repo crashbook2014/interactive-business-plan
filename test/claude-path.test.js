@@ -54,15 +54,23 @@ async function serveWithAiCsp(page){
 (async () => {
   const b = await chromium.launch(launchOpts());
 
-  /* ---- 1. shipping default: no config at all */
+  /* ---- 1. an unconfigured build
+   *
+   * AI is live in production now (ANALYZE_URL is committed — see
+   * docs/enable-ai-runbook.md), so "no config at all" is no longer what
+   * ships. It is still a real guarantee: if the endpoint is ever cleared
+   * again, every AI surface must go fully dark, and that includes making no
+   * request at all. Forced explicitly here rather than relied on as the
+   * file's own default, which it no longer is. */
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
   const reqs = [];
   p.on("request", r => reqs.push(r.url()));
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
 
-  console.log("— unconfigured (what ships today)");
+  console.log("— unconfigured (forced, since it is no longer what ships)");
   const off = await p.evaluate(() => {
     nat = "sa"; lang = "en"; applyLang();
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01",
@@ -116,6 +124,17 @@ async function serveWithAiCsp(page){
   if (offsite.length) console.log(`   (${offsite.length} allowed: the public feature-flag read)`);
   console.log(`   ${reqs.length} requests total, all same-origin`);
   await p.close();
+
+  /* The shipping build itself: an endpoint is configured. Not aiAvailable()
+     — that also gates on the remote ai_analysis flag, a separate switch this
+     file has no business asserting the live value of. */
+  const pShip = await b.newPage({ viewport: { width: 390, height: 844 } });
+  pShip.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await pShip.goto(APP);
+  await pShip.waitForFunction(() => typeof window.show === "function");
+  const hasUrl = await pShip.evaluate(() => !!analyzeUrl());
+  ok(hasUrl === true, "the shipping build has an AI endpoint configured");
+  await pShip.close();
 
   /* ---- 2. configured: consent must gate the send */
   console.log("\n— configured, with a stub endpoint");
@@ -234,10 +253,15 @@ async function serveWithAiCsp(page){
     "scope_error","double_counted","estimate_as_entitlement","overstated_strength",
     "evidence_gap","missing_info","arithmetic_doubt"];
 
-  /* 3a. unconfigured: no review call, no waiting */
+  /* 3a. unconfigured: no review call, no waiting
+   *
+   * AI is live in production now, so this needs its own forced-empty
+   * endpoint to still prove "consent alone must not be enough" — without
+   * this override the page would pick up the real, deployed ANALYZE_URL. */
   const p3 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p3.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await serveWithAiCsp(p3);   /* the AI-enabled deployment's CSP */
+  await p3.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   const reqs3 = [];
   p3.on("request", r => reqs3.push(r.url()));
   await p3.goto(APP);

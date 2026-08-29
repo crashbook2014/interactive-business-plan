@@ -256,12 +256,19 @@ const base = (over) => Object.assign({
   const { playwright, launchOpts, APP } = require("./_env.js");
   const { chromium } = playwright();
   const b = await chromium.launch(launchOpts());
-  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
-  page.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
-  await page.goto(APP);
-  await page.waitForFunction(() => typeof window.renderCrPanel === "function");
 
-  const inert = await page.evaluate(() => {
+  /* AI is live in production now (ANALYZE_URL is committed — see
+     docs/enable-ai-runbook.md), so this is no longer the shipped default.
+     Still a real guarantee: if the endpoint is ever cleared again, the panel
+     must render nothing, not a teaser or a locked state. Forced explicitly
+     rather than relied on as the file's own default. */
+  const page0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  page0.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
+  await page0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
+  await page0.goto(APP);
+  await page0.waitForFunction(() => typeof window.renderCrPanel === "function");
+
+  const inert = await page0.evaluate(() => {
     crResult = { extraction_confidence: "high", key_terms: {}, red_flags: [],
                  worth_negotiating: [], dropped: { findings: 0, terms: [] },
                  disclaimer_ar: "x", disclaimer_en: "x" };
@@ -269,9 +276,20 @@ const base = (over) => Object.assign({
     const h = document.getElementById("crPanel");
     return { hidden: h.hidden, html: h.innerHTML.length, avail: aiAvailable() };
   });
-  ok(inert.avail === false, "the shipping build has no endpoint configured");
+  ok(inert.avail === false, "with ANALYZE_URL forced empty, aiAvailable() is false");
   ok(inert.hidden === true && inert.html === 0,
      "so the panel renders NOTHING — not a teaser, not a locked state. An invisible feature cannot mislead anyone about where their contract goes");
+  await page0.close();
+
+  /* The shipping build itself: an endpoint is configured. Not aiAvailable()
+     — that also gates on the remote ai_analysis flag, a separate switch this
+     file has no business asserting the live value of. */
+  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
+  page.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
+  await page.goto(APP);
+  await page.waitForFunction(() => typeof window.renderCrPanel === "function");
+  const hasUrl = await page.evaluate(() => !!analyzeUrl());
+  ok(hasUrl === true, "the shipping build has an AI endpoint configured");
 
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));

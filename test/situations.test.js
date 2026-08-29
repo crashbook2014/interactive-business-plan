@@ -124,14 +124,35 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
   ok(gated !== "screen-term",
      `an unknown nationality is asked for before the termination flow opens (${gated.replace("screen-", "")})`);
 
-  /* ---- 4. the question door tracks the build */
+  /* ---- 4. the question door tracks the build
+   *
+   * AI is live in production now (ANALYZE_URL is committed and deployed —
+   * see docs/enable-ai-runbook.md). The guarantee this section exists to
+   * prove — that the door disappears when nothing is configured — still
+   * matters: if ANALYZE_URL is ever cleared again, this must still hold.
+   * Proven on a page that forces that state explicitly, rather than relying
+   * on it being the shipped default, which it no longer is. */
   console.log("\n— the question door only exists in a build that can answer");
-  const off = await p.evaluate(() => {
+  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
+  await p0.goto(APP);
+  await p0.waitForFunction(() => typeof window.show === "function");
+  const off = await p0.evaluate(() => {
     show("home");
     return { hidden: document.getElementById("sitAsk").hidden, avail: askAvailable() };
   });
   ok(off.avail === false && off.hidden === true,
-     "with no endpoint configured, the question door is not shown");
+     "with ANALYZE_URL forced empty, the question door is not shown");
+  await p0.close();
+
+  /* Not askAvailable()/door-visibility here: those also gate on the remote
+     ai_analysis flag, which is a live, separately-controlled switch — not
+     something this static file's own test should assert the value of.
+     What this file ships is the endpoint; whether it's switched on for
+     readers is the flag's story, told in admin.test.js. */
+  const onShip = await p.evaluate(() => !!analyzeUrl());
+  ok(onShip === true, "the shipping build has an AI endpoint configured");
 
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));

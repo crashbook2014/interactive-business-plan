@@ -284,22 +284,40 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const AI_HOST = "https://stub.supabase.co";
   const b = await chromium.launch(launchOpts());
 
-  /* ---- 7. what ships today */
-  console.log("\n— the shipped build cannot ask anything");
+  /* ---- 7. what an unconfigured build cannot do
+   *
+   * AI is live in production now (ANALYZE_URL is committed — see
+   * docs/enable-ai-runbook.md), so this is no longer the shipped default.
+   * It is still a real guarantee worth holding: if ANALYZE_URL is ever
+   * cleared again, the door must disappear completely. Forced explicitly
+   * rather than relied on as the file's own default, which it no longer is. */
+  console.log("\n— an unconfigured build cannot ask anything");
   const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
   const off = [];
   p0.on("request", r => { if (!r.url().startsWith("http://127.") && !r.url().startsWith("http://localhost")) off.push(r.url()); });
   p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   await p0.goto(APP);
   await p0.waitForFunction(() => typeof window.show === "function");
   const shipped = await p0.evaluate(() => {
     show("rights");
     return { hidden: document.getElementById("askEntry").hidden, avail: askAvailable() };
   });
-  ok(shipped.hidden === true, "with no endpoint configured, the ask entry does not exist for a reader");
+  ok(shipped.hidden === true, "with ANALYZE_URL forced empty, the ask entry does not exist for a reader");
   ok(shipped.avail === false, "and the app knows it cannot answer");
   ok(off.length === 0, `and the page makes no off-origin request${off.length ? ": " + off.join(", ") : ""}`);
   await p0.close();
+
+  /* The shipping build itself: an endpoint is configured. Not askAvailable()
+     — that also gates on the remote ai_analysis flag, a separate switch this
+     file has no business asserting the live value of. */
+  const p0b = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p0b.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p0b.goto(APP);
+  await p0b.waitForFunction(() => typeof window.show === "function");
+  const hasUrl = await p0b.evaluate(() => !!analyzeUrl());
+  ok(hasUrl === true, "the shipping build has an AI endpoint configured");
+  await p0b.close();
 
   /* ---- 8. configured: consent gates the send */
   console.log("\n— consent gates the send, and the payload matches what the consent promised");
