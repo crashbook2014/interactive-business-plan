@@ -25,7 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Full history, not the default shallow clone. admin.test.js runs
+      # `git log -- admin/` to catch a stale build stamp, and a depth-1 clone
+      # can't walk back to the commit that actually last touched the
+      # directory — it reports the checkout's own tip commit instead, which
+      # is wrong on every push that doesn't itself touch admin/.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
