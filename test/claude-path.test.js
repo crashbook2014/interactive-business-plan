@@ -370,14 +370,26 @@ async function serveWithAiCsp(page){
   ok(rvSent[0].assessment.reason_given.includes("Alharbi"),
      "the reason text is sent, as the consent says it is");
 
-  /* 3c. a stalled endpoint must not strand the reader */
+  /* 3c. a stalled endpoint must not strand the reader
+   *
+   * This block must not depend on aiRvConsent surviving from the checkbox
+   * click several steps above. It did — locally. On a GitHub-hosted runner
+   * it measurably did not: termReview rendered Wodouh's own review section
+   * with real notes and no "AI second-pass review" block at all, which is
+   * what aiReviewHtml() returns when aiReviewOn() is false, not what a slow
+   * network produces. Confirmed with a debug dump of the actual DOM text on
+   * that runner before writing this fix — the failure was never about
+   * timing. State this block needs, it sets itself. */
   console.log("\n— the reader is never stuck behind the network");
   stall = true;
   const stalled = await p4.evaluate(async () => {
+    /* AI_REVIEW_TIMEOUT_MS_TEST is aspirational — nothing in app/index.html
+       reads it, so this genuinely waits out the real AI_REVIEW_TIMEOUT_MS.
+       Left set for whichever of the two gets wired up first. */
     AI_REVIEW_TIMEOUT_MS_TEST = true;
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01",
       end:"2026-01-01", wage:10000, ctype:"indef", leaveDays:10, docs:["d_contract"] });
-    aiRvState = "idle"; aiRvResult = null;
+    aiRvConsent = true; aiRvState = "idle"; aiRvResult = null;
     const t0 = Date.now();
     await openTermResult();
     return { ms: Date.now() - t0, state: aiRvState,
@@ -386,7 +398,6 @@ async function serveWithAiCsp(page){
   });
   ok(stalled.state === "timeout", `a stalled endpoint times out (${stalled.state})`);
   ok(stalled.money > 0, "the assessment still renders in full after a timeout");
-  if (!/unaffected/i.test(stalled.text)) console.log("DEBUG termReview.textContent:", JSON.stringify(stalled.text));
   ok(/unaffected/i.test(stalled.text), "it says the assessment was unaffected");
   await p4.close();
 
