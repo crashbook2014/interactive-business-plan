@@ -1,0 +1,257 @@
+const T = {
+  /* ---- pre-launch copy. Every line here is written to do one job: make
+     someone who has a contract problem right now pick up the phone. The
+     product is described in the present tense because it exists and works —
+     what is "soon" is the day they can open it themselves, not the thing. */
+  soon_eyebrow:{ar:"قريبًا — وضوح يفتح أبوابه",en:"Launching soon"},
+  soon_cta:{ar:"كلّمنا الحين",en:"Talk to us now"},
+  soon_nav_cta:{ar:"تواصل",en:"Contact"},
+  soon_note:{ar:"جاهز، ونراجعه مراجعة أخيرة قبل ما نفتحه للكل. إذا عندك عقد أو مشكلة الحين — لا تنتظر، كلّمنا.",
+             en:"It's built, and getting its final review before we open it to everyone. If you have a contract or a problem right now, don't wait — talk to us."},
+  soon_k_contact:{ar:"تواصل",en:"Get in touch"},
+  soon_contact_h:{ar:"عندك سؤال، أو تبي تحجز مكانك؟",en:"Have a question, or want your place at launch?"},
+  soon_contact_p:{ar:"نرد بأنفسنا، مو بردود جاهزة. اسأل عن حالتك، أو احجز سعر الافتتاح، أو خذ رأينا في عقد قدّامك اليوم.",
+                  en:"You'll reach a person, not a form. Ask about your situation, lock in launch pricing, or get our read on a contract in front of you today."},
+  soon_wa:{ar:"واتساب",en:"WhatsApp"},
+  soon_call:{ar:"اتصل بنا",en:"Call us"},
+  soon_mail:{ar:"راسلنا",en:"Email us"},
+  soon_price_note:{ar:"هذي أسعار الافتتاح. من يحجز قبل الإطلاق يثبت له السعر.",
+                   en:"These are launch prices. Reserve before we open and yours is locked."},
+  soon_price_cta:{ar:"احجز سعر الافتتاح",en:"Reserve launch pricing"},
+
+  nav_cta:{ar:"جرّبه الآن",en:"Try it now"},
+  nav_price:{ar:"الأسعار",en:"Pricing"},
+  price_cta:{ar:"ابدأ بالتقييم المجاني",en:"Start with the free score"},
+  foot_app:{ar:"افتح التطبيق",en:"Open the app"},
+  foot_brand:{ar:"الهوية البصرية",en:"Brand identity"},
+  hero_eyebrow:{ar:"يعمل على جهازك — لا يُرفع عقدك لأي مكان",en:"Runs on your device — your contract is never uploaded"},
+  hero_h:{ar:"اعرف هل تقدر توقّع — قبل ما توقّع.",en:"Know whether you can sign — before you do."},
+  hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، ومصدر كل معلومة من نظام العمل، وخطاب جاهز ترسله. تختار سعودي أو مقيم، ونعرض لك الأنظمة اللي تنطبق عليك أنت.",
+          en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the labour-law source for every point, and a letter ready to send. Pick Saudi or resident, and we show the rules that actually apply to you."},
+  hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
+  hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
+  hero_note:{ar:"التقييم والتنبيهات مجانية دائمًا — بدون تسجيل.",en:"The score and flags are always free — no sign-up."},
+  shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
+  shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
+  shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
+  shot_r3:{ar:"الراتب والبدلات",en:"Salary & benefits"},
+
+  k_problem:{ar:"المشكلة",en:"The problem"},
+  problem_h:{ar:"العقود مكتوبة عشان تُوقَّع، مو عشان تُفهَم.",en:"Contracts are written to be signed, not to be understood."},
+  problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط — لأن السؤال يجي في وقت ما فيه مجال للتردد.",
+             en:"Most of us sign without knowing exactly what we agreed to — because the question arrives at the moment there's least room to hesitate."},
+  q1:{ar:"«وقّعت وأنا واثق… وبعد سنة اكتشفت إن بند عدم المنافسة يمنعني أشتغل في مجالي كامل.»",
+      en:"“I signed confidently — a year later I found the non-compete blocked my whole field.”"},
+  q1s:{ar:"موظف",en:"An employee"},
+  q2:{ar:"«المالك طلب مني الإخلاء خلال أسبوع. ما كنت أدري إن البند اللي وقّعت عليه يعطيه هذا الحق.»",
+      en:"“The landlord asked me to leave within a week. I didn't know the clause I signed gave him that right.”"},
+  q2s:{ar:"مستأجر",en:"A tenant"},
+  q3:{ar:"«سلّمت المشروع وانتظرت ٦٠ يومًا عشان أستلم. الاتفاق كان يقول كذا فعلًا.»",
+      en:"“I delivered and waited sixty days to get paid. The agreement did say so.”"},
+  q3s:{ar:"مستقل",en:"A freelancer"},
+
+  k_how:{ar:"كيف يشتغل",en:"How it works"},
+  how_h:{ar:"ثلاث خطوات، وأقل من دقيقة.",en:"Three steps, under a minute."},
+  st1:{ar:"ارفع أو الصق",en:"Upload or paste"},
+  st1p:{ar:"ارفع ملف PDF أو الصق نص العقد. يُقرأ على جهازك ولا يغادره.",
+        en:"Upload a PDF or paste the text. It's read on your device and never leaves it."},
+  st2:{ar:"اقرأ الخلاصة",en:"Read the verdict"},
+  st2p:{ar:"تقييم من ١٠٠، وكل بند مشروح بلغة بسيطة: أحمر انتبه، أصفر فاوض، أخضر مطمئن.",
+        en:"A score out of 100 and every clause in plain language: red to pause, amber to negotiate, green to relax."},
+  st3:{ar:"أرسل خطابك",e:"",en:"Send your letter"},
+  st3p:{ar:"أضف البنود وأنت تقرأ، ونجمعها لك خطاب تفاوض مهذب وواثق ترسله كما هو.",
+        en:"Add points as you read and we assemble a polite, confident letter you can send as is."},
+
+  k_feat:{ar:"وش تحصل عليه",en:"What you get"},
+  feat_h:{ar:"من قبل التوقيع… إلى بعد ما ينتهي.",en:"From before you sign to after it ends."},
+  f1:{ar:"تقييم العقد",en:"Contract score"},
+  f1p:{ar:"رقم واضح وخلاصة صريحة، مع شرح كل بند وسبب تصنيفه.",en:"A clear number and an honest verdict, with every clause explained and why it's flagged."},
+  f2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
+  f2p:{ar:"يُبنى وأنت تقرأ — صيغة جاهزة بالعربي والإنجليزي ترسلها للطرف الآخر.",en:"Built as you read — ready bilingual wording to send the other party."},
+  f3:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
+  f3p:{ar:"فترة التجربة، نافذة الإشعار، التجديد — ننبّهك قبلها بوقت كافٍ.",en:"Probation, notice windows, renewals — we nudge you well before each one."},
+  f4:{ar:"حاسبة نهاية الخدمة",en:"End-of-service calculator"},
+  f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، ومعرفة إن كان الإنهاء نظاميًا.",en:"An exact figure with the arithmetic shown, and whether the termination was lawful."},
+  f5:{ar:"المساعد القانوني",en:"Legal assistant"},
+  f5p:{ar:"اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"Ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
+  f6:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
+  f6p:{ar:"للشركات: مقاعد للفريق، ومراجعة التعديلات، وتقييم قوالبكم الصادرة من وجهة نظر الطرف الآخر.",
+       en:"For companies: team seats, redline review, and scoring for your own outgoing templates from the other side's view."},
+
+  k_price:{ar:"الأسعار",en:"Pricing"},
+  price_h:{ar:"الحقيقة مجانية. المخرجات هي اللي تُدفع.",en:"The truth is free. You pay for the outputs."},
+  price_p:{ar:"التقييم والتنبيهات وشرح البنود وحاسبة نهاية الخدمة مجانية دائمًا — عشان ما نكون طرفًا في قرارك.",
+           en:"The score, the flags, the clause explanations, and the calculator are always free — so we're never a party to your decision."},
+  p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},
+  p1p:{ar:"تقييم غير محدود، تنبيهات، شرح البنود، وحاسبة نهاية الخدمة.",en:"Unlimited scoring, flags, clause explanations, and the calculator."},
+  p2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
+  p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
+  p4:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"}, p4t:{ar:"الأفضل قيمة",en:"Best value"},
+  p4p:{ar:"لحظة تغيير الوظيفة كاملة — لا اشتراك شهري.",en:"The whole job-change moment — no monthly subscription."},
+  p4g:{ar:"تحصل على: الخطاب + تذكيرات مواعيد العقد ٦ أشهر + أسئلة بلا حدود عنه.",
+       en:"You get: the letter + 6 months of contract reminders + unlimited questions about it."},
+  p3:{ar:"ملف القضية",en:"Case file"},
+  p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
+  price_anchor:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
+                en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
+  price_vat:{ar:"الأسعار شاملة ضريبة القيمة المضافة (١٥٪) · ما أعجبك؟ نرجّع لك المبلغ.",
+             en:"Prices include 15% VAT · Not happy? We refund you."},
+  p1g:{ar:"تحصل على: تقييم كامل، كل بند مشروح، وحاسبة نهاية الخدمة.",
+       en:"You get: the full score, every clause explained, and the calculator."},
+  p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
+       en:"You get: a complete editable letter in Arabic and English, built from your clauses."},
+  p3g:{ar:"تحصل على: ملف يجمع الوقائع والمطالبة بالأرقام وقائمة مستنداتك.",
+       en:"You get: a file with the facts, the claim in figures, and your document list."},
+
+  k_trust:{ar:"الثقة",en:"Trust"},
+  trust_h:{ar:"نقول لك بالضبط وش نسوي — ووش ما نسويه.",en:"We tell you exactly what we do — and what we don't."},
+  t1:{ar:"عقدك ما يغادر جهازك",en:"Your contract never leaves your device"},
+  t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد.",
+       en:"It's read and analyzed inside the app. We don't upload it, store it, or share it."},
+  t2:{ar:"لسنا محامين",en:"We're not lawyers"},
+  t2p:{ar:"نشرح ونساعدك تفهم وتقرر. للقضايا المعقدة نوصّلك بمحامٍ سعودي مرخّص.",
+       en:"We explain and help you understand and decide. For complex matters we connect you with a licensed Saudi lawyer."},
+  t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
+  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — ومصادرنا معروضة داخل التطبيق بروابطها الرسمية وتاريخ آخر مراجعة. المراجع محدّثة حتى فبراير ٢٠٢٥، تاريخ نفاذ آخر تعديلات النظام.",
+       en:"Every flag carries its reason and its reference in the Saudi Labor Law — and our sources are listed in the app with official links and a review date. References are current to February 2025, when the latest amendments came into force."},
+
+  k_faq:{ar:"أسئلة",en:"Questions"},
+  faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
+  faq:{ar:[
+    ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، ولا يُرفع ولا يُخزَّن. لو حذفت التطبيق راح معه كل شيء."],
+    ["هل يغني عن المحامي؟","لا. وضوح يشرح ويجهّز ويوضّح خياراتك. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا مرخّصًا — ونوصّلك به وملفك جاهز."],
+    ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
+    ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
+    ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
+    ["الأسعار شاملة الضريبة؟","نعم، كل الأسعار المعروضة شاملة ضريبة القيمة المضافة ١٥٪ — ما فيه مبالغ تظهر لك عند الدفع."],
+    ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."],
+    ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/٥١ وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
+    ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
+  ], en:[
+    ["Do you keep my contract?","No. It's read and analyzed inside the app on your device — never uploaded, never stored. Delete the app and it all goes with it."],
+    ["Does this replace a lawyer?","No. Wodouh explains, prepares, and clarifies your options. For a real dispute or large sums you need a licensed lawyer — and we connect you with one, file already prepared."],
+    ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
+    ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
+    ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
+    ["Do prices include VAT?","Yes — every price shown includes 15% VAT. Nothing extra appears at checkout."],
+    ["What if the letter isn't useful?","We refund you, no questions. You're paying for an output you actually use, not for a trial."],
+    ["Where does your information come from?","Official sources: the Saudi Labor Law (Royal Decree M/51 and its amendments), the Ministry of Human Resources, the Ejar network, and the Ministry of Justice. They're listed in the app with links and review dates, and we name an article number only where we've verified it."],
+    ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there's a claim or a large sum involved — we say so plainly on the result screen and prepare your file before you go."]
+  ]},
+
+  close_h:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
+  close_p:{ar:"حلّل عقدك الآن. بدون تسجيل، وبدون ما يغادر عقدك جهازك.",
+           en:"Analyze your contract now. No sign-up, and nothing leaves your device."},
+  close_cta:{ar:"اعرف وضع عقدي مجانًا",en:"See where my contract stands — free"},
+  foot:{ar:"وضوح يشرح لك ويساعدك تفهم — وما يغني عن الاستشارة القانونية عند الحاجة.",
+        en:"Wodouh explains and helps you understand — it doesn't replace legal advice when you need it."}
+};
+
+let lang = "ar";
+const t = k => T[k][lang];
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  if (typeof setDir === "function") setDir();
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.title = lang === "ar" ? "وضوح — اقرأ عقدك قبل ما توقّع" : "Wodouh — read your contract before you sign";
+  document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+  const sar = lang === "ar" ? "ر.س" : "SAR";
+  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٦٥" : "65") + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = (lang==="ar" ? "١٣٠" : "130") + `<small>${sar}</small>`;
+  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٢٥" : "325") + `<small>${sar}</small>`;
+  document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
+    `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
+  ).join("");
+}
+function toggleLang(){ lang = lang === "ar" ? "en" : "ar"; applyLang(); }
+
+/* ---- motion layer: additive, and never a prerequisite for content ---- */
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+/* Reveal on scroll. Elements are visible in markup; JS opts them in, so a
+   failure here can never hide a section. */
+let revealIO = null;
+function armReveals(){
+  if (REDUCED.matches || !("IntersectionObserver" in window)) return;
+  revealIO = new IntersectionObserver(es=>es.forEach(e=>{
+    if (e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); }
+  }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
+  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
+    .forEach((el,i)=>{
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.9){ el.classList.add("rv","in"); return; }
+      el.classList.add("rv");
+      const within = i % 3;
+      if (within) el.classList.add("rv-d" + within);
+      revealIO.observe(el);
+    });
+}
+
+/* Safety net: on a very short viewport, or under fast or programmatic
+   scrolling, the observer can coalesce past an element taller than the screen
+   and leave it invisible for good. Content visibility must never depend on how
+   quickly someone scrolls, so anything whose top has reached the viewport is
+   revealed regardless of observer timing. */
+let sweepQueued = false;
+function sweepReveals(){
+  sweepQueued = false;
+  document.querySelectorAll(".rv:not(.in)").forEach(el=>{
+    if (el.getBoundingClientRect().top < window.innerHeight){
+      el.classList.add("in");
+      if (revealIO) revealIO.unobserve(el);
+    }
+  });
+}
+function queueSweep(){
+  if (sweepQueued) return;
+  sweepQueued = true;
+  requestAnimationFrame(sweepReveals);
+}
+
+/* Nav condensation and a capped parallax drift on the hero card. */
+function onScroll(){
+  const nav = document.querySelector(".nav");
+  if (nav) nav.classList.toggle("tight", window.scrollY > 90);
+  if (REDUCED.matches) return;
+  const shot = document.querySelector(".shot");
+  if (shot && window.scrollY < 900){
+    const d = Math.max(-14, Math.min(14, window.scrollY * -0.045));
+    shot.style.transform = "translateY(" + d + "px)";
+  }
+}
+
+/* Direction token so the score rows slide in from the reading edge. */
+function setDir(){
+  document.documentElement.style.setProperty("--dir", lang === "ar" ? "-1" : "1");
+}
+
+/* the hero score counts up once, when it first comes into view */
+function animateScore(){
+  const arc = document.getElementById("arc"), num = document.getElementById("num"), target = 68;
+  arc.style.strokeDashoffset = String(333 * (1 - target/100));
+  const t0 = performance.now();
+  (function tick(now){
+    const k = Math.min(1, (now - t0) / 1300);
+    num.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
+    if (k < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+applyLang();
+armReveals();
+window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("scroll", queueSweep, { passive:true });
+window.addEventListener("resize", queueSweep, { passive:true });
+window.addEventListener("load", sweepReveals);
+onScroll();
+const shot = document.querySelector(".shot");
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  document.getElementById("arc").style.strokeDashoffset = String(333 * 0.32);
+  document.getElementById("num").textContent = "68";
+} else if ("IntersectionObserver" in window){
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting){ animateScore(); io.disconnect(); }
+  }), { threshold:.4 });
+  io.observe(shot);
+} else animateScore();
