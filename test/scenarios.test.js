@@ -269,6 +269,49 @@ const SCENARIOS = [
   ok(matrix.bad.length === 0, `calculation matrix clean (${matrix.bad.length} problems)`);
   matrix.bad.slice(0, 6).forEach(m => console.log("   " + m));
 
+  /* ---- Article 87 in the FREE calculator, in both languages.
+     Scenario 16 covers this on the paid termination path. The standalone
+     calculator asked nothing, so the same reader was shown a third of her
+     award depending only on which door she came through. What is asserted
+     here is the reader-visible half: that the question is offered, that the
+     explanation renders in her own language, and that the citation names the
+     article the figure actually relied on. The arithmetic and the parity with
+     the paid path are pinned in calc-fuzz. */
+  console.log("\n— Article 87 in the free calculator");
+  for (const L of ["ar", "en"]) {
+    const r = await p.evaluate((lg) => {
+      const set = (exc) => {
+        lang = lg; applyLang(); nat = "sa"; eosHow = "resign"; eosExc87 = exc;
+        renderEos(); show("eos");
+        document.getElementById("eosStart").value = "2021-01-01";
+        document.getElementById("eosEnd").value   = "2026-01-01";
+        document.getElementById("eosWage").value  = "10000";
+        calcEos();
+        return { total: eosData.total,
+                 out: document.getElementById("eosOut").textContent,
+                 src: document.getElementById("eosSrc").textContent };
+      };
+      const opts = () => Array.from(document.querySelectorAll("#eosExc button"))
+                              .map(b => b.textContent.trim());
+      const none = set("none"), birth = set("birth");
+      return { none, birth, opts: opts(),
+               fldShown: !document.getElementById("eosExcFld").hidden,
+               dir: document.documentElement.dir,
+               full: awardBase(5, 10000) };
+    }, L);
+    ok(r.fldShown && r.opts.length === 4 && r.opts.every(o => o),
+       `${L}: the question is asked on the resignation path, with four labelled answers`);
+    ok(Math.abs(r.birth.total - r.full) < 0.01,
+       `${L}: resigning after childbirth keeps the full award (${r.birth.total} of ${r.full})`);
+    ok(Math.abs(r.none.total - r.full / 3) < 0.01,
+       `${L}: an ordinary resignation is still reduced (${r.none.total})`);
+    ok(/87/.test(r.birth.src) && !/87/.test(r.none.src),
+       `${L}: the citation names Article 87 only when the figure relied on it`);
+    ok(r.birth.out.length > r.none.out.length && /87/.test(r.birth.out),
+       `${L}: and the reader is told why the reduction is absent`);
+    if (L === "ar") ok(r.dir === "rtl", "ar: the screen is still right-to-left");
+  }
+
 
   /* ---- every scenario again, with a hostile reviewer attached.
      The figures must be identical to the offline run. This is the same

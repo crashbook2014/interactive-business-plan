@@ -2122,6 +2122,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <em data-t="eos_term_hint"></em>
       </label>
       <div class="fld"><span data-t="eos_how"></span><div class="opts" id="eosHow"></div></div>
+      <!-- Article 87. Only on the resignation path: everywhere else the full
+           award is already due and the question would be noise. Same rule,
+           same wording and same four options as the termination assessment. -->
+      <div class="fld" id="eosExcFld" hidden>
+        <span data-t="tm_f_exc"></span><div class="opts" id="eosExc"></div>
+      </div>
     </div>
     <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
     <div id="eosOut" aria-live="polite"></div>
@@ -2839,6 +2845,10 @@ const T = {
              en:"The score comes from Wodouh's methodology, not from any statute."},
   src_eos:{ar:"الحساب وفق نظام العمل السعودي — المادتان 84 و85",
            en:"Calculated under Saudi Labor Law — Articles 84 and 85"},
+  /* A figure must not cite a rule it did not follow: when Article 87 removes
+     the Article 85 reduction, the citation says so. */
+  src_eos_87:{ar:"الحساب وفق نظام العمل السعودي — المواد 84 و85 و87",
+              en:"Calculated under Saudi Labor Law — Articles 84, 85 and 87"},
   src_tl:{ar:"المواعيد محسوبة من تاريخ التوقيع وفق بنود عقدك — تقدير وضوح، راجعها مع عقدك.",
           en:"Dates are counted from signing using your contract's own terms — Wodouh's estimate, check them against your contract."},
   info_not_advice:{ar:"هذي معلومة نظامية عامة، مو استشارة قانونية لحالتك.",
@@ -3931,6 +3941,12 @@ const T = {
   eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
   eos_none:{ar:"الاستقالة قبل إتمام سنتين لا تستحق مكافأة عادةً.",
             en:"Resigning before completing two years generally earns no award."},
+  /* Shown only when the reader has chosen one of the Article 87 options. It
+     states no legal condition of its own — the condition is in the option
+     they picked — it only explains why the Article 85 reduction is absent
+     from a figure that would otherwise look unexplained. */
+  eos_exc87:{ar:"لم نطبّق تخفيض الاستقالة (المادة 85) — الحالة اللي اخترتها تستحق المكافأة كاملة بموجب المادة 87.",
+             en:"The resignation reduction (Article 85) has not been applied — the case you selected earns the full award under Article 87."},
   eos_note:{ar:"تقدير مبني على قواعد الحساب المعتادة. لا يشمل بدل الإجازات غير المستخدمة أو مستحقات أخرى. وهذي المكافأة مستقلة عن التأمينات الاجتماعية — التأمينات ما تنقصها ولا تغني عنها.",
             en:"An estimate based on the standard formula. It excludes unused leave and other dues. This award is separate from GOSI — social insurance does not reduce it or replace it."},
   eos_verify:{ar:"الحساب مبني على المادتين 84 و85 من نظام العمل — راجع المصادر في «حسابي».",
@@ -5449,6 +5465,18 @@ function animateRing(){
    Figures must be verified against the current statutory text before use. */
 let eosHow = "term", triage = { reason:null, notice:null, probation:null }, claimAdded = false;
 
+/* Article 87, on the calculator side. The termination assessment has asked
+   this since the assessment was built (term.exc87 / exc87Applies); the
+   standalone calculator never did, so the same reader got the reduced figure
+   here and the correct one there depending only on which door they came
+   through. null and "none" both mean no exception, so the default can only
+   ever understate — never overstate — and only an affirmative answer moves
+   the figure, always upward. */
+let eosExc87 = null;
+function eosExc87Applies(){
+  return eosExc87 === "force" || eosExc87 === "marriage" || eosExc87 === "birth";
+}
+
 const EOS_HOW = [
   { id:"term",   label:"eos_h_term" },
   { id:"resign", label:"eos_h_resign" },
@@ -6091,6 +6119,26 @@ function renderEos(){
      that does not exist. */
   const fld = document.getElementById("eosTermFld");
   if (fld) fld.hidden = !(contractIsFixed() && eosHow === "term");
+
+  /* Article 87's exceptions, asked the way the assessment asks them. */
+  const excFld = document.getElementById("eosExcFld");
+  if (excFld) excFld.hidden = eosHow !== "resign";
+  const excWrap = document.getElementById("eosExc");
+  if (excWrap && eosHow === "resign"){
+    excWrap.innerHTML = "";
+    [["none","tm_exc_none"],["force","tm_exc_force"],
+     ["marriage","tm_exc_marriage"],["birth","tm_exc_birth"]].forEach(([id,label])=>{
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = eosExc87 === id ? "on" : "";
+      b.textContent = t(label);
+      b.onclick = ()=>{
+        eosExc87 = id; buzz(8); renderEos();
+        if (document.getElementById("eosOut").innerHTML) calcEos();
+      };
+      excWrap.appendChild(b);
+    });
+  }
 }
 
 /* Calendar arithmetic, not averaged days: an exact three-year span must come
@@ -6251,7 +6299,12 @@ function calcEos(){
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
   const firstAmt = first * 0.5 * wage, afterAmt = after * wage;
   const sub = awardBase(y, wage);
-  const factor = eosHow === "resign" ? resignFactor(y) : 1;
+  /* Article 87 keeps the FULL award despite Article 85 — force majeure, or a
+     female worker within six months of marriage or three months of giving
+     birth. Same shape as termAward(), deliberately, so the two paths cannot
+     drift into disagreeing about the same reader. */
+  const exc = eosHow === "resign" && eosExc87Applies();
+  const factor = (eosHow === "resign" && !exc) ? resignFactor(y) : 1;
   const total = sub * factor;
 
   const svc = svcText(parts.y, parts.m);
@@ -6268,10 +6321,11 @@ function calcEos(){
          ${row(t("eos_b_first"), money(firstAmt)+" "+cur)}
          ${after > 0 ? row(t("eos_b_after"), money(afterAmt)+" "+cur) : ""}
          ${row(t("eos_b_sub"), money(sub)+" "+cur)}
-         ${eosHow==="resign" ? row(t("eos_b_factor"), factor===0 ? "0" : (factor===1 ? "1" : (factor<0.5?"1/3":"2/3"))) : ""}
+         ${eosHow==="resign" && !exc ? row(t("eos_b_factor"), factor===0 ? "0" : (factor===1 ? "1" : (factor<0.5?"1/3":"2/3"))) : ""}
          ${row(t("eos_b_total"), money(total)+" "+cur, "tot")}
        </div>
-       ${eosHow==="resign" && factor===0 ? `<p class="eos-note">${t("eos_none")}</p>` : ""}
+       ${exc ? `<p class="eos-note">${t("eos_exc87")}</p>` : ""}
+       ${eosHow==="resign" && !exc && factor===0 ? `<p class="eos-note">${t("eos_none")}</p>` : ""}
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
@@ -6288,7 +6342,11 @@ function calcEos(){
     (card || out).appendChild(warn);
   }
   eosSrc.hidden = false;
-  eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow };
+  /* applyLang() repaints every [data-t] node and then re-runs calcEos(), so
+     this override survives a language toggle rather than being reverted by it. */
+  eosSrc.textContent = t(exc ? "src_eos_87" : "src_eos");
+  eosData = { start:sd, end:ed, wage, years:y, parts, total, how:eosHow,
+              exc87: eosHow === "resign" ? eosExc87 : null };
   /* THE CASE FILE IS PER ASSESSMENT, like the letter is per contract.
      analyze() spends owned.letter and owned.review on a new contract, and
      owned.case was spent nowhere at all — so the 149 letter was metered per use

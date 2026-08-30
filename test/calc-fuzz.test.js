@@ -61,8 +61,10 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
 
   // ---------- calcEos: the award itself ----------
   const eos = await p.evaluate(() => {
-    const run = (start,end,wage,how) => {
-      nat = 'sa'; eosHow = how; renderEos();
+    /* `exc` is the Article 87 answer and defaults to null — the shipping
+       state — so every pre-existing call below is unchanged by it. */
+    const run = (start,end,wage,how,exc) => {
+      nat = 'sa'; eosHow = how; eosExc87 = exc || null; renderEos();
       document.getElementById('eosStart').value = start;
       document.getElementById('eosEnd').value = end;
       document.getElementById('eosWage').value = String(wage);
@@ -80,6 +82,24 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
     out.resign1y      = run('2024-01-01','2025-01-01', 12000,'resign');
     out.resign2y      = run('2023-01-01','2025-01-01', 12000,'resign');
     out.resign10y     = run('2015-01-01','2025-01-01', 12000,'resign');
+    /* ARTICLE 87. The free calculator applied the Article 85 reduction on
+       length of service alone and never asked about the exceptions, so a
+       woman who resigned within three months of giving birth was shown a
+       third of what the register says she is owed. Five years at 10,000 is
+       25,000 under Article 84; the unfixed calculator returned 8,333. */
+    out.exc87base     = awardBase(5, 10000);
+    out.excNull       = run('2021-01-01','2026-01-01', 10000,'resign', null);
+    out.excNone       = run('2021-01-01','2026-01-01', 10000,'resign', 'none');
+    out.excForce      = run('2021-01-01','2026-01-01', 10000,'resign', 'force');
+    out.excMarriage   = run('2021-01-01','2026-01-01', 10000,'resign', 'marriage');
+    out.excBirth      = run('2021-01-01','2026-01-01', 10000,'resign', 'birth');
+    /* The same reader through the paid termination path. These two numbers
+       disagreeing IS the bug, so equality is the assertion that matters. */
+    term = Object.assign(blankTerm(), { how:'resigned', start:'2021-01-01',
+      end:'2026-01-01', wage:10000, exc87:'birth' });
+    out.termBirth = termAward();
+    term.exc87 = 'none';
+    out.termNone  = termAward();
     // monotonicity: a longer service must never pay less
     const svc = [1,2,3,5,7,10,15,20,30].map(n =>
       run(`${2025-n}-01-01`,'2025-01-01', 10000,'term'));
@@ -99,6 +119,24 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
     bad('calcEos', `10y@12000 gave ${eos.exactly10}, expected 90000`);
   if (eos.resign1y !== null && eos.resign1y !== 0)
     bad('calcEos', `resign under 2y gave ${eos.resign1y}, expected 0`);
+
+  // ---------- Article 87: the exceptions to the Article 85 reduction ----------
+  // Unanswered and "none" must not move the figure: the default can only ever
+  // understate, never overstate, and only the reader's own answer lifts it.
+  const reduced = eos.exc87base / 3;
+  for (const k of ['excNull','excNone'])
+    if (Math.abs(eos[k] - reduced) > 0.01)
+      bad('Article 87', `${k} gave ${eos[k]}, expected the reduced ${reduced.toFixed(2)}`);
+  // Each of the three qualifying cases keeps the FULL award.
+  for (const k of ['excForce','excMarriage','excBirth'])
+    if (Math.abs(eos[k] - eos.exc87base) > 0.01)
+      bad('Article 87', `${k} gave ${eos[k]}, expected the full ${eos.exc87base}`);
+  // And the free calculator must agree with the paid assessment about the same
+  // reader. The two disagreeing is the defect this section exists to prevent.
+  if (Math.abs(eos.excBirth - eos.termBirth) > 0.01)
+    bad('Article 87', `calculator ${eos.excBirth} vs termination ${eos.termBirth} — the two paths disagree`);
+  if (Math.abs(eos.excNone - eos.termNone) > 0.01)
+    bad('Article 87', `calculator ${eos.excNone} vs termination ${eos.termNone} — the two paths disagree`);
 
   // ---------- compEstimate: Article 77, both branches ----------
   const comp = await p.evaluate(() => {
@@ -294,6 +332,10 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
   console.log('\ncalcEos:', JSON.stringify({zeroWage:eos.zeroWage,negWage:eos.negWage,sameDay:eos.sameDay,
     reversed:eos.reversed,exactly5:eos.exactly5,exactly10:eos.exactly10,resign1y:eos.resign1y,
     resign2y:eos.resign2y,resign10y:eos.resign10y,monotonic:eos.monotonic}));
+  console.log(`\nArticle 87 (5y @ 10,000 — full award ${eos.exc87base}):` +
+    `\n   unanswered ${eos.excNull}  none ${eos.excNone}` +
+    `  force ${eos.excForce}  marriage ${eos.excMarriage}  birth ${eos.excBirth}` +
+    `\n   same reader via the paid termination path: birth ${eos.termBirth}  none ${eos.termNone}`);
   console.log('\ncompEstimate:', JSON.stringify(comp));
   console.log('\ndecide states seen:', dec.states.join(','), '| confidence:', dec.conf.join(','), '| bands:', dec.band.join(','));
   console.log('\nmoney/fmtNum:'); fmt.forEach(r=>console.log(`   ${r.v.padEnd(20)} money="${r.money}" num="${r.num}"`));
