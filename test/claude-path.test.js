@@ -183,7 +183,18 @@ async function serveWithAiCsp(page){
      device must be named on this page — the failure this catches is a fourth
      one being added and the copy still describing three. If you add a flow,
      add it here; that is the point. */
-  const FLOWS = [/A closer read of your contract/i, /AI second-pass review/i, /Ask a question/i];
+  /* The scan upload was added as a fourth exception and this list was not
+     updated, so the check went on enforcing three against copy that
+     enumerates four — the precise failure the comment above warns about,
+     landing on the test rather than the page.
+     A NOTE ON THE FOURTH, so nobody reads its presence as a claim: the copy
+     discloses the scan upload and the server supports it, but the client has
+     no upload call site yet, so nothing actually sends a file today. That is
+     over-disclosure, which is the safe direction, and it is tracked
+     separately. What belongs here is that every exception the page CLAIMS is
+     also named on it. */
+  const FLOWS = [/A closer read of your contract/i, /AI second-pass review/i,
+                 /Ask a question/i, /Read a scanned contract/i];
   const named = FLOWS.filter(re => re.test(claim2.acc)).length;
   ok(named === FLOWS.length,
      `configured: every off-device flow is named on the privacy page (${named}/${FLOWS.length})`);

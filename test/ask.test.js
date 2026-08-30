@@ -380,17 +380,43 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!/10000|2020-01-01|2026-01-01/.test(wire),
      "no wage and no date appear anywhere in the payload");
 
-  /* The privacy copy has to track the build. A third thing can now leave the
-     device, and a page that still says "two exceptions" is false. */
+  /* The privacy copy has to track the build. A third thing could leave the
+     device, then a fourth, and a page that still names the old number is
+     false about what leaves someone's device.
+     ASSERTED AS A PROPERTY, NOT A WORD. This check used to read
+     /three exceptions/ — written when three was right. The scan upload made
+     it four, the copy was not updated, and the test went on passing because
+     it pinned the stale literal rather than the relationship. So what is
+     checked now is that the number the copy STATES equals the number it
+     ENUMERATES, in both languages: that cannot go stale on the next one. */
   console.log("\n— the privacy copy counts the exceptions this build actually has");
   const priv = await p.evaluate(() => {
-    renderPrivacyCopy();
-    return { acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent,
-             home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent };
+    const read = () => {
+      renderPrivacyCopy();
+      return { acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent,
+               home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent };
+    };
+    const was = lang;
+    lang = "en"; applyLang(); const en = read();
+    lang = "ar"; applyLang(); const ar = read();
+    lang = was; applyLang();
+    return { en, ar };
   });
-  ok(/three exceptions/i.test(priv.acc), "the account page says three exceptions, not two");
-  ok(/Ask a question/i.test(priv.acc), "and names the question box as one of them");
-  ok(!/the one exception/i.test(priv.home), "and the home line no longer claims a single exception");
+  const WORDS = { en:{ one:1, two:2, three:3, four:4, five:5, six:6 },
+                  ar:{ "واحد":1, "اثنان":2, "ثلاثة":3, "أربعة":4, "خمسة":5, "ستة":6 } };
+  for (const L of ["en", "ar"]) {
+    const text = priv[L].acc;
+    const stated = Object.entries(WORDS[L]).find(([w]) =>
+      L === "en" ? new RegExp(`there are ${w} exceptions`, "i").test(text)
+                 : text.includes(`فيه ${w} استثناءات`));
+    /* Each exception is introduced as "1 — ", "2 — " and so on. */
+    const listed = (text.match(/(^|\s)(\d)\s+—/g) || []).length;
+    ok(!!stated, `${L}: the copy states how many exceptions there are`);
+    ok(!!stated && stated[1] === listed,
+       `${L}: it says ${stated ? stated[1] : "?"} and enumerates ${listed} — these must be the same number`);
+  }
+  ok(/Ask a question/i.test(priv.en.acc), "and names the question box as one of them");
+  ok(!/the one exception/i.test(priv.en.home), "and the home line no longer claims a single exception");
 
   /* ---- 9. the two tiers are not mistakable for each other */
   console.log("\n— a verified answer and an unverified one do not look alike");
