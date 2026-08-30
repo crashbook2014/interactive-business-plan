@@ -1,0 +1,28 @@
+# Wodouh (وضوح)
+
+> Saudi employment-rights guidance for workers. Every legal claim is verified
+> against official Saudi sources, carries its article number and source link,
+> and shows the date it was last checked.
+
+Wodouh explains Saudi Labor Law to employees — what they may be owed, what
+their contract says, and what they can do next. The answer pages are generated
+from a register of 29 independently verified claims; a claim that is disputed,
+or verified only in part, produces no page at all rather than a hedged one.
+Article 53 (probation) is under open dispute and is deliberately absent.
+
+Calculations run on the reader's device. Wodouh is not a law firm and states
+no legal outcome.
+
+NOTE FOR EDITORS: the "29" above is the count of strictly verified rows in
+docs/legal-sources.md, which test/seo.test.js asserts. If the register grows,
+this file is a second place that number lives and must be updated with it.
+
+## Verified answers
+- [All answers (English)](https://alwodouh.com/answers/): 29 verified rules, one page each, with article number, official source and verification date.
+- [All answers (Arabic)](https://alwodouh.com/answers/ar/): the same register in Arabic.
+
+## Methodology
+- [How we verify](https://alwodouh.com/how-we-verify/): what enters the register, what is excluded, and why a disputed rule produces no page.
+
+## Tools
+- [Wodouh](https://alwodouh.com/app/): end-of-service calculator and contract review. Figures are computed on the reader's device.
