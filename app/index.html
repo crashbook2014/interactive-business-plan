@@ -3207,7 +3207,16 @@ const T = {
   f_unlimited:{ar:"مراجعات بلا حد",en:"Unlimited reviews"},
   f_seat1:{ar:"مستخدم واحد",en:"One seat"},
   f_clauses:{ar:"شرح البنود بلغة بسيطة",en:"Plain-language clause explanations"},
-  f_q3:{ar:"3 أسئلة مجانية لكل عقد",en:"3 free assistant questions per contract"},
+  /* {n} IS FILLED FROM ASK_PER_DAY AT RENDER, NOT WRITTEN HERE. This line used
+     to read "3 free assistant questions per contract" while the code allowed
+     five a day, counted per calendar day and never per contract — the number
+     and the unit were both wrong, on the one screen where a stranger decides
+     whether we are careful. The catalogue above already defers its prices for
+     exactly this reason; the quota now does the same, so the copy cannot drift
+     from the constant again.
+     The Arabic reads correctly for 3–10; a quota of one or two would need the
+     singular/dual forms as_left1 and its neighbours already handle. */
+  f_qfree:{ar:"{n} أسئلة مجانية يوميًا",en:"{n} free assistant questions a day"},
   f_qmax:{ar:"أسئلة بلا حدود للمساعد",en:"Unlimited assistant questions"},
   f_draft:{ar:"صياغة الخطابات والمستندات",en:"Letter and document drafting"},
   f_remind:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
@@ -8502,7 +8511,7 @@ let pwUpgrade = null;
    defer the read, not to duplicate the number. */
 const PLANS_T = [
   { id:"free", name:"pl_basic", desc:"pl_free_d", m:0,
-    on:["f_score","f_scan1","f_q3"], off:["f_full","f_draft","f_case"] },
+    on:["f_score","f_scan1","f_qfree"], off:["f_full","f_draft","f_case"] },
   { id:"pack", name:"plan_reviews5", desc:"plan_reviews5_d",
     m:() => PLANS_REVIEW[1].amt, once:true, hi:true, tag:"plan_best",
     on:["f_full","f_5reviews","f_12mo"], off:["f_seats","f_unlimited"] },
@@ -8543,8 +8552,11 @@ function renderPlans(){
       ? `<b>${t("pl_free")}</b>`
       : `<b>${fmtNum(amount)}</b><i>${lang==="ar"?"ر.س":"SAR"}${unit}</i>` +
         (pl.seat ? `<i>· ${t("pl_seat")}</i>` : "");
-    const feats = pl.on.map(f=>`<li>${TICK}<span>${t(f)}</span></li>`).join("") +
-                  pl.off.map(f=>`<li class="off">${DASH}<span>${t(f)}</span></li>`).join("");
+    /* The one figure a feature line may carry, read from the constant that
+       enforces it rather than copied into the string. */
+    const ft = f => t(f).replace("{n}", fmtNum(ASK_PER_DAY));
+    const feats = pl.on.map(f=>`<li>${TICK}<span>${ft(f)}</span></li>`).join("") +
+                  pl.off.map(f=>`<li class="off">${DASH}<span>${ft(f)}</span></li>`).join("");
     const held = plan === pl.id;
     const cta = pl.soon ? t("plan_soon")
               : pl.id==="free" ? t("pl_cta_free")

@@ -124,6 +124,44 @@ async function seedTermination(p){
   ok(/\{n\}/.test(packSale.acct) && /\{d\}/.test(packSale.acct),
      "and the account screen shows what is left and when it lapses");
 
+  /* ---- the free tier's quota is the one the code enforces.
+     It advertised "3 free assistant questions per contract" while askLeft()
+     allowed five, counted per calendar day and never per contract — both the
+     number and the unit were wrong, on the screen where a stranger decides
+     whether we are careful. The string now carries {n} and is filled from
+     ASK_PER_DAY at render, so what is asserted here is that the promise and
+     the enforcement cannot come apart again. */
+  console.log("\n— the free tier promises the quota the code actually allows");
+  const quota = await p.evaluate(() => {
+    const out = { perDay: ASK_PER_DAY, raw: T.f_qfree, shown: {} };
+    /* askLeft() resets on the calendar day, which is the unit the copy must
+       name — proven here rather than read off the constant's name. */
+    askUsed = { day: "1970-01-01", n: 99 };
+    out.resetsDaily = askLeft() === ASK_PER_DAY;
+    for (const L of ["en", "ar"]) {
+      lang = L; applyLang(); renderPlans();
+      /* The free tier's own feature line, not the whole screen: the screen
+         carries 699, 12 and other figures, so a substring search across it
+         would pass on a page that never mentions the allowance at all. */
+      const li = Array.from(document.querySelectorAll("#screen-plans li"))
+        .map(n => n.textContent.trim())
+        .find(s => /assistant questions|أسئلة مجانية/.test(s));
+      out.shown[L] = li || "(the allowance is not on the plan screen)";
+      out.whole = (out.whole || "") + document.getElementById("screen-plans").textContent;
+    }
+    return out;
+  });
+  ok(quota.resetsDaily, "the allowance is per calendar day, not per contract");
+  ok(/\{n\}/.test(quota.raw.en) && /\{n\}/.test(quota.raw.ar),
+     "the copy holds a placeholder rather than a second copy of the number");
+  for (const L of ["en", "ar"]) {
+    ok(quota.shown[L].includes(String(quota.perDay)),
+       `${L}: the plan card states the enforced allowance (${quota.perDay})`);
+    ok(!/\{n\}/.test(quota.shown[L]), `${L}: and the placeholder is filled, not shown`);
+  }
+  ok(!/per contract|لكل عقد/i.test(quota.whole),
+     "and no longer claims the allowance is per contract");
+
   const refund = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
   ok(/twelve months/i.test(refund) && /اثني عشر/.test(refund),
      "the refund policy carries the same term, in both languages");
