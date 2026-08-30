@@ -100,12 +100,56 @@ code{
 html[lang="ar"] [data-lang="ar"]{display:block}
 html[lang="en"] [data-lang="en"]{display:block}
 
+/* ------------------------------------------------------------- footer
+   One footer for every page that loads this stylesheet: the three policies,
+   the support page, and the generated answer pages. Pure HTML and CSS — these
+   pages ship default-src 'none' and run no script at all, so a JS-injected
+   component is not available here and would be the wrong trade anyway.
+
+   WHAT IT DELIBERATELY DOES NOT CARRY: no commercial registration number, no
+   VAT number, no postal address, no licence or authorisation, and no trust
+   badge of any kind. Wodouh operates under a Freelance Work Certificate and
+   holds none of those; printing one would be worse than omitting it, and a
+   badge nobody issued is decoration pretending to be assurance. What is here
+   instead is the operator's identity, a real contact route, and a plain
+   statement of what Wodouh is and is not. */
 footer{
-  margin-top:52px; padding-top:22px; border-top:1px solid var(--line);
-  font-size:13px; color:var(--ink-3);
-  display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center;
+  margin-top:64px; padding-top:28px; border-top:1px solid var(--line);
+  font-size:13.5px; color:var(--ink-2); line-height:1.65;
 }
-footer a{color:var(--ink-2)}
+.f-top{
+  display:grid; gap:26px 40px; align-items:start;
+  grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(120px,1fr));
+}
+@media (max-width:760px){ .f-top{grid-template-columns:1fr 1fr} }
+@media (max-width:460px){ .f-top{grid-template-columns:1fr} }
+
+.f-brand b{display:block; font-size:16px; color:var(--ink); letter-spacing:-.01em}
+.f-brand .f-ar{font-family:var(--ar); font-size:15px; color:var(--ink); margin-top:1px}
+.f-brand p{margin:8px 0 0; font-size:13px; color:var(--ink-3); max-width:34ch}
+
+.f-col h3{
+  margin:0 0 10px; font-size:11px; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.f-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
+.f-col a{color:var(--ink-2); text-decoration:none}
+.f-col a:hover{color:var(--teal); text-decoration:underline}
+.f-col a:focus-visible{
+  outline:2px solid var(--teal); outline-offset:3px; border-radius:3px; color:var(--teal);
+}
+
+/* The identification block. Restrained on purpose: it is the one paragraph a
+   merchant reviewer or a sceptical reader looks for, and padding it with
+   legalese is how it stops being read. */
+.f-id{
+  margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
+  font-size:12.5px; color:var(--ink-3); max-width:78ch;
+}
+.f-id p{margin:0 0 8px}
+.f-id p:last-child{margin-bottom:0}
+.f-id a{color:var(--ink-2)}
+.f-copy{margin-top:14px; font-size:12px; color:var(--ink-3)}
 
 @media print{
   :root{--sand:#fff; --card:#fff; --ink:#111; --ink-2:#333; --ink-3:#666; --line:#ddd; --line-2:#bbb}

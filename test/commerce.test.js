@@ -223,6 +223,80 @@ async function seedTermination(p){
        "and that it renews until cancelled rather than lapsing on its own");
   }
 
+  /* ---- the trust surface says only what is true.
+     Wodouh operates under a Freelance Work Certificate: there is no commercial
+     registration, no VAT number, no licence and no government approval to
+     print. The failure this guards is the tempting one — filling a compliance
+     box with a number or a badge that does not exist, which is worse than the
+     empty box because it is a false statement to a consumer and to a merchant
+     reviewer. Asserted across every public surface, not just the page someone
+     remembered to edit. */
+  console.log("\n— the public pages claim no registration, licence or badge that does not exist");
+  {
+    /* COMMENTS ARE NOT CLAIMS. A first draft of this check read the raw file
+       and failed on app/index.html because a comment there says "no VAT
+       number" — the check fired on the sentence explaining that the thing
+       does not exist. The register warns about exactly this shape: a counter
+       a sentence about counting can move is not a counter. So strip HTML and
+       block comments first and test what actually ships to a reader. */
+    const visible = s => readFileSync(path.join(ROOT, s), "utf8")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/\/\*[\s\S]*?\*\//g, " ");
+    const surfaces = ["index.html", "app/index.html", "privacy/index.html", "terms/index.html",
+                      "refund/index.html", "support/index.html", "answers/index.html"];
+    const FABRICATED = [
+      ["a commercial registration number", /(C\.?R\.?\s*(No|Number|#)|رقم\s*السجل\s*التجاري)/i],
+      ["a VAT registration number",        /(VAT\s*(No|Number|Reg)|الرقم\s*الضريبي)/i],
+      ["a licence or authorisation number",/(Licen[cs]e\s*(No|Number)|رقم\s*الترخيص)/i],
+      ["a government approval claim",      /(government[- ]approved|ministry[- ]approved|معتمد\s*من\s*(وزارة|الحكومة))/i],
+      ["being a licensed legal practice",  /(licensed\s+law\s+firm|licensed\s+legal\s+platform|مكتب\s*محاماة\s*مرخّص)/i],
+    ];
+    for (const s of surfaces) {
+      const txt = visible(s);
+      for (const [what, re] of FABRICATED)
+        ok(!re.test(txt), `${s} does not claim ${what}`);
+    }
+  }
+
+  /* ---- and every paid surface carries identity, a contact route and the
+     limits of what Wodouh is. A reader deciding whether to pay should not have
+     to leave the page to find out who they are dealing with. */
+  console.log("\n— identity, contact and the not-a-law-firm statement are reachable where money is asked for");
+  {
+    const app = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    ok(/support@alwodouh\.com/.test(app), "the app states a contact address");
+    ok(/href="\.\.\/support\/"/.test(app), "and links the support page");
+    for (const [what, en, ar] of [
+      ["that it is not a law firm", /not a law firm/i, /ليس مكتب محاماة/],
+      ["that it does not represent you", /does not provide legal representation/i, /لا يقدّم تمثيلًا قانونيًا/],
+    ]) ok(en.test(app) && ar.test(app), `the app states ${what}, in both languages`);
+
+    for (const p of ["privacy/index.html", "terms/index.html", "refund/index.html", "support/index.html"]) {
+      const t = readFileSync(path.join(ROOT, p), "utf8");
+      ok(/support@alwodouh\.com/.test(t), `${p} carries the support address`);
+      ok(/href="\.\.\/support\/"/.test(t), `${p} links the support page`);
+      ok(/not a law firm/i.test(t) && /ليس مكتب محاماة/.test(t),
+         `${p} states Wodouh is not a law firm, in both languages`);
+    }
+  }
+
+  /* ---- the founder's own address is an operator identity, not a help desk.
+     It was published on the marketing homepage as the public contact while
+     being an owner row in admin_allowlist, which points anyone who wants
+     console access at exactly the right mailbox to attack. */
+  console.log("\n— the console owner's address is not published as public support");
+  {
+    const allow = readFileSync(path.join(ROOT, "supabase/migrations/0008_operator_allowlist.sql"), "utf8");
+    const owners = [...allow.matchAll(/\('([^']+@[^']+)'/g)].map(m => m[1].toLowerCase());
+    ok(owners.length > 0, `the allowlist names its operators (${owners.length})`);
+    for (const s of ["index.html", "app/index.html", "privacy/index.html", "terms/index.html",
+                     "refund/index.html", "support/index.html"]) {
+      const txt = readFileSync(path.join(ROOT, s), "utf8").toLowerCase();
+      const leaked = owners.filter(o => txt.includes(o));
+      ok(leaked.length === 0, `${s} publishes no operator address${leaked.length ? " — " + leaked.join(", ") : ""}`);
+    }
+  }
+
   /* --------------------------------- the pricing doc names every real price */
   console.log("\n— docs/pricing.md is not folklore");
 

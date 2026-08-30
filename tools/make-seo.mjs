@@ -232,7 +232,7 @@ const S = {
     indexDesc: n => `${n} plain answers on Saudi employment law, each checked against an official source and dated.`,
     how: "How we verify",
     home: "Wodouh", allAnswers: "All answers",
-    privacy: "Privacy", terms: "Terms",
+    privacy: "Privacy", terms: "Terms", support: "Support",
     metaDesc: t => `${t} — the rule, its source, and the date it was last checked.`
   },
   ar: {
@@ -255,7 +255,7 @@ const S = {
     indexDesc: n => `${n} إجابة واضحة عن العمل في السعودية، كل واحدة محقّقة مقابل مصدر رسمي ومؤرّخة.`,
     how: "كيف نتحقّق",
     home: "وضوح", allAnswers: "كل الإجابات",
-    privacy: "الخصوصية", terms: "الشروط",
+    privacy: "الخصوصية", terms: "الشروط", support: "الدعم",
     metaDesc: t => `${t} — الحكم، ومصدره، وتاريخ آخر تحقّق منه.`
   }
 };
@@ -313,6 +313,7 @@ ${body}
     <a href="/how-we-verify/${lang === "ar" ? "ar/" : ""}">${t.how}</a>
     <a href="/privacy/">${t.privacy}</a>
     <a href="/terms/">${t.terms}</a>
+    <a href="/support/">${t.support}</a>
   </footer>
 
 </div>
@@ -494,7 +495,8 @@ const STATIC = [
   { loc: "/app/",     freq: "weekly",  pri: "0.9" },
   { loc: "/privacy/", freq: "monthly", pri: "0.4" },
   { loc: "/terms/",   freq: "monthly", pri: "0.3" },
-  { loc: "/refund/",  freq: "monthly", pri: "0.3" }
+  { loc: "/refund/",  freq: "monthly", pri: "0.3" },
+  { loc: "/support/", freq: "monthly", pri: "0.4" }
 ];
 
 function sitemap(pairs){
@@ -504,7 +506,7 @@ function sitemap(pairs){
 
      lastmod on the generated pairs comes from the register's own "Last
      reviewed" date — the same date each page prints as "Last re-checked" — so
-     it is never invented. The five STATIC urls are not built by this script
+     it is never invented. The STATIC urls are not built by this script
      and carry no verification date to source a <lastmod> from, so they are
      left without one rather than guessing. */
   const url = (loc, freq, pri, alts, lastmod) =>
