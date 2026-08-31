@@ -588,6 +588,11 @@
   /* Tabs are siblings, not parents — no lateral push, just a settle. */
   .screen.active.lateral{animation-name:screen-lateral}
   @keyframes screen-lateral{from{opacity:0;transform:scale(1.012)}to{opacity:1;transform:none}}
+  /* Committed by a gesture: the reader supplied the motion, so the destination
+     only needs to appear. A directional slide here would play a movement that
+     has already happened, in the opposite direction to the thumb. */
+  .screen.active.gesture{animation-name:screen-gesture;animation-duration:var(--t-fast)}
+  @keyframes screen-gesture{from{opacity:0}to{opacity:1}}
   /* Live drag: the screen tracks the finger, transitions suspended. */
   .screen.dragging{animation:none !important;transition:none !important;will-change:transform}
   .screen.settling{transition:transform var(--t) var(--ease-spring), opacity var(--t) var(--ease-out)}
@@ -4922,11 +4927,15 @@ function show(name, back){
      Sending the reader home is the honest outcome: there is genuinely nothing
      to show them, and home is where they can start again. */
   if ((name === "result" || name === "clauses") && !current) name = "home";
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling"));
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling","gesture"));
   const el = document.getElementById("screen-"+name);
   el.classList.add("active");
   if (back) el.classList.add("back");
   if (lateralNav) el.classList.add("lateral");
+  /* Arriving by gesture: the reader has already moved the screen themselves,
+     so a directional entry animation would contradict what their thumb did.
+     Cross-fade instead, and shorter — the motion already happened. */
+  if (gestureNav) el.classList.add("gesture");
   el.style.transform = "";
   window.scrollTo(0,0);
   const h = el.querySelector("h1,h2");
@@ -9590,11 +9599,30 @@ const BACK_OF = {
   biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
   photo:()=>show("intake",1), intake:()=>show("home",1), timeline:()=>tlBack()
 };
+/* Which root a horizontal drag would land on, or null when there is nothing
+   that way. Extracted so the live preview and the commit agree by construction
+   — a preview that slides toward a tab that does not exist is a promise the
+   release cannot keep. */
+function tabNeighbour(name, dx, rtl){
+  const i = ROOTS.indexOf(name);
+  if (i < 0) return null;
+  const next = (rtl ? dx > 0 : dx < 0) ? i + 1 : i - 1;
+  return (next >= 0 && next < ROOTS.length) ? ROOTS[next] : null;
+}
+
+/* Set while a navigation is being committed by a gesture, read by show(). A
+   screen the reader has already dragged 60px must not then replay a canned
+   entry from the opposite side. Same shape as lateralNav. */
+let gestureNav = false;
+
 function initGestures(){
   if (gesturesBound) return; gesturesBound = true;
   if (!COARSE.matches) return;
   const app = document.querySelector(".app");
   let sx=0, sy=0, dragging=false, cur=null, rtl=false, id=null;
+  /* Velocity, sampled between moves. Distance alone rejected a fast 45px flick
+     — unmistakably a back gesture — because it never reached the 60px line. */
+  let lastX=0, lastT=0, vx=0;
   const blocked = t => t.closest("textarea,input,.chat,.caps,.tabbar,.viewfinder");
 
   app.addEventListener("pointerdown", e=>{
@@ -9602,20 +9630,30 @@ function initGestures(){
     cur = document.querySelector(".screen.active");
     if (!cur) return;
     sx = e.clientX; sy = e.clientY; dragging = false; id = e.pointerId;
+    lastX = e.clientX; lastT = e.timeStamp; vx = 0;
     rtl = document.documentElement.dir === "rtl";
   }, { passive:true });
 
   app.addEventListener("pointermove", e=>{
     if (!cur || e.pointerId !== id) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
+    const dt = e.timeStamp - lastT;
+    if (dt > 0){ vx = (e.clientX - lastX) / dt; lastX = e.clientX; lastT = e.timeStamp; }
     if (!dragging){
       if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
       dragging = true; cur.classList.add("dragging");
     }
+    if (REDUCED.matches) return;
     const name = cur.id.replace("screen-","");
     const inward = rtl ? dx < 0 : dx > 0;           /* toward the back edge */
-    if (BACK_OF[name] && inward && !REDUCED.matches)
+    if (BACK_OF[name] && inward)
       cur.style.transform = "translateX(" + (dx * 0.55) + "px)";
+    /* A root screen used to show NOTHING while the finger moved and then jump
+       to another tab on release — a gesture with no tracking is not a gesture,
+       it is a hidden shortcut. Shallower pull than a back-swipe, because tabs
+       cross-fade rather than push: enough to say something will happen. */
+    else if (tabNeighbour(name, dx, rtl))
+      cur.style.transform = "translateX(" + (dx * 0.35) + "px)";
   }, { passive:true });
 
   const release = e=>{
@@ -9623,18 +9661,41 @@ function initGestures(){
     const dx = e.clientX - sx, dy = e.clientY - sy;
     const scr = cur, name = scr.id.replace("screen-","");
     scr.classList.remove("dragging");
-    scr.classList.add("settling");
-    scr.style.transform = "";
-    setTimeout(()=>scr.classList.remove("settling"), 260);
-    const horizontal = Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4;
-    if (horizontal && dragging){
-      const inward = rtl ? dx < 0 : dx > 0;
-      if (BACK_OF[name] && inward){ buzz(8); BACK_OF[name](); }
-      else if (ROOTS.includes(name)){
-        const i = ROOTS.indexOf(name);
-        const next = (rtl ? dx > 0 : dx < 0) ? i + 1 : i - 1;
-        if (next >= 0 && next < ROOTS.length){ buzz(8); goTab(ROOTS[next]); }
-      }
+
+    /* A flick counts as much as a long drag. iOS commits its edge-swipe on
+       velocity OR distance, which is why it feels forgiving; this used to
+       measure distance alone and threw away every fast, short gesture.
+       Velocity goes stale the moment the finger stops, so a drag that is held
+       still before release is judged on distance, as it should be. */
+    const fresh = (e.timeStamp - lastT) < 80;
+    const flick = fresh && Math.abs(vx) > 0.5;
+    const directional = Math.abs(dx) > Math.abs(dy) * 1.4;
+    const horizontal = dragging && directional && (Math.abs(dx) > 60 || flick);
+    const inward = rtl ? dx < 0 : dx > 0;
+    const backward = horizontal && BACK_OF[name] && inward
+                     && (!flick || (rtl ? vx < 0 : vx > 0));
+    const tab = horizontal && !backward ? tabNeighbour(name, dx, rtl) : null;
+
+    if (backward || tab){
+      /* COMMITTED. Deliberately no spring back to centre: this used to reset
+         the transform and navigate in the same tick, so the screen the reader
+         had just dragged snapped home and the destination replayed a canned
+         entry from the other side. The drag was thrown away at the exact
+         moment it succeeded. Now the dragged screen leaves from where the
+         finger left it and the destination cross-fades in. */
+      buzz(8);
+      gestureNav = true;
+      if (backward) BACK_OF[name](); else goTab(tab);
+      gestureNav = false;
+      /* Safe only here: show() has already hidden it, so clearing the inline
+         transform cannot be seen — but leaving it set would offset the screen
+         the next time it is opened. */
+      scr.style.transform = "";
+    } else {
+      /* CANCELLED. Spring back from wherever the finger left it. */
+      scr.classList.add("settling");
+      scr.style.transform = "";
+      setTimeout(()=>scr.classList.remove("settling"), 260);
     }
     cur = null; dragging = false; id = null;
   };
@@ -9697,10 +9758,27 @@ function openIntake(samples){
     if (w && w.hidden) toggleSamples();
     return;
   }
-  setTimeout(()=>{
-    const box = document.getElementById("pasteBox");
-    if (box) box.focus({ preventScroll:true });
-  }, 260);
+  /* AFTER the entry animation, never during. Focusing raises the iOS keyboard,
+     which resizes the visual viewport and forces a full relayout — landing
+     that inside a running transform animation is a guaranteed dropped frame at
+     the worst possible moment. This was a hardcoded 260ms against a 360ms
+     (--t-slow) entry, so it fired 100ms early every time. */
+  const box = document.getElementById("pasteBox");
+  if (!box) return;
+  const el = document.getElementById("screen-intake");
+  if (!el || REDUCED.matches) return box.focus({ preventScroll:true });
+  let done = false;
+  const go = ev => {
+    /* animationend bubbles: rows and cards inside the screen fire it too. */
+    if (done || (ev && ev.target !== el)) return;
+    done = true;
+    el.removeEventListener("animationend", go);
+    box.focus({ preventScroll:true });
+  };
+  el.addEventListener("animationend", go);
+  /* The animation may never run — reduced motion, or a browser that skips it
+     on a hidden tab. Focus must not depend on an event that might not fire. */
+  setTimeout(go, 480);
 }
 
 /* ------------------------------------------------------ legal sources ----
