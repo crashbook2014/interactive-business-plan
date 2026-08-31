@@ -26,7 +26,7 @@ local-only product it is today.
 | | | |
 |---|---|---|
 | **Backend** | Supabase, kept | Owner, 22 Aug 2026 |
-| **Region** | Frankfurt, `eu-central-1` | Owner, 22 Aug 2026 |
+| **Region** | **Seoul, `ap-northeast-2`** — what the live project actually is, verified 30 Aug 2026 | Owner decided Frankfurt 22 Aug; project came up elsewhere |
 | **Tier** | Free now, upgrade before launch | Owner, 22 Aug 2026 |
 
 **Region cannot be changed later** without recreating the project and migrating
@@ -62,6 +62,27 @@ work and no data movement at all. After launch it is a PDPL data migration with
 real people's employment records in it. So this decision is cheap to revisit
 now and expensive to revisit later — which is an argument for getting the
 residency answer early, not for delaying the project.
+
+> **REGION MISMATCH, AND A DELIBERATE DECISION ABOUT DISCLOSURE — 30 Aug 2026.**
+> The live project is `ap-northeast-2` (Seoul), not the Frankfurt region decided
+> on 22 August and recorded in the table above. Nothing was migrated; the
+> project was simply created in a different region and the discrepancy went
+> unnoticed for eight days, during which the privacy policy told readers their
+> data was in Germany.
+>
+> **The owner decided on 30 Aug to remove the "Where the data lives" section
+> from the public privacy policy entirely** rather than name Seoul or move the
+> project. That removes a false statement, which is an improvement. It also
+> removes the cross-border disclosure, and it was put to the owner that this is
+> likely a PDPL gap rather than a fix — telling people their data leaves the
+> Kingdom is generally an expected element of a privacy notice, and the policy
+> had previously volunteered exactly that. The owner confirmed the decision
+> after that was raised. It is recorded here so counsel sees the choice and the
+> reasoning rather than an unexplained absence.
+>
+> **For counsel:** the transfer to assess is Saudi Arabia → South Korea. The
+> public notice currently discloses no location at all. Both facts are relevant
+> and neither is in the policy text.
 
 **The open question this leaves.** Frankfurt puts Saudi residents' personal data
 outside the Kingdom. `0003_accounts.sql` stores a phone number, a

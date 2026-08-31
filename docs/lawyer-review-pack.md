@@ -196,7 +196,13 @@ matches their copy. Please confirm that framing is accurate.
    day. The one item here that is a live decision rather than a wording
    question.**
 
-   The database will be hosted in **Frankfurt (`eu-central-1`)**. Supabase
+   The database is hosted in **Seoul, South Korea (`ap-northeast-2`)**.
+   VERIFIED 30 Aug 2026 against the live project via the Supabase API, not
+   read off an intention. This document previously said Frankfurt
+   (`eu-central-1`), which is the region that was decided on 22 Aug and
+   recorded in docs/backend-setup.md — the project was created elsewhere and
+   nobody noticed. Counsel was therefore being asked to assess a transfer to
+   Germany that is not happening. Supabase
    offers no Saudi region, and the region cannot be changed later without
    recreating the project.
 
@@ -207,7 +213,7 @@ matches their copy. Please confirm that framing is accurate.
    sign-off. We would rather document the right basis for a transfer than move
    the data and say nothing.
 
-   What will be stored in Frankfurt about Saudi residents:
+   What is stored in South Korea about Saudi residents:
 
    - a **phone number**, and a separate **marketing-consent record** holding
      when consent was given and the exact wording shown at the time
@@ -233,7 +239,9 @@ matches their copy. Please confirm that framing is accurate.
    reader loses is a recognisable name in a list. We are not changing it
    without your answer.
 
-   **(b) What must we document, and where,** to rely on the Frankfurt transfer?
+   **(b) What must we document, and where,** to rely on the transfer to South
+   Korea? If the answer differs materially from Germany, say so — the
+   decision to move region is open and cheap to take now.
    Does the phone number and the consent record change that analysis?
 
    **(c) What is required before the FIRST real user,** as opposed to before
