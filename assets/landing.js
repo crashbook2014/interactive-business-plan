@@ -104,15 +104,15 @@ const T = {
   t1:{ar:"عقدك ما يغادر جهازك",en:"Your contract never leaves your device"},
   t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد.",
        en:"It's read and analyzed inside the app. We don't upload it, store it, or share it."},
-  t2:{ar:"لسنا محامين",en:"We're not lawyers"},
+  t2:{ar:"محتوانا يراجعه محامٍ مرخّص",en:"Reviewed by a licensed lawyer"},
   /* NO LAWYER PROMISE HERE. This said "for complex matters we connect you
      with a licensed Saudi lawyer" while LAWYER_COMPILED is false and the
      app's own comment says the arrangement "lives outside this repository
      and cannot be verified from here". The app ships that promise dark on
      purpose; this page was making it anyway. It returns when the desk is
      live and something real stands behind it. */
-  t2p:{ar:"نشرح ونساعدك تفهم وتقرر. وإذا كانت حالتك تحتاج رأيًا مهنيًا، نقول لك ذلك بوضوح.",
-       en:"We explain and help you understand and decide. And when your situation needs professional judgement, we tell you so plainly."},
+  t2p:{ar:"يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة: نشرح ونساعدك تفهم وتقرر، وإذا كانت حالتك تحتاج رأيًا مهنيًا نقول لك ذلك بوضوح.",
+       en:"Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm: we explain and help you understand and decide, and when your situation needs professional judgement, we tell you so plainly."},
   t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
   t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — ومصادرنا معروضة داخل التطبيق بروابطها الرسمية وتاريخ آخر مراجعة. المراجع محدّثة حتى فبراير ٢٠٢٥، تاريخ نفاذ آخر تعديلات النظام.",
        en:"Every flag carries its reason and its reference in the Saudi Labor Law — and our sources are listed in the app with official links and a review date. References are current to February 2025, when the latest amendments came into force."},
@@ -121,7 +121,7 @@ const T = {
   faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
   faq:{ar:[
     ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، ولا يُرفع ولا يُخزَّن. لو حذفت التطبيق راح معه كل شيء."],
-    ["هل يغني عن المحامي؟","لا. وضوح يشرح ويجهّز ويوضّح خياراتك، وهو ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا مرخّصًا — ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
+    ["هل يغني عن المحامي؟","لا. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره، وهذه المراجعة هي ما يقف خلف المواد التي نستشهد بها — لكن وضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا خاصًا بك، ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
     ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
@@ -131,7 +131,7 @@ const T = {
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
     ["Do you keep my contract?","No. It's read and analyzed inside the app on your device — never uploaded, never stored. Delete the app and it all goes with it."],
-    ["Does this replace a lawyer?","No. Wodouh explains, prepares and clarifies your options. It is not a law firm and does not provide legal representation. For a real dispute or large sums you need a licensed lawyer — Wodouh gets your file ready before you go."],
+    ["Does this replace a lawyer?","No. Our legal content is reviewed by a licensed Saudi lawyer before publication, which is what stands behind the articles we cite — but Wodouh itself is not a law firm and does not provide legal representation. For a real dispute or large sums you need a lawyer of your own; Wodouh gets your file ready before you go."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
     ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
@@ -148,8 +148,8 @@ const T = {
   /* The disclosure every other surface makes and this page did not: it sold
      an AI assistant without the word "AI" appearing anywhere on it, in either
      language. Wording reused from terms/index.html rather than newly written. */
-  foot:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا، وما ينتجه الذكاء الاصطناعي قد يكون خاطئًا — وما يغني عن الاستشارة القانونية عند الحاجة.",
-        en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. It is not a law firm and does not provide legal representation, and AI output can be wrong — it does not replace legal advice when you need it."},
+  foot:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا، وما ينتجه الذكاء الاصطناعي قد يكون خاطئًا — وما يغني عن الاستشارة القانونية عند الحاجة.",
+        en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm and does not provide legal representation, and AI output can be wrong — it does not replace legal advice when you need it."},
   /* Reused verbatim from the legal pages' identification block, so the
      operator is described the same way everywhere. */
   foot_id:{ar:"يُدار وضوح كنشاط سعودي مستقل بموجب وثيقة عمل حر، وليس لديه سجل تجاري. ولا نعرض أي شعار أو ترخيص أو اعتماد حكومي لا نملكه. للتواصل والشكاوى: support@alwodouh.com",

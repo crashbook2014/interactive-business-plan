@@ -168,9 +168,11 @@ employer's or manager's name.
 
 ## What still cannot be verified here
 
-- **No lawyer has reviewed any of it.** 29 claims are waiting in
-  `docs/lawyer-review-pack.md`. This feature raises the cost of that gap: it
-  puts riyal figures in front of someone who has just lost their income.
+- **Lawyer review is the owner's process, not something provable from here.**
+  The owner states that a licensed Saudi lawyer reviews the legal content
+  before publication; that review happens outside this repository and leaves
+  no artefact in it, so no test and no audit here can confirm it. The 29
+  claims in `docs/lawyer-review-pack.md` are the pack that review works from.
 - **Official sources were read through search, not a browser session.** The
   proxy blocks the domains directly.
 - **Real Safari, iOS and Android.** All testing is headless Chromium.

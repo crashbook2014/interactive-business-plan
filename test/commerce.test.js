@@ -318,6 +318,75 @@ async function seedTermination(p){
        "the contact section is not hidden the moment the product launches");
   }
 
+  /* ---- the lawyer-review claim and the not-a-law-firm claim travel together
+   *
+   * The owner states a licensed Saudi lawyer reviews the legal content before
+   * publication, and that claim now appears on roughly forty-five surfaces. It
+   * is a fact about a process outside this repository: nothing here can prove
+   * it is true, so what is guarded instead is that it cannot come apart.
+   *
+   * The realistic failure is the half-edit. Someone softens one page and
+   * leaves the other, and the site ends up telling one reader the content is
+   * lawyer-reviewed and the next that it is not a law firm with no mention of
+   * review — or, worse, drops the not-a-law-firm line from one page while
+   * keeping the review claim, which is the pair that stops the review reading
+   * as an offer of representation. They are two halves of one statement, so
+   * every surface that makes one must make the other.
+   *
+   * If the arrangement ever ends, this suite is the list of what to change. */
+  console.log("\n— the lawyer review and the not-a-law-firm line are never separated");
+  {
+    const SURFACES = [
+      ["app/index.html", /reviewed by a licensed Saudi lawyer/i, /يراجعه? محامٍ سعودي مرخّص/],
+      ["assets/landing.js", /reviewed by a licensed Saudi lawyer/i, /يراجع محامٍ سعودي مرخّص/],
+      ["privacy/index.html", /reviewed by a licensed Saudi lawyer/i, /يراجع محامٍ سعودي مرخّص/],
+      ["terms/index.html", /reviewed by a licensed Saudi lawyer/i, /يراجع محامٍ سعودي مرخّص/],
+      ["refund/index.html", /reviewed by a licensed Saudi lawyer/i, /يراجع محامٍ سعودي مرخّص/],
+      ["support/index.html", /reviewed by a licensed Saudi lawyer/i, /يراجع محامٍ سعودي مرخّص/],
+    ];
+    for (const [f, en, ar] of SURFACES) {
+      const t = readFileSync(path.join(ROOT, f), "utf8");
+      const firmEn = /not a law firm/i.test(t), firmAr = /ليس مكتب محاماة/.test(t);
+      ok(en.test(t) === firmEn,
+         `${f}: the English review claim and the not-a-law-firm line are both present or both absent`);
+      ok(ar.test(t) === firmAr,
+         `${f}: and the same holds in Arabic`);
+      ok(en.test(t) && ar.test(t),
+         `${f}: states the content is lawyer-reviewed, in both languages`);
+    }
+
+    /* Every generated answer page carries the pair too, from one source. */
+    const gen = readFileSync(path.join(ROOT, "tools/make-seo.mjs"), "utf8");
+    ok(/Reviewed by a licensed Saudi lawyer/i.test(gen) && /يراجعه محامٍ سعودي مرخّص/.test(gen),
+       "the answer-page generator states the review, in both languages");
+    ok(/not a law firm/i.test(gen) && /ليس مكتب محاماة/.test(gen),
+       "and still states Wodouh is not a law firm, in both languages");
+  }
+
+  /* ---- the review is not a referral
+   *
+   * The assistant used to end its opening with "for complex matters, I'll
+   * connect you with a licensed one" while LAWYER_COMPILED is false and the
+   * lawyer on the team reviews content rather than taking client work. That
+   * is a promise to someone who has just lost their job, made by a build that
+   * cannot keep it. Reviewing content and representing a reader are different
+   * arrangements, and only one of them exists. */
+  console.log("\n— reviewing the content is never sold as representing the reader");
+  {
+    const app = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const compiled = /const LAWYER_COMPILED\s*=\s*(true|false)/.exec(app);
+    ok(compiled, "LAWYER_COMPILED is declared");
+    if (compiled && compiled[1] === "false") {
+      const intro = /as_not_lawyer:\{([\s\S]*?)\n  [a-z_]+:/.exec(app);
+      ok(intro, "the assistant's opening disclaimer exists");
+      const txt = intro ? intro[1] : "";
+      ok(!/connect you with|وصّلك بمحامٍ|أوصّلك/i.test(txt),
+         "with no lawyer desk compiled, the assistant promises no referral");
+      ok(/not a lawyer/i.test(txt) && /لست محاميًا/.test(txt),
+         "and still says plainly that it is not a lawyer, in both languages");
+    }
+  }
+
   /* ---- the founder's own address is an operator identity, not a help desk.
      It was published on the marketing homepage as the public contact while
      being an owner row in admin_allowlist, which points anyone who wants
@@ -926,8 +995,23 @@ async function seedTermination(p){
     const enText = await lp.evaluate(() => document.body.innerText);
     ok(enRe.test(enText), `/${name}/?lang=en links straight to the English version`);
 
-    ok(/Draft|مسودّة/.test(arText) || /Draft/.test(enText),
-       `/${name}/ says plainly that it is a draft, and never that a lawyer approved it`);
+    /* This used to require the opposite: a "Draft — a lawyer has not reviewed
+       it yet" banner. That banner was written when it was true, and it stopped
+       being true — the owner has a licensed Saudi lawyer reviewing the legal
+       content, so the page was understating the product to every reader who
+       arrived at it. Understating is not the safe direction; it is just a
+       different false statement, and it costs trust on the page where trust is
+       being asked for.
+
+       What is pinned now is the pair that must not come apart: the page says
+       the content is lawyer-reviewed, AND it says Wodouh is not a law firm. If
+       the review arrangement ever ends, this assertion is where to start. */
+    ok(!/Draft\.|مسودّة\./.test(arText) && !/Draft\./.test(enText),
+       `/${name}/ no longer claims no lawyer has reviewed it`);
+    ok(/محامٍ سعودي مرخّص/.test(arText) && /licensed Saudi lawyer/i.test(enText),
+       `/${name}/ states in both languages that a licensed Saudi lawyer reviews the content`);
+    ok(/ليس مكتب محاماة/.test(arText) && /not a law firm/i.test(enText),
+       `/${name}/ still states, in both languages, that Wodouh is not a law firm`);
     ok(!/reviewed by (a|our) lawyer|راجعها محامٍ(?! بعد)/i.test(arText + enText),
        `/${name}/ makes no claim of legal review it has not had`);
 

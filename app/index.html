@@ -2947,8 +2947,8 @@ const T = {
   /* Says only what is true of the operator today. No commercial registration,
      no VAT number, no address, no licence — Wodouh holds none of those, and a
      figure invented to fill the gap is worse than the gap. */
-  acc_identity:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. يُدار كنشاط سعودي مستقل بموجب وثيقة عمل حر. للتواصل: support@alwodouh.com",
-                en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. It is not a law firm and does not provide legal representation. It is operated as an independent Saudi activity under a Freelance Work Certificate. Contact: support@alwodouh.com"},
+  acc_identity:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. يُدار كنشاط سعودي مستقل بموجب وثيقة عمل حر. للتواصل: support@alwodouh.com",
+                en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm and does not provide legal representation. It is operated as an independent Saudi activity under a Freelance Work Certificate. Contact: support@alwodouh.com"},
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
@@ -3683,8 +3683,8 @@ const T = {
      a meter that moves without explanation reads as rigged. */
   ask_spent:{ar:"احتُسبت هذي المحاولة من رصيد اليوم.",en:"That attempt counted against today's allowance."},
   ask_empty:{ar:"اكتب سؤالك أول.",en:"Type your question first."},
-  ask_disc:{ar:"وضوح ما هو مكتب محاماة، وهذا الجواب ما هو استشارة قانونية.",
-            en:"Wodouh is not a law firm and this answer is not legal advice."},
+  ask_disc:{ar:"مبني على سجل يراجعه محامٍ سعودي مرخّص. ووضوح ليس مكتب محاماة، وهذا الجواب ليس استشارة قانونية.",
+            en:"Drawn from a register a licensed Saudi lawyer reviews. Wodouh is not a law firm, and this answer is not legal advice."},
 
   ai_title:{ar:"قراءة أعمق لعقدك",en:"A closer read of your contract"},
   ai_tag:{ar:"اختياري",en:"Optional"},
@@ -4050,8 +4050,11 @@ const T = {
   as_quota_b_dark:{ar:"خلصت أسئلتك المجانية عن هذا العقد. تقييمك وتنبيهاتك تبقى متاحة، ومكتبة الحقوق فيها إجابات مفصّلة بمصادرها.",
                    en:"That's your free questions for this contract. Your score and flags stay available, and the rights library answers the common questions with their sources."},
   as_quota_cta:{ar:"اشترك — 50 ر.س/شهر",en:"Subscribe — 50 SAR/month"},
-  as_not_lawyer:{ar:"أنا لست محاميًا — أشرح لك النظام وأساعدك تفهم. للقضايا المعقدة، وصّلك بمحامٍ مرخّص.",
-                 en:"I'm not a lawyer — I explain the law and help you understand. For complex matters, I'll connect you with a licensed one."},
+  /* NO REFERRAL PROMISE. This used to end "I'll connect you with a licensed
+     one" while LAWYER_COMPILED is false and the lawyer on the team reviews
+     content rather than taking client work. It returns if a desk ever exists. */
+  as_not_lawyer:{ar:"أنا ذكاء اصطناعي، ولست محاميًا. اللي أقوله مبني على سجل يراجعه محامٍ سعودي مرخّص — لكني أشرح النظام ولا أفتي في قضيتك. للنزاع، راجع محاميًا.",
+                 en:"I'm an AI, not a lawyer. What I tell you comes from a register a licensed Saudi lawyer reviews — but I explain the law, I don't advise on your case. For a dispute of your own, see a lawyer."},
   cap_ask:{ar:"سؤال قانوني",en:"Legal question"},
   cap_law:{ar:"اشرح نظامًا",en:"Explain a law"},
   cap_sum:{ar:"لخّص عقدي",en:"Summarize my contract"},
@@ -4072,8 +4075,8 @@ const T = {
   /* The distinction the product depends on: we give legal information, which
      is general and sourced. Advice is about your specific situation, and only
      a lawyer gives that. Stated plainly rather than buried. */
-  disclaimer:{ar:"وضوح يعطيك معلومة نظامية عامة ومصدرها — مو استشارة قانونية لحالتك. للنزاعات المعقّدة، راجع محاميًا.",
-              en:"Wodouh gives you general legal information and its source — not legal advice on your situation. For complex disputes, see a lawyer."}
+  disclaimer:{ar:"محتوانا النظامي يراجعه محامٍ سعودي مرخّص. وهو معلومة نظامية عامة ومصدرها — مو استشارة قانونية لحالتك. للنزاعات المعقّدة، راجع محاميًا.",
+              en:"Our legal content is reviewed by a licensed Saudi lawyer. It is general legal information with its source — not legal advice on your situation. For a dispute of your own, see a lawyer."}
 };
 
 /* ---------------------------------------------------------- onboarding */

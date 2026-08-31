@@ -57,14 +57,6 @@ html[lang="ar"] body{font-family:var(--ar); line-height:1.9}
 .langs button[aria-pressed="true"]{background:var(--teal); color:#fff}
 .langs button:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
 
-/* -------------------------------------------------------------- draft */
-.draft{
-  background:var(--amber-bg); color:var(--ink); border-radius:12px;
-  padding:14px 16px; margin-bottom:28px; font-size:14px; line-height:1.65;
-  border-inline-start:3px solid var(--amber);
-}
-.draft b{color:var(--amber)}
-
 /* ------------------------------------------------------------ content */
 h1{font-size:29px; line-height:1.25; letter-spacing:-.015em; margin:0 0 6px; text-wrap:balance}
 .updated{color:var(--ink-3); font-size:13px; margin:0 0 30px}
@@ -156,5 +148,5 @@ footer{
   .top,.langs{display:none}
   .wrap{padding:0; max-width:none}
   h2{page-break-after:avoid}
-  .box,.key,.draft{page-break-inside:avoid}
+  .box,.key{page-break-inside:avoid}
 }
