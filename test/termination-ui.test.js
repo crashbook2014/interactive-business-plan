@@ -29,9 +29,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p.evaluate(() => { nat = "sa"; obDone = true; lang = "en"; applyLang(); show("home"); });
 
   console.log("— entry from the home screen");
+  /* The door on the chooser, not a card further down the same screen. Home
+     used to carry both: a sit-card for "I've been terminated" and an
+     assist-entry to the identical destination about a hundred lines below it,
+     under a different name. One destination, one door. */
   const card = await p.evaluate(() => {
-    const btns = [...document.querySelectorAll("#screen-home .assist-entry")];
-    const el = btns.find(x => x.getAttribute("onclick") === "openTerm()");
+    const btns = [...document.querySelectorAll("#screen-home .sit-card")];
+    const el = btns.find(x => x.getAttribute("onclick") === "pickSituation('term')");
     if (!el) return null;
     const r = el.getBoundingClientRect();
     const txt = el.textContent.trim();

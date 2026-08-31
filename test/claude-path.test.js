@@ -91,7 +91,11 @@ async function serveWithAiCsp(page){
 
   const claim = await p.evaluate(() => {
     renderAccount(); renderPrivacyCopy();
-    return { home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent,
+    /* The promise sits on the intake screen, which is where the text is
+       actually entered — it moved there with the paste box when home became a
+       chooser rather than a workspace. The guarantee is unchanged: it is on
+       the screen the reader hands us a contract on. */
+    return { home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent,
              acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
   });
   ok(/never leaves it/i.test(claim.home) && /don't upload/i.test(claim.acc),
@@ -172,7 +176,10 @@ async function serveWithAiCsp(page){
 
   const claim2 = await p2.evaluate(() => {
     renderAccount(); renderPrivacyCopy();
-    return { home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent,
+      /* The unconditional promise sits on the intake screen — it moved there
+         with the paste box when home became a chooser rather than a workspace.
+         Same guarantee, on the screen the reader hands us a contract on. */
+    return { home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent,
              acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
   });
   ok(!/never leaves it/i.test(claim2.home) && /exceptions? are optional|one exception/i.test(claim2.home),

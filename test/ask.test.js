@@ -394,7 +394,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const read = () => {
       renderPrivacyCopy();
       return { acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent,
-               home: document.querySelector('#screen-home [data-t="privacy_line"]').textContent };
+               home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent };
     };
     const was = lang;
     lang = "en"; applyLang(); const en = read();

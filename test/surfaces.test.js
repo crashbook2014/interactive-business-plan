@@ -300,12 +300,16 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       .every(id => document.getElementById(id).textContent.trim().length > 0);
     const tips = document.querySelectorAll("#nrTips li").length;
     document.getElementById("nrRetry").click();
-    return { filled, tips, home: document.getElementById("screen-home").classList.contains("active"),
+    /* Retry returns to the WORKSPACE, not to home: the paste box it clears is
+       on the intake screen now, and dropping the reader on the chooser would
+       make them pick their situation again to get back to what they were
+       already doing. */
+    return { filled, tips, home: document.getElementById("screen-intake").classList.contains("active"),
              box: document.getElementById("pasteBox").value };
   });
   ok(nr.filled, "every string on the unreadable screen is populated");
   ok(nr.tips >= 2, `unreadable screen offers ${nr.tips} tips`);
-  ok(nr.home && nr.box === "", "retry returns home with the box cleared");
+  ok(nr.home && nr.box === "", "retry returns to the paste box, cleared");
 
   /* legible() must reject what the noread path exists for */
   const leg = await p.evaluate(() => ({

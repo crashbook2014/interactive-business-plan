@@ -1094,9 +1094,6 @@
   .ready .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-bottom:7px}
 
   /* plans */
-  .mode-seg{margin:10px 0 8px}
-  /* A stated fact with a way to change it, not a second control competing
-     with the mode switch. Full 44px target despite the light appearance. */
   /* Informational, not an alarm. Teal like the rest of the interface, not
      the amber we reserve for "something is wrong with your contract" —
      borrowing the warning colour for a calendar date would cry wolf. */
@@ -1150,6 +1147,9 @@
     color:var(--ink-2);font-size:12.5px;font-weight:700}
   .ih-x:active{transform:scale(.97)}
 
+  /* A stated fact with a way to change it. It used to sit above the doors on
+     home, where it was a decision asked before any content and already
+     answered in onboarding; it now lives in Account. Full 44px target. */
   .nat-chip{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;
     padding:6px 2px;margin:0 0 10px;background:none;border:0;text-align:start;
     font-size:12.5px;color:var(--ink-2);line-height:1.6}
@@ -1159,6 +1159,21 @@
     text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
   .nat-chip:hover .nat-swap{color:var(--teal-ink)}
   .nat-chip:active{opacity:.7}
+  .acc-nat .nat-chip{margin:0}
+
+  /* The one question the intake screen asks before it reads anything. A
+     checkbox rather than a segmented control: there is a default (derived from
+     the door), and this only corrects it. */
+  .signed-ask{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;
+    padding:10px 12px;margin:0 0 14px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--r-sm);text-align:start;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  .signed-ask .sa-box{flex:none;width:20px;height:20px;border-radius:6px;
+    border:1.5px solid var(--line);background:var(--bg);display:flex;align-items:center;
+    justify-content:center;color:transparent;transition:background var(--t-fast),border-color var(--t-fast)}
+  .signed-ask .sa-box svg{width:12px;height:12px}
+  .signed-ask.on{border-color:var(--teal);color:var(--ink)}
+  .signed-ask.on .sa-box{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+  .signed-ask:active{transform:scale(.99)}
   .seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px}
   .seg button{flex:1;border-radius:999px;padding:9px;font-size:13.5px;color:var(--ink-2);font-weight:700;
     min-height:44px;display:inline-flex;align-items:center;justify-content:center}
@@ -1446,8 +1461,6 @@
   /* The situation chooser. Cards, not a dashboard: each one names a moment a
      reader is actually in, and goes straight to the flow for it. */
   .sit{margin:18px 0 22px}
-  .sit-h{font-size:19px;font-weight:800;margin-bottom:12px}
-  html[lang="ar"] .sit-h{font-weight:700}
   .sit-grid{display:flex;flex-direction:column;gap:9px}
   .sit-card{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);
     border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px;text-align:start;
@@ -1627,22 +1640,18 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <button class="primary" id="obNext" onclick="obNext()" style="margin-top:0"></button>
   </section>
 
-  <!-- HOME -->
+  <!-- HOME — a chooser, and only a chooser.
+       It used to be a chooser AND the workspace: the six doors sat directly
+       on top of the upload box they were supposed to lead to, so
+       pickSituation("contract") could only scroll to something already on
+       screen. Fourteen blocks and twenty-two pressable things met a reader
+       who had arrived with one question. The workspace now lives on its own
+       screen and the doors navigate to it, which is what a door is. -->
   <section class="screen" id="screen-home">
     <p class="greet" id="greet"></p>
-    <div class="seg mode-seg" id="modeSeg"></div>
-    <button class="nat-chip" id="natChip" type="button" onclick="toggleNat()">
-      <span class="nat-lbl" data-t="nat_showing"></span>
-      <b id="natVal"></b>
-      <span class="nat-swap" data-t="nat_change"></span>
-    </button>
-    <h1 class="hello" id="helloLine"></h1>
-    <p class="sub" id="subLine"></p>
-    <!-- SITUATION FIRST.
-         Everything below this still works exactly as it did; this only gives
-         the five journeys that are not "upload a file" a door of their own. -->
+    <h1 class="hello" data-t="sit_h"></h1>
+    <p class="sub" data-t="sit_sub"></p>
     <div class="sit" id="situations">
-      <h2 class="sit-h" data-t="sit_h"></h2>
       <div class="sit-grid">
       <button class="sit-card" onclick="pickSituation('contract')">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg></span>
@@ -1699,6 +1708,24 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <button type="button" class="tm-x" onclick="dismissTimely()" data-t="tm_dismiss"></button>
       </div>
     </div>
+    <h3 class="biz-h" id="mcHead" hidden data-t="my_contracts"></h3>
+    <div class="mc-list" id="myContracts"></div>
+    <p class="disclaimer" data-t="disclaimer"></p>
+  </section>
+
+  <!-- INTAKE — the old front door, now behind the door that names it.
+       Reached from "I received a contract" and from startSignedReview().
+       The signed/unsigned question lives here rather than on home because
+       it is a question about the document in front of you, and because it
+       changes the ADVICE (adviceFor / actionFor), not just the wording. -->
+  <section class="screen" id="screen-intake">
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back"></span></button>
+    <h1 class="hello" id="helloLine"></h1>
+    <p class="sub" id="subLine"></p>
+    <button class="signed-ask" id="signedAsk" type="button" onclick="toggleSigned()" aria-pressed="false">
+      <span class="sa-box" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></span>
+      <span data-t="signed_ask"></span>
+    </button>
     <div class="intake" id="intake">
       <label class="up-main" id="upMain">
         <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf" hidden/>
@@ -1718,7 +1745,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg>
       <span data-t="privacy_line"></span>
     </button>
-
     <button class="samples-toggle" id="samplesToggle" onclick="toggleSamples()">
       <span data-t="try_sample"></span>
       <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 6 5-6"/></svg></span>
@@ -1741,26 +1767,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <span><b data-t="s_free"></b><span data-t="s_free_d"></span></span>
       </button>
     </div>
-
-    <h3 class="biz-h" id="mcHead" hidden data-t="my_contracts"></h3>
-    <div class="mc-list" id="myContracts"></div>
-
-    <!-- The other half of the employment life: this app answers "should I
-         sign?", and this card answers "it already ended, what happened?".
-         Deliberately the same calm card as everything else — someone arriving
-         here is upset, and an advert would be the wrong greeting. -->
-    <button class="assist-entry" onclick="openTerm()">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span>
-      <span><b data-t="tm_card"></b><span data-t="tm_card_d"></span></span>
-      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-    </button>
-
-    <button class="assist-entry" onclick="openAssist('home')">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></span>
-      <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
-      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-    </button>
-    <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
   <!-- LOADING -->
@@ -1926,7 +1932,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
 
   <!-- PHOTO CAPTURE -->
   <section class="screen" id="screen-photo">
-    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <button class="back" onclick="show('intake',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back"></span></button>
     <h2 class="section-title" data-t="ph_title"></h2>
     <div class="viewfinder">
       <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
@@ -2068,6 +2074,15 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          configured, like every other optional surface here. -->
     <div class="acc-sec acc-auth" id="accAuth" hidden></div>
     <div class="acc-plan" id="accPlan"></div>
+    <div class="acc-sec acc-nat">
+      <h3 data-t="nat_sec_h"></h3>
+      <p data-t="nat_sec_b"></p>
+      <button class="nat-chip" id="natChip" type="button" onclick="toggleNat()">
+        <span class="nat-lbl" data-t="nat_showing"></span>
+        <b id="natVal"></b>
+        <span class="nat-swap" data-t="nat_change"></span>
+      </button>
+    </div>
     <div class="acc-sec">
       <h3 data-t="acc_pay_q"></h3>
       <p class="free" data-t="acc_pay_free"></p>
@@ -2332,7 +2347,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <ul class="nr-tips" id="nrTips"></ul>
     </div>
     <button class="primary" id="nrRetry" onclick="retryPaste()"></button>
-    <button class="ghost wide" id="nrSample" onclick="show('home')"></button>
+    <button class="ghost wide" id="nrSample" onclick="openIntake(true)"></button>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -2680,6 +2695,7 @@ const T = {
      Two independent reviews found this same gap from opposite directions.
      These six are the moments people actually arrive in. */
   sit_h:{ar:"وش اللي جابك لوضوح؟",en:"What brings you to Wodouh?"},
+  sit_sub:{ar:"اختر اللي ينطبق عليك، ونكمل معك من هناك.",en:"Pick the one that fits, and we'll take it from there."},
   sit_contract:{ar:"استلمت عقد",en:"I received a contract"},
   sit_contract_d:{ar:"أبي أتأكد منه قبل ما أوقّع",en:"Check it before I sign"},
   sit_resign:{ar:"أفكر أستقيل",en:"I'm thinking about resigning"},
@@ -2818,6 +2834,9 @@ const T = {
   rd_ok:{ar:"تم التفعيل — نفتح لك الخطاب الآن.",en:"Activated — opening your letter now."},
   rd_bad:{ar:"الرمز غير صحيح. تحقق منه ثم جرّب مرة ثانية.",en:"That code isn't right. Check it and try again."},
   rd_used:{ar:"هذا الرمز مستخدم على هذا الجهاز من قبل.",en:"That code has already been used on this device."},
+  nat_sec_h:{ar:"المسار النظامي",en:"Your legal track"},
+  nat_sec_b:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض. نعرض لك قواعد هذا المسار.",
+             en:"The labour law treats Saudis and residents differently on contract type, notice and compensation. We show you the rules for this track."},
   nat_showing:{ar:"الأنظمة المعروضة:",en:"Showing rules for:"},
   nat_change:{ar:"تغيير",en:"Change"},
   nat_now:{ar:"عرضنا أنظمة: {t}",en:"Now showing: {t}"},
@@ -2886,8 +2905,10 @@ const T = {
   rights_title:{ar:"حقوقك",en:"Your rights"},
   rights_sub:{ar:"وقّعت بالفعل، أو انتهى عقدك؟ من هنا تعرف وين تقف.",
               en:"Already signed, or your contract ended? Start here to see where you stand."},
-  r_eos:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
-  r_eos_d:{ar:"رقم دقيق بالحساب خطوة بخطوة — مجانًا",en:"An exact figure with the arithmetic shown — free"},
+  /* Same wording as the sit_owed door, because it is the same destination.
+     Two names for openEos() read as two features to a reader who scrolls. */
+  r_eos:{ar:"كم أستحق؟",en:"What am I owed?"},
+  r_eos_d:{ar:"احسب مكافأة نهاية الخدمة ومستحقاتك — مجانًا",en:"Calculate your end-of-service and entitlements — free"},
   r_know:{ar:"اعرف حقوقك في عقد وقّعته",en:"Know your rights in a signed contract"},
   r_know_d:{ar:"نقرأه ونوضّح وش ملزم ووش قابل للاعتراض",en:"We read it and show what binds you and what's contestable"},
   r_ask:{ar:"اسأل سؤالك",en:"Ask a question"},
@@ -2946,8 +2967,9 @@ const T = {
   pw_more0:{ar:"النص الكامل منسّقًا وجاهزًا للإرسال",en:"The complete letter, formatted and ready to send"},
   pw_more_case:{ar:"بقية الوقائع والمستندات والمطالبة في الملف الكامل",
                 en:"The rest of the facts, documents and claim are in the full file"},
-  mode_before:{ar:"قبل التوقيع",en:"Before signing"},
-  mode_signed:{ar:"وقّعته بالفعل",en:"Already signed"},
+  /* Asked once, on the intake screen, about the document in front of the
+     reader — not as a segmented control above the fold on home. */
+  signed_ask:{ar:"وقّعت هذا العقد بالفعل",en:"I have already signed this contract"},
   hello_signed:{ar:"وقّعته؟ خلنا نعرف حقوقك فيه.",en:"Signed it? Let's find out where you stand."},
   sub_signed:{ar:"نقرأ العقد ونوضّح لك وش تقدر تسويه الحين — وش ملزم ووش قابل للاعتراض.",
               en:"We read it and show what you can still do — what binds you and what remains contestable."},
@@ -3310,9 +3332,6 @@ const T = {
   d_comm:{ar:"سجل العمولات أو البدلات",en:"Commission or allowance records"},
 
   /* ---------------------------------------------- termination assessment */
-  tm_card:{ar:"تم إنهاء عقدي",en:"My contract was terminated"},
-  tm_card_d:{ar:"تحسّ إن إنهاء عقدك ما كان صحيح؟ راجع عقدك وحقوقك المحتملة وما قد تكون مستحقًا له.",
-             en:"Think your termination may not have been right? Check your contract, your potential rights, and what you may be owed."},
   tm_h_title:{ar:"وش صار في عملك؟",en:"What happened to your employment?"},
   tm_h_sub:{ar:"اختر الأقرب لحالتك. الجواب يغيّر الحقوق اللي ننظر فيها، فخذ وقتك.",
             en:"Pick what's closest. Your answer changes which rights we look at, so take a moment."},
@@ -4872,7 +4891,7 @@ function applyLang(){
      `current` contract. It guards its own missing state. */
   renderPaywall();
   renderDesk(); renderLawyerTease();
-  renderInstallHint();
+  renderInstallHintThenTimely();
   /* Language is a pure re-render, so every live termination screen redraws
      from the same state rather than keeping stale strings. */
   if (term){
@@ -5119,7 +5138,7 @@ function runLoading(done){
 }
 
 function retryPaste(){
-  show("home", 1);
+  show("intake", 1);
   const box = document.getElementById("pasteBox");
   box.value = ""; pasteChanged(); box.focus();
 }
@@ -6069,24 +6088,25 @@ function pickSituation(which){
   if (sit) sit.hidden = which !== "unsure";
 
   switch (which){
-    /* "Received a contract" and "still working" both land on the intake that
-       is already on this screen — scrolled to and focused, so the reader is
-       not left hunting for what the card promised. */
-    case "contract": {
-      const box = document.getElementById("pasteBox"),
-            up  = document.getElementById("intake");
-      if (up) up.scrollIntoView({ behavior:"smooth", block:"center" });
-      if (box) setTimeout(() => box.focus({ preventScroll:true }), 260);
+    /* "Received a contract" NAVIGATES. It used to scroll to an intake block
+       that was already on the same screen, which is why the chooser read as
+       decoration: the door and its destination were visible at once. */
+    case "contract":
+      setSigned(false);
+      openIntake();
       break;
-    }
     /* Thinking about resigning is a PLANNING question, not a termination one —
        the job has not ended. What that reader needs is the number Article 85
-       reduces, which is exactly what the calculator produces. */
+       reduces, which is exactly what the calculator produces. Both of these
+       readers are already under a contract they signed, so the door answers
+       the signed question on their behalf. */
     case "resign":
     case "owed":
+      setSigned(true);
       openEos();
       break;
     case "term":
+      setSigned(true);
       openTerm();
       break;
     case "ask":
@@ -7558,7 +7578,12 @@ function renderTermSteps(){
    that costs a product its reason to exist. */
 function renderPrivacyCopy(){
   const on = aiAvailable();
-  const line = document.querySelector('#screen-home [data-t="privacy_line"]');
+  /* Not scoped to a screen. This line lived on home, then moved to the intake
+     screen with the paste box — and a screen-scoped selector broke silently:
+     the element was still there, still rendering the unconditional promise,
+     while the build could in fact send text to Anthropic. There is exactly one
+     of these in the document, so ask for it by what it is. */
+  const line = document.querySelector('[data-t="privacy_line"]');
   if (line) line.textContent = t(on ? "privacy_line_ai" : "privacy_line");
   const body = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
   if (body){
@@ -9560,7 +9585,7 @@ const BACK_OF = {
   case:()=>show("eos",1), casedoc:()=>show("case",1), plans:()=>show(planBack,1),
   lawyerdesk:()=>show(deskBack,1),
   biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
-  photo:()=>show("home",1), timeline:()=>tlBack()
+  photo:()=>show("intake",1), intake:()=>show("home",1), timeline:()=>tlBack()
 };
 function initGestures(){
   if (gesturesBound) return; gesturesBound = true;
@@ -9656,9 +9681,23 @@ function toggleSamples(){
   document.getElementById("samplesToggle").classList.toggle("open", !w.hidden);
 }
 
-function startSignedReview(){
-  signedMode = true; renderMode(); goTab("home");
-  setTimeout(()=>document.getElementById("pasteBox").focus(), 150);
+function startSignedReview(){ setSigned(true); openIntake(); }
+
+/* The workspace, on its own screen. Focus lands in the paste box after the
+   transition so the reader can start typing without hunting for the field. */
+function openIntake(samples){
+  show("intake");
+  if (samples){
+    /* Arriving from "we couldn't read that" — the reader has already tried
+       their own text, so open the samples rather than the empty box again. */
+    const w = document.getElementById("samplesWrap");
+    if (w && w.hidden) toggleSamples();
+    return;
+  }
+  setTimeout(()=>{
+    const box = document.getElementById("pasteBox");
+    if (box) box.focus({ preventScroll:true });
+  }, 260);
 }
 
 /* ------------------------------------------------------ legal sources ----
@@ -10002,25 +10041,36 @@ function renderTrackTease(){
   document.getElementById("trackTitle").textContent = t(isTracked() ? "tr_on_title" : "tr_title");
   document.getElementById("trackSub").textContent = t(isTracked() ? "tr_on_sub" : "tr_sub");
 }
+/* Signed or not signed is DERIVED from the door the reader chose, not asked
+   for before they have seen anything. It used to be a segmented control at the
+   very top of home — an abstract decision, above the fold, ahead of any
+   content, and one the situation card answers by itself.
+
+   It still has to be correctable, because it is not a display filter:
+   adviceFor() returns c.r instead of c.a and actionFor() returns
+   act_red_signed, so a wrong value tells someone who has not signed yet how to
+   contest a contract they could simply decline. The correction lives on the
+   intake screen, where the question is about the document in front of them. */
 function renderMode(){
-  const seg = document.getElementById("modeSeg");
-  seg.innerHTML = "";
-  [[false,"mode_before"],[true,"mode_signed"]].forEach(([v,lbl])=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = signedMode===v ? "on" : "";
-    b.textContent = t(lbl);
-    b.onclick = ()=>{
-      if (signedMode === v) return;
-      signedMode = v; buzz(8); renderMode();
-      /* An analysis already on screen is re-framed, never recomputed —
-         the findings are the same, only the question changed. */
-      if (current){ renderResult(false); renderClauses(); renderTease(); syncAddButtons(); }
-    };
-    seg.appendChild(b);
-  });
-  document.getElementById("helloLine").textContent = t(signedMode ? "hello_signed" : "hello");
-  document.getElementById("subLine").textContent = t(signedMode ? "sub_signed" : "sub");
+  const b = document.getElementById("signedAsk");
+  if (b){
+    b.classList.toggle("on", signedMode);
+    b.setAttribute("aria-pressed", signedMode ? "true" : "false");
+  }
+  const h = document.getElementById("helloLine"),
+        sub = document.getElementById("subLine");
+  if (h) h.textContent = t(signedMode ? "hello_signed" : "hello");
+  if (sub) sub.textContent = t(signedMode ? "sub_signed" : "sub");
+}
+
+/* Set it without a re-frame: used by the doors, before anything is on screen. */
+function setSigned(v){ if (signedMode !== v){ signedMode = v; } renderMode(); }
+
+function toggleSigned(){
+  signedMode = !signedMode; buzz(8); renderMode();
+  /* An analysis already on screen is re-framed, never recomputed — the
+     findings are the same, only the question changed. */
+  if (current){ renderResult(false); renderClauses(); renderTease(); syncAddButtons(); }
 }
 
 /* The same control as renderMode, for the other axis. Changing track
@@ -10036,6 +10086,11 @@ function renderNat(){
   const chip = document.getElementById("natChip");
   if (!chip) return;
   chip.hidden = !nat;                    /* nothing to show before it is chosen */
+  /* The chip now lives inside an Account section with its own heading and
+     explanation. A heading over an empty space is worse than no section, so
+     the whole block goes when there is no answer yet. */
+  const sec = chip.closest(".acc-nat");
+  if (sec) sec.hidden = !nat;
   if (!nat) return;
   document.getElementById("natVal").textContent =
     t(nat === "sa" ? "nat_sa_short" : "nat_nonsa_short");
@@ -10063,10 +10118,16 @@ let timelyOff = false;
    back is an advert. */
 let installOff = false;
 
+/* Home exists to present one clear choice. Two dismissible nudges stacked
+   above the doors is two interruptions before the reader has made it, so
+   the install hint wins and this one waits its turn. */
 function renderTimely(){
   const el = document.getElementById("timely");
   if (!el) return;
   el.hidden = timelyOff || Date.now() > TIMELY.until;
+  if (el.hidden) return;
+  const ih = document.getElementById("installHint");
+  if (ih && !ih.hidden) el.hidden = true;
 }
 
 function dismissTimely(){
@@ -11378,6 +11439,8 @@ function renderInstallHint(){
   el.querySelector(".ih-b").textContent = t("inst_b");
   el.querySelector(".ih-x").textContent = t("tm_dismiss");
 }
+/* Whichever way the install hint resolved, the timely notice defers to it. */
+function renderInstallHintThenTimely(){ renderInstallHint(); renderTimely(); }
 function dismissInstall(){ installOff = true; saveState(); renderInstallHint(); }
 
 loadState();

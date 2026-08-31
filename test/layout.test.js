@@ -150,17 +150,35 @@ async function geometry(p){
         const app = document.querySelector(".app");
         const tab = document.getElementById("tabbar");
         const A = app.getBoundingClientRect(), T = tab.getBoundingClientRect();
-        const btn = document.getElementById("analyzeBtn");
-        const B = btn ? btn.getBoundingClientRect() : null;
-        const centre = B ? document.elementFromPoint(B.left + B.width / 2, B.top + B.height / 2) : null;
-        return { slack: Math.round(A.bottom - T.bottom),
-                 ctaReachable: centre ? (centre.id === "analyzeBtn" || btn.contains(centre)) : null };
+        return { slack: Math.round(A.bottom - T.bottom) };
       });
       ok(after.slack <= 2,
          `nothing shows below the tab bar at the frame edge (${after.slack}px of slack)`);
-      if (after.ctaReachable !== null)
-        ok(after.ctaReachable === true,
+
+      /* The analyze button lives on the intake screen now, not on home — so
+         this walks there before measuring it. Still worth measuring: the
+         screen scrolls, and a CTA the reader can see but not press is the
+         same defect wherever it happens to live. */
+      const cta = await p.evaluate(() => {
+        show("intake");
+        const a = document.querySelector(".app");
+        if (a.scrollHeight > a.clientHeight) a.scrollTop = a.scrollHeight;
+        else window.scrollTo(0, document.body.scrollHeight);
+        return null;
+      });
+      void cta;
+      await p.waitForTimeout(300);
+      const reach = await p.evaluate(() => {
+        const btn = document.getElementById("analyzeBtn");
+        const B = btn ? btn.getBoundingClientRect() : null;
+        if (!B || !B.height) return null;
+        const centre = document.elementFromPoint(B.left + B.width / 2, B.top + B.height / 2);
+        return centre ? (centre.id === "analyzeBtn" || btn.contains(centre)) : null;
+      });
+      if (reach !== null)
+        ok(reach === true,
            "the primary call to action is clickable once scrolled to, not buried under the bar");
+      await p.evaluate(() => show("home"));
     }
 
     await p.close();

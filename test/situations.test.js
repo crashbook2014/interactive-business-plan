@@ -16,6 +16,13 @@
  *     reader already could not choose from
  *   - the question door only exists in a build that can answer
  *   - the upload box the old front door was built around is still reachable
+ *   - each door answers the signed/unsigned question on the reader's behalf
+ *
+ * The chooser used to sit directly on top of the upload box, so "I received a
+ * contract" could only scroll to something already on screen. The workspace now
+ * has its own screen and the door navigates to it. What this suite guarantees
+ * is unchanged — the upload box is still reachable, and reachable from the door
+ * that names it. Only the route it names moved.
  */
 const { playwright, launchOpts, APP } = require("./_env.js");
 const { chromium } = playwright();
@@ -170,19 +177,80 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
   ok(on.opens === "screen-ask", "and opens the ask screen");
   await p2.close();
 
-  /* ---- 5. the old front door still works */
+  /* ---- 5. the old front door still works, one door further in
+   *
+   * offsetParent rather than getComputedStyle: an element inside a screen that
+   * is not .active still reports display:block on itself, so the cheap check
+   * would pass even if the door led nowhere. This asks whether it is actually
+   * laid out, which is the thing the reader cares about. */
   console.log("\n— the upload box the old front door was built around is intact");
   const intake = await p.evaluate(() => {
     show("home"); pickSituation("contract");
     const box = document.getElementById("pasteBox");
     const btn = document.getElementById("analyzeBtn");
-    return { stayed: document.querySelector(".screen.active").id,
-             boxVisible: !!box && getComputedStyle(box).display !== "none",
-             btnVisible: !!btn && getComputedStyle(btn).display !== "none" };
+    return { landed: document.querySelector(".screen.active").id,
+             boxVisible: !!box && !!box.offsetParent,
+             btnVisible: !!btn && !!btn.offsetParent };
   });
-  ok(intake.stayed === "screen-home", "'received a contract' keeps the reader on the intake screen");
+  ok(intake.landed === "screen-intake",
+     `'received a contract' opens the intake screen (landed on ${intake.landed.replace("screen-", "")})`);
   ok(intake.boxVisible && intake.btnVisible,
-     "and the paste box and analyze button are still there, not hidden behind the chooser");
+     "and the paste box and analyze button are there when it does");
+
+  /* Home is a chooser now. If the workspace were still rendered underneath the
+     doors, the door would be decoration again — which is the whole defect. */
+  const homeClean = await p.evaluate(() => {
+    show("home");
+    const box = document.getElementById("pasteBox");
+    return { boxOnHome: !!box && !!box.offsetParent,
+             presses: document.getElementById("screen-home")
+                        .querySelectorAll("button, a, label, input, textarea").length };
+  });
+  ok(homeClean.boxOnHome === false,
+     "and the paste box is NOT also sitting on home — one front door, not two");
+  ok(homeClean.presses <= 14,
+     `home offers a countable set of choices, not a wall (${homeClean.presses} pressable)`);
+
+  /* The other route to the same screen. Rights → "know where you stand" sets
+     signedMode itself, so it must land on the workspace, not on home. */
+  const signedRoute = await p.evaluate(() => {
+    show("home"); startSignedReview();
+    return { landed: document.querySelector(".screen.active").id, signedMode };
+  });
+  ok(signedRoute.landed === "screen-intake" && signedRoute.signedMode === true,
+     "and the Rights entry lands on the same workspace, already set to 'signed'");
+
+  /* ---- 5b. the signed question is answered by the door, not asked twice
+   *
+   * signedMode is not a display filter: adviceFor() returns c.r instead of c.a
+   * and actionFor() returns act_red_signed. A wrong value tells someone who has
+   * not signed yet how to contest a contract they could still decline. It used
+   * to be a segmented control above the doors — a decision demanded before any
+   * content, and one the door already implies. */
+  console.log("\n— the door answers the signed question, and the answer stays correctable");
+  const derived = { contract:false, resign:true, owed:true, term:true };
+  for (const [door, want] of Object.entries(derived)){
+    /* Start from the WRONG value, so a door that simply leaves signedMode
+       alone cannot pass by luck. */
+    const got = await p.evaluate(([d, w]) => {
+      nat = "sa"; signedMode = !w;
+      show("home"); pickSituation(d);
+      return signedMode;
+    }, [door, want]);
+    ok(got === want, `"${door}" sets signedMode to ${want} without asking (${got})`);
+  }
+  const correctable = await p.evaluate(() => {
+    show("home"); pickSituation("contract");
+    const before = signedMode;
+    document.getElementById("signedAsk").click();
+    const el = document.getElementById("signedAsk");
+    return { before, after: signedMode, pressed: el.getAttribute("aria-pressed"),
+             onIntake: !!el.offsetParent };
+  });
+  ok(correctable.before === false && correctable.after === true,
+     "and the reader can correct it on the intake screen");
+  ok(correctable.pressed === "true" && correctable.onIntake,
+     "with the control saying which way it is set, on the screen the document is on");
 
   /* ---- 6. the nationality answer is asked once and then remembered
    *
@@ -198,7 +266,11 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
    */
   console.log("\n— the nationality answer survives, and is never asked for twice");
   const track = await p.evaluate(() => {
-    localStorage.clear(); loadState();
+    /* nat is cleared EXPLICITLY as well as from storage — loadState() returns
+       early when there is no stored payload, so it leaves whatever is already
+       in memory alone. Without this the assertion below is measuring whatever
+       the previous section happened to leave behind. */
+    localStorage.clear(); nat = null; loadState();
     const gateWhenUnset = needsTrack(() => {});
     nat = "sa"; saveState();
     const written = JSON.parse(localStorage.getItem(STORE)).nat;
