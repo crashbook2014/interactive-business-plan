@@ -409,6 +409,53 @@ async function seedTermination(p){
        "and that Wodouh is not a law firm, in both languages");
   }
 
+  /* ---- the Terms agree with the product and with the Refund Policy.
+     Two contradictions lived here, and both were the kind a reader meets
+     rather than a developer:
+
+     THE ACCOUNT. Terms said "an account is optional and buys syncing across
+     your devices, nothing more" while privacy/, app/index.html and the
+     scan_events table all say reading a contract needs one, because the free
+     scan is counted per person. Terms was the stale document, and it was the
+     one that governs the relationship.
+
+     THE CANCELLATION. "Cancellation takes effect immediately" sat one line
+     above "the features stay available until the end of the period you have
+     paid for" — the same list saying opposite things. And "it does not refund
+     the month you are in" contradicted the Refund Policy's full refund within
+     fourteen days of a first payment: same 799 SAR, two answers, with Terms
+     incorporating the Refund Policy by reference and no precedence clause. */
+  console.log("\n— the Terms agree with the product and with the Refund Policy");
+  {
+    const terms  = readFileSync(path.join(ROOT, "terms/index.html"), "utf8");
+    const refund = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
+
+    ok(!/An account is optional and buys syncing[^<]*nothing more/i.test(terms),
+       "the Terms no longer claim an account buys nothing but syncing");
+    ok(/Reading a contract needs one/i.test(terms) && /وقراءة عقد تحتاج حسابًا/.test(terms),
+       "and state that reading a contract needs an account, in both languages");
+    /* The sign-in methods the Terms name must be the ones that exist. Email
+       one-time codes shipped and the Terms still said Google or Apple only. */
+    ok(/one-time code/i.test(terms) && /برمز لمرة واحدة/.test(terms),
+       "and name email sign-in alongside Google and Apple");
+
+    ok(!/Cancellation takes effect immediately/i.test(terms) && !/ويسري فور طلبه/.test(terms),
+       "the Terms no longer say cancellation takes effect immediately while also saying access continues");
+    /* Both documents must describe the end of a subscription the same way. */
+    for (const [what, re] of [
+      ["access continues to the end of the paid period", /end of the period you (have )?(already )?paid for/i],
+      ["a fourteen-day full refund of the first payment", /fourteen days/i],
+    ]) {
+      ok(re.test(terms),  `the Terms state ${what}`);
+      ok(re.test(refund), `and so does the Refund Policy`);
+    }
+    /* The exception has to be reachable from the rule, not merely true
+       somewhere else — the contradiction was that Terms stated the rule flatly
+       and never mentioned the carve-out. */
+    ok(/Refund Policy<\/a>: cancel within fourteen days/i.test(terms),
+       "and the Terms link the Refund Policy at the point the exception applies");
+  }
+
   /* --------------------------------- the pricing doc names every real price */
   console.log("\n— docs/pricing.md is not folklore");
 
