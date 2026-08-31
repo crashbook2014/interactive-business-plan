@@ -283,13 +283,39 @@ async function seedTermination(p){
       ["that it does not represent you", /does not provide legal representation/i, /لا يقدّم تمثيلًا قانونيًا/],
     ]) ok(en.test(app) && ar.test(app), `the app states ${what}, in both languages`);
 
-    for (const p of ["privacy/index.html", "terms/index.html", "refund/index.html", "support/index.html"]) {
+    /* index.html is checked separately, just below. Two things make it
+       different from the legal pages and a first draft of this loop got both
+       wrong: it sits at the root, so its link is "support/" and not
+       "../support/", and its visible words live in assets/landing.js behind
+       data-t placeholders, so reading the HTML alone finds no copy at all. */
+    for (const p of ["privacy/index.html", "terms/index.html",
+                     "refund/index.html", "support/index.html"]) {
       const t = readFileSync(path.join(ROOT, p), "utf8");
       ok(/support@alwodouh\.com/.test(t), `${p} carries the support address`);
       ok(/href="\.\.\/support\/"/.test(t), `${p} links the support page`);
       ok(/not a law firm/i.test(t) && /ليس مكتب محاماة/.test(t),
          `${p} states Wodouh is not a law firm, in both languages`);
     }
+  }
+
+  /* The homepage, on its own terms. It was the only public surface naming no
+     operator at all — the identity block landed everywhere else and missed
+     the page most people see first. */
+  {
+    const home = readFileSync(path.join(ROOT, "index.html"), "utf8");
+    const copy = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    ok(/href="support\/"/.test(home), "index.html links the support page");
+    ok(/data-t="foot_id"/.test(home), "index.html renders an identification block");
+    ok(/foot_id:/.test(copy), "and the copy for it exists");
+    ok(/support@alwodouh\.com/.test(copy), "the homepage states a contact address");
+    ok(/ليس مكتب محاماة/.test(copy) && /not a law firm/i.test(copy),
+       "index.html states Wodouh is not a law firm, in both languages");
+    /* The contact route must survive the curtain lifting. It lived inside
+       .soon-only, which is display:none once WODOUH_LAUNCHED is true — so
+       every phone, WhatsApp and email on the page vanished at exactly the
+       moment the product started taking money. */
+    ok(!/<section id="contact" class="soon-only/.test(home),
+       "the contact section is not hidden the moment the product launches");
   }
 
   /* ---- the founder's own address is an operator identity, not a help desk.
@@ -307,6 +333,80 @@ async function seedTermination(p){
       const leaked = owners.filter(o => txt.includes(o));
       ok(leaked.length === 0, `${s} publishes no operator address${leaked.length ? " — " + leaked.join(", ") : ""}`);
     }
+  }
+
+  /* ---- the marketing page advertises the prices the app charges.
+     THIS IS THE CHECK WHOSE ABSENCE COST 84 SAR A SALE. ladderBreaks() guards
+     the app's internal ladder and nothing guarded assets/landing.js, so the
+     homepage drifted: it advertised a 65 SAR letter against a 149 SAR
+     checkout, a 325 SAR case file against 349, and a "job-change pack" at 130
+     that was not a product in any catalogue, past or present — while
+     soon_price_note invited visitors to reserve those prices before launch.
+     There is no build step here to share a constant between a static
+     marketing page and the app, so the two copies are reconciled by reading
+     both files and comparing. */
+  console.log("\n— the homepage advertises the prices the app actually charges");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    const src3 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const catalogue = (name) => {
+      const m = src3.match(new RegExp(`name:"${name}"[\\s\\S]{0,160}?amt:(\\d+)`));
+      return m ? +m[1] : null;
+    };
+    /* Each homepage price element, and the catalogue entry it is selling. */
+    const SHOWN = [
+      ["p2a", "plan_letter"],
+      ["p3a", "plan_case"],
+    ];
+    for (const [el, plan] of SHOWN) {
+      const real = catalogue(plan);
+      ok(real !== null, `the catalogue has a price for ${plan} (${real})`);
+      const m = landing.match(new RegExp(`getElementById\\("${el}"\\)[\\s\\S]{0,140}?"(\\d+)"`));
+      const advertised = m ? +m[1] : null;
+      ok(advertised !== null, `the homepage shows a price in ${el}`);
+      ok(advertised === real,
+         `${el} advertises ${advertised} and the app charges ${real} for ${plan}` +
+         (advertised === real ? "" : " — these must match"));
+    }
+    /* And nothing may be advertised that is not in the catalogue at all. */
+    const prices = [...landing.matchAll(/getElementById\("p\d+a"\)[\s\S]{0,140}?"(\d+)"/g)].map(m => +m[1]);
+    const known = [...src3.matchAll(/name:"(plan_\w+)"[\s\S]{0,160}?amt:(\d+)/g)].map(m => +m[2]);
+    const phantom = prices.filter(p => !known.includes(p));
+    ok(phantom.length === 0,
+       `every advertised price exists in the catalogue${phantom.length ? " — not sold: " + phantom.join(", ") : ""}`);
+  }
+
+  /* ---- and the homepage does not promise the lawyer desk while it is dark.
+     app/index.html ships LAWYER_COMPILED = false because, in its own words,
+     the arrangement "lives outside this repository and cannot be verified
+     from here". The marketing page promised it anyway. */
+  console.log("\n— no lawyer-connection promise while the desk is dark");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    const src4 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const compiled = /const LAWYER_COMPILED\s*=\s*(true|false)/.exec(src4);
+    ok(!!compiled, `the lawyer desk's compiled default is readable (${compiled && compiled[1]})`);
+    if (compiled && compiled[1] === "false") {
+      const PROMISE = /(نوصّلك ب?محام|we connect you with (a|one)[^.]{0,40}lawyer)/i;
+      ok(!PROMISE.test(landing),
+         "the homepage does not claim it connects you with a lawyer while the desk is dark");
+    }
+  }
+
+  /* ---- the homepage discloses that AI is involved, and that it can be wrong.
+     Every other surface said so; this one said neither, in either language,
+     while selling an AI assistant. */
+  console.log("\n— the homepage discloses the AI");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    /* Arabic takes the definite article in running prose — "الذكاء الاصطناعي",
+       not "ذكاء اصطناعي" — so match the root rather than the bare pair. */
+    ok(/الذكاء الاصطناعي|ذكاء اصطناعي/.test(landing) && /\bAI\b/.test(landing),
+       "AI is named on the homepage, in both languages");
+    ok(/can be wrong|قد يكون خاطئ/.test(landing),
+       "and the homepage says AI output can be wrong");
+    ok(/ليس مكتب محاماة/.test(landing) && /not a law firm/i.test(landing),
+       "and that Wodouh is not a law firm, in both languages");
   }
 
   /* --------------------------------- the pricing doc names every real price */

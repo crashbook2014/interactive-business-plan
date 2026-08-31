@@ -73,7 +73,7 @@ const T = {
   f4:{ar:"حاسبة نهاية الخدمة",en:"End-of-service calculator"},
   f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، ومعرفة إن كان الإنهاء نظاميًا.",en:"An exact figure with the arithmetic shown, and whether the termination was lawful."},
   f5:{ar:"المساعد القانوني",en:"Legal assistant"},
-  f5p:{ar:"اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"Ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
+  f5p:{ar:"مساعد مدعوم بالذكاء الاصطناعي: اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"An AI-assisted helper: ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
   f6:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
   f6p:{ar:"للشركات: مقاعد للفريق، ومراجعة التعديلات، وتقييم قوالبكم الصادرة من وجهة نظر الطرف الآخر.",
        en:"For companies: team seats, redline review, and scoring for your own outgoing templates from the other side's view."},
@@ -86,10 +86,6 @@ const T = {
   p1p:{ar:"تقييم غير محدود، تنبيهات، شرح البنود، وحاسبة نهاية الخدمة.",en:"Unlimited scoring, flags, clause explanations, and the calculator."},
   p2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
-  p4:{ar:"حزمة تغيير الوظيفة",en:"Job-change pack"}, p4t:{ar:"الأفضل قيمة",en:"Best value"},
-  p4p:{ar:"لحظة تغيير الوظيفة كاملة — لا اشتراك شهري.",en:"The whole job-change moment — no monthly subscription."},
-  p4g:{ar:"تحصل على: الخطاب + تذكيرات مواعيد العقد ٦ أشهر + أسئلة بلا حدود عنه.",
-       en:"You get: the letter + 6 months of contract reminders + unlimited questions about it."},
   p3:{ar:"ملف القضية",en:"Case file"},
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
   price_anchor:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
@@ -109,8 +105,14 @@ const T = {
   t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد.",
        en:"It's read and analyzed inside the app. We don't upload it, store it, or share it."},
   t2:{ar:"لسنا محامين",en:"We're not lawyers"},
-  t2p:{ar:"نشرح ونساعدك تفهم وتقرر. للقضايا المعقدة نوصّلك بمحامٍ سعودي مرخّص.",
-       en:"We explain and help you understand and decide. For complex matters we connect you with a licensed Saudi lawyer."},
+  /* NO LAWYER PROMISE HERE. This said "for complex matters we connect you
+     with a licensed Saudi lawyer" while LAWYER_COMPILED is false and the
+     app's own comment says the arrangement "lives outside this repository
+     and cannot be verified from here". The app ships that promise dark on
+     purpose; this page was making it anyway. It returns when the desk is
+     live and something real stands behind it. */
+  t2p:{ar:"نشرح ونساعدك تفهم وتقرر. وإذا كانت حالتك تحتاج رأيًا مهنيًا، نقول لك ذلك بوضوح.",
+       en:"We explain and help you understand and decide. And when your situation needs professional judgement, we tell you so plainly."},
   t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
   t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — ومصادرنا معروضة داخل التطبيق بروابطها الرسمية وتاريخ آخر مراجعة. المراجع محدّثة حتى فبراير ٢٠٢٥، تاريخ نفاذ آخر تعديلات النظام.",
        en:"Every flag carries its reason and its reference in the Saudi Labor Law — and our sources are listed in the app with official links and a review date. References are current to February 2025, when the latest amendments came into force."},
@@ -119,7 +121,7 @@ const T = {
   faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
   faq:{ar:[
     ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، ولا يُرفع ولا يُخزَّن. لو حذفت التطبيق راح معه كل شيء."],
-    ["هل يغني عن المحامي؟","لا. وضوح يشرح ويجهّز ويوضّح خياراتك. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا مرخّصًا — ونوصّلك به وملفك جاهز."],
+    ["هل يغني عن المحامي؟","لا. وضوح يشرح ويجهّز ويوضّح خياراتك، وهو ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا مرخّصًا — ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
     ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
@@ -129,7 +131,7 @@ const T = {
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
     ["Do you keep my contract?","No. It's read and analyzed inside the app on your device — never uploaded, never stored. Delete the app and it all goes with it."],
-    ["Does this replace a lawyer?","No. Wodouh explains, prepares, and clarifies your options. For a real dispute or large sums you need a licensed lawyer — and we connect you with one, file already prepared."],
+    ["Does this replace a lawyer?","No. Wodouh explains, prepares and clarifies your options. It is not a law firm and does not provide legal representation. For a real dispute or large sums you need a licensed lawyer — Wodouh gets your file ready before you go."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
     ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
@@ -143,8 +145,15 @@ const T = {
   close_p:{ar:"حلّل عقدك الآن. بدون تسجيل، وبدون ما يغادر عقدك جهازك.",
            en:"Analyze your contract now. No sign-up, and nothing leaves your device."},
   close_cta:{ar:"اعرف وضع عقدي مجانًا",en:"See where my contract stands — free"},
-  foot:{ar:"وضوح يشرح لك ويساعدك تفهم — وما يغني عن الاستشارة القانونية عند الحاجة.",
-        en:"Wodouh explains and helps you understand — it doesn't replace legal advice when you need it."}
+  /* The disclosure every other surface makes and this page did not: it sold
+     an AI assistant without the word "AI" appearing anywhere on it, in either
+     language. Wording reused from terms/index.html rather than newly written. */
+  foot:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا، وما ينتجه الذكاء الاصطناعي قد يكون خاطئًا — وما يغني عن الاستشارة القانونية عند الحاجة.",
+        en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. It is not a law firm and does not provide legal representation, and AI output can be wrong — it does not replace legal advice when you need it."},
+  /* Reused verbatim from the legal pages' identification block, so the
+     operator is described the same way everywhere. */
+  foot_id:{ar:"يُدار وضوح كنشاط سعودي مستقل بموجب وثيقة عمل حر، وليس لديه سجل تجاري. ولا نعرض أي شعار أو ترخيص أو اعتماد حكومي لا نملكه. للتواصل والشكاوى: support@alwodouh.com",
+           en:"Wodouh is operated as an independent Saudi activity under a Freelance Work Certificate and does not hold a Commercial Registration. We display no licence, seal or government approval that we do not hold. Contact and complaints: support@alwodouh.com"},
 };
 
 let lang = "ar";
@@ -158,9 +167,16 @@ function applyLang(){
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
-  document.getElementById("p2a").innerHTML = (lang==="ar" ? "٦٥" : "65") + `<small>${sar}</small>`;
-  document.getElementById("p4a").innerHTML = (lang==="ar" ? "١٣٠" : "130") + `<small>${sar}</small>`;
-  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٢٥" : "325") + `<small>${sar}</small>`;
+  /* THESE MUST EQUAL THE APP CATALOGUE. They are a second copy of numbers that
+     live in app/index.html, and they drifted: this page advertised 65 and 325
+     while the app charged 149 and 349, and sold a "job-change pack" at 130
+     that was not a product at all. Someone was invited to reserve a launch
+     price 84 SAR below what checkout would ask.
+     There is no build step to share a constant between these two files, so
+     the agreement is enforced by test/commerce.test.js, which reads both and
+     fails when they differ. */
+  document.getElementById("p2a").innerHTML = (lang==="ar" ? "١٤٩" : "149") + `<small>${sar}</small>`;
+  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٤٩" : "349") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
