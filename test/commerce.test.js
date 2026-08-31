@@ -256,6 +256,18 @@ async function seedTermination(p){
       for (const [what, re] of FABRICATED)
         ok(!re.test(txt), `${s} does not claim ${what}`);
     }
+
+    /* VAT, which is the one that was actually wrong. The product stated
+       "prices include 15% VAT" on the paywall, the marketing page, the FAQ,
+       the Terms and the refund policy while the business is NOT registered
+       for VAT — representing a tax it cannot collect, on the screen where
+       someone decides to pay. Owner confirmed non-registration 30 Aug 2026.
+       If registration ever happens this check is what tells whoever changes
+       one page that they have to change all of them. */
+    const VAT_CLAIMED = /(includ\w*\s+(?:15%\s*)?VAT|VAT[- ]inclusive|شامل\w*\s+ضريبة|شاملة\s+الضريبة)/i;
+    for (const s of [...surfaces, "assets/landing.js"])
+      ok(!VAT_CLAIMED.test(visible(s)),
+         `${s} does not represent VAT as included in the price`);
   }
 
   /* ---- and every paid surface carries identity, a contact route and the

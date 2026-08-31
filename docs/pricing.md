@@ -43,7 +43,14 @@ behind a price that was replaced is part of why the replacement was chosen.*
 
 </details>
 
-All prices are VAT-inclusive (15%) and stated as such in the product.
+All prices are the total payable. Wodouh is **not registered for VAT**, so
+no VAT is charged and none is represented as included — confirmed by the
+owner on 30 Aug 2026. The product said "prices include 15% VAT" until then,
+which was a tax the business could not collect. The status is declared once,
+in the Terms; the price lines simply say the shown price is the total.
+If registration ever becomes required (the mandatory threshold is turnover
+based), this line, the Terms, the refund policy and both price lines change
+together — test/commerce.test.js fails if any page reintroduces the claim.
 
 ## August 2026 — the current catalogue
 

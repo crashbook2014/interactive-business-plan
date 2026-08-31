@@ -2934,7 +2934,11 @@ const T = {
   acc_lang:{ar:"اللغة",en:"Language"},
   anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين 400 و1000 ر.س للاستشارة الواحدة.",
                 en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
-  vat_line:{ar:"الأسعار شاملة ضريبة القيمة المضافة (15٪).",en:"Prices include 15% VAT."},
+  /* Wodouh is not registered for VAT, so no VAT is charged and none may be
+     represented as included. Stating a tax you cannot collect is a false
+     statement to the reader and a ZATCA problem; the status itself is
+     declared once, in the Terms, rather than on every price. */
+  vat_line:{ar:"السعر المعروض هو المبلغ النهائي. لا تُضاف ضريبة قيمة مضافة.",en:"The price shown is the total you pay. No VAT is added."},
   guarantee:{ar:"ما أعجبك؟ نرجّع لك المبلغ — بدون أسئلة.",en:"Not happy? We refund you — no questions."},
   secure_pay:{ar:"دفع آمن",en:"Secure payment"},
   pw_more:{ar:"+ {n} بنود أخرى في الخطاب الكامل",en:"+ {n} more points in the full letter"},

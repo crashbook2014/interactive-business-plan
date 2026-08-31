@@ -118,8 +118,8 @@ footer{
   font-size:13.5px; color:var(--ink-2); line-height:1.65;
 }
 .f-top{
-  display:grid; gap:26px 40px; align-items:start;
-  grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(120px,1fr));
+  display:grid; gap:26px 28px; align-items:start;
+  grid-template-columns:minmax(180px,1.4fr) repeat(3,minmax(min-content,1fr));
 }
 @media (max-width:760px){ .f-top{grid-template-columns:1fr 1fr} }
 @media (max-width:460px){ .f-top{grid-template-columns:1fr} }

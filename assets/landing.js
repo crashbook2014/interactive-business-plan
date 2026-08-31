@@ -94,8 +94,8 @@ const T = {
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
   price_anchor:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين ٤٠٠ و١٠٠٠ ر.س للاستشارة الواحدة.",
                 en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
-  price_vat:{ar:"الأسعار شاملة ضريبة القيمة المضافة (١٥٪) · ما أعجبك؟ نرجّع لك المبلغ.",
-             en:"Prices include 15% VAT · Not happy? We refund you."},
+  price_vat:{ar:"السعر المعروض هو المبلغ النهائي · ما أعجبك؟ نرجّع لك المبلغ.",
+             en:"The price shown is the total you pay · Not happy? We refund you."},
   p1g:{ar:"تحصل على: تقييم كامل، كل بند مشروح، وحاسبة نهاية الخدمة.",
        en:"You get: the full score, every clause explained, and the calculator."},
   p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
@@ -123,7 +123,7 @@ const T = {
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
     ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
-    ["الأسعار شاملة الضريبة؟","نعم، كل الأسعار المعروضة شاملة ضريبة القيمة المضافة ١٥٪ — ما فيه مبالغ تظهر لك عند الدفع."],
+    ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة — وضوح غير مسجَّل فيها حاليًا."],
     ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."],
     ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/٥١ وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
@@ -133,7 +133,7 @@ const T = {
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
     ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
-    ["Do prices include VAT?","Yes — every price shown includes 15% VAT. Nothing extra appears at checkout."],
+    ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added — Wodouh is not currently registered for VAT."],
     ["What if the letter isn't useful?","We refund you, no questions. You're paying for an output you actually use, not for a trial."],
     ["Where does your information come from?","Official sources: the Saudi Labor Law (Royal Decree M/51 and its amendments), the Ministry of Human Resources, the Ejar network, and the Ministry of Justice. They're listed in the app with links and review dates, and we name an article number only where we've verified it."],
     ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there's a claim or a large sum involved — we say so plainly on the result screen and prepare your file before you go."]
