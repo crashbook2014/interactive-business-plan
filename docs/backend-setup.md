@@ -179,6 +179,7 @@ you are getting:
 | `0007_blockers.sql` | `launch_blockers` — the founder checklist, operator-only |
 | `0008_operator_allowlist.sql` | `admin_allowlist` + the trigger that promotes on first sign-in |
 | `0009_scans.sql` | `scan_events` — one row per free scan, so the monthly limit survives clearing storage |
+| `0010_prune_schedule.sql` | schedules `prune_scan_events()` daily via `pg_cron`, so the thirteen-month retention the privacy policy promises is actually enforced rather than merely written |
 
 ### Becoming an operator
 

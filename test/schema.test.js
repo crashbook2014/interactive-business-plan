@@ -293,6 +293,44 @@ ok(definers.length > 0 && unpinned.length === 0,
    Editor, for when the CLI is not available. A hand-kept copy of five files is
    a copy that goes stale the first time one of them changes, and nothing would
    say so — the same argument that guards corpus.json. */
+/* ---- the retention the privacy policy promises is actually scheduled.
+   0009 created prune_scan_events() and nothing ever called it, while the
+   privacy policy told readers in both languages that scan rows are kept for
+   thirteen months. A retention period nothing enforces is a sentence on a
+   page — and it is exactly the kind of claim a data-protection review asks
+   you to demonstrate rather than assert. What is checked here is the whole
+   chain: the function exists, something schedules it, and the interval it
+   deletes on is still the figure the policy publishes. */
+console.log("\n— the published retention period is enforced, not just promised");
+{
+  const all = files.map(f => readFileSync(path.join(DIR, f), "utf8")).join("\n");
+  const privacy = readFileSync(path.join(DIR, "..", "..", "privacy/index.html"), "utf8");
+
+  const iv = all.match(/delete from public\.scan_events[\s\S]{0,120}?interval '(\d+) months'/);
+  ok(!!iv, `the prune deletes on a stated interval (${iv && iv[1]} months)`);
+
+  ok(/cron\.schedule\(\s*'wodouh_prune_scan_events'/.test(all),
+     "and a cron job is scheduled to run it");
+  ok(/if exists \(select 1 from cron\.job where jobname = 'wodouh_prune_scan_events'\)/.test(all),
+     "and scheduling it twice replaces the job rather than stacking a second copy");
+
+  /* The number in the SQL and the number on the page are two copies of one
+     promise. This is the assertion that fails if either moves alone. */
+  const WORDS = { 12: /twelve months/i, 13: /thirteen months/i, 18: /eighteen months/i, 24: /twenty-four months/i };
+  const months = iv ? +iv[1] : null;
+  ok(months !== null && !!WORDS[months] && WORDS[months].test(privacy),
+     `the privacy policy states the same ${months} months the SQL deletes on`);
+  const AR = { 12: /اثني عشر شهرًا/, 13: /ثلاثة عشر شهرًا/, 18: /ثمانية عشر شهرًا/, 24: /أربعة وعشرين شهرًا/ };
+  ok(months !== null && !!AR[months] && AR[months].test(privacy),
+     "and so does the Arabic");
+
+  /* Scheduling must not have widened who can run it. A client able to call
+     this has a one-statement mass delete of the table the free-scan limit
+     lives in. */
+  ok(/revoke all on function public\.prune_scan_events\(\) from public, anon, authenticated/.test(all),
+     "and the function is still revoked from anon and authenticated");
+}
+
 console.log("\n— the SQL-editor paste is still the migrations it claims to be");
 {
   const { execFileSync } = require("node:child_process");
