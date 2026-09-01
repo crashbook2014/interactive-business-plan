@@ -4111,8 +4111,14 @@ const OB = [
       <path d="M48 93h40" stroke="var(--green)" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
     </svg>` },
   { title:{ar:"خلاصة واضحة قبل التوقيع",en:"A clear verdict before you sign"},
-    sub:{ar:"تقييم من 100 ونصيحة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة.",
-         en:"A score out of 100 and honest advice — we help you understand and decide. We don't replace legal advice when you need it."},
+    /* "نصيحة"/"advice" removed for this card's own output — disclaimer says
+       Wodouh gives information, not advice, and this sentence used to call
+       its own score "honest advice" one clause before disclaiming exactly
+       that. Also states the free/paid boundary, which onboarding never did —
+       the first time a reader learned the review was paid was after pasting
+       a contract (scan_lock_t), not before. */
+    sub:{ar:"تقييم من 100 وخلاصة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة. الفحص والتقييم مجانًا؛ المراجعة الكاملة مدفوعة.",
+         en:"A score out of 100 and a straight verdict — we help you understand and decide. We don't replace legal advice when you need it. The scan and the score are free; the full review is paid."},
     art:`<svg viewBox="0 0 120 120" fill="none">
       <circle cx="60" cy="60" r="44" stroke="var(--line)" stroke-width="9"/>
       <path d="M60 16a44 44 0 1 1-31.1 12.9" stroke="var(--teal)" stroke-width="9" stroke-linecap="round"/>

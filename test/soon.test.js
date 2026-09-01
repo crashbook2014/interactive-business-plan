@@ -106,6 +106,57 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(contact.mail.length >= 1 && contact.mail.every(h => /^mailto:[^@]+@alwodouh\.com$/i.test(h)),
      "and every email link is on the Wodouh domain");
 
+  /* ---- 4b. the page's own controls actually work
+   *
+   * CSP here is script-src 'self' with no 'unsafe-inline', so an inline
+   * onclick="..." attribute is silently blocked by any spec-compliant
+   * browser — the click fires, nothing happens, and no error is thrown
+   * anywhere a human would see it. That is exactly what langBtn shipped
+   * with: a real click never changed the language, and page.evaluate() of
+   * the function directly (which bypasses the page's own CSP) made it look
+   * fine under the wrong kind of test. Asserting a REAL click here, not a
+   * function call, is the only version of this check that would have caught
+   * it — and did. */
+  console.log("\n— the language toggle is a real click, not just a callable function");
+  const before = await root.evaluate(() => document.documentElement.lang);
+  await root.click("#langBtn");
+  const after = await root.evaluate(() => document.documentElement.lang);
+  ok(before !== after,
+     `clicking #langBtn actually changes the language (${before} -> ${after})`);
+  await root.click("#langBtn");
+  const back = await root.evaluate(() => document.documentElement.lang);
+  ok(back === before, "and clicking it again returns to the start");
+
+  /* ---- 4c. curtain-mode paragraphs match their own curtain-mode button
+   *
+   * close_p used to render unconditionally ("Analyze your contract now, no
+   * sign-up") directly above a soon-only button that only opens a contact
+   * link — a promise the button next to it could not keep. Every element
+   * that is .launch-only in a section must have a same-section .soon-only
+   * sibling of the same tag, so a promise never outlives its matching CTA. */
+  console.log("\n— the closing section's promise matches its own curtain state");
+  /* close_p used to render unconditionally ("Analyze your contract now, no
+     sign-up") directly above a soon-only button that only opens a contact
+     link — the paragraph promised something the only visible button could
+     not do. Narrow to the one paragraph this actually happened to, rather
+     than a section-wide heuristic: a pricing description sitting in the same
+     section as a gated CTA is not the same defect, and a broad version of
+     this check flagged those as false positives. */
+  const closeSection = await root.evaluate(() => {
+    const vis = el => getComputedStyle(el).display !== "none";
+    const p = document.querySelector('p[data-t="close_p"]');
+    const pSoon = document.querySelector('p[data-t="close_p_soon"]');
+    return {
+      launchGated: p ? p.classList.contains("launch-only") : null,
+      soonPromiseVisible: pSoon ? vis(pSoon) : null,
+      launchPromiseVisible: p ? vis(p) : null,
+    };
+  });
+  ok(closeSection.launchGated === true,
+     "close_p is gated to the launched product, not shown unconditionally");
+  ok(closeSection.soonPromiseVisible === true && closeSection.launchPromiseVisible === false,
+     "and under the curtain, the soon-mode promise shows while the launch-mode one does not");
+
   /* ---- 5. launch is one flag, not a rebuild */
   console.log("\n— launch is a flag, and flipping it brings everything back");
   const flipped = await root.evaluate(() => {

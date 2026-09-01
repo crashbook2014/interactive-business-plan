@@ -424,6 +424,7 @@ async function seedTermination(p){
     };
     /* Each homepage price element, and the catalogue entry it is selling. */
     const SHOWN = [
+      ["p1ba", "plan_review"],
       ["p2a", "plan_letter"],
       ["p3a", "plan_case"],
     ];
