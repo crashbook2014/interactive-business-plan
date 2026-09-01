@@ -2117,7 +2117,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="acc-sec">
       <h3 data-t="acc_how"></h3>
       <p data-t="acc_how_b"></p>
-      <p id="accNotLawyer"></p>
+      <p data-t="acc_ai_note"></p>
     </div>
     <div class="acc-sec">
       <h3 data-t="src_head"></h3>
@@ -2202,7 +2202,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
 
   <!-- 1. WHAT HAPPENED -->
   <section class="screen" id="screen-term">
-    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
+    <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_main"></span></button>
     <h2 class="section-title" data-t="tm_h_title"></h2>
     <p class="pw-note" data-t="tm_h_sub"></p>
     <div class="opts stack" id="termHow"></div>
@@ -2924,10 +2924,14 @@ const T = {
   acc_title:{ar:"حسابك",en:"Your account"},
   acc_plan:{ar:"خطتك",en:"Your plan"},
   acc_pay_q:{ar:"ما الذي أدفع مقابله؟",en:"What am I paying for?"},
-  acc_pay_free:{ar:"مجاني دائمًا: تقييم العقد، التنبيهات، شرح البنود، حاسبة نهاية الخدمة.",
-                en:"Always free: the contract score, the flags, clause explanations, and the end-of-service calculator."},
-  acc_pay_paid:{ar:"مدفوع: المخرجات فقط — خطاب التفاوض، ملف القضية، أسئلة المساعد بلا حدود، ومراجعة المحامي.",
-                en:"Paid: outputs only — the negotiation letter, the case file, unlimited assistant questions, and lawyer review."},
+  acc_pay_free:{ar:"مجاني دائمًا: فحص واحد كل شهر — التقييم، والقرار، وأخطر تنبيه، وحاسبة نهاية الخدمة.",
+                en:"Always free: one scan a month — the score, the decision, the most serious flag, and the end-of-service calculator."},
+  /* No "lawyer review" here — sellable() (app/index.html) hides every
+     lawyer-flagged plan while LAWYER_COMPILED is false, so listing it as
+     something you can pay for is untrue right now. Comes back if the desk
+     ever goes live. */
+  acc_pay_paid:{ar:"مدفوع: المخرجات فقط — المراجعة الكاملة لكل البنود، خطاب التفاوض، ملف القضية، وأسئلة المساعد بلا حدود.",
+                en:"Paid: outputs only — the full clause-by-clause review, the negotiation letter, the case file, and unlimited assistant questions."},
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
@@ -2957,6 +2961,8 @@ const T = {
   acc_how:{ar:"كيف نحكم على البنود؟",en:"How we judge clauses"},
   acc_how_b:{ar:"نقارن كل بند بالممارسة الشائعة وبالأنظمة السعودية: أحمر يعني انتبه، أصفر يعني يستحق النقاش، أخضر يعني ضمن المعتاد. البنود التي نذكر رقم مادتها تحققنا منها في النص الرسمي؛ وما عداها نذكر النظام باسمه فقط.",
               en:"We compare each clause against common practice and Saudi regulations: red means pause, amber means worth discussing, green means within the norm. Where we name an article number we verified it in the official text; everywhere else we name only the law."},
+  acc_ai_note:{ar:"القراءة يقوم بها ذكاء اصطناعي، وليس محاميًا. ما نقوله مبني على سجل يراجعه محامٍ سعودي مرخّص — لكنه يشرح النظام، وما يفتي في حالتك.",
+               en:"The reading is done by AI, not a lawyer. What it tells you comes from a register a licensed Saudi lawyer reviews — but it explains the law, it doesn't advise on your case."},
   acc_lang:{ar:"اللغة",en:"Language"},
   anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين 400 و1000 ر.س للاستشارة الواحدة.",
                 en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
@@ -3060,6 +3066,7 @@ const T = {
   load_free:{ar:"نراجع بنود العمل الحر: الملكية، التعديلات، والسداد…",en:"Checking the freelance terms: IP, revisions, payment…"},
   load_pasted:{ar:"نبحث عن البنود المعروفة في نصك…",en:"Scanning your text for known clause patterns…"},
   back_home:{ar:"عقد جديد",en:"New contract"},
+  back_main:{ar:"الرئيسية",en:"Home"},
   back_rights:{ar:"حقوقي",en:"My rights"},
   back_score:{ar:"التقييم",en:"Back to score"},
   lg_red:{ar:"انتبه",en:"Red flag"}, lg_amber:{ar:"فاوض",en:"Negotiate"}, lg_green:{ar:"مطمئن",en:"All clear"},
@@ -3576,8 +3583,8 @@ const T = {
      the claim. The same fact is stated correctly twice elsewhere in this file
      (tr_clock and the rights entry); this was the third copy, and the one on
      the screen a terminated reader actually lands on. */
-  tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية لا تُسمع عادةً بعد مضي اثني عشر شهرًا من نهاية العلاقة. وضوح ما يرفع الدعوى نيابة عنك.",
-           en:"If nothing is resolved, the route begins with amicable settlement through the Ministry of Human Resources platform, before the labour court. Watch the clock: a labour claim is generally not heard after twelve months from the end of the relationship. Wodouh does not file anything on your behalf."},
+  tm_n5_b:{ar:"لو ما وصلت لحل، الطريق يبدأ بالتسوية الودية عبر منصة وزارة الموارد البشرية قبل المحكمة العمالية. وانتبه للمدة: الدعوى العمالية لا تُسمع عادةً بعد مضي اثني عشر شهرًا من نهاية العلاقة (نظام العمل — المادة 222). وضوح ما يرفع الدعوى نيابة عنك.",
+           en:"If nothing is resolved, the route begins with amicable settlement through the Ministry of Human Resources platform, before the labour court. Watch the clock: a labour claim is generally not heard after twelve months from the end of the relationship (Labor Law, Article 222). Wodouh does not file anything on your behalf."},
 
   tm_doc_title:{ar:"ملف الحالة",en:"Case file"},
   tm_d_h_facts:{ar:"معلومات التوظيف",en:"Employment summary"},
@@ -4019,8 +4026,8 @@ const T = {
   tr_out_claim:{ar:"قد يكون إنهاءً بغير سبب مشروع",en:"This may be termination without valid reason"},
   tr_out_claim_b:{ar:"في هذه الحالة قد يستحق تعويض إضافي فوق المكافأة. جهّز مستنداتك واطلب التسوية الودية أولًا.",
                   en:"That can carry compensation on top of the award. Gather your documents and start with amicable settlement."},
-  tr_clock:{ar:"مهم: الدعوى العمالية لا تُسمع عادة بعد اثني عشر شهرًا من انتهاء العلاقة.",
-            en:"Important: labour claims are generally not heard after twelve months from the end of the relationship."},
+  tr_clock:{ar:"مهم: الدعوى العمالية لا تُسمع عادة بعد اثني عشر شهرًا من انتهاء العلاقة (نظام العمل — المادة 222).",
+            en:"Important: labour claims are generally not heard after twelve months from the end of the relationship (Labor Law, Article 222)."},
   tr_addclock:{ar:"أضف المواعيد لتذكيراتي",en:"Add these dates to my reminders"},
   tr_added:{ar:"أُضيفت لتذكيراتك ✓",en:"Added to your reminders ✓"},
   doc_claim:{ar:"مطالبة عمالية",en:"Labour claim"},
@@ -9857,7 +9864,6 @@ function renderAccount(){
          ? `<button class="mini-cta" onclick="openPlans('account')">${t("pl_title")}</button>`
          : ""}
      </div>` + packNote;
-  document.getElementById("accNotLawyer").textContent = t("as_not_lawyer");
   document.getElementById("accLangLabel").textContent = t("acc_lang") + " · " + (lang==="ar" ? "English" : "عربي");
   renderSources();
 }
