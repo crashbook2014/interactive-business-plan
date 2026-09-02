@@ -123,8 +123,8 @@ const T = {
   t2p:{ar:"يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة: نشرح ونساعدك تفهم وتقرر، وإذا كانت حالتك تحتاج رأيًا مهنيًا نقول لك ذلك بوضوح.",
        en:"Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm: we explain and help you understand and decide, and when your situation needs professional judgement, we tell you so plainly."},
   t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
-  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق، ونعيد التحقق سنويًا على الأقل.",
-       en:"Every flag carries its reason and its reference in the Saudi Labor Law — and every source is published, with its official link and review date, on our how-we-verify page. We re-verify at least annually."},
+  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق. المراجع محدّثة حتى فبراير ٢٠٢٥، تاريخ نفاذ آخر تعديلات النظام.",
+       en:"Every flag carries its reason and its reference in the Saudi Labor Law — and every source is published, with its official link and review date, on our how-we-verify page. References are current to February 2025, when the latest amendments came into force."},
 
   k_faq:{ar:"أسئلة",en:"Questions"},
   faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
