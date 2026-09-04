@@ -973,6 +973,8 @@
   /* The contested figure is separated by arithmetic; it has to be separated by
      eye too, or two identical rows read as one total split across two lines.
      Lighter rule, muted ink — present, checkable, and not the headline. */
+  .tm-split-h{font-size:12.5px;font-weight:700;color:var(--ink-2);margin:14px 0 6px;
+    padding-top:12px;border-top:1px dashed var(--line)}
   .tm-money .r.tot.soft{border-top-width:1px;margin-top:0}
   .tm-money .r.tot.soft>span,.tm-money .r.tot.soft>b{color:var(--ink-2);font-size:14px}
   .tm-money .src-line{margin:2px 0 8px}
@@ -2292,10 +2294,16 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <button class="back" onclick="show('termev',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_ev_title"></span></button>
     <h2 class="section-title" data-t="tm_r_title"></h2>
     <div id="termVerdict"></div>
-    <h3 class="biz-h" data-t="tm_r_sections"></h3>
-    <div class="tm-secs" id="termSections"></div>
+    <!-- THE MONEY BEFORE THE REVIEW. This sat below eight clause cards —
+         roughly 1,400px down — so someone who has just lost their income had
+         to scroll past a legal review to reach the one figure they came for.
+         The review is good work and belongs on this page; it does not belong
+         first. Order changed here rather than in the renderers, so every
+         renderer still writes to the element it always wrote to. -->
     <h3 class="biz-h" data-t="tm_r_money"></h3>
     <div id="termMoney"></div>
+    <h3 class="biz-h" data-t="tm_r_sections"></h3>
+    <div class="tm-secs" id="termSections"></div>
     <h3 class="biz-h" data-t="tm_r_claims"></h3>
     <div class="tm-claims" id="termClaims"></div>
     <div id="termGaps"></div>
@@ -3568,7 +3576,11 @@ const T = {
      undone by addition. Two figures, because they are two different kinds of
      money: one the employer owes on the face of it, one that depends on a
      ruling nobody here can make. */
-  tm_m_total_certain:{ar:"مستحق على وجه الظاهر",en:"Owed on the face of it"},
+  /* "على وجه الظاهر" is "on the face of it" carried across word by word, and
+     it is not a collocation an Arabic legal register uses — on the single
+     most important label in the paid product, in the product's primary
+     language. "بحسب الظاهر" is the phrase that exists. */
+  tm_m_total_certain:{ar:"المستحق بحسب الظاهر",en:"Owed on the face of it"},
   tm_m_total_contested:{ar:"متوقف على قرار الجهة المختصة",en:"Depends on a ruling"},
   tm_m_total_split:{ar:"ما جمعناهم في رقم واحد عن قصد: الأول مبني على وقائع أدخلتها، والثاني ما يُستحق إلا إذا قررت الجهة المختصة أن الإنهاء بغير سبب مشروع.",
                     en:"We deliberately don't add these together: the first rests on facts you gave us, the second is owed only if the termination is found to be without valid reason — and that is for the competent authority to decide, not us."},
@@ -3706,6 +3718,19 @@ const T = {
   tm_l_open_formal:{ar:"إلى إدارة الموارد البشرية المحترمة،\n\nبالإشارة إلى انتهاء علاقتي الوظيفية بالشركة، أتقدّم بهذا الطلب لمراجعة المستحقات النهائية، وفق الوقائع والمبالغ الموضحة أدناه.",
                     en:"To the Human Resources Department,\n\nFurther to the termination of my employment with the company, I submit this request for a review of my final entitlements, on the basis of the facts and amounts set out below."},
   tm_l_items:{ar:"المبالغ محل المراجعة:",en:"Amounts for review:"},
+  /* WODOUH'S VOICE MUST NOT REACH THE EMPLOYER.
+     `tm_m_total_split` explains the two figures to the READER — "the first
+     rests on facts you gave us" — and it was being pasted verbatim into the
+     letter the employee sends HR, so the employee ended up telling HR that
+     the figures rest on facts HR had entered. Worse, it volunteered, inside a
+     claim letter, that the claimant's own tool rates part of the claim as
+     speculative. The letter and the case document now say the same true thing
+     in the claimant's own register: these are the amounts I am asking about,
+     and this further item turns on a determination I am not making here. */
+  tm_l_split_certain:{ar:"وعليه، فالمبالغ المطلوب مراجعتها بحسب الظاهر:",
+                      en:"On that basis, the amounts I am asking you to review are:"},
+  tm_l_split_more:{ar:"وهناك بند إضافي يتوقف على تقدير الجهة المختصة، أذكره للعلم لا للمطالبة به في هذه المرحلة:",
+                   en:"There is a further item that turns on a determination by the competent authority. I note it for completeness, not as part of this request:"},
   tm_l_noitems:{ar:"أطلب توضيح أساس احتساب المخالصة النهائية.",
                 en:"I would like clarification of the basis on which the final settlement was calculated."},
   tm_l_ask_friendly:{ar:"لو فيه شيء فهمته غلط، أنا حاضر أسمع وأصحّح. وإذا كان في محله، أتمنى نرتّب الصرف في أقرب وقت يناسبكم.",
@@ -3946,8 +3971,13 @@ const T = {
   /* Nothing found is a real answer and stays on screen. It is simply not
      something to sell, and the reader is told so where the empty figure is,
      not left to discover it at a pay button. */
-  tm_m_none_sale:{ar:"وما نطلب منك تدفع مقابل تقييم ما لقى شيء. كمّل الناقص فوق ونعيد الحساب لك مجانًا.",
-                  en:"And we're not asking you to pay for an assessment that found nothing. Fill in what's missing above and we'll recalculate, free."},
+  /* Said "fill in what's missing ABOVE" while the missing-items list is ~900px
+     BELOW, on a screen with no control that returns to the questions at all —
+     so the most generous moment in the product was also the one that stranded
+     the reader. The direction is gone and a door is right here. */
+  tm_m_none_sale:{ar:"وما نطلب منك تدفع مقابل تقييم ما لقى شيء. كمّل إجاباتك ونعيد الحساب لك مجانًا.",
+                  en:"And we're not asking you to pay for an assessment that found nothing. Complete your answers and we'll recalculate, free."},
+  tm_m_none_cta:{ar:"أكمل إجاباتي",en:"Complete my answers"},
   gate_fix:{ar:"ارجع وعدّل إجاباتك، والتقييم يتحدث معها.",
             en:"Go back and correct your answers — the assessment follows them."},
   fc_ctype:{ar:"تحديد نوع العقد",en:"Contract type identified"},
@@ -7679,6 +7709,9 @@ function renderTermResult(){
      number they came for, and the contested figure stays deliberately smaller
      beside it, because it is a different kind of money. */
   const heroCertain = lines.length ? money(termTotalCertain()) : null;
+  const row = ls => ls.map(l =>
+    `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
+     <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("");
   document.getElementById("termMoney").innerHTML =
     (heroCertain ? `<div class="tm-hero">
        <div class="lbl">${t(termTotalContested() > 0 ? "tm_m_total_certain" : "tm_m_total")}</div>
@@ -7687,12 +7720,19 @@ function renderTermResult(){
          ? `<div class="alt">${t("tm_m_total_contested")}: <b>${money(termTotalContested())} ${cur}</b></div>`
          : ""}
      </div>` : "") +
+    /* The card above splits the two figures; this list used to put all five
+       rows back in one column in identical weight, so a phone reader scanning
+       them adds the contested one back in — reintroducing, 400px later, the
+       exact confusion the card exists to prevent. The rows are grouped the
+       way the figures are. */
     `<div class="tm-money">
-       ${lines.length ? lines.map(l =>
-         `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
-          <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("")
+       ${lines.length ? row(lines.filter(l => !l.contested)) +
+           (lines.some(l => l.contested)
+             ? `<p class="tm-split-h">${t("tm_m_total_contested")}</p>` + row(lines.filter(l => l.contested))
+             : "")
         : `<p class="cap">${t("tm_m_none")}</p>
-           <p class="cap">${t("tm_m_none_sale")}</p>`}
+           <p class="cap">${t("tm_m_none_sale")}</p>
+           <button class="ghost wide" id="termFillIn">${t("tm_m_none_cta")}</button>`}
        ${/* The totals moved into the card above, at the size an answer
             deserves. Repeating them here would be the same figure twice,
             400px apart — the defect this file keeps rediscovering. What stays
@@ -7774,6 +7814,12 @@ function renderTermResult(){
     ["tm_hw_rules", t("tm_hw_rules_b")]
   ].map(([k, body]) =>
     `<details><summary>${t(k)}</summary><p>${body}</p></details>`).join("");
+
+  /* CSP is script-src 'self' with no 'unsafe-inline', so an inline onclick
+     here would be silently inert — bound as a property, like every other
+     control this file builds. */
+  const fill = document.getElementById("termFillIn");
+  if (fill) fill.onclick = () => { termStep = 0; renderTermQ(); show("termq"); };
 
   renderTermSteps();
 }
@@ -8690,8 +8736,8 @@ function buildTermDoc(){
        thrown back at the reader. */
     ...(money$.length ? (termTotalContested() > 0
         ? [`• ${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`,
-           `• ${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`,
-           t("tm_m_total_split")]
+           t("tm_l_split_more"),
+           `• ${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`]
         : [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`]) : []),
     /* The screen is where the honesty lives; this document is what actually
        goes to the employer, the lawyer and the friendly-settlement filing. It
@@ -8765,19 +8811,22 @@ function renderTermTone(){
 
 function buildTermLtr(){
   const cur = t("eos_sar"), lines = termLines();
-  const items = lines.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  /* Numbered 1..5 including the contested item, then totalled 1..4 — the
+     recipient saw five numbered claims and a total that did not match them.
+     The two groups are listed separately, each numbered from one, each with
+     its own total, so the arithmetic on the page is the arithmetic. */
+  const certain = lines.filter(l => !l.contested), contested = lines.filter(l => l.contested);
+  const list = ls => ls.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  const items = list(certain);
   const body = [
     t("tm_l_open_" + termTone),
     "",
     ...termFacts(),
     "",
-    items.length ? t("tm_l_items") : t("tm_l_noitems"),
+    lines.length ? t("tm_l_items") : t("tm_l_noitems"),
     ...items,
-    ...(items.length ? (termTotalContested() > 0
-        ? [`${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`,
-           `${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`,
-           t("tm_m_total_split")]
-        : [`${t("tm_m_total")}: ${money(termTotal())} ${cur}`]) : []),
+    ...(items.length ? [`${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`] : []),
+    ...(contested.length ? ["", t("tm_l_split_more"), ...list(contested)] : []),
     "",
     t("tm_l_ask_" + termTone),
     "",

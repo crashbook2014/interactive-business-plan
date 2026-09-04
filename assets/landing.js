@@ -92,7 +92,11 @@ const T = {
        en:"For companies: team seats, redline review, and scoring for your own outgoing templates from the other side's view."},
 
   k_price:{ar:"الأسعار",en:"Pricing"},
-  price_h:{ar:"الحقيقة مجانية. المخرجات هي اللي تُدفع.",en:"The truth is free. You pay for the outputs."},
+  /* "المخرجات" is software jargon — nobody in Saudi says "outputs" about a
+     letter or a case file. The English was the natural sentence here and the
+     Arabic was the derivative, on the pricing headline of an Arabic-first
+     product. */
+  price_h:{ar:"الحقيقة مجانية. اللي تدفع عليه هو الورق اللي تستخدمه.",en:"The truth is free. You pay for the outputs."},
   price_p:{ar:"التقييم والقرار وحاسبة نهاية الخدمة مجانية دائمًا — عشان ما نكون طرفًا في قرارك. فحص كامل لكل البنود له سعره.",
            en:"The score, the verdict, and the calculator are always free — so we're never a party to your decision. A full clause-by-clause review is priced."},
   p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},

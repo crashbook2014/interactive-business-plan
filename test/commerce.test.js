@@ -853,6 +853,21 @@ async function seedTermination(p){
   ok(empty.shapeHidden && !/\b0\b/.test(empty.shape),
      "no \"0 entitlements we found:\" block with an empty list");
 
+  /* Generosity that strands the reader is not generosity. The card told them
+     to "fill in what's missing above" while the missing list was ~900px BELOW
+     it, on a screen with no control that returned to the questions at all. */
+  const door = await p.evaluate(() => {
+    const b = document.getElementById("termFillIn");
+    if (!b) return null;
+    b.click();
+    return { label: b.textContent.trim(), screen: document.querySelector(".screen.active").id };
+  });
+  ok(door, "the no-amounts state offers a way back to the questions");
+  ok(door && door.screen === "screen-termq",
+     `and it actually goes there (${door && door.screen})`);
+  ok(!/above|فوق/i.test(empty.money),
+     "and nothing points the reader at a list that is below them");
+
   /* Back to the shared case, so the walks below read the same figures as the
      ones above them. */
   await seedTermination(p);

@@ -205,12 +205,27 @@ async function art87Certainty(p){
      "the contested figure is exactly the Article 77 compensation");
   ok(Math.abs(split.certain + split.contested - split.total) < 0.01,
      "and the two halves still account for every riyal");
+  /* The letter speaks in the claimant's voice, not Wodouh's, so it names the
+     contested item in a sentence rather than under the screen's own label —
+     the point is that the two are never merged, not that the label is
+     identical on every surface. */
+  const SPLIT_MARK = {
+    "result screen": /Depends on a ruling/i,
+    "letter": /turns on a determination by the competent authority/i,
+    "case document": /turns on a determination by the competent authority/i
+  };
   for (const [name, txt] of [["result screen", split.res], ["letter", split.ltr], ["case document", split.doc]]){
-    ok(/Owed on the face of it/i.test(txt) && /Depends on a ruling/i.test(txt),
+    ok(/Owed on the face of it/i.test(txt) && SPLIT_MARK[name].test(txt),
        `the ${name} shows both figures, labelled`);
     ok(!new RegExp(Math.round(split.total).toLocaleString("en-US")).test(txt),
        `the ${name} never states the merged sum as one number`);
   }
+  /* And Wodouh's own explanation, which addresses the READER in the second
+     person, never reaches the employer: the employee was telling HR that the
+     figures rest on facts HR had entered. */
+  for (const [name, txt] of [["letter", split.ltr], ["case document", split.doc]])
+    ok(!/facts you gave us|وقائع أدخلتها|you gave us/i.test(txt),
+       `the ${name} does not paste Wodouh's explanation to the reader into a document sent to someone else`);
 
   /* ---- all seven paths, both tracks, both languages */
   console.log("\n— all seven paths x two tracks x two languages");
