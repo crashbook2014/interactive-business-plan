@@ -934,6 +934,11 @@
   .tm-rise .up svg{width:18px;height:18px}
   .tm-money .r.tot{border-top:2px solid var(--line);margin-top:4px;padding-top:12px}
   .tm-money .r.tot>span,.tm-money .r.tot>b{color:var(--ink);font-size:15px}
+  /* The contested figure is separated by arithmetic; it has to be separated by
+     eye too, or two identical rows read as one total split across two lines.
+     Lighter rule, muted ink — present, checkable, and not the headline. */
+  .tm-money .r.tot.soft{border-top-width:1px;margin-top:0}
+  .tm-money .r.tot.soft>span,.tm-money .r.tot.soft>b{color:var(--ink-2);font-size:14px}
   .tm-money .src-line{margin:2px 0 8px}
   .tm-money .cap{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:12px}
   .tm-claims{display:grid;gap:10px}
@@ -2964,8 +2969,13 @@ const T = {
   acc_ai_note:{ar:"القراءة يقوم بها ذكاء اصطناعي، وليس محاميًا. ما نقوله مبني على سجل يراجعه محامٍ سعودي مرخّص — لكنه يشرح النظام، وما يفتي في حالتك.",
                en:"The reading is done by AI, not a lawyer. What it tells you comes from a register a licensed Saudi lawyer reviews — but it explains the law, it doesn't advise on your case."},
   acc_lang:{ar:"اللغة",en:"Language"},
-  anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين 400 و1000 ر.س للاستشارة الواحدة.",
-                en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
+  /* This carried "400–1,000 SAR per consultation" — a specific figure about a
+     market we have no source for, on a screen whose whole argument is that we
+     cite what we assert. The comparison it was making is still true and still
+     worth making; it just cannot pretend to a number we cannot show anyone.
+     Same wording as `price_anchor` on the homepage, which was fixed first. */
+  anchor_price:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — ووضوح يجهّز لك ملفك قبل ما تروح له.",
+                en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
   /* Wodouh is not registered for VAT, so no VAT is charged and none may be
      represented as included. Stating a tax you cannot collect is a false
      statement to the reader and a ZATCA problem; the status itself is
@@ -3522,6 +3532,16 @@ const T = {
   tm_src_111:{ar:"نظام العمل السعودي — المادة 111",en:"Saudi Labor Law — Article 111"},
   tm_src_76:{ar:"نظام العمل السعودي — المادتان 75 و76",en:"Saudi Labor Law — Articles 75 and 76"},
   tm_src_77:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"},
+  tm_src_80:{ar:"نظام العمل السعودي — المادة 80",en:"Saudi Labor Law — Article 80"},
+  /* Article 81's GROUNDS are verified; the award consequence is our reading of
+     "without prejudice to all his statutory rights", which is why the money
+     line for this path is "likely" and not "confirmed". The label says so. */
+  tm_src_81:{ar:"نظام العمل السعودي — المادة 81 (الأسباب موثّقة، وأثرها على المكافأة قراءة وضوح)",
+             en:"Saudi Labor Law — Article 81 (grounds verified; its effect on the award is Wodouh's reading)"},
+  /* The third kind of source, and it is a real one: a statement that rests on
+     the reader's own answers is not weaker than a cited rule, it is a
+     different claim — and saying which it is takes nothing away. */
+  src_you:{ar:"من إجاباتك أنت — لا من نص نظامي",en:"From your own answers — not a statutory rule"},
   tm_src_wage:{ar:"حساب من الشهور اللي ذكرتها، لا من نص نظامي.",
                en:"Calculated from the months you reported, not from a statutory rule."},
   tm_src_other:{ar:"المبلغ اللي أدخلته أنت — يتبع نص عقدك لا النظام.",
@@ -4143,6 +4163,23 @@ const OB = [
       <circle cx="60" cy="60" r="44" stroke="var(--line)" stroke-width="9"/>
       <path d="M60 16a44 44 0 1 1-31.1 12.9" stroke="var(--teal)" stroke-width="9" stroke-linecap="round"/>
       <path d="M42 61l12 12 24-27" stroke="var(--teal)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>` },
+  /* THE STRONGEST THING THIS PRODUCT CAN SAY, AND IT WAS BURIED.
+     "Your contract is read on your device" was four taps deep in Account,
+     while the reader was being asked to paste an employment contract into an
+     app they had known for ninety seconds. It is the objection every one of
+     them has and none of them types. Stated in the app's conditional form —
+     the same one `privacy_line_ai` uses — because the absolute version stops
+     being true the moment a scanned contract needs uploading. */
+  { title:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
+    sub:{ar:"نقرأ النص داخل التطبيق، وما نخزّنه عندنا ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية وما تصير إلا بموافقتك — منها رفع العقد الممسوح ضوئيًا عشان نقدر نقرأه أصلًا.",
+         en:"We read the text inside the app, and we don't store it or share it. The only exceptions are optional and happen only with your consent — such as uploading a scanned contract so it can be read at all."},
+    art:`<svg viewBox="0 0 120 120" fill="none">
+      <rect x="30" y="10" width="60" height="100" rx="13" stroke="var(--teal-ink)" stroke-width="6"/>
+      <path d="M52 18h16" stroke="var(--teal-ink)" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <rect x="44" y="55" width="32" height="26" rx="6" fill="var(--sand)" stroke="var(--teal)" stroke-width="6"/>
+      <path d="M51 55v-7a9 9 0 0 1 18 0v7" stroke="var(--teal)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M60 65v6" stroke="var(--teal)" stroke-width="5.5" stroke-linecap="round"/>
     </svg>` },
   /* Asked last, so the reader knows what Wodouh does before being asked
      anything about themselves. It is the only card that requires an answer:
@@ -7309,21 +7346,38 @@ function reviewBlocks(){
 /* ---------------------------------------------------- the assessment
    Three states only, and none of them is a verdict. "Potential issue" is the
    strongest thing this screen is allowed to say. */
+/* SOURCE DISCIPLINE APPLIES TO REMOVING A CLAIM, NOT ONLY TO GRANTING ONE.
+   Every money line carried its article. The cards that take money OFF the
+   table — "notice compensation belongs to indefinite contracts and yours is
+   fixed-term", "termination during probation carries no award" — carried
+   nothing at all. Those are the sentences a reader is most entitled to check,
+   because they are the ones that end the conversation.
+
+   Three kinds of source, and the distinction is the point:
+     a verified article — the register stands behind it
+     src_you            — this rests on what you told us, not on a rule
+     src_method         — this is our reading, and the law is unsettled
+   Probation is deliberately src_method: docs/legal-sources.md carries Article
+   53 as an OPEN DISPUTE, so citing it here would assert what that file says
+   we cannot. */
 function termSections(){
   const h = termHow(), out = [];
-  const S = (k, state, why) => out.push({ k, state, why });
+  const S = (k, state, why, src) => out.push({ k, state, why, src });
 
   S("tm_s_contract",
     h && h.art80 ? "issue" : h && h.prob ? "ok" : "review",
-    h && h.art80 ? "tm_s_contract_issue" : h && h.prob ? "tm_s_contract_prob" : "tm_s_contract_review");
+    h && h.art80 ? "tm_s_contract_issue" : h && h.prob ? "tm_s_contract_prob" : "tm_s_contract_review",
+    h && h.art80 ? "tm_src_80" : h && h.prob ? "src_method" : "src_you");
 
   if (h && h.notice && !isNonSaudi() && termCtype() !== "fixed"){
     const owed = termNoticeOwed();
     S("tm_s_notice", owed > 0 ? "issue" : term.noticeDue > 0 ? "ok" : "review",
-      owed > 0 ? "tm_s_notice_issue" : term.noticeDue > 0 ? "tm_s_notice_ok" : "tm_s_notice_review");
+      owed > 0 ? "tm_s_notice_issue" : term.noticeDue > 0 ? "tm_s_notice_ok" : "tm_s_notice_review",
+      "tm_src_76");
   } else {
     S("tm_s_notice", "ok",
-      isNonSaudi() || termCtype() === "fixed" ? "tm_s_notice_fixed" : "tm_s_notice_na");
+      isNonSaudi() || termCtype() === "fixed" ? "tm_s_notice_fixed" : "tm_s_notice_na",
+      isNonSaudi() || termCtype() === "fixed" ? "tm_src_76" : "src_you");
   }
 
   S("tm_s_eos",
@@ -7331,17 +7385,25 @@ function termSections(){
     term.gotEos === true ? "tm_s_eos_paid"
       : h && h.art81 ? "tm_s_eos_81"
       : h && h.award === "resign" ? "tm_s_eos_resign"
-      : h && h.award === "none" ? "tm_s_eos_prob" : "tm_s_eos_due");
+      : h && h.award === "none" ? "tm_s_eos_prob" : "tm_s_eos_due",
+    term.gotEos === true ? "src_you"
+      : h && h.art81 ? "tm_src_81"
+      : h && h.award === "resign" ? "tm_src_8485"
+      : h && h.award === "none" ? "src_method" : "tm_src_84");
 
   S("tm_s_unpaid", termUnpaidOwed() > 0 ? "issue" : "ok",
-    termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok");
+    termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok",
+    termUnpaidOwed() > 0 ? "tm_src_wage" : "src_you");
   S("tm_s_leave", termLeaveOwed() > 0 ? "issue" : "review",
-    termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review");
+    termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review",
+    "tm_src_111");
   S("tm_s_other", termOtherOwed() > 0 ? "review" : "ok",
-    termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok");
-  if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review");
+    termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok",
+    "src_you");
+  if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review", "tm_src_77");
   S("tm_s_settle", term.gotSettle === false ? "issue" : "ok",
-    term.gotSettle === false ? "tm_s_settle_issue" : "tm_s_settle_ok");
+    term.gotSettle === false ? "tm_s_settle_issue" : "tm_s_settle_ok",
+    "src_you");
   return out;
 }
 
@@ -7488,10 +7550,14 @@ function renderTermResult(){
        <p>${t("tm_r_notfinal")}</p>
      </div>`;
 
+  /* The source line renders on every card, granting or denying, in the same
+     grammar the money lines use — `law` for a cited article, `method` for a
+     reading or an answer of the reader's own. */
   document.getElementById("termSections").innerHTML = termSections().map(s =>
     `<div class="tm-sec">
        <div class="hd"><b>${t(s.k)}</b><span class="tm-tag ${s.state}">${t("tm_st_" + s.state)}</span></div>
        <p>${t(s.why)}</p>
+       ${s.src ? `<p class="src-line ${/^tm_src_\d/.test(s.src) ? "law" : "method"}">${t(s.src)}</p>` : ""}
      </div>`).join("");
 
   /* WHAT COULD STILL RAISE THIS FIGURE, BESIDE THE FIGURE.
@@ -7514,7 +7580,7 @@ function renderTermResult(){
        ${!lines.length ? ""
          : termTotalContested() > 0
            ? `<div class="r tot"><span>${t("tm_m_total_certain")}</span><b>${money(termTotalCertain())} ${cur}</b></div>
-              <div class="r tot"><span>${t("tm_m_total_contested")}</span><b>${money(termTotalContested())} ${cur}</b></div>
+              <div class="r tot soft"><span>${t("tm_m_total_contested")}</span><b>${money(termTotalContested())} ${cur}</b></div>
               <p class="cap">${t("tm_m_total_split")}</p>`
            : `<div class="r tot"><span>${t("tm_m_total")}</span><b>${money(termTotal())} ${cur}</b></div>`}
        ${lines.length ? termCouldRise().map(k =>

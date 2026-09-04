@@ -112,6 +112,53 @@ async function art87Certainty(p){
   ok(Math.abs(sum - run.total) < 0.01, "financial lines sum exactly to the stated total");
   ok(run.lines.every(l => l.src), "every money line carries a source");
 
+  /* ---- a card that takes money off the table is sourced like one that puts
+     it on. "Notice compensation belongs to indefinite contracts and yours is
+     fixed-term" ended the conversation with nothing a reader could check,
+     while every riyal beside it carried an article. */
+  console.log("\n— denials carry a source, not only the amounts");
+  const sourced = await p.evaluate(() => {
+    /* This walk drives `term` through every branch there is. The walks after
+       it read the worked example seeded above, so it is put back exactly as
+       it was found rather than left wherever the last iteration stopped. */
+    const keep = JSON.parse(JSON.stringify(term)), keepNat = nat, keepLang = lang;
+    window.__restoreTerm = () => { term = keep; nat = keepNat; lang = keepLang; };
+    const out = [];
+    const base = { start:"2020-01-01", end:"2026-01-01", wage:10000, noticeDue:60,
+                   noticeGiven:0, leaveDays:10, unpaidMonths:1, ctype:"indef",
+                   gotEos:false, gotSettle:false, docs:["d_contract"] };
+    /* Every branch of every section, across both tracks, both contract types
+       and every ending — this is where the unsourced denials actually live. */
+    for (const track of ["sa","nonsa"])
+      for (const ct of ["indef","fixed"])
+        for (const h of TERM_HOW.map(x => x.id))
+          for (const paid of [true, false]){
+            nat = track;
+            term = Object.assign(blankTerm(), base, { how:h, ctype:ct, gotEos:paid });
+            termSections().forEach(sec => out.push({ k:sec.k, why:sec.why, src:sec.src }));
+          }
+    return { all: out, keys: [...new Set(out.filter(x => !x.src).map(x => x.k + "/" + x.why))] };
+  });
+  ok(sourced.all.length > 100, `${sourced.all.length} section renderings walked`);
+  ok(sourced.keys.length === 0,
+     `every section card names where its statement comes from${sourced.keys.length ? " — unsourced: " + sourced.keys.join(", ") : ""}`);
+  /* And the source has to resolve to real copy, in both languages — a key
+     that does not exist renders as the key itself, which looks like a source
+     and is not one. */
+  const resolves = await p.evaluate(srcs => srcs.filter(k => !(T[k] && T[k].ar && T[k].en)),
+                                    [...new Set(sourced.all.map(x => x.src))]);
+  ok(resolves.length === 0, `every source key resolves in both languages${resolves.length ? " — missing: " + resolves.join(", ") : ""}`);
+  /* Probation is Article 53, which docs/legal-sources.md carries as an OPEN
+     DISPUTE. Citing it here would assert exactly what that file says we
+     cannot, so those cards say "our reading" instead. */
+  const probCards = sourced.all.filter(x => /prob/.test(x.why));
+  ok(probCards.length > 0 && probCards.every(x => x.src === "src_method"),
+     `the probation cards claim a reading, not Article 53 (${[...new Set(probCards.map(x => x.src))].join(", ")})`);
+  ok(!sourced.all.some(x => x.src === "tm_src_53"),
+     "no card cites the disputed article as though it were settled");
+
+  await p.evaluate(() => window.__restoreTerm());
+
   /* ---- contested money is not added to certain money.
      Article 77 compensation is owed only if the competent authority finds the
      termination unlawful — the item's own copy says so — and a flat reduce

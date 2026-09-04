@@ -427,6 +427,7 @@ async function seedTermination(p){
       ["p1ba", "plan_review"],
       ["p2a", "plan_letter"],
       ["p3a", "plan_case"],
+      ["p4a", "plan_bundle"],
     ];
     for (const [el, plan] of SHOWN) {
       const real = catalogue(plan);
@@ -444,6 +445,37 @@ async function seedTermination(p){
     const phantom = prices.filter(p => !known.includes(p));
     ok(phantom.length === 0,
        `every advertised price exists in the catalogue${phantom.length ? " — not sold: " + phantom.join(", ") : ""}`);
+
+    /* The bundle card states what it saves. That is a second copy of a fact
+       derived from four prices, and a second copy with nothing comparing it
+       to the first is how every price defect in this file started. */
+    const priceOf = n => catalogue(n);
+    const saving = priceOf("plan_review") + priceOf("plan_letter") + priceOf("plan_case")
+                 - priceOf("plan_bundle");
+    const claimed = landing.match(/p4g:[\s\S]{0,200}?saving (\d+) SAR/);
+    ok(!!claimed, "the bundle card states what it saves");
+    ok(claimed && +claimed[1] === saving,
+       `the saving it claims (${claimed && claimed[1]}) is the catalogue's own arithmetic (${saving})`);
+  }
+
+  /* ---- a price comparison is a factual claim about a market, and this
+     product's whole argument is that it cites what it asserts. Both surfaces
+     carried "a lawyer consultation typically runs 400-1,000 SAR" with no
+     source for it anywhere. The comparison survives; the invented figure
+     does not. */
+  console.log("\n— no market figure we cannot source");
+  {
+    const surf = {
+      "assets/landing.js": readFileSync(path.join(ROOT, "assets/landing.js"), "utf8"),
+      "app/index.html": readFileSync(path.join(ROOT, "app/index.html"), "utf8"),
+    };
+    for (const [name, text] of Object.entries(surf)){
+      const anchor = text.match(/(price_anchor|anchor_price):\{[\s\S]{0,400}?\},/);
+      ok(!!anchor, `${name} has a price-comparison line`);
+      if (anchor)
+        ok(!/\d/.test(anchor[0].replace(/(price_anchor|anchor_price)/g, "")),
+           `${name}'s comparison states no figure we would have to source`);
+    }
   }
 
   /* ---- and the homepage does not promise the lawyer desk while it is dark.

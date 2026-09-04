@@ -108,6 +108,14 @@ const T = {
   p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
   p3:{ar:"ملف القضية",en:"Case file"},
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
+  /* Wording tracks plan_bundle / plan_bundle_d in the app catalogue, and the
+     price is asserted equal to it by test/commerce.test.js. */
+  p4:{ar:"الحزمة الكاملة",en:"Full bundle"},
+  p4t:{ar:"الأفضل قيمة",en:"Best value"},
+  p4p:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض — أقل من مجموعها.",
+       en:"The full review, the case file and the negotiation letter — for less than their sum."},
+  p4g:{ar:"تحصل على: الثلاثة كاملة، وتوفّر ١٤٨ ر.س عن شرائها منفصلة.",
+       en:"You get: all three, saving 148 SAR against buying them separately."},
   price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — وضوح يجهّز لك ملفك قبل أن تذهب إليه.",
                 en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
   price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة · ما أعجبك خلال ١٤ يومًا؟ نرجّع لك المبلغ — حتى لو استخدمته.",
@@ -206,6 +214,7 @@ function applyLang(){
   document.getElementById("p1ba").innerHTML = (lang==="ar" ? "١٩٩" : "199") + `<small>${sar}</small>`;
   document.getElementById("p2a").innerHTML = (lang==="ar" ? "١٤٩" : "149") + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٤٩" : "349") + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = (lang==="ar" ? "٥٤٩" : "549") + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
