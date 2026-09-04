@@ -5567,7 +5567,7 @@ function renderResult(reset){
     if (buy) buy.onclick = () => {
       pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
       pwUpgrade = null; pwUpBack = null;
-      renderPaywall(); show("paywall");
+      if (renderPaywall()) show("paywall");
     };
   }
   /* THE DOOR THE UPGRADE NEVER HAD.
@@ -6810,7 +6810,7 @@ function openCasePaywall(){
      pointing at the termination flow. The price and the entitlement were both
      right; every word around them was wrong. */
   pwMode = "case"; pwOrigin = "case"; pwPlan = 0; pwUpgrade = null; pwUpBack = null;
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 
 /* ================================================ termination assessment
@@ -7218,7 +7218,22 @@ function termLines(){
   return [
     { key:"tm_m_unpaid",  amt:termUnpaidOwed(), src:"tm_src_wage",   kind:"method" },
     { key:"tm_m_leave",   amt:termLeaveOwed(),  src:"tm_src_111",    kind:"law" },
-    { key:"tm_m_eos",     amt:termAwardOwed(),  src:termHow() && termHow().award === "resign" ? "tm_src_8485" : "tm_src_84", kind:"law" },
+    /* THE ARTICLE 81 UPLIFT IS A READING, AND THE FIGURE HAS TO SAY SO.
+       On "I was asked to resign" the section card is scrupulous — sourced
+       tm_src_81, "grounds verified; its effect on the award is Wodouh's
+       reading", and it tells the reader the point deserves serious review.
+       The money line beside it was sourced flat tm_src_84 and sat in the
+       certain column. The hedge existed on the card and was stripped off the
+       riyals: the full award only stands if the characterisation is accepted,
+       and if it is not, Article 85's reduced tiers apply instead. That is the
+       same kind of dependency as the Article 77 line below — a finding this
+       app cannot make — so it is labelled the same way. docs/legal-sources.md
+       line 98 is explicit that the award consequence is a reading, and
+       certaintyFor() already refuses to call this line "confirmed". */
+    { key:"tm_m_eos",     amt:termAwardOwed(),
+      src: termHow() && termHow().art81 ? "tm_src_81"
+         : termHow() && termHow().award === "resign" ? "tm_src_8485" : "tm_src_84",
+      kind:"law", contested: !!(termHow() && termHow().art81) },
     { key:"tm_m_notice",  amt:termNoticeOwed(), src:"tm_src_76",     kind:"law" },
     /* `contested` is not a certainty level. Every other line is money the
        employer owes on the face of the facts; this one is owed only if a
@@ -7586,7 +7601,7 @@ async function openTermResult(){
      the case file, so the entitlement asked for here is the case one. */
   /* …but only when there is something to sell. With nothing computed, the
      reader goes to the result screen and is told what is missing. */
-  if (!has("case") && !assessmentEmpty()){ pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); return; }
+  if (!has("case") && !assessmentEmpty()){ pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; if (renderPaywall()) show("paywall"); return; }
 
   /* The brief asks for the second pass to run before the result is presented,
      so it does — but never at the cost of the reader seeing their assessment.
@@ -7775,7 +7790,7 @@ function renderTermSteps(){
      The card above already says what is missing. */
   const gate = (k, go) => full ? [t(k), go]
     : assessmentEmpty() ? null
-    : [t(k), () => { pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); }];
+    : [t(k), () => { pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; if (renderPaywall()) show("paywall"); }];
   const steps = [
     ["tm_n1", "tm_n1_b", null],
     ["tm_n2", "tm_n2_b", [t("tm_n2_cta"), () => { renderTermEv(); show("termev"); }]],
@@ -8526,8 +8541,14 @@ function reviewPayload(){
     article_87_exception: term.exc87,
     reason_given: String(term.reason || "").slice(0, 500),
     amounts: termLines().map(l => ({ item: l.key, amount: Math.round(l.amt),
-                                     basis: l.src, kind: l.kind })),
-    total: Math.round(termTotal()),
+                                     basis: l.src, kind: l.kind,
+                                     contested: !!l.contested })),
+    /* Split for the reviewer too. It was handed one merged figure and no way
+       to know part of it was contingent, so the only thing it could do was
+       agree with the merge — the reviewer we ask "does this hold together"
+       could not see the join. */
+    total_certain: Math.round(termTotalCertain()),
+    total_contested: Math.round(termTotalContested()),
     sections: termSections().map(s => ({ item: s.k, state: s.state })),
     certainty: termLines().map(l => ({ item: l.key, level: certaintyFor(l.key).level })),
     could_not_assess: termUnassessed().map(g => g.key),
@@ -11193,7 +11214,7 @@ function scanGate(kind){
     pendingScan = kind;
     pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
     pwUpgrade = null; pwUpBack = null;
-    renderPaywall(); show("paywall");
+    if (renderPaywall()) show("paywall");
     return false;
   }
   return true;
@@ -11240,18 +11261,32 @@ function openPaywall(){
      applyFlags() re-renders it if the answer differs. A reader never waits on
      the network to see a screen. */
   ensureFlags();
-  pwMode = "letter"; pwUpgrade = null; pwUpBack = null;
+  /* pwOrigin BELONGS TO WHOEVER OPENS THE PAYWALL, and this was one of the two
+     entry points that did not set it. renderPaywall() derives isTerm from it,
+     so a reader who merely looked at the termination paywall and backed out
+     arrived here to a screen titled "Your termination assessment", a preview
+     of their employment facts, a shape block counting their entitlements — and
+     a pay button reading "Show my full assessment 149 SAR". One tap recorded
+     the 149 letter and rendered the 349 assessment. Every commercial guard in
+     this file is downstream of pwOrigin; the guards were right and their input
+     was stale. */
+  pwMode = "letter"; pwOrigin = "letter"; pwUpgrade = null; pwUpBack = null;
   if (has("letter")){ renderLetter(); show("letter"); return; }
   pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));   /* the intended choice */
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 
 /* Opening the paywall to sell a step up. The reader is shown the difference,
    not the full price a second time, and only the tier they do not yet hold. */
-function openUpgrade(mode, tier, back){
-  pwMode = mode; pwUpgrade = tier; pwPlan = 0;
+function openUpgrade(mode, tier, back, origin){
+  /* Same reason as openPaywall(): an upgrade opened after a termination visit
+     inherited "term" and was rendered — and priced, and gated — as one. The
+     origin defaults to the mode, which is true of every caller today; a
+     termination upgrade passes "term" explicitly rather than relying on
+     whatever the last screen happened to leave behind. */
+  pwMode = mode; pwOrigin = origin || mode; pwUpgrade = tier; pwPlan = 0;
   if (back) pwUpBack = back;
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 let pwUpBack = null;
 
@@ -11271,8 +11306,15 @@ function renderPaywall(){
      negotiation points, and a reader buying the full read of their contract
      has not chosen any. The screen appeared with no plans and no price.
      Caught by opening it, not by reading it. */
+  /* RETURNS FALSE RATHER THAN JUST RETURNING, and the difference is money.
+     Every caller used to pair `renderPaywall(); show("paywall")` unconditionally,
+     so on the paths this guard refuses the reader was navigated to a paywall
+     that had not been re-rendered — showing whatever offer was last built
+     there. Reached from the letter with no points chosen, after a look at the
+     termination paywall, that was a 349 SAR assessment offer sitting above the
+     letter's state. A screen that cannot be built must not be shown. */
   if (isTerm ? !term : isCase ? !eosData : isReview ? !current
-      : (!current || !selected().length)) return;
+      : (!current || !selected().length)) return false;
   const titleKey = pwUpgrade ? "pw_up_title" : isTerm ? "pw_term_title"
                  : isCase ? "pw_case_title" : isReview ? "pw_rev_title" : "pw_title";
   const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"
@@ -11372,6 +11414,7 @@ function renderPaywall(){
   pay.textContent = t(pwUpgrade ? "pw_pay_up" : isTerm ? "pw_pay_term"
                     : isCase ? "pw_pay_case" : isReview ? "pw_pay_rev" : "pw_pay")
     + " " + priceLabel(chosen ? chosen.amt : 0);
+  return true;
 }
 
 /* WHAT THE READER IS BUYING, BEFORE THEY BUY IT.
@@ -11525,6 +11568,13 @@ function creditPack(bought){
 }
 
 function grantAndGo(){
+  /* THE SINGLE ROUTE INTO THE PAID STATE, so the refusal belongs here too.
+     "Do not sell an assessment that found nothing" was enforced on the pay
+     button, and redemption codes do not go through the pay button — they call
+     this directly. No code can reach it today (REDEEM_HASHES is empty), which
+     is exactly the moment to put the guard on the path rather than on one of
+     the controls that happens to lead to it. */
+  if (pwOrigin === "term" && assessmentEmpty()) return;
   const chosen = activePlans()[pwPlan];
   /* Monotonic: a grant may only ever move a reader up. Writing unconditionally
      meant granting a cheaper tier silently revoked a dearer one — a reader who

@@ -439,10 +439,18 @@ async function serveWithAiCsp(page){
     "contract_due_to_end","contract_type","could_not_assess","end_date","evidence_held",
     "how_it_ended","monthly_wage","notice_days_due","notice_days_given","other_amount",
     "our_own_notes","overall_strength","reason_given","received_end_of_service",
-    "received_final_settlement","sections","service","start_date","total","track",
+    "received_final_settlement","sections","service","start_date","track",
+    /* Split, not merged: the reviewer was given one total and no way to see
+       that part of it turns on a finding nobody has made, so agreeing with
+       the merge was the only thing it could do. */
+    "total_certain","total_contested",
     "unpaid_months","unused_leave_days"].sort();
   ok(JSON.stringify(sentKeys) === JSON.stringify(DECLARED),
      `the payload is exactly the declared fields\n         sent: ${sentKeys.join(",")}`);
+  ok(!sentKeys.includes("total"),
+     "no merged total is sent — the reviewer can see the join");
+  ok(rvSent[0].assessment.amounts.every(a => "contested" in a),
+     "and every amount says whether it is contingent");
   ok(rvSent[0].assessment.reason_given.includes("Alharbi"),
      "the reason text is sent, as the consent says it is");
 

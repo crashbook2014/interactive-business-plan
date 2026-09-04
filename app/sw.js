@@ -11,10 +11,11 @@
  *
  * No background sync, no push, no fetch to anywhere. A service worker is the
  * one piece of this app that can talk to the network without a screen in front
- * of it, and Wodouh's promise is that nothing leaves the device. So this file
- * only ever serves bytes that came from our own origin, and it never posts
- * anything anywhere. If you find yourself adding a `fetch` to a third party
- * here, the privacy copy in the app has stopped being true.
+ * of it. The app itself now has consented exceptions — a scanned contract is
+ * uploaded when the reader asks for it — but NONE of them belong here: this
+ * file only ever serves bytes that came from our own origin, and it never
+ * posts anything anywhere. If you find yourself adding a `fetch` to a third
+ * party here, the privacy copy in the app has stopped being true.
  *
  * AND THIS FILE IS THE ONLY THING ENFORCING THAT — NOT THE CSP.
  *
@@ -85,8 +86,10 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-  /* Same origin only. Anything else — and today there is nothing else — goes
-     straight to the network without this file touching it. */
+  /* Same origin only. The app does make off-origin requests now — the feature
+     flag read, the auth settings read, and the consented analyze call — and
+     every one of them goes straight to the network without this file touching
+     it, which is the point: nothing reader-specific can enter the cache. */
   if (url.origin !== self.location.origin) return;
 
   e.respondWith(

@@ -157,6 +157,33 @@ async function art87Certainty(p){
   ok(!sourced.all.some(x => x.src === "tm_src_53"),
      "no card cites the disputed article as though it were settled");
 
+  /* ---- the Article 81 uplift is a reading, and the figure has to say so.
+     On "I was asked to resign" the section card was scrupulous — "grounds
+     verified; its effect on the award is Wodouh's reading" — while the money
+     line beside it was sourced flat to Article 84 and sat in the certain
+     column. The hedge existed on the card and was stripped off the riyals. */
+  console.log("\n— money that depends on a characterisation is not certain money");
+  const art81 = await p.evaluate(() => {
+    lang = "en"; nat = "sa";
+    term = Object.assign(blankTerm(), { how:"forced", start:"2020-01-01",
+      end:"2026-01-01", wage:10000, ctype:"indef", noticeDue:60, noticeGiven:0 });
+    owned.case = "plan_case"; renderTermResult();
+    const eos = termLines().find(l => l.key === "tm_m_eos");
+    return { art81: !!(termHow() && termHow().art81), eos,
+             certainty: certaintyFor("tm_m_eos").level,
+             certain: termTotalCertain(), contested: termTotalContested(),
+             ltr: buildTermLtr() };
+  });
+  ok(art81.art81, "the forced-resignation path really does take the Article 81 branch");
+  ok(art81.eos && art81.eos.src === "tm_src_81",
+     `the award's source names the article the reading rests on (${art81.eos && art81.eos.src})`);
+  ok(art81.eos && art81.eos.contested === true,
+     "and the award is in the contested column, not the certain one");
+  ok(art81.certainty !== "confirmed",
+     `which agrees with the certainty the app already gives it (${art81.certainty})`);
+  ok(!new RegExp(Math.round(art81.certain + art81.contested).toLocaleString("en-US")).test(art81.ltr),
+     "and the letter to the employer never states the two added together");
+
   await p.evaluate(() => window.__restoreTerm());
 
   /* ---- contested money is not added to certain money.

@@ -542,6 +542,19 @@ async function seedTermination(p){
     const found = ABSOLUTE.filter(([re]) => re.test(landing)).map(([, n]) => n);
     ok(found.length === 0,
        `no absolute "never uploaded" promise on the homepage${found.length ? " — " + found.join(", ") : ""}`);
+
+    /* And on every other surface a stranger reads first. The 29 generated
+       answer pages carried the absolute form too — they are built from
+       tools/make-seo.mjs, so the claim is fixed at its source and the pages
+       are regenerated; seo.test.js proves the committed pages match. */
+    const others = ["tools/make-seo.mjs", "privacy/index.html", "terms/index.html",
+                    "refund/index.html", "support/index.html", "app/sw.js"];
+    for (const f of others){
+      const text = readFileSync(path.join(ROOT, f), "utf8");
+      const hit = ABSOLUTE.filter(([re]) => re.test(text)).map(([, n]) => n);
+      ok(hit.length === 0,
+         `${f} makes no absolute privacy promise${hit.length ? " — " + hit.join(", ") : ""}`);
+    }
     /* And the conditional truth is actually stated, not merely the absolute
        one deleted — the exception is the thing a reader needs told. */
     ok(/بموافقتك|بطلبك/.test(landing) && /your consent|you agree|you ask/i.test(landing),
@@ -843,6 +856,74 @@ async function seedTermination(p){
   /* Back to the shared case, so the walks below read the same figures as the
      ones above them. */
   await seedTermination(p);
+
+  /* --------------------------------------- the paywall is not ambient state
+     pwOrigin decides what the paywall calls itself, previews, counts and
+     charges for — and two of its seven entry points never set it. A reader who
+     merely LOOKED at the termination paywall and backed out then met the
+     letter paywall titled "Your termination assessment", previewing their
+     employment facts, with a pay button reading "Show my full assessment
+     149 SAR". One tap recorded the 149 letter and rendered the 349 assessment.
+     Every commercial guard here is downstream of pwOrigin; the guards were
+     right and their input was stale. */
+  console.log("\n— what the paywall sells does not depend on where the reader has been");
+
+  const stale = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    const read = () => ({ origin: pwOrigin, mode: pwMode,
+      title: document.querySelector('#screen-paywall [data-t="pw_title"]').textContent,
+      pay: document.getElementById("payBtn").textContent.trim(),
+      head: document.getElementById("pwPreviewHead").textContent,
+      shape: document.getElementById("pwShape").textContent });
+    const out = {};
+    /* 1. visit the termination paywall and back out of it */
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", wage:12000, ctype:"indef", noticeDue:60, noticeGiven:0,
+      leaveDays:10, unpaidMonths:2 });
+    owned = { letter:null, case:null, term:null };
+    pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null;
+    renderPaywall(); show("paywall");
+    out.term = read();
+    show(pwBack());
+    /* 2. now go and buy a negotiation letter, the ordinary way */
+    current = JSON.parse(JSON.stringify(SAMPLES.employment));
+    letterSet = new Set();
+    current.clauses.forEach((c, i) => { if (c.a) letterSet.add(i); });
+    openPaywall();
+    out.letter = read();
+    out.screen = document.querySelector(".screen.active").id;
+    return out;
+  });
+  ok(/assessment/i.test(stale.term.pay), `the termination paywall sells the assessment (${stale.term.pay})`);
+  ok(stale.letter.origin === "letter",
+     `the letter paywall owns its origin rather than inheriting one (${stale.letter.origin})`);
+  ok(/letter/i.test(stale.letter.pay) && !/assessment/i.test(stale.letter.pay),
+     `and its button sells the letter (${stale.letter.pay})`);
+  ok(!/termination/i.test(stale.letter.title) && !/termination/i.test(stale.letter.head),
+     `nothing on it still says "termination" (${stale.letter.title} / ${stale.letter.head})`);
+  ok(stale.letter.shape.trim() === "",
+     "and it does not count the reader's termination entitlements at them");
+
+  /* A screen that cannot be built must not be shown. renderPaywall() refuses
+     on several legitimate paths, and every caller navigated regardless — so
+     the reader met whatever offer was last built there. */
+  const refused = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", wage:12000, ctype:"indef", noticeDue:60, noticeGiven:0, leaveDays:10 });
+    owned = { letter:null, case:null, term:null };
+    pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null;
+    renderPaywall(); show("paywall");
+    /* the letter flow, with nothing chosen to negotiate — renderPaywall refuses */
+    current = JSON.parse(JSON.stringify(SAMPLES.employment));
+    letterSet = new Set();
+    show("result");
+    const built = renderPaywall === undefined ? null : openPaywall();
+    return { built, screen: document.querySelector(".screen.active").id,
+             pay: document.getElementById("payBtn").textContent.trim() };
+  });
+  ok(refused.screen !== "screen-paywall",
+     `a paywall that could not be built is not shown (landed on ${refused.screen})`);
 
   /* ------------------------------------------------- labels per mode */
   console.log("\n— the buttons name what they sell");
