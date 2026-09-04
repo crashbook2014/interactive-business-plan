@@ -463,6 +463,58 @@ async function seedTermination(p){
     }
   }
 
+  /* ---- the marketing privacy promise cannot be stronger than the app's.
+     The app switches to `privacy_line_ai` when the optional Claude read is
+     live, because a scanned contract does get uploaded with consent. The
+     homepage had no such switch and stated the absolute version in four
+     places — the page people read BEFORE handing over an employment
+     contract. A claim that cannot be kept is worse than a weaker one. */
+  console.log("\n— the homepage's privacy promise matches the app's");
+  {
+    /* Comments stripped: this file explains in prose why the absolute forms
+       are gone, and a test that reads its own rationale as a violation is a
+       test that can never pass. */
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ");
+    /* Absolute forms only. "read on your device" is fine and true; "never
+       leaves it" and "never uploaded" are the ones the architecture breaks. */
+    const ABSOLUTE = [
+      [/never uploaded/i, "never uploaded"],
+      [/never leaves it/i, "never leaves it"],
+      [/nothing leaves your device/i, "nothing leaves your device"],
+      [/never (?:leaves|goes)[^.]{0,20}your device/i, "never leaves your device"],
+      [/لا يُرفع/, "لا يُرفع"],
+      [/ولا يغادره/, "ولا يغادره"],
+      [/ما يغادر عقدك جهازك/, "ما يغادر عقدك جهازك"],
+    ];
+    const found = ABSOLUTE.filter(([re]) => re.test(landing)).map(([, n]) => n);
+    ok(found.length === 0,
+       `no absolute "never uploaded" promise on the homepage${found.length ? " — " + found.join(", ") : ""}`);
+    /* And the conditional truth is actually stated, not merely the absolute
+       one deleted — the exception is the thing a reader needs told. */
+    ok(/بموافقتك|بطلبك/.test(landing) && /your consent|you agree|you ask/i.test(landing),
+       "the consent exception is named, in both languages");
+  }
+
+  /* ---- "no sign-up" was false on two of the three surfaces that said it.
+     Auth ships configured, so scanGate() fires in production. The EOS
+     calculator genuinely needs no account and keeps its claim. */
+  console.log("\n— the homepage does not promise analysis without an account");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ");
+    const src5 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const authShips = /SUPABASE_URL:\s*"https:\/\//.test(src5);
+    ok(authShips, "auth ships configured, so the sign-up wall is real in production");
+    if (authShips){
+      ok(!/no sign-up/i.test(landing) && !/بدون تسجيل/.test(landing),
+         "the homepage claims no sign-up nowhere");
+      /* The app's one true instance survives: the calculator asks for nothing. */
+      ok(/eos_sub:[\s\S]{0,200}بدون تسجيل/.test(src5),
+         "the EOS calculator keeps its true no-sign-up claim");
+    }
+  }
+
   /* ---- the homepage discloses that AI is involved, and that it can be wrong.
      Every other surface said so; this one said neither, in either language,
      while selling an AI assistant. */
@@ -692,6 +744,53 @@ async function seedTermination(p){
   ok(/entitlement/i.test(before.shape), "the shape block names how many entitlements were found");
   ok(/verified article/i.test(before.shape), "it says how many cite a verified article");
   ok(/certain/i.test(before.shape), "it states that every amount carries a certainty");
+
+  /* ------------------------------------------- nothing found, nothing sold
+     An audit reproduced this: a termination with no dates and no wage produced
+     a paywall reading "0 entitlements we found in your case:" — dangling colon,
+     empty list — above a live pay button asking 349 SAR. The app said it knew
+     nothing about the case and charged for it in the same breath. */
+  console.log("\n— an assessment that found nothing is not for sale");
+
+  const empty = await p.evaluate(async () => {
+    if (lang === "ar") toggleLang();
+    term = Object.assign(blankTerm(), { how: "other" });
+    owned = { letter:null, case:null, term:null };
+    await openTermResult();
+    const steps = document.getElementById("termSteps");
+    /* Force the paywall open anyway — a route added later must still not sell. */
+    pwMode = "case"; pwOrigin = "term"; pwUpgrade = null; pwPlan = 0;
+    renderPaywall();
+    return {
+      lines: termLines().length,
+      onPaywall: document.getElementById("screen-paywall").classList.contains("active"),
+      onResult: document.getElementById("screen-termres").classList.contains("active"),
+      verdict: document.getElementById("termVerdict").textContent,
+      money: document.getElementById("termMoney").textContent,
+      stepCtas: steps.querySelectorAll("[data-step]").length,
+      payDisabled: document.getElementById("payBtn").disabled,
+      shapeHidden: document.getElementById("pwShape").hidden,
+      shape: document.getElementById("pwShape").textContent
+    };
+  });
+  ok(empty.lines === 0, "the reproduction still produces an assessment with no lines");
+  ok(!empty.onPaywall && empty.onResult,
+     "a reader with nothing computed is not routed to a paywall");
+  ok(/not asking you to pay for an assessment that found nothing/i.test(empty.money),
+     "they are told plainly that there is nothing to charge them for");
+  ok(/doesn.t mean nothing is owed/i.test(empty.money),
+     "and the result still says so — nothing found is not nothing owed, and it stays on screen");
+  ok(!/We can't show this assessment/i.test(empty.verdict),
+     "the result itself is not suppressed: an empty assessment is an answer, not a failure");
+  ok(empty.stepCtas === 1,
+     `the gated next-step CTAs are gone rather than routing to that paywall (${empty.stepCtas} CTA left, the ungated evidence one)`);
+  ok(empty.payDisabled, "and the pay button itself refuses, whatever route reached it");
+  ok(empty.shapeHidden && !/\b0\b/.test(empty.shape),
+     "no \"0 entitlements we found:\" block with an empty list");
+
+  /* Back to the shared case, so the walks below read the same figures as the
+     ones above them. */
+  await seedTermination(p);
 
   /* ------------------------------------------------- labels per mode */
   console.log("\n— the buttons name what they sell");

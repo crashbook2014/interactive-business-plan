@@ -24,13 +24,24 @@ const T = {
   price_cta:{ar:"ابدأ بالتقييم المجاني",en:"Start with the free score"},
   foot_app:{ar:"افتح التطبيق",en:"Open the app"},
   foot_brand:{ar:"الهوية البصرية",en:"Brand identity"},
-  hero_eyebrow:{ar:"يعمل على جهازك — لا يُرفع عقدك لأي مكان",en:"Runs on your device — your contract is never uploaded"},
+  /* THE PROMISE MATCHES THE APP, OR IT IS NOT A PROMISE.
+     This page stated the absolute version of the privacy claim in four places
+     — here, t1p, the FAQ and close_p — while the app itself switches to
+     `privacy_line_ai` the moment the optional Claude read is live, because
+     scanned contracts do get uploaded with consent. The page people read
+     BEFORE handing over an employment contract cannot be the one place that
+     overstates it. Same conditional truth, same wording as the app. */
+  hero_eyebrow:{ar:"يعمل على جهازك — ما يُرفع عقدك إلا بموافقتك",en:"Runs on your device — nothing is uploaded without your consent"},
   hero_h:{ar:"اعرف هل تقدر توقّع — قبل ما توقّع.",en:"Know whether you can sign — before you do."},
   hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، ومصدر كل معلومة من نظام العمل، وخطاب جاهز ترسله. تختار سعودي أو مقيم، ونعرض لك الأنظمة اللي تنطبق عليك أنت.",
           en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the labour-law source for every point, and a letter ready to send. Pick Saudi or resident, and we show the rules that actually apply to you."},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
-  hero_note:{ar:"التقييم والتنبيهات مجانية دائمًا — بدون تسجيل.",en:"The score and flags are always free — no sign-up."},
+  /* "no sign-up" was false: auth ships configured, so analysing a contract
+     hits the wall. The free tier is real — one scan a month — and saying so
+     is a better promise than one the first tap contradicts. The EOS
+     calculator genuinely needs no account, and says so on its own screen. */
+  hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
   shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
@@ -55,8 +66,8 @@ const T = {
   k_how:{ar:"كيف يشتغل",en:"How it works"},
   how_h:{ar:"ثلاث خطوات، وأقل من دقيقة.",en:"Three steps, under a minute."},
   st1:{ar:"ارفع أو الصق",en:"Upload or paste"},
-  st1p:{ar:"ارفع ملف PDF أو الصق نص العقد. يُقرأ على جهازك ولا يغادره.",
-        en:"Upload a PDF or paste the text. It's read on your device and never leaves it."},
+  st1p:{ar:"ارفع ملف PDF أو الصق نص العقد. يُقرأ على جهازك، وما يُرفع إلا إذا كان ممسوحًا ضوئيًا ووافقت.",
+        en:"Upload a PDF or paste the text. It's read on your device, and only uploaded if it's a scan and you agree."},
   st2:{ar:"اقرأ الخلاصة",en:"Read the verdict"},
   st2p:{ar:"تقييم من ١٠٠، وكل بند مشروح بلغة بسيطة: أحمر انتبه، أصفر فاوض، أخضر مطمئن.",
         en:"A score out of 100 and every clause in plain language: red to pause, amber to negotiate, green to relax."},
@@ -110,9 +121,9 @@ const T = {
 
   k_trust:{ar:"الثقة",en:"Trust"},
   trust_h:{ar:"نقول لك بالضبط وش نسوي — ووش ما نسويه.",en:"We tell you exactly what we do — and what we don't."},
-  t1:{ar:"عقدك ما يغادر جهازك",en:"Your contract never leaves your device"},
-  t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد.",
-       en:"It's read and analyzed inside the app. We don't upload it, store it, or share it."},
+  t1:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
+  t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق، وما نخزّنه ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك — ومنها رفع العقود الممسوحة ضوئيًا عشان نقدر نقرأها.",
+       en:"It's read and analyzed inside the app, and we don't store it or share it. The only exceptions are optional and happen only with your consent — including uploading scanned contracts so they can be read at all."},
   t2:{ar:"محتوانا يراجعه محامٍ مرخّص",en:"Reviewed by a licensed lawyer"},
   /* NO LAWYER PROMISE HERE. This said "for complex matters we connect you
      with a licensed Saudi lawyer" while LAWYER_COMPILED is false and the
@@ -129,7 +140,7 @@ const T = {
   k_faq:{ar:"أسئلة",en:"Questions"},
   faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
   faq:{ar:[
-    ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، ولا يُرفع ولا يُخزَّن. لو حذفت التطبيق راح معه كل شيء."],
+    ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، وما نخزّنه. الاستثناءات الوحيدة اختيارية وما تصير إلا بطلبك — العقد الممسوح ضوئيًا لازم يُرفع عشان نقدر نقرأه أصلًا، ونقول لك قبلها. ولو حذفت التطبيق راح معه كل شيء عندك."],
     ["وقّعت بالفعل، أو انتهى عقدي — فات الأوان؟","لا. وضوح يقرأ العقد الموقّع ويوضّح وش ملزم ووش قابل للاعتراض، ويحسب مستحقاتك عند الإنهاء. والدعوى العمالية لا تُسمع بعد 12 شهرًا من انتهاء العلاقة (نظام العمل، المادة 222)، فالوقت يهم."],
     ["هل يغني عن المحامي؟","لا. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره، وهذه المراجعة هي ما يقف خلف المواد التي نستشهد بها — لكن وضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا خاصًا بك، ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
@@ -140,7 +151,7 @@ const T = {
     ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/٥١ وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
-    ["Do you keep my contract?","No. It's read and analyzed inside the app on your device — never uploaded, never stored. Delete the app and it all goes with it."],
+    ["Do you keep my contract?","No. It's read and analyzed inside the app on your device, and we don't store it. The only exceptions are optional and happen only when you ask for them — a scanned contract has to be uploaded to be read at all, and we tell you before it is. Delete the app and everything we hold on your device goes with it."],
     ["I already signed, or my contract ended — is it too late?","No. Wodouh reads a signed contract and shows what binds you and what remains contestable, and calculates what you're owed on termination. A labour claim is not heard after 12 months from the end of the relationship (Labor Law, Article 222), so timing matters."],
     ["Does this replace a lawyer?","No. Our legal content is reviewed by a licensed Saudi lawyer before publication, which is what stands behind the articles we cite — but Wodouh itself is not a law firm and does not provide legal representation. For a real dispute or large sums you need a lawyer of your own; Wodouh gets your file ready before you go."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
@@ -157,8 +168,8 @@ const T = {
      instant analysis; under the curtain the only button next to it is a
      contact link, so someone reading this and then pressing that button
      would find the promise didn't hold. */
-  close_p:{ar:"حلّل عقدك الآن. بدون تسجيل، وبدون ما يغادر عقدك جهازك.",
-           en:"Analyze your contract now. No sign-up, and nothing leaves your device."},
+  close_p:{ar:"حلّل عقدك الآن. فحص مجاني كل شهر، والعقد يُقرأ على جهازك.",
+           en:"Analyze your contract now. A free scan every month, read on your device."},
   close_p_soon:{ar:"ما فتحناه للكل بعد. عندك عقد قدّامك اليوم؟ كلّمنا ونقرأه معك.",
                 en:"We haven't opened to everyone yet. Have a contract in front of you today? Talk to us and we'll read it with you."},
   close_cta:{ar:"اعرف وضع عقدي مجانًا",en:"See where my contract stands — free"},

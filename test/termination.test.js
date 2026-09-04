@@ -112,6 +112,32 @@ async function art87Certainty(p){
   ok(Math.abs(sum - run.total) < 0.01, "financial lines sum exactly to the stated total");
   ok(run.lines.every(l => l.src), "every money line carries a source");
 
+  /* ---- contested money is not added to certain money.
+     Article 77 compensation is owed only if the competent authority finds the
+     termination unlawful — the item's own copy says so — and a flat reduce
+     then folded it into one bolded figure the reader screenshots. The hedge
+     has to survive the arithmetic, on the screen, in the letter and in the
+     document that reaches the employer. */
+  console.log("\n— the headline separates what is owed from what is contested");
+  const split = await p.evaluate(() => {
+    lang = "en";
+    renderTermResult();
+    return { certain: termTotalCertain(), contested: termTotalContested(),
+             total: termTotal(), comp: termComp(),
+             res: document.getElementById("screen-termres").textContent,
+             doc: buildTermDoc(), ltr: buildTermLtr() };
+  });
+  ok(split.contested > 0 && Math.abs(split.contested - split.comp) < 0.01,
+     "the contested figure is exactly the Article 77 compensation");
+  ok(Math.abs(split.certain + split.contested - split.total) < 0.01,
+     "and the two halves still account for every riyal");
+  for (const [name, txt] of [["result screen", split.res], ["letter", split.ltr], ["case document", split.doc]]){
+    ok(/Owed on the face of it/i.test(txt) && /Depends on a ruling/i.test(txt),
+       `the ${name} shows both figures, labelled`);
+    ok(!new RegExp(Math.round(split.total).toLocaleString("en-US")).test(txt),
+       `the ${name} never states the merged sum as one number`);
+  }
+
   /* ---- all seven paths, both tracks, both languages */
   console.log("\n— all seven paths x two tracks x two languages");
   const paths = await p.evaluate(() => {
