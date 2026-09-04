@@ -584,7 +584,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const privacy = await page.evaluate(() => {
     goTab("account");
     const b = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
-    return b ? b.textContent : "";
+    return b ? b.closest(".acc-sec").textContent : "";
   });
   /* The copy must describe the build, in both directions: mention the flag
      check when it can happen, and stay silent when it cannot. */

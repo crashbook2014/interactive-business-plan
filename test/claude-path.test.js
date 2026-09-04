@@ -96,7 +96,11 @@ async function serveWithAiCsp(page){
        chooser rather than a workspace. The guarantee is unchanged: it is on
        the screen the reader hands us a contract on. */
     return { home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent,
-             acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
+             acc: (() => { const b = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
+                    /* The four exceptions fold behind a summary now, so the section is
+                       what "the privacy copy" means — the fold is one tap, not a
+                       different screen. That it is REACHABLE is asserted separately. */
+                    return b ? b.closest(".acc-sec").textContent : ""; })() };
   });
   ok(/never leaves it/i.test(claim.home) && /don't upload/i.test(claim.acc),
      "unconfigured: the unconditional privacy promise is kept, because it is true");
@@ -180,12 +184,42 @@ async function serveWithAiCsp(page){
          with the paste box when home became a chooser rather than a workspace.
          Same guarantee, on the screen the reader hands us a contract on. */
     return { home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent,
-             acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
+             acc: (() => { const b = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
+                    /* The four exceptions fold behind a summary now, so the section is
+                       what "the privacy copy" means — the fold is one tap, not a
+                       different screen. That it is REACHABLE is asserted separately. */
+                    return b ? b.closest(".acc-sec").textContent : ""; })() };
   });
   ok(!/never leaves it/i.test(claim2.home) && /exceptions? are optional|one exception/i.test(claim2.home),
      "configured: the home privacy line states the exception instead");
   ok(/Anthropic/.test(claim2.acc) && /explicit agreement/i.test(claim2.acc),
      "configured: the account screen names Anthropic and says the flows are opt-in");
+
+  /* The long half of that answer folds, so what a reader sees first is the
+     promise rather than 1,300 words of it. Folded is only acceptable while
+     it is FINDABLE: a labelled control, in the reader's language, that opens
+     the whole thing in one tap and no further. */
+  const fold = await p2.evaluate(() => {
+    goTab("account");
+    const d = document.getElementById("accPrivacyMore");
+    if (!d) return null;
+    const sum = d.querySelector("summary");
+    const before = d.open;
+    sum.click();
+    return { hidden: d.hidden, label: sum.textContent.trim(),
+             closedAtFirst: before === false, opens: d.open,
+             /* what the fold actually holds */
+             rest: document.getElementById("accPrivacyRest").textContent,
+             lead: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent };
+  });
+  ok(fold && !fold.hidden && fold.closedAtFirst && fold.opens,
+     "the detail is folded shut, and one tap on its summary opens it");
+  ok(fold && fold.label.length > 12 && !/^acc_/.test(fold.label),
+     `the summary is labelled in the reader's own language ("${fold && fold.label}")`);
+  ok(fold && /Anthropic/.test(fold.rest) && fold.rest.length > 600,
+     "and it holds the full enumeration, not a summary of it");
+  ok(fold && /device/i.test(fold.lead) && fold.lead.length < 400,
+     "while the promise itself stays open and unfolded above it");
   /* Enumerated rather than counted. Every path that can send something off the
      device must be named on this page — the failure this catches is a fourth
      one being added and the copy still describing three. If you add a flow,
