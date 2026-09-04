@@ -427,6 +427,7 @@ async function seedTermination(p){
       ["p1ba", "plan_review"],
       ["p2a", "plan_letter"],
       ["p3a", "plan_case"],
+      ["p4a", "plan_bundle"],
     ];
     for (const [el, plan] of SHOWN) {
       const real = catalogue(plan);
@@ -444,6 +445,57 @@ async function seedTermination(p){
     const phantom = prices.filter(p => !known.includes(p));
     ok(phantom.length === 0,
        `every advertised price exists in the catalogue${phantom.length ? " — not sold: " + phantom.join(", ") : ""}`);
+
+    /* The bundle card states what it saves. That is a second copy of a fact
+       derived from four prices, and a second copy with nothing comparing it
+       to the first is how every price defect in this file started. */
+    const priceOf = n => catalogue(n);
+    const saving = priceOf("plan_review") + priceOf("plan_letter") + priceOf("plan_case")
+                 - priceOf("plan_bundle");
+    const claimed = landing.match(/p4g:[\s\S]{0,200}?saving (\d+) SAR/);
+    ok(!!claimed, "the bundle card states what it saves");
+    ok(claimed && +claimed[1] === saving,
+       `the saving it claims (${claimed && claimed[1]}) is the catalogue's own arithmetic (${saving})`);
+  }
+
+  /* ---- one numeral convention across every surface a reader crosses.
+     The homepage wrote ١٤٩ and م/٥١ while the app one tap away writes 149 and
+     م/51 — the same price in two scripts. app/index.html settled the question
+     in its own comment and gave the reason: a figure you have to re-read is a
+     figure you do not trust. Comments are stripped, since the reasoning for
+     this rule necessarily quotes what it forbids. */
+  console.log("\n— one numeral convention, across every surface");
+  {
+    const strip = f => readFileSync(path.join(ROOT, f), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/<!--[\s\S]*?-->/g, " ");
+    const SURFACES = ["index.html", "app/index.html", "assets/landing.js",
+                      "privacy/index.html", "terms/index.html", "refund/index.html",
+                      "support/index.html"];
+    for (const f of SURFACES){
+      const hits = (strip(f).match(/[\u0660-\u0669]+/g) || []);
+      ok(hits.length === 0,
+         `${f} uses one set of digits${hits.length ? " — also found " + [...new Set(hits)].slice(0,5).join(", ") : ""}`);
+    }
+  }
+
+  /* ---- a price comparison is a factual claim about a market, and this
+     product's whole argument is that it cites what it asserts. Both surfaces
+     carried "a lawyer consultation typically runs 400-1,000 SAR" with no
+     source for it anywhere. The comparison survives; the invented figure
+     does not. */
+  console.log("\n— no market figure we cannot source");
+  {
+    const surf = {
+      "assets/landing.js": readFileSync(path.join(ROOT, "assets/landing.js"), "utf8"),
+      "app/index.html": readFileSync(path.join(ROOT, "app/index.html"), "utf8"),
+    };
+    for (const [name, text] of Object.entries(surf)){
+      const anchor = text.match(/(price_anchor|anchor_price):\{[\s\S]{0,400}?\},/);
+      ok(!!anchor, `${name} has a price-comparison line`);
+      if (anchor)
+        ok(!/\d/.test(anchor[0].replace(/(price_anchor|anchor_price)/g, "")),
+           `${name}'s comparison states no figure we would have to source`);
+    }
   }
 
   /* ---- and the homepage does not promise the lawyer desk while it is dark.
@@ -460,6 +512,71 @@ async function seedTermination(p){
       const PROMISE = /(نوصّلك ب?محام|we connect you with (a|one)[^.]{0,40}lawyer)/i;
       ok(!PROMISE.test(landing),
          "the homepage does not claim it connects you with a lawyer while the desk is dark");
+    }
+  }
+
+  /* ---- the marketing privacy promise cannot be stronger than the app's.
+     The app switches to `privacy_line_ai` when the optional Claude read is
+     live, because a scanned contract does get uploaded with consent. The
+     homepage had no such switch and stated the absolute version in four
+     places — the page people read BEFORE handing over an employment
+     contract. A claim that cannot be kept is worse than a weaker one. */
+  console.log("\n— the homepage's privacy promise matches the app's");
+  {
+    /* Comments stripped: this file explains in prose why the absolute forms
+       are gone, and a test that reads its own rationale as a violation is a
+       test that can never pass. */
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ");
+    /* Absolute forms only. "read on your device" is fine and true; "never
+       leaves it" and "never uploaded" are the ones the architecture breaks. */
+    const ABSOLUTE = [
+      [/never uploaded/i, "never uploaded"],
+      [/never leaves it/i, "never leaves it"],
+      [/nothing leaves your device/i, "nothing leaves your device"],
+      [/never (?:leaves|goes)[^.]{0,20}your device/i, "never leaves your device"],
+      [/لا يُرفع/, "لا يُرفع"],
+      [/ولا يغادره/, "ولا يغادره"],
+      [/ما يغادر عقدك جهازك/, "ما يغادر عقدك جهازك"],
+    ];
+    const found = ABSOLUTE.filter(([re]) => re.test(landing)).map(([, n]) => n);
+    ok(found.length === 0,
+       `no absolute "never uploaded" promise on the homepage${found.length ? " — " + found.join(", ") : ""}`);
+
+    /* And on every other surface a stranger reads first. The 29 generated
+       answer pages carried the absolute form too — they are built from
+       tools/make-seo.mjs, so the claim is fixed at its source and the pages
+       are regenerated; seo.test.js proves the committed pages match. */
+    const others = ["tools/make-seo.mjs", "privacy/index.html", "terms/index.html",
+                    "refund/index.html", "support/index.html", "app/sw.js"];
+    for (const f of others){
+      const text = readFileSync(path.join(ROOT, f), "utf8");
+      const hit = ABSOLUTE.filter(([re]) => re.test(text)).map(([, n]) => n);
+      ok(hit.length === 0,
+         `${f} makes no absolute privacy promise${hit.length ? " — " + hit.join(", ") : ""}`);
+    }
+    /* And the conditional truth is actually stated, not merely the absolute
+       one deleted — the exception is the thing a reader needs told. */
+    ok(/بموافقتك|بطلبك/.test(landing) && /your consent|you agree|you ask/i.test(landing),
+       "the consent exception is named, in both languages");
+  }
+
+  /* ---- "no sign-up" was false on two of the three surfaces that said it.
+     Auth ships configured, so scanGate() fires in production. The EOS
+     calculator genuinely needs no account and keeps its claim. */
+  console.log("\n— the homepage does not promise analysis without an account");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ");
+    const src5 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const authShips = /SUPABASE_URL:\s*"https:\/\//.test(src5);
+    ok(authShips, "auth ships configured, so the sign-up wall is real in production");
+    if (authShips){
+      ok(!/no sign-up/i.test(landing) && !/بدون تسجيل/.test(landing),
+         "the homepage claims no sign-up nowhere");
+      /* The app's one true instance survives: the calculator asks for nothing. */
+      ok(/eos_sub:[\s\S]{0,200}بدون تسجيل/.test(src5),
+         "the EOS calculator keeps its true no-sign-up claim");
     }
   }
 
@@ -692,6 +809,136 @@ async function seedTermination(p){
   ok(/entitlement/i.test(before.shape), "the shape block names how many entitlements were found");
   ok(/verified article/i.test(before.shape), "it says how many cite a verified article");
   ok(/certain/i.test(before.shape), "it states that every amount carries a certainty");
+
+  /* ------------------------------------------- nothing found, nothing sold
+     An audit reproduced this: a termination with no dates and no wage produced
+     a paywall reading "0 entitlements we found in your case:" — dangling colon,
+     empty list — above a live pay button asking 349 SAR. The app said it knew
+     nothing about the case and charged for it in the same breath. */
+  console.log("\n— an assessment that found nothing is not for sale");
+
+  const empty = await p.evaluate(async () => {
+    if (lang === "ar") toggleLang();
+    term = Object.assign(blankTerm(), { how: "other" });
+    owned = { letter:null, case:null, term:null };
+    await openTermResult();
+    const steps = document.getElementById("termSteps");
+    /* Force the paywall open anyway — a route added later must still not sell. */
+    pwMode = "case"; pwOrigin = "term"; pwUpgrade = null; pwPlan = 0;
+    renderPaywall();
+    return {
+      lines: termLines().length,
+      onPaywall: document.getElementById("screen-paywall").classList.contains("active"),
+      onResult: document.getElementById("screen-termres").classList.contains("active"),
+      verdict: document.getElementById("termVerdict").textContent,
+      money: document.getElementById("termMoney").textContent,
+      stepCtas: steps.querySelectorAll("[data-step]").length,
+      payDisabled: document.getElementById("payBtn").disabled,
+      shapeHidden: document.getElementById("pwShape").hidden,
+      shape: document.getElementById("pwShape").textContent
+    };
+  });
+  ok(empty.lines === 0, "the reproduction still produces an assessment with no lines");
+  ok(!empty.onPaywall && empty.onResult,
+     "a reader with nothing computed is not routed to a paywall");
+  ok(/not asking you to pay for an assessment that found nothing/i.test(empty.money),
+     "they are told plainly that there is nothing to charge them for");
+  ok(/doesn.t mean nothing is owed/i.test(empty.money),
+     "and the result still says so — nothing found is not nothing owed, and it stays on screen");
+  ok(!/We can't show this assessment/i.test(empty.verdict),
+     "the result itself is not suppressed: an empty assessment is an answer, not a failure");
+  ok(empty.stepCtas === 1,
+     `the gated next-step CTAs are gone rather than routing to that paywall (${empty.stepCtas} CTA left, the ungated evidence one)`);
+  ok(empty.payDisabled, "and the pay button itself refuses, whatever route reached it");
+  ok(empty.shapeHidden && !/\b0\b/.test(empty.shape),
+     "no \"0 entitlements we found:\" block with an empty list");
+
+  /* Generosity that strands the reader is not generosity. The card told them
+     to "fill in what's missing above" while the missing list was ~900px BELOW
+     it, on a screen with no control that returned to the questions at all. */
+  const door = await p.evaluate(() => {
+    const b = document.getElementById("termFillIn");
+    if (!b) return null;
+    b.click();
+    return { label: b.textContent.trim(), screen: document.querySelector(".screen.active").id };
+  });
+  ok(door, "the no-amounts state offers a way back to the questions");
+  ok(door && door.screen === "screen-termq",
+     `and it actually goes there (${door && door.screen})`);
+  ok(!/above|فوق/i.test(empty.money),
+     "and nothing points the reader at a list that is below them");
+
+  /* Back to the shared case, so the walks below read the same figures as the
+     ones above them. */
+  await seedTermination(p);
+
+  /* --------------------------------------- the paywall is not ambient state
+     pwOrigin decides what the paywall calls itself, previews, counts and
+     charges for — and two of its seven entry points never set it. A reader who
+     merely LOOKED at the termination paywall and backed out then met the
+     letter paywall titled "Your termination assessment", previewing their
+     employment facts, with a pay button reading "Show my full assessment
+     149 SAR". One tap recorded the 149 letter and rendered the 349 assessment.
+     Every commercial guard here is downstream of pwOrigin; the guards were
+     right and their input was stale. */
+  console.log("\n— what the paywall sells does not depend on where the reader has been");
+
+  const stale = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    const read = () => ({ origin: pwOrigin, mode: pwMode,
+      title: document.querySelector('#screen-paywall [data-t="pw_title"]').textContent,
+      pay: document.getElementById("payBtn").textContent.trim(),
+      head: document.getElementById("pwPreviewHead").textContent,
+      shape: document.getElementById("pwShape").textContent });
+    const out = {};
+    /* 1. visit the termination paywall and back out of it */
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", wage:12000, ctype:"indef", noticeDue:60, noticeGiven:0,
+      leaveDays:10, unpaidMonths:2 });
+    owned = { letter:null, case:null, term:null };
+    pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null;
+    renderPaywall(); show("paywall");
+    out.term = read();
+    show(pwBack());
+    /* 2. now go and buy a negotiation letter, the ordinary way */
+    current = JSON.parse(JSON.stringify(SAMPLES.employment));
+    letterSet = new Set();
+    current.clauses.forEach((c, i) => { if (c.a) letterSet.add(i); });
+    openPaywall();
+    out.letter = read();
+    out.screen = document.querySelector(".screen.active").id;
+    return out;
+  });
+  ok(/assessment/i.test(stale.term.pay), `the termination paywall sells the assessment (${stale.term.pay})`);
+  ok(stale.letter.origin === "letter",
+     `the letter paywall owns its origin rather than inheriting one (${stale.letter.origin})`);
+  ok(/letter/i.test(stale.letter.pay) && !/assessment/i.test(stale.letter.pay),
+     `and its button sells the letter (${stale.letter.pay})`);
+  ok(!/termination/i.test(stale.letter.title) && !/termination/i.test(stale.letter.head),
+     `nothing on it still says "termination" (${stale.letter.title} / ${stale.letter.head})`);
+  ok(stale.letter.shape.trim() === "",
+     "and it does not count the reader's termination entitlements at them");
+
+  /* A screen that cannot be built must not be shown. renderPaywall() refuses
+     on several legitimate paths, and every caller navigated regardless — so
+     the reader met whatever offer was last built there. */
+  const refused = await p.evaluate(() => {
+    if (lang === "ar") toggleLang();
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-01", wage:12000, ctype:"indef", noticeDue:60, noticeGiven:0, leaveDays:10 });
+    owned = { letter:null, case:null, term:null };
+    pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null;
+    renderPaywall(); show("paywall");
+    /* the letter flow, with nothing chosen to negotiate — renderPaywall refuses */
+    current = JSON.parse(JSON.stringify(SAMPLES.employment));
+    letterSet = new Set();
+    show("result");
+    const built = renderPaywall === undefined ? null : openPaywall();
+    return { built, screen: document.querySelector(".screen.active").id,
+             pay: document.getElementById("payBtn").textContent.trim() };
+  });
+  ok(refused.screen !== "screen-paywall",
+     `a paywall that could not be built is not shown (landed on ${refused.screen})`);
 
   /* ------------------------------------------------- labels per mode */
   console.log("\n— the buttons name what they sell");

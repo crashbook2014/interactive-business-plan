@@ -223,7 +223,11 @@ const S = {
     checked: d => `Last re-checked ${d}.`,
     sources: "Checked against",
     toolTitle: "Check your own contract",
-    toolBody: "Wodouh reads a Saudi employment contract and tells you what it means for you — in your browser, on your device.",
+    /* Matches the app's conditional wording. The absolute version of this
+       sentence stopped being true when scanned contracts began being uploaded
+       with consent, and 29 generated pages are not the place to keep saying
+       it — they are what a stranger reads first. */
+    toolBody: "Wodouh reads a Saudi employment contract and tells you what it means for you — in your browser, on your device, with nothing uploaded unless you ask for it.",
     toolCta: "Open Wodouh",
     disclaimer: "Reviewed by a licensed Saudi lawyer. This is general legal information and its source — not legal advice on your situation, and Wodouh is not a law firm. For a dispute of your own, see a lawyer.",
     indexTitle: "Saudi employment law, answered and sourced | Wodouh",
@@ -246,7 +250,7 @@ const S = {
     checked: d => `آخر إعادة تحقّق: ${d}.`,
     sources: "تم التحقق مقابل",
     toolTitle: "افحص عقدك أنت",
-    toolBody: "وضوح يقرأ عقد العمل السعودي ويشرح لك ماذا يعني لك — داخل متصفحك، على جهازك.",
+    toolBody: "وضوح يقرأ عقد العمل السعودي ويشرح لك ماذا يعني لك — داخل متصفحك، على جهازك، وما يُرفع شيء إلا إذا طلبته أنت.",
     toolCta: "افتح وضوح",
     disclaimer: "يراجعه محامٍ سعودي مرخّص. هذه معلومة قانونية عامة مع مصدرها — وليست استشارة قانونية في حالتك، ووضوح ليس مكتب محاماة. وفي نزاعك أنت، راجع محاميًا.",
     indexTitle: "نظام العمل السعودي: إجابات موثّقة بمصادرها | وضوح",

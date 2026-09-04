@@ -112,6 +112,121 @@ async function art87Certainty(p){
   ok(Math.abs(sum - run.total) < 0.01, "financial lines sum exactly to the stated total");
   ok(run.lines.every(l => l.src), "every money line carries a source");
 
+  /* ---- a card that takes money off the table is sourced like one that puts
+     it on. "Notice compensation belongs to indefinite contracts and yours is
+     fixed-term" ended the conversation with nothing a reader could check,
+     while every riyal beside it carried an article. */
+  console.log("\n— denials carry a source, not only the amounts");
+  const sourced = await p.evaluate(() => {
+    /* This walk drives `term` through every branch there is. The walks after
+       it read the worked example seeded above, so it is put back exactly as
+       it was found rather than left wherever the last iteration stopped. */
+    const keep = JSON.parse(JSON.stringify(term)), keepNat = nat, keepLang = lang;
+    window.__restoreTerm = () => { term = keep; nat = keepNat; lang = keepLang; };
+    const out = [];
+    const base = { start:"2020-01-01", end:"2026-01-01", wage:10000, noticeDue:60,
+                   noticeGiven:0, leaveDays:10, unpaidMonths:1, ctype:"indef",
+                   gotEos:false, gotSettle:false, docs:["d_contract"] };
+    /* Every branch of every section, across both tracks, both contract types
+       and every ending — this is where the unsourced denials actually live. */
+    for (const track of ["sa","nonsa"])
+      for (const ct of ["indef","fixed"])
+        for (const h of TERM_HOW.map(x => x.id))
+          for (const paid of [true, false]){
+            nat = track;
+            term = Object.assign(blankTerm(), base, { how:h, ctype:ct, gotEos:paid });
+            termSections().forEach(sec => out.push({ k:sec.k, why:sec.why, src:sec.src }));
+          }
+    return { all: out, keys: [...new Set(out.filter(x => !x.src).map(x => x.k + "/" + x.why))] };
+  });
+  ok(sourced.all.length > 100, `${sourced.all.length} section renderings walked`);
+  ok(sourced.keys.length === 0,
+     `every section card names where its statement comes from${sourced.keys.length ? " — unsourced: " + sourced.keys.join(", ") : ""}`);
+  /* And the source has to resolve to real copy, in both languages — a key
+     that does not exist renders as the key itself, which looks like a source
+     and is not one. */
+  const resolves = await p.evaluate(srcs => srcs.filter(k => !(T[k] && T[k].ar && T[k].en)),
+                                    [...new Set(sourced.all.map(x => x.src))]);
+  ok(resolves.length === 0, `every source key resolves in both languages${resolves.length ? " — missing: " + resolves.join(", ") : ""}`);
+  /* Probation is Article 53, which docs/legal-sources.md carries as an OPEN
+     DISPUTE. Citing it here would assert exactly what that file says we
+     cannot, so those cards say "our reading" instead. */
+  const probCards = sourced.all.filter(x => /prob/.test(x.why));
+  ok(probCards.length > 0 && probCards.every(x => x.src === "src_method"),
+     `the probation cards claim a reading, not Article 53 (${[...new Set(probCards.map(x => x.src))].join(", ")})`);
+  ok(!sourced.all.some(x => x.src === "tm_src_53"),
+     "no card cites the disputed article as though it were settled");
+
+  /* ---- the Article 81 uplift is a reading, and the figure has to say so.
+     On "I was asked to resign" the section card was scrupulous — "grounds
+     verified; its effect on the award is Wodouh's reading" — while the money
+     line beside it was sourced flat to Article 84 and sat in the certain
+     column. The hedge existed on the card and was stripped off the riyals. */
+  console.log("\n— money that depends on a characterisation is not certain money");
+  const art81 = await p.evaluate(() => {
+    lang = "en"; nat = "sa";
+    term = Object.assign(blankTerm(), { how:"forced", start:"2020-01-01",
+      end:"2026-01-01", wage:10000, ctype:"indef", noticeDue:60, noticeGiven:0 });
+    owned.case = "plan_case"; renderTermResult();
+    const eos = termLines().find(l => l.key === "tm_m_eos");
+    return { art81: !!(termHow() && termHow().art81), eos,
+             certainty: certaintyFor("tm_m_eos").level,
+             certain: termTotalCertain(), contested: termTotalContested(),
+             ltr: buildTermLtr() };
+  });
+  ok(art81.art81, "the forced-resignation path really does take the Article 81 branch");
+  ok(art81.eos && art81.eos.src === "tm_src_81",
+     `the award's source names the article the reading rests on (${art81.eos && art81.eos.src})`);
+  ok(art81.eos && art81.eos.contested === true,
+     "and the award is in the contested column, not the certain one");
+  ok(art81.certainty !== "confirmed",
+     `which agrees with the certainty the app already gives it (${art81.certainty})`);
+  ok(!new RegExp(Math.round(art81.certain + art81.contested).toLocaleString("en-US")).test(art81.ltr),
+     "and the letter to the employer never states the two added together");
+
+  await p.evaluate(() => window.__restoreTerm());
+
+  /* ---- contested money is not added to certain money.
+     Article 77 compensation is owed only if the competent authority finds the
+     termination unlawful — the item's own copy says so — and a flat reduce
+     then folded it into one bolded figure the reader screenshots. The hedge
+     has to survive the arithmetic, on the screen, in the letter and in the
+     document that reaches the employer. */
+  console.log("\n— the headline separates what is owed from what is contested");
+  const split = await p.evaluate(() => {
+    lang = "en";
+    renderTermResult();
+    return { certain: termTotalCertain(), contested: termTotalContested(),
+             total: termTotal(), comp: termComp(),
+             res: document.getElementById("screen-termres").textContent,
+             doc: buildTermDoc(), ltr: buildTermLtr() };
+  });
+  ok(split.contested > 0 && Math.abs(split.contested - split.comp) < 0.01,
+     "the contested figure is exactly the Article 77 compensation");
+  ok(Math.abs(split.certain + split.contested - split.total) < 0.01,
+     "and the two halves still account for every riyal");
+  /* The letter speaks in the claimant's voice, not Wodouh's, so it names the
+     contested item in a sentence rather than under the screen's own label —
+     the point is that the two are never merged, not that the label is
+     identical on every surface. */
+  const SPLIT_MARK = {
+    "result screen": /Depends on a ruling/i,
+    "letter": /turns on a determination by the competent authority/i,
+    "case document": /turns on a determination by the competent authority/i
+  };
+  for (const [name, txt] of [["result screen", split.res], ["letter", split.ltr], ["case document", split.doc]]){
+    ok(/Owed on the face of it/i.test(txt) && SPLIT_MARK[name].test(txt),
+       `the ${name} shows both figures, labelled`);
+    ok(!new RegExp(Math.round(split.total).toLocaleString("en-US")).test(txt),
+       `the ${name} never states the merged sum as one number`);
+  }
+  /* And Wodouh's own explanation, which addresses the READER in the second
+     person, never reaches the employer: the employee was telling HR that the
+     figures rest on facts HR had entered. */
+  for (const [name, txt] of [["letter", split.ltr], ["case document", split.doc]])
+    ok(!/facts you gave us|وقائع أدخلتها|you gave us/i.test(txt),
+       `the ${name} does not paste Wodouh's explanation to the reader into a document sent to someone else`);
+
   /* ---- all seven paths, both tracks, both languages */
   console.log("\n— all seven paths x two tracks x two languages");
   const paths = await p.evaluate(() => {
@@ -263,7 +378,11 @@ async function art87Certainty(p){
       owned.case = "plan_case"; renderTermResult();
       const el = document.querySelector("#termMoney .tm-rise");
       const money = document.getElementById("termMoney");
-      const tot = money.querySelector(".r.tot");
+      /* The total moved into the hero card at the top of #termMoney, so
+         "after the total" is now measured against that. The property is
+         unchanged: the reader must meet the figure before the caveat that
+         the figure is a floor. */
+      const tot = money.querySelector(".tm-hero");
       return { total: Math.round(termTotal()), has: !!el,
                text: el ? el.textContent.trim() : "",
                /* the screen is where the honesty lives; the document is what
@@ -280,7 +399,7 @@ async function art87Certainty(p){
     return out;
   });
   ok(rise.skipped.has, "skipping the Article 87 question shows a note beside the total");
-  ok(rise.skipped.afterTotal, "and the note sits inside the money card, after the total");
+  ok(rise.skipped.afterTotal, "and the note sits inside the money card, after the figure it qualifies");
   ok(/becomes the full one/i.test(rise.skipped.text),
      "the note says the award could become the full one, not merely that it is uncertain");
   ok(rise.marriage.total > rise.skipped.total,
@@ -432,6 +551,77 @@ async function art87Certainty(p){
   ok(/سنتين/.test(svc.two) && /شهر واحد/.test(svc.two), `the dual has its own form (${svc.two})`);
   ok(svc.zeroM === "6 سنوات", `and zero months is dropped rather than printed (${svc.zeroM})`);
   ok(/11 سنة/.test(svc.many), `11+ takes the singular accusative (${svc.many})`);
+
+  /* One helper, every counted noun. The duration was fixed once and six other
+     counts on the same screens kept formatting themselves by hand — "2 شهرًا"
+     where the dual belongs, "7 شهرًا" where the plural does, "1 من الأوراق"
+     for a single sheet, and an English "1 are Wodouh's own reading". */
+  console.log("\n— every counted noun agrees, in both languages");
+  const nouns = await p.evaluate(() => {
+    const out = {};
+    for (const L of ["ar","en"]){
+      lang = L;
+      for (const stem of ["eos_y","eos_m","cnt_d","cnt_doc","cnt_ent","cnt_item"])
+        for (const n of [0,1,2,3,7,10,11,25,100])
+          out[`${L}/${stem}/${n}`] = countNoun(stem, n);
+    }
+    lang = "en";
+    return out;
+  });
+  const badForm = Object.entries(nouns).filter(([, v]) => !v || /\{n\}|undefined/.test(v));
+  ok(badForm.length === 0, `every form resolves${badForm.length ? " — " + badForm.slice(0,4).map(x=>x[0]).join(", ") : ""}`);
+  /* The four shapes, spot-checked where Arabic actually differs. A helper that
+     returns the same string for 2 and for 7 is not doing the job. */
+  const ar = k => nouns["ar/" + k];
+  ok(ar("cnt_d/2") === "يومين" && ar("cnt_doc/2") === "ورقتين" && ar("cnt_ent/2") === "استحقاقين",
+     `the dual is used for 2 (${ar("cnt_d/2")}, ${ar("cnt_doc/2")}, ${ar("cnt_ent/2")})`);
+  ok(/أيام/.test(ar("cnt_d/7")) && /أوراق/.test(ar("cnt_doc/7")) && /بنود/.test(ar("cnt_item/7")),
+     `3-10 takes the plural (${ar("cnt_d/7")}, ${ar("cnt_doc/7")}, ${ar("cnt_item/7")})`);
+  ok(/يومًا/.test(ar("cnt_d/25")) && /ورقة/.test(ar("cnt_doc/25")) && /بندًا/.test(ar("cnt_item/25")),
+     `11+ takes the singular accusative (${ar("cnt_d/25")}, ${ar("cnt_doc/25")}, ${ar("cnt_item/25")})`);
+  ok(ar("cnt_doc/1") === "ورقة واحدة" && ar("cnt_doc/2") === "ورقتين",
+     `and one and two drop the numeral entirely (${ar("cnt_doc/1")}, ${ar("cnt_doc/2")})`);
+
+  /* And the strings that USE them no longer carry a noun of their own — that
+     is what made the duration fix miss these six in the first place. */
+  const hand = await p.evaluate(() =>
+    ["appl_notice","appl_leave","appl_unpaid","appl_comp_fixed","tm_hw_docs_b",
+     "tm_hw_service_b","pw_sh_found","pw_sh_gaps"]
+      /* Only a noun sitting NEXT TO its placeholder is the defect. The same
+         nouns appear in ordinary prose in these sentences ("the number of
+         documents doesn't change the amounts"), which is fine. */
+      .filter(k => /\{[a-z]\}\s*(شهرًا|شهر|يومًا|يوم|أوراق|ورقة|استحقاقات|بنود|سنة|days|months|items|entitlements|documents)\b/
+        .test(T[k].ar + " " + T[k].en)));
+  ok(hand.length === 0,
+     `no sentence hard-codes a counted noun beside its number${hand.length ? " — " + hand.join(", ") : ""}`);
+
+  /* The English verb agreed with nothing: "1 are Wodouh's own reading". */
+  const verb = await p.evaluate(() => {
+    lang = "en";
+    const out = {};
+    /* One line exactly — the case where every English plural used to be
+       wrong at once — and a multi-line case beside it. */
+    const cases = { one: { how:"other", otherAmt:3000 },
+                    many: { how:"employer", start:"2018-01-01", end:"2026-01-01",
+                            wage:10000, ctype:"indef", noticeDue:60, noticeGiven:0,
+                            leaveDays:10, unpaidMonths:2 } };
+    for (const [k, c] of Object.entries(cases)){
+      term = Object.assign(blankTerm(), c);
+      renderPwShape(true, false);
+      out[k] = { n: termLines().length, text: document.getElementById("pwShape").textContent };
+    }
+    return out;
+  });
+  ok(verb.one.n === 1 && verb.many.n > 1,
+     `the two shapes really are one line and several (${verb.one.n}, ${verb.many.n})`);
+  const shape = verb.one.text + " " + verb.many.text;
+  ok(/\b1 is Wodouh's own reading\b/.test(shape),
+     `the paywall's verb agrees with its own count (${(shape.match(/\d+ (is|are) Wodouh's own reading/g) || []).join(" / ")})`);
+  ok(!/\b1 (are|entitlements|items)\b/.test(shape),
+     "and nothing is pluralised at a count of one");
+  ok(/1 entitlement found in/.test(verb.one.text) &&
+     new RegExp(verb.many.n + " entitlements found in").test(verb.many.text),
+     "the entitlement count is itself a counted noun, singular and plural");
   ok(!/[٠-٩]/.test(Object.values(svc).join(" ")),
      "and every digit is Latin, in Arabic too");
 

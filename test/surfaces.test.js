@@ -206,6 +206,35 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(r.hasCase === (r.want === "act"), `triage case ${i + 1} offers the case file only when claiming`);
   });
 
+  /* ---- the breakdown never labels a figure "before adjustment" and then
+     shows the same number as the total. That label raises a question and,
+     with nothing adjusting anything, never answers it — on the one screen
+     whose entire job is showing its arithmetic. */
+  console.log("\n— the calculator's subtotal appears only when something adjusts it");
+  const brk = await p.evaluate(() => {
+    const run = (how, exc) => {
+      show("eos");
+      document.getElementById("eosStart").value = "2020-01-01";
+      document.getElementById("eosEnd").value = "2026-01-15";
+      document.getElementById("eosWage").value = "10000";
+      eosHow = how; eosExc = exc || null; renderEos(); calcEos();
+      const rows = [...document.querySelectorAll("#eosOut .eos-card .rows .r")]
+        .map(r => ({ label: r.querySelector("span").textContent.trim(),
+                     val: r.querySelector("b").textContent.trim() }));
+      return { rows, sub: rows.find(r => r.label === T.eos_b_sub[lang]),
+               tot: rows.find(r => r.label === T.eos_b_total[lang]),
+               factor: !!rows.find(r => r.label === T.eos_b_factor[lang]) };
+    };
+    return { term: run("term"), resign: run("resign") };
+  });
+  ok(!!brk.term.tot && !!brk.resign.tot, "both breakdowns state a total");
+  ok(!brk.term.sub,
+     "a terminated reader sees no subtotal, because nothing adjusts their figure");
+  ok(!!brk.resign.sub && brk.resign.sub.val !== brk.resign.tot.val,
+     `a resigning reader sees one, and it is a different number (${brk.resign.sub && brk.resign.sub.val} vs ${brk.resign.tot.val})`);
+  ok(!brk.term.factor && brk.resign.factor,
+     "and the resignation factor is shown to someone who resigned, and to nobody else");
+
   /* An incomplete triage must render nothing rather than a partial verdict. */
   const partial = await p.evaluate(() => {
     show("eos");

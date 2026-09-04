@@ -393,7 +393,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const priv = await p.evaluate(() => {
     const read = () => {
       renderPrivacyCopy();
-      return { acc: document.querySelector('#screen-account [data-t="acc_privacy_b"]').textContent,
+      return { acc: (() => { const b = document.querySelector('#screen-account [data-t="acc_privacy_b"]');
+                    /* The four exceptions fold behind a summary now, so the section is
+                       what "the privacy copy" means — the fold is one tap, not a
+                       different screen. That it is REACHABLE is asserted separately. */
+                    return b ? b.closest(".acc-sec").textContent : ""; })(),
                home: document.querySelector('#screen-intake [data-t="privacy_line"]').textContent };
     };
     const was = lang;

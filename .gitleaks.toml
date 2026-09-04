@@ -1,0 +1,19 @@
+# Wodouh — gitleaks configuration.
+#
+# Extends the default ruleset (real detectors for real secret shapes) and
+# allowlists exactly one thing: the synthetic, obviously-fake Supabase key
+# literals in test/accounts.test.js that exist SPECIFICALLY to test the app's
+# own key-classification logic (tools/setup-supabase.mjs must tell a real
+# secret key from a publishable one and refuse the former). Scanning them as
+# real secrets and then permanently allowlisting the pattern would be circular
+# — the test's whole point is that these strings look like real keys. So the
+# exemption is scoped to this one file, not to the shape of the string, and a
+# genuine secret pasted into any other file is still caught.
+title = "wodouh"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic key fixtures in the key-classification test"
+paths = ['''test/accounts\.test\.js''']

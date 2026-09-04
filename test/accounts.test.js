@@ -585,6 +585,26 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
      "and a pasted secret key is told to be rotated, because by then it has already been somewhere it should not be");
 }
 
+/* ---- the privacy story is told before the contract is asked for.
+   "Read on your device" lived four taps deep in Account, while onboarding
+   asked a reader who had known this app for ninety seconds to paste an
+   employment contract. It is the objection every one of them has and none
+   of them types. It is also the one claim that must be stated in the app's
+   conditional form, since a scanned contract is uploaded with consent. */
+{
+  console.log("\n— onboarding says where the contract is read, before asking for one");
+  const fs2 = require("node:fs"), path2 = require("node:path");
+  const src = fs2.readFileSync(path2.join(__dirname, "..", "app", "index.html"), "utf8");
+  const ob = src.slice(src.indexOf("const OB = ["), src.indexOf("--------------------------------------------------------- sample data"));
+  ok(ob.length > 200, "the onboarding deck is readable");
+  ok(/على جهازك/.test(ob) && /on your device/i.test(ob),
+     "a card states that the contract is read on the reader's own device, in both languages");
+  ok(/بموافقتك/.test(ob) && /your consent/i.test(ob),
+     "and states the consent exception rather than an absolute promise it cannot keep");
+  ok(!/never leaves|لا يغادر/.test(ob),
+     "onboarding does not make the absolute claim the app itself stopped making");
+}
+
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, consent is never assumed, and the contract never leaves");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

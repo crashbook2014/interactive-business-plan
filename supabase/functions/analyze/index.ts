@@ -59,7 +59,17 @@
  */
 
 const API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
+/* FAILS CLOSED, deliberately not "*". This is a paid, rate-limited endpoint;
+   `access-control-allow-origin: *` on it means any website a reader happens
+   to have open can drive their browser into spending Wodouh's Anthropic
+   budget against their rate-limit bucket, invisibly. Wildcarding here used
+   to be exactly one dropped secret away — if ALLOWED_ORIGIN was ever unset
+   in the function's config, this reopened to the entire internet with no
+   warning. upload/index.ts already gets this right ("null", which no origin
+   header ever matches); this now matches it. */
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "";
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 /* The brief names claude-sonnet-5 for contract analysis: this is careful
    reading against a fixed set of rules rather than a reasoning problem, and
    Sonnet is both quicker and cheaper at it. Still overridable per deployment. */
@@ -72,12 +82,11 @@ const MAX_TEXT = 40_000;
 /* Per-caller ceiling. Deliberately low: this endpoint costs real money per
    call, and no honest reader analyses twenty documents a minute. */
 const RATE_MAX = 10;
-const RATE_WINDOW_MS = 60_000;
-const buckets = new Map<string, number[]>();
+const RATE_WINDOW = "00:01:00";
 
 function cors(extra: Record<string, string> = {}) {
   return {
-    "access-control-allow-origin": ALLOWED_ORIGIN,
+    "access-control-allow-origin": ALLOWED_ORIGIN || "null",
     "access-control-allow-headers": "content-type, authorization",
     "access-control-allow-methods": "POST, OPTIONS",
     ...extra,
@@ -98,16 +107,36 @@ async function bucketFor(req: Request): Promise<string> {
     .map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function overLimit(key: string): boolean {
-  const now = Date.now();
-  const hits = (buckets.get(key) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  hits.push(now);
-  buckets.set(key, hits);
-  /* Unbounded map growth is a slow leak on a long-lived isolate. */
-  if (buckets.size > 5000) {
-    for (const [k, v] of buckets) if (!v.some((t) => now - t < RATE_WINDOW_MS)) buckets.delete(k);
+/* WAS an in-memory Map, reset on every cold start and never shared between
+   concurrently warm isolates — so the one endpoint in this file that "costs
+   real money per call" (the file's own words, above) was the one endpoint
+   NOT using the durable counter its two siblings (webhook, oauth-callback)
+   already share. A caller spread across isolates, or one lucky enough to hit
+   a fresh one, was never actually held to RATE_MAX.
+   bump_rate_limit is a fixed-window counter in Postgres, callable only by
+   service_role (0006_function_grants.sql). Same raw-fetch style as
+   resolveUpload() above: no new import for a call this small. Fails OPEN on
+   missing config or a network error to the RPC itself — matching
+   oauth-callback's `data?.ok === false` check — because a transient limiter
+   outage must not take the whole analysis feature down with it; it fails
+   CLOSED (refuses) only on an explicit `false` from the database. */
+async function overLimit(bucket: string): Promise<boolean> {
+  if (!SUPABASE_URL || !SERVICE_KEY) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bump_rate_limit`, {
+      method: "POST",
+      headers: {
+        apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ p_bucket: `ai:${bucket}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
+    });
+    if (!res.ok) return false;
+    const allowed = await res.json().catch(() => null);
+    return allowed === false;
+  } catch {
+    return false;
   }
-  return hits.length > RATE_MAX;
 }
 
 /* The instruction. The document never appears in here — it is passed as a
@@ -439,9 +468,6 @@ async function resolveUpload(req: Request, rowId: string): Promise<string | null
   return typeof row.file_id === "string" ? row.file_id : null;
 }
 
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -450,7 +476,7 @@ Deno.serve(async (req) => {
      ANALYZE_URL and never calls this; if it is called anyway, say why. */
   if (!API_KEY) return json({ error: "not_configured" }, 503);
 
-  if (overLimit(await bucketFor(req))) return json({ error: "rate_limited" }, 429);
+  if (await overLimit(await bucketFor(req))) return json({ error: "rate_limited" }, 429);
 
   let body: { kind?: string; text?: string; assessment?: unknown; q?: string; lang?: string; ctx?: unknown; nat?: string; upload?: string };
   try {

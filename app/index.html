@@ -679,8 +679,18 @@
   .lib-ask-b button:hover{border-color:var(--teal);color:var(--teal-ink)}
   .lib-h{font-size:17px;color:var(--ink);margin:30px 0 4px}
   .lib-sub{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:14px}
-  .lib-g{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--teal);
-    text-transform:uppercase;margin:20px 0 8px}
+  /* THE LIFECYCLE WAS IN THE DATA AND NOWHERE ON THE SCREEN.
+     Sixteen identical rows ran past four headings set in 12px at the palette's
+     lightest weight — so the reader scrolling for "my salary is late" scanned
+     sixteen rows rather than the five under "while you're employed". The
+     grouping is the same; it is now visible: a heavier heading, a rule that
+     starts the group, and real air between one stage of a working life and
+     the next. */
+  .lib-g{font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--teal-ink);
+    margin:28px 0 10px;padding-top:16px;border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:8px}
+  .lib-g::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--teal);flex:none}
+  .lib-g:first-of-type{border-top:0;padding-top:0;margin-top:18px}
   .lib-item{background:var(--card);border:1px solid var(--line);border-radius:14px;
     margin-bottom:8px;overflow:hidden}
   .lib-item summary{list-style:none;cursor:pointer;padding:14px 16px;min-height:44px;
@@ -878,6 +888,18 @@
   .acc-sec h3{font-size:15px;color:var(--teal-ink);margin-bottom:8px}
   .acc-sec p{font-size:13.5px;color:var(--ink-2);line-height:1.8;margin-bottom:8px;
     white-space:pre-line}
+  /* Same fold as the rights library, so the gesture is one the reader has
+     already learnt somewhere else in this app. */
+  .acc-fold{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);
+    margin:4px 0 10px;overflow:hidden}
+  .acc-fold summary{list-style:none;cursor:pointer;padding:12px 14px;min-height:44px;
+    display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:var(--teal-ink)}
+  .acc-fold summary::-webkit-details-marker{display:none}
+  .acc-fold summary::after{content:"";margin-inline-start:auto;width:8px;height:8px;flex:none;
+    border-inline-end:2px solid var(--ink-2);border-block-end:2px solid var(--ink-2);
+    transform:rotate(45deg);transition:transform var(--t-fast) var(--ease-out)}
+  .acc-fold[open] summary::after{transform:rotate(-135deg)}
+  .acc-fold > p{padding:0 14px 12px;margin:0}
   .acc-sec p.free{color:var(--green);}
   .acc-sec p.anchor{font-size:12.5px;color:var(--ink);background:var(--teal-soft);
       border-radius:var(--r-sm);padding:10px 12px;margin-top:4px}
@@ -918,6 +940,20 @@
   .tm-tag.ok{background:var(--green-bg);color:var(--green-ink)}
   .tm-tag.review{background:var(--amber-bg);color:var(--amber-ink)}
   .tm-tag.issue{background:var(--red-bg);color:var(--red-ink)}
+  /* The one figure this screen exists to give, at the size the eos calculator
+     already gives its own — the two screens answer the same question and only
+     one of them used to look like it. */
+  .tm-hero{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+    padding:20px 18px 16px;margin-bottom:10px;text-align:center;box-shadow:var(--e2),var(--edge)}
+  .tm-hero .lbl{font-size:12.5px;color:var(--ink-2)}
+  .tm-hero .amt{font-family:var(--en);font-size:36px;font-weight:800;letter-spacing:-.03em;
+    color:var(--teal-ink);line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;direction:ltr}
+  html[lang="ar"] .tm-hero .amt{font-family:var(--ar);font-weight:600;direction:rtl}
+  .tm-hero .amt small{font-family:var(--en);font-size:15px;font-weight:700;letter-spacing:0;
+    margin-inline-start:6px;color:var(--ink-2)}
+  .tm-hero .alt{font-size:12.5px;color:var(--ink-2);margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--line)}
+  .tm-hero .alt b{color:var(--ink);font-weight:700;white-space:nowrap}
   .tm-money{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
   .tm-money .r{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
     padding:9px 0;border-bottom:1px solid var(--line)}
@@ -934,6 +970,13 @@
   .tm-rise .up svg{width:18px;height:18px}
   .tm-money .r.tot{border-top:2px solid var(--line);margin-top:4px;padding-top:12px}
   .tm-money .r.tot>span,.tm-money .r.tot>b{color:var(--ink);font-size:15px}
+  /* The contested figure is separated by arithmetic; it has to be separated by
+     eye too, or two identical rows read as one total split across two lines.
+     Lighter rule, muted ink — present, checkable, and not the headline. */
+  .tm-split-h{font-size:12.5px;font-weight:700;color:var(--ink-2);margin:14px 0 6px;
+    padding-top:12px;border-top:1px dashed var(--line)}
+  .tm-money .r.tot.soft{border-top-width:1px;margin-top:0}
+  .tm-money .r.tot.soft>span,.tm-money .r.tot.soft>b{color:var(--ink-2);font-size:14px}
   .tm-money .src-line{margin:2px 0 8px}
   .tm-money .cap{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:12px}
   .tm-claims{display:grid;gap:10px}
@@ -2096,7 +2139,18 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="acc-sec">
       <h3 data-t="acc_privacy"></h3>
+      <!-- THE PROMISE STAYS OPEN; THE FOUR EXCEPTIONS FOLD.
+           This section is roughly 1,300 words, and it ran as one unbroken
+           block on a screen already 2,800px tall — so the sentence that
+           matters most to a reader deciding whether to paste an employment
+           contract was buried in the middle of the longest paragraph in the
+           app. The lead is now the whole visible answer; everything the four
+           consents actually send is one tap away, in full, unchanged. -->
       <p data-t="acc_privacy_b"></p>
+      <details class="acc-fold" id="accPrivacyMore" hidden>
+        <summary data-t="acc_privacy_more"></summary>
+        <p id="accPrivacyRest"></p>
+      </details>
       <!-- The policies, reachable rather than filed away. An unlinked privacy
            policy is one a reader never finds and an onboarding reviewer has to
            be sent by hand. -->
@@ -2240,10 +2294,16 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <button class="back" onclick="show('termev',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="tm_ev_title"></span></button>
     <h2 class="section-title" data-t="tm_r_title"></h2>
     <div id="termVerdict"></div>
-    <h3 class="biz-h" data-t="tm_r_sections"></h3>
-    <div class="tm-secs" id="termSections"></div>
+    <!-- THE MONEY BEFORE THE REVIEW. This sat below eight clause cards —
+         roughly 1,400px down — so someone who has just lost their income had
+         to scroll past a legal review to reach the one figure they came for.
+         The review is good work and belongs on this page; it does not belong
+         first. Order changed here rather than in the renderers, so every
+         renderer still writes to the element it always wrote to. -->
     <h3 class="biz-h" data-t="tm_r_money"></h3>
     <div id="termMoney"></div>
+    <h3 class="biz-h" data-t="tm_r_sections"></h3>
+    <div class="tm-secs" id="termSections"></div>
     <h3 class="biz-h" data-t="tm_r_claims"></h3>
     <div class="tm-claims" id="termClaims"></div>
     <div id="termGaps"></div>
@@ -2609,8 +2669,8 @@ const T = {
      been read on their device before this screen appears. */
   au_title_scan:{ar:"سوِّ حسابك المجاني عشان تشوف النتيجة",
                  en:"Create your free account to see your results"},
-  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، وهو اللي يخلّي حد الفحص المجاني الشهري يُحسب على أحد. عقدك نفسه ما يطلع من جهازك.",
-               en:"Your first contract scan is free. An account keeps that result available to you, and it is what lets the one-free-scan-a-month limit be counted against somebody. Your contract itself never leaves your device."},
+  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، وهو اللي يخلّي حد الفحص المجاني الشهري يُحسب على أحد. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
+               en:"Your first contract scan is free. An account keeps that result available to you, and it is what lets the one-free-scan-a-month limit be counted against somebody. The text of your contract is read on your device, and we don't store it."},
   /* THIS SAID "works without an account AND ALWAYS WILL" until the free scan
      started being counted per person. That was a forward promise, not a
      description, and quietly deleting it would be the worse of the two ways
@@ -2643,7 +2703,7 @@ const T = {
   au_or:{ar:"أو",en:"or"},
   au_email_lab:{ar:"بريدك الإلكتروني",en:"Your email"},
   au_email_go:{ar:"أرسل لي رمزًا",en:"Send me a code"},
-  au_code_lab:{ar:"أرسلنا رمزًا من ٦ أرقام إلى {e}",en:"We sent a 6-digit code to {e}"},
+  au_code_lab:{ar:"أرسلنا رمزًا من 6 أرقام إلى {e}",en:"We sent a 6-digit code to {e}"},
   au_code_go:{ar:"ادخل",en:"Sign in"},
   au_again:{ar:"ما وصلني — أرسله مرة ثانية",en:"Didn't arrive — send it again"},
   au_sending:{ar:"جارٍ الإرسال…",en:"Sending…"},
@@ -2933,6 +2993,8 @@ const T = {
   acc_pay_paid:{ar:"مدفوع: المخرجات فقط — المراجعة الكاملة لكل البنود، خطاب التفاوض، ملف القضية، وأسئلة المساعد بلا حدود.",
                 en:"Paid: outputs only — the full clause-by-clause review, the negotiation letter, the case file, and unlimited assistant questions."},
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
+  acc_privacy_more:{ar:"الاستثناءات الأربعة، وش يرسل كل واحد بالضبط",
+                    en:"The four exceptions, and exactly what each one sends"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
   acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه أربعة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\n4 — «اقرأ عقدًا ممسوحًا ضوئيًا»: هذا الوحيد اللي يرفع الملف نفسه، مو نصه. نلجأ له فقط إذا كان عقدك صورة أو مسحًا ضوئيًا وما فيه نص نقدر نقرأه على جهازك. يتطلب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل، وفي كل الأحوال خلال ساعة. وما نعرض عليك أي مبلغ من عقد ممسوح — لأننا ما نقدر نتحقق منه.\n\nالأربعة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic. الثلاثة الأولى ما يُحفظ منها شيء في أي مرحلة؛ الرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.",
@@ -2964,8 +3026,13 @@ const T = {
   acc_ai_note:{ar:"القراءة يقوم بها ذكاء اصطناعي، وليس محاميًا. ما نقوله مبني على سجل يراجعه محامٍ سعودي مرخّص — لكنه يشرح النظام، وما يفتي في حالتك.",
                en:"The reading is done by AI, not a lawyer. What it tells you comes from a register a licensed Saudi lawyer reviews — but it explains the law, it doesn't advise on your case."},
   acc_lang:{ar:"اللغة",en:"Language"},
-  anchor_price:{ar:"للمقارنة: استشارة محامٍ في السعودية تتراوح عادة بين 400 و1000 ر.س للاستشارة الواحدة.",
-                en:"For comparison: a lawyer consultation in Saudi Arabia typically runs 400–1,000 SAR per consultation."},
+  /* This carried "400–1,000 SAR per consultation" — a specific figure about a
+     market we have no source for, on a screen whose whole argument is that we
+     cite what we assert. The comparison it was making is still true and still
+     worth making; it just cannot pretend to a number we cannot show anyone.
+     Same wording as `price_anchor` on the homepage, which was fixed first. */
+  anchor_price:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — ووضوح يجهّز لك ملفك قبل ما تروح له.",
+                en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
   /* Wodouh is not registered for VAT, so no VAT is charged and none may be
      represented as included. Stating a tax you cannot collect is a false
      statement to the reader and a ZATCA problem; the status itself is
@@ -3133,12 +3200,12 @@ const T = {
   /* The shape of the work, shown before payment. Counts and names only — no
      amount appears in any of these strings, and none may be added. */
   pw_sh_head:{ar:"ما الذي يفتحه الدفع",en:"What paying unlocks"},
-  pw_sh_found:{ar:"‏{n} استحقاقات وجدناها في حالتك: {list}",
-               en:"{n} entitlements found in your situation: {list}"},
+  pw_sh_found:{ar:"‏{n} وجدناها في حالتك: {list}",
+               en:"{n} found in your situation: {list}"},
   pw_sh_law:{ar:"‏{n} منها مسندة إلى مادة موثّقة، و{m} اجتهاد وضوح — كلٌّ منها موسوم بمصدره",
-             en:"{n} of them cite a verified article, {m} are Wodouh's own reading — each one labelled"},
-  pw_sh_gaps:{ar:"‏{n} بنود لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
-              en:"{n} items we could not assess, and what each one needs: {list}"},
+             en:"{n} of them cite a verified article, {m} {v} Wodouh's own reading — each one labelled"},
+  pw_sh_gaps:{ar:"‏{n} لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
+              en:"{n} we could not assess, and what each one needs: {list}"},
   pw_sh_each:{ar:"كل مبلغ يذكر القاعدة، وكيف تنطبق على أرقامك، ومصدرها، ودرجة اليقين",
               en:"Every amount states its rule, how it applies to your numbers, its source, and how certain it is"},
   pw_sh_case_claim:{ar:"مطالبتك بالأرقام، كل بند بمصدره",
@@ -3505,6 +3572,18 @@ const T = {
                   en:"The amount you gave us as an unpaid contractual entitlement."},
   tm_m_other_ev:{ar:"العقد وسجل العمولات",en:"The contract and commission records"},
   tm_m_total:{ar:"إجمالي ما قد يكون مستحقًا",en:"Estimated potential entitlement"},
+  /* One sum used to carry both, so the per-item hedging on Article 77 was
+     undone by addition. Two figures, because they are two different kinds of
+     money: one the employer owes on the face of it, one that depends on a
+     ruling nobody here can make. */
+  /* "على وجه الظاهر" is "on the face of it" carried across word by word, and
+     it is not a collocation an Arabic legal register uses — on the single
+     most important label in the paid product, in the product's primary
+     language. "بحسب الظاهر" is the phrase that exists. */
+  tm_m_total_certain:{ar:"المستحق بحسب الظاهر",en:"Owed on the face of it"},
+  tm_m_total_contested:{ar:"متوقف على قرار الجهة المختصة",en:"Depends on a ruling"},
+  tm_m_total_split:{ar:"ما جمعناهم في رقم واحد عن قصد: الأول مبني على وقائع أدخلتها، والثاني ما يُستحق إلا إذا قررت الجهة المختصة أن الإنهاء بغير سبب مشروع.",
+                    en:"We deliberately don't add these together: the first rests on facts you gave us, the second is owed only if the termination is found to be without valid reason — and that is for the competent authority to decide, not us."},
   tm_m_none:{ar:"ما طلع لنا مبلغ من اللي أدخلته. هذا ما يعني إنه ما فيه شيء مستحق — يعني إن اللي عندنا ما يكفي لحسابه.",
              en:"Nothing came out as an amount from what you entered. That doesn't mean nothing is owed — it means we don't have enough to calculate it."},
   tm_m_caveat:{ar:"هذي تقديرات لما قد يكون مستحقًا، بناءً على ما أدخلته. المستحق الفعلي يعتمد على الوقائع كاملة والأنظمة السارية ونصوص عقدك والجهة المختصة.",
@@ -3514,8 +3593,21 @@ const T = {
   tm_src_111:{ar:"نظام العمل السعودي — المادة 111",en:"Saudi Labor Law — Article 111"},
   tm_src_76:{ar:"نظام العمل السعودي — المادتان 75 و76",en:"Saudi Labor Law — Articles 75 and 76"},
   tm_src_77:{ar:"نظام العمل السعودي — المادة 77",en:"Saudi Labor Law — Article 77"},
-  tm_src_wage:{ar:"حساب من الشهور اللي ذكرتها، لا من نص نظامي.",
-               en:"Calculated from the months you reported, not from a statutory rule."},
+  tm_src_80:{ar:"نظام العمل السعودي — المادة 80",en:"Saudi Labor Law — Article 80"},
+  /* Article 81's GROUNDS are verified; the award consequence is our reading of
+     "without prejudice to all his statutory rights", which is why the money
+     line for this path is "likely" and not "confirmed". The label says so. */
+  tm_src_81:{ar:"نظام العمل السعودي — المادة 81 (الأسباب موثّقة، وأثرها على المكافأة قراءة وضوح)",
+             en:"Saudi Labor Law — Article 81 (grounds verified; its effect on the award is Wodouh's reading)"},
+  /* The third kind of source, and it is a real one: a statement that rests on
+     the reader's own answers is not weaker than a cited rule, it is a
+     different claim — and saying which it is takes nothing away. */
+  src_you:{ar:"من إجاباتك أنت — لا من نص نظامي",en:"From your own answers — not a statutory rule"},
+  /* Rendered after src_method ("Wodouh's reading — not a statutory rule"), so
+     it said "not a statutory rule" twice in one line. It only has to add what
+     that prefix does not: where the figure came from. */
+  tm_src_wage:{ar:"محسوب من الشهور اللي ذكرتها.",
+               en:"Calculated from the months you reported."},
   tm_src_other:{ar:"المبلغ اللي أدخلته أنت — يتبع نص عقدك لا النظام.",
                 en:"The amount you entered — governed by your contract's wording, not the statute."},
 
@@ -3543,16 +3635,16 @@ const T = {
   tm_hw_answers_b:{ar:"اخترت: {h}. هذا الاختيار وحده يحدد أي مواد ننظر فيها وكيف تُحسب المكافأة.",
                    en:"You chose: {h}. That one choice decides which articles we look at and how the award is calculated."},
   tm_hw_service:{ar:"مدة خدمتك",en:"Your length of service"},
-  tm_hw_service_b:{ar:"{y} سنة و{m} شهر — تدخل مباشرة في حساب المكافأة والتعويض.",
-                   en:"{y} years and {m} months — this feeds straight into the award and the compensation figure."},
+  tm_hw_service_b:{ar:"{s} — تدخل مباشرة في حساب المكافأة والتعويض.",
+                   en:"{s} — this feeds straight into the award and the compensation figure."},
   tm_hw_track:{ar:"جنسيتك في النظام",en:"Which body of law applies to you"},
   tm_hw_track_sa:{ar:"طبّقنا مسار المواطن السعودي: العقد قد يكون غير محدد المدة، وقواعد الإشعار تنطبق.",
                   en:"We applied the Saudi track: the contract may be indefinite, and the notice rules apply."},
   tm_hw_track_nonsa:{ar:"طبّقنا مسار المقيم: عقدك محدد المدة دائمًا، فتعويض الإنهاء يُحسب بأجر المدة الباقية، وقواعد الإشعار ما تنطبق.",
                      en:"We applied the resident track: your contract is always fixed-term, so termination compensation is the wages for the remaining term, and the notice rules don't apply."},
   tm_hw_docs:{ar:"الأوراق اللي عندك",en:"The documents you have"},
-  tm_hw_docs_b:{ar:"علّمت {n} من الأوراق، وهذا يعطي قوة أدلة: {s}. عدد الأوراق ما يغيّر المبالغ، لكنه يغيّر قدرتك على إثباتها.",
-                en:"You ticked {n} of them, giving evidence strength: {s}. The count doesn't change the amounts — it changes your ability to prove them."},
+  tm_hw_docs_b:{ar:"علّمت {n}، وهذا يعطي قوة أدلة: {s}. عدد الأوراق ما يغيّر المبالغ، لكنه يغيّر قدرتك على إثباتها.",
+                en:"You ticked {n}, giving evidence strength: {s}. The count doesn't change the amounts — it changes your ability to prove them."},
   tm_hw_rules:{ar:"الأنظمة اللي طبّقناها",en:"The rules we applied"},
   tm_hw_rules_b:{ar:"كل مادة تظهر هنا محققة في سجل المصادر داخل التطبيق. اللي ما وراه مادة محققة نقوله بصريح العبارة إنه قراءة وضوح لا نص نظامي.",
                  en:"Every article shown here is verified in the sources register inside the app. Anything without a verified article says plainly that it's Wodouh's reading, not a statutory rule."},
@@ -3626,6 +3718,19 @@ const T = {
   tm_l_open_formal:{ar:"إلى إدارة الموارد البشرية المحترمة،\n\nبالإشارة إلى انتهاء علاقتي الوظيفية بالشركة، أتقدّم بهذا الطلب لمراجعة المستحقات النهائية، وفق الوقائع والمبالغ الموضحة أدناه.",
                     en:"To the Human Resources Department,\n\nFurther to the termination of my employment with the company, I submit this request for a review of my final entitlements, on the basis of the facts and amounts set out below."},
   tm_l_items:{ar:"المبالغ محل المراجعة:",en:"Amounts for review:"},
+  /* WODOUH'S VOICE MUST NOT REACH THE EMPLOYER.
+     `tm_m_total_split` explains the two figures to the READER — "the first
+     rests on facts you gave us" — and it was being pasted verbatim into the
+     letter the employee sends HR, so the employee ended up telling HR that
+     the figures rest on facts HR had entered. Worse, it volunteered, inside a
+     claim letter, that the claimant's own tool rates part of the claim as
+     speculative. The letter and the case document now say the same true thing
+     in the claimant's own register: these are the amounts I am asking about,
+     and this further item turns on a determination I am not making here. */
+  tm_l_split_certain:{ar:"وعليه، فالمبالغ المطلوب مراجعتها بحسب الظاهر:",
+                      en:"On that basis, the amounts I am asking you to review are:"},
+  tm_l_split_more:{ar:"وهناك بند إضافي يتوقف على تقدير الجهة المختصة، أذكره للعلم لا للمطالبة به في هذه المرحلة:",
+                   en:"There is a further item that turns on a determination by the competent authority. I note it for completeness, not as part of this request:"},
   tm_l_noitems:{ar:"أطلب توضيح أساس احتساب المخالصة النهائية.",
                 en:"I would like clarification of the basis on which the final settlement was calculated."},
   tm_l_ask_friendly:{ar:"لو فيه شيء فهمته غلط، أنا حاضر أسمع وأصحّح. وإذا كان في محله، أتمنى نرتّب الصرف في أقرب وقت يناسبكم.",
@@ -3780,16 +3885,16 @@ const T = {
                en:"Your service is {s}. You said you were asked to resign — if the cause was an employer breach, our reading is that your statutory rights survive intact, including the full award rather than the reduced one."},
   appl_eos_87:{ar:"خدمتك {s}، وذكرت: {e}. النظام يستثني هذي الحالة من تخفيض الاستقالة، فالمكافأة كاملة.",
                en:"Your service is {s}, and you told us: {e}. The law excepts that case from the resignation reduction, so the award is the full one."},
-  appl_notice:{ar:"عقدك يذكر {d} يومًا إشعارًا، وأُعطيت {g}. الفرق {n} يومًا، وعليه حُسب المبلغ.",
-               en:"Your contract states {d} days' notice and you were given {g}. The gap is {n} days, and the amount is calculated on it."},
-  appl_leave:{ar:"ذكرت {d} يومًا رصيدًا، على أجر يومي مشتق من {w} ريال شهريًا.",
-              en:"You reported {d} days of balance, at a daily rate derived from {w} SAR a month."},
-  appl_unpaid:{ar:"ذكرت {m} شهرًا غير مدفوع، على راتب {w} ريال.",
-               en:"You reported {m} months unpaid, at {w} SAR a month."},
+  appl_notice:{ar:"عقدك يذكر {d} إشعارًا، وأُعطيت {g}. الفرق {n}، وعليه حُسب المبلغ.",
+               en:"Your contract states {d} of notice and you were given {g}. The gap is {n}, and the amount is calculated on it."},
+  appl_leave:{ar:"ذكرت {d} رصيدًا، على أجر يومي مشتق من {w} ريال شهريًا.",
+              en:"You reported {d} of balance, at a daily rate derived from {w} SAR a month."},
+  appl_unpaid:{ar:"ذكرت {m} غير مدفوعة، على راتب {w} ريال.",
+               en:"You reported {m} unpaid, at {w} SAR a month."},
   appl_comp_indef:{ar:"عقدك غير محدد المدة، فالحساب بأجر 15 يومًا عن كل سنة من خدمتك {s} — أو حد الشهرين، أيهما أعلى.",
                    en:"Your contract is indefinite, so the calculation is 15 days' wages for each year of your {s} — or the two-month floor, whichever is higher."},
-  appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} شهرًا وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
-                   en:"Your contract is fixed-term with about {m} months left at termination — or the two-month floor, whichever is higher."},
+  appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
+                   en:"Your contract is fixed-term with about {m} left at termination — or the two-month floor, whichever is higher."},
   appl_comp_fixed_unknown:{ar:"عقدك محدد المدة، لكن ما أعطيتنا تاريخ نهايته، فما نقدر نحسب المدة الباقية. الرقم المعروض هو الحد الأدنى فقط — أعطنا التاريخ يتغيّر.",
                            en:"Your contract is fixed-term but you haven't given us its end date, so we can't compute the remaining term. The figure shown is the floor only — give us the date and it changes."},
   appl_other:{ar:"المبلغ اللي أدخلته: {v}. ما تحققنا منه، وهو يتبع نص عقدك.",
@@ -3863,6 +3968,16 @@ const T = {
              en:"The calculation produced an invalid number, so we stopped rather than show you a wrong one."},
   gate_review:{ar:"مراجعتنا الثانية لقت مشكلة في التقييم نفسه:",
                en:"Our second-pass review found a problem with the assessment itself:"},
+  /* Nothing found is a real answer and stays on screen. It is simply not
+     something to sell, and the reader is told so where the empty figure is,
+     not left to discover it at a pay button. */
+  /* Said "fill in what's missing ABOVE" while the missing-items list is ~900px
+     BELOW, on a screen with no control that returns to the questions at all —
+     so the most generous moment in the product was also the one that stranded
+     the reader. The direction is gone and a door is right here. */
+  tm_m_none_sale:{ar:"وما نطلب منك تدفع مقابل تقييم ما لقى شيء. كمّل إجاباتك ونعيد الحساب لك مجانًا.",
+                  en:"And we're not asking you to pay for an assessment that found nothing. Complete your answers and we'll recalculate, free."},
+  tm_m_none_cta:{ar:"أكمل إجاباتي",en:"Complete my answers"},
   gate_fix:{ar:"ارجع وعدّل إجاباتك، والتقييم يتحدث معها.",
             en:"Go back and correct your answers — the assessment follows them."},
   fc_ctype:{ar:"تحديد نوع العقد",en:"Contract type identified"},
@@ -3991,6 +4106,31 @@ const T = {
   eos_m_2:{ar:"شهرين",en:"2 months"},
   eos_m_p:{ar:"{n} أشهر",en:"{n} months"},
   eos_m_m:{ar:"{n} شهرًا",en:"{n} months"},
+  /* THE SAME FOUR SHAPES, FOR EVERY NOUN THE APP COUNTS.
+     The years and months above read as Arabic; six other counts on the same
+     screens did not — "2 شهرًا" where the dual belongs, "7 شهرًا" where the
+     plural does, "1 من الأوراق" for a single sheet. They were formatted by
+     hand at their call sites, one string at a time, which is why fixing the
+     duration once did not fix them. All of them go through countNoun() now. */
+  /* Arabic has no copula here, so the slot is simply empty in it. */
+  is_1:{ar:"",en:"is"},
+  is_p:{ar:"",en:"are"},
+  cnt_d_1:{ar:"يوم واحد",en:"1 day"},
+  cnt_d_2:{ar:"يومين",en:"2 days"},
+  cnt_d_p:{ar:"{n} أيام",en:"{n} days"},
+  cnt_d_m:{ar:"{n} يومًا",en:"{n} days"},
+  cnt_doc_1:{ar:"ورقة واحدة",en:"1 document"},
+  cnt_doc_2:{ar:"ورقتين",en:"2 documents"},
+  cnt_doc_p:{ar:"{n} أوراق",en:"{n} documents"},
+  cnt_doc_m:{ar:"{n} ورقة",en:"{n} documents"},
+  cnt_ent_1:{ar:"استحقاق واحد",en:"1 entitlement"},
+  cnt_ent_2:{ar:"استحقاقين",en:"2 entitlements"},
+  cnt_ent_p:{ar:"{n} استحقاقات",en:"{n} entitlements"},
+  cnt_ent_m:{ar:"{n} استحقاقًا",en:"{n} entitlements"},
+  cnt_item_1:{ar:"بند واحد",en:"1 item"},
+  cnt_item_2:{ar:"بندين",en:"2 items"},
+  cnt_item_p:{ar:"{n} بنود",en:"{n} items"},
+  cnt_item_m:{ar:"{n} بندًا",en:"{n} items"},
   eos_yrs_join:{ar:"{y} و{m}",en:"{y}, {m}"},
   eos_yrs:{ar:"{y} سنة و{m} شهر",en:"{y} years, {m} months"},
   eos_b_first:{ar:"أول 5 سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
@@ -4130,6 +4270,23 @@ const OB = [
       <circle cx="60" cy="60" r="44" stroke="var(--line)" stroke-width="9"/>
       <path d="M60 16a44 44 0 1 1-31.1 12.9" stroke="var(--teal)" stroke-width="9" stroke-linecap="round"/>
       <path d="M42 61l12 12 24-27" stroke="var(--teal)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>` },
+  /* THE STRONGEST THING THIS PRODUCT CAN SAY, AND IT WAS BURIED.
+     "Your contract is read on your device" was four taps deep in Account,
+     while the reader was being asked to paste an employment contract into an
+     app they had known for ninety seconds. It is the objection every one of
+     them has and none of them types. Stated in the app's conditional form —
+     the same one `privacy_line_ai` uses — because the absolute version stops
+     being true the moment a scanned contract needs uploading. */
+  { title:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
+    sub:{ar:"نقرأ النص داخل التطبيق، وما نخزّنه عندنا ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية وما تصير إلا بموافقتك — منها رفع العقد الممسوح ضوئيًا عشان نقدر نقرأه أصلًا.",
+         en:"We read the text inside the app, and we don't store it or share it. The only exceptions are optional and happen only with your consent — such as uploading a scanned contract so it can be read at all."},
+    art:`<svg viewBox="0 0 120 120" fill="none">
+      <rect x="30" y="10" width="60" height="100" rx="13" stroke="var(--teal-ink)" stroke-width="6"/>
+      <path d="M52 18h16" stroke="var(--teal-ink)" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <rect x="44" y="55" width="32" height="26" rx="6" fill="var(--sand)" stroke="var(--teal)" stroke-width="6"/>
+      <path d="M51 55v-7a9 9 0 0 1 18 0v7" stroke="var(--teal)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M60 65v6" stroke="var(--teal)" stroke-width="5.5" stroke-linecap="round"/>
     </svg>` },
   /* Asked last, so the reader knows what Wodouh does before being asked
      anything about themselves. It is the only card that requires an answer:
@@ -5440,7 +5597,7 @@ function renderResult(reset){
     if (buy) buy.onclick = () => {
       pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
       pwUpgrade = null; pwUpBack = null;
-      renderPaywall(); show("paywall");
+      if (renderPaywall()) show("paywall");
     };
   }
   /* THE DOOR THE UPGRADE NEVER HAD.
@@ -6379,6 +6536,8 @@ function calcEos(){
   const exc = eosHow === "resign" && eosExc87Applies();
   const factor = (eosHow === "resign" && !exc) ? resignFactor(y) : 1;
   const total = sub * factor;
+  /* The only case where a subtotal is a different number from the total. */
+  const eosAdjusted = factor !== 1;
 
   const svc = svcText(parts.y, parts.m);
   const cur = t("eos_sar");
@@ -6393,8 +6552,15 @@ function calcEos(){
        <div class="rows">
          ${row(t("eos_b_first"), money(firstAmt)+" "+cur)}
          ${after > 0 ? row(t("eos_b_after"), money(afterAmt)+" "+cur) : ""}
-         ${row(t("eos_b_sub"), money(sub)+" "+cur)}
-         ${eosHow==="resign" && !exc ? row(t("eos_b_factor"), factor===0 ? "0" : (factor===1 ? "1" : (factor<0.5?"1/3":"2/3"))) : ""}
+         ${/* "Subtotal before adjustment" sat directly above an identical
+              "Estimated total" whenever no adjustment applied — a label that
+              raises a question and then never answers it, on the one screen
+              whose whole job is showing the arithmetic. The subtotal and the
+              factor now appear only when the factor actually moves the
+              figure; otherwise the total stands alone, which is the truth. */
+           ""}
+         ${eosAdjusted ? row(t("eos_b_sub"), money(sub)+" "+cur) : ""}
+         ${eosAdjusted ? row(t("eos_b_factor"), factor===0 ? "0" : (factor<0.5?"1/3":"2/3")) : ""}
          ${row(t("eos_b_total"), money(total)+" "+cur, "tot")}
        </div>
        ${exc ? `<p class="eos-note">${t("eos_exc87")}</p>` : ""}
@@ -6674,7 +6840,7 @@ function openCasePaywall(){
      pointing at the termination flow. The price and the entitlement were both
      right; every word around them was wrong. */
   pwMode = "case"; pwOrigin = "case"; pwPlan = 0; pwUpgrade = null; pwUpBack = null;
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 
 /* ================================================ termination assessment
@@ -7082,13 +7248,44 @@ function termLines(){
   return [
     { key:"tm_m_unpaid",  amt:termUnpaidOwed(), src:"tm_src_wage",   kind:"method" },
     { key:"tm_m_leave",   amt:termLeaveOwed(),  src:"tm_src_111",    kind:"law" },
-    { key:"tm_m_eos",     amt:termAwardOwed(),  src:termHow() && termHow().award === "resign" ? "tm_src_8485" : "tm_src_84", kind:"law" },
+    /* THE ARTICLE 81 UPLIFT IS A READING, AND THE FIGURE HAS TO SAY SO.
+       On "I was asked to resign" the section card is scrupulous — sourced
+       tm_src_81, "grounds verified; its effect on the award is Wodouh's
+       reading", and it tells the reader the point deserves serious review.
+       The money line beside it was sourced flat tm_src_84 and sat in the
+       certain column. The hedge existed on the card and was stripped off the
+       riyals: the full award only stands if the characterisation is accepted,
+       and if it is not, Article 85's reduced tiers apply instead. That is the
+       same kind of dependency as the Article 77 line below — a finding this
+       app cannot make — so it is labelled the same way. docs/legal-sources.md
+       line 98 is explicit that the award consequence is a reading, and
+       certaintyFor() already refuses to call this line "confirmed". */
+    { key:"tm_m_eos",     amt:termAwardOwed(),
+      src: termHow() && termHow().art81 ? "tm_src_81"
+         : termHow() && termHow().award === "resign" ? "tm_src_8485" : "tm_src_84",
+      kind:"law", contested: !!(termHow() && termHow().art81) },
     { key:"tm_m_notice",  amt:termNoticeOwed(), src:"tm_src_76",     kind:"law" },
-    { key:"tm_m_comp",    amt:termComp(),       src:"tm_src_77",     kind:"law" },
+    /* `contested` is not a certainty level. Every other line is money the
+       employer owes on the face of the facts; this one is owed only if a
+       body outside this app rules the termination unlawful. Its own copy
+       says exactly that — and addition then quietly undid the hedge, folding
+       it into a single bolded figure a distressed reader screenshots. */
+    { key:"tm_m_comp",    amt:termComp(),       src:"tm_src_77",     kind:"law", contested:true },
     { key:"tm_m_other",   amt:termOtherOwed(),  src:"tm_src_other",  kind:"method" }
   ].filter(l => l.amt > 0);
 }
+/* Everything, contested included. Kept because the checks, the gate and the
+   stored record all mean "the largest figure in play" by it — but it is no
+   longer what gets presented as one number. */
 function termTotal(){ return termLines().reduce((n, l) => n + l.amt, 0); }
+/* The two figures the reader is actually shown. Certain: owed on the face of
+   the facts. Contested: owed only if the competent authority agrees. */
+function termTotalCertain(){
+  return termLines().filter(l => !l.contested).reduce((n, l) => n + l.amt, 0);
+}
+function termTotalContested(){
+  return termLines().filter(l => l.contested).reduce((n, l) => n + l.amt, 0);
+}
 
 /* ------------------------------------------- reasoning and certainty
    A figure with no reasoning behind it is a number someone has to take on
@@ -7125,20 +7322,20 @@ function appliesText(l){
       return t("appl_eos_full").replace("{s}", svc);
     }
     case "tm_m_notice":
-      return t("appl_notice").replace("{d}", fmtNum(term.noticeDue))
-        .replace("{g}", fmtNum(term.noticeGiven || 0))
-        .replace("{n}", fmtNum(Math.max(0, term.noticeDue - (term.noticeGiven || 0))));
+      return t("appl_notice").replace("{d}", countNoun("cnt_d", term.noticeDue))
+        .replace("{g}", countNoun("cnt_d", term.noticeGiven || 0))
+        .replace("{n}", countNoun("cnt_d", Math.max(0, term.noticeDue - (term.noticeGiven || 0))));
     case "tm_m_leave":
-      return t("appl_leave").replace("{d}", fmtNum(term.leaveDays))
+      return t("appl_leave").replace("{d}", countNoun("cnt_d", term.leaveDays))
         .replace("{w}", money(termWage()));
     case "tm_m_unpaid":
-      return t("appl_unpaid").replace("{m}", fmtNum(term.unpaidMonths))
+      return t("appl_unpaid").replace("{m}", countNoun("eos_m", term.unpaidMonths))
         .replace("{w}", money(termWage()));
     case "tm_m_comp": {
       const m = termRemainingMonths();
       return termCtype() === "fixed"
         ? (m == null ? t("appl_comp_fixed_unknown")
-                     : t("appl_comp_fixed").replace("{m}", fmtNum(Math.round(m))))
+                     : t("appl_comp_fixed").replace("{m}", countNoun("eos_m", Math.round(m))))
         : t("appl_comp_indef").replace("{s}", svc);
     }
     default:
@@ -7280,21 +7477,38 @@ function reviewBlocks(){
 /* ---------------------------------------------------- the assessment
    Three states only, and none of them is a verdict. "Potential issue" is the
    strongest thing this screen is allowed to say. */
+/* SOURCE DISCIPLINE APPLIES TO REMOVING A CLAIM, NOT ONLY TO GRANTING ONE.
+   Every money line carried its article. The cards that take money OFF the
+   table — "notice compensation belongs to indefinite contracts and yours is
+   fixed-term", "termination during probation carries no award" — carried
+   nothing at all. Those are the sentences a reader is most entitled to check,
+   because they are the ones that end the conversation.
+
+   Three kinds of source, and the distinction is the point:
+     a verified article — the register stands behind it
+     src_you            — this rests on what you told us, not on a rule
+     src_method         — this is our reading, and the law is unsettled
+   Probation is deliberately src_method: docs/legal-sources.md carries Article
+   53 as an OPEN DISPUTE, so citing it here would assert what that file says
+   we cannot. */
 function termSections(){
   const h = termHow(), out = [];
-  const S = (k, state, why) => out.push({ k, state, why });
+  const S = (k, state, why, src) => out.push({ k, state, why, src });
 
   S("tm_s_contract",
     h && h.art80 ? "issue" : h && h.prob ? "ok" : "review",
-    h && h.art80 ? "tm_s_contract_issue" : h && h.prob ? "tm_s_contract_prob" : "tm_s_contract_review");
+    h && h.art80 ? "tm_s_contract_issue" : h && h.prob ? "tm_s_contract_prob" : "tm_s_contract_review",
+    h && h.art80 ? "tm_src_80" : h && h.prob ? "src_method" : "src_you");
 
   if (h && h.notice && !isNonSaudi() && termCtype() !== "fixed"){
     const owed = termNoticeOwed();
     S("tm_s_notice", owed > 0 ? "issue" : term.noticeDue > 0 ? "ok" : "review",
-      owed > 0 ? "tm_s_notice_issue" : term.noticeDue > 0 ? "tm_s_notice_ok" : "tm_s_notice_review");
+      owed > 0 ? "tm_s_notice_issue" : term.noticeDue > 0 ? "tm_s_notice_ok" : "tm_s_notice_review",
+      "tm_src_76");
   } else {
     S("tm_s_notice", "ok",
-      isNonSaudi() || termCtype() === "fixed" ? "tm_s_notice_fixed" : "tm_s_notice_na");
+      isNonSaudi() || termCtype() === "fixed" ? "tm_s_notice_fixed" : "tm_s_notice_na",
+      isNonSaudi() || termCtype() === "fixed" ? "tm_src_76" : "src_you");
   }
 
   S("tm_s_eos",
@@ -7302,17 +7516,25 @@ function termSections(){
     term.gotEos === true ? "tm_s_eos_paid"
       : h && h.art81 ? "tm_s_eos_81"
       : h && h.award === "resign" ? "tm_s_eos_resign"
-      : h && h.award === "none" ? "tm_s_eos_prob" : "tm_s_eos_due");
+      : h && h.award === "none" ? "tm_s_eos_prob" : "tm_s_eos_due",
+    term.gotEos === true ? "src_you"
+      : h && h.art81 ? "tm_src_81"
+      : h && h.award === "resign" ? "tm_src_8485"
+      : h && h.award === "none" ? "src_method" : "tm_src_84");
 
   S("tm_s_unpaid", termUnpaidOwed() > 0 ? "issue" : "ok",
-    termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok");
+    termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok",
+    termUnpaidOwed() > 0 ? "tm_src_wage" : "src_you");
   S("tm_s_leave", termLeaveOwed() > 0 ? "issue" : "review",
-    termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review");
+    termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review",
+    "tm_src_111");
   S("tm_s_other", termOtherOwed() > 0 ? "review" : "ok",
-    termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok");
-  if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review");
+    termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok",
+    "src_you");
+  if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review", "tm_src_77");
   S("tm_s_settle", term.gotSettle === false ? "issue" : "ok",
-    term.gotSettle === false ? "tm_s_settle_issue" : "tm_s_settle_ok");
+    term.gotSettle === false ? "tm_s_settle_issue" : "tm_s_settle_ok",
+    "src_you");
   return out;
 }
 
@@ -7377,10 +7599,22 @@ function finalChecks(){
   });
 }
 
+/* Nothing computed from the answers we hold. Kept as its own predicate because
+   three places have to agree about it: the gate, the route into the paywall,
+   and the steps that would otherwise offer a purchase from the same screen. */
+function assessmentEmpty(){
+  return !term || termLines().length === 0;
+}
+
 /* The hard gate. Numbers that are not numbers must never reach a reader, and
    a blocking review finding means the assessment itself is wrong. */
 function assessmentSafe(){
   if (!term) return { ok:false, why:"gate_noterm" };
+  /* NOTE: an empty assessment is deliberately NOT gated here. "We found no
+     amount, and that does not mean nothing is owed" is a legitimate, useful
+     answer — a probation termination and a clean resignation both reach it —
+     so it must still be shown. What must never happen is charging for it;
+     that is `assessmentEmpty()`, guarding the commerce paths instead. */
   const t2 = termTotal();
   if (!isFinite(t2) || t2 < 0) return { ok:false, why:"gate_calc" };
   const bad = termLines().some(l =>
@@ -7395,7 +7629,9 @@ async function openTermResult(){
   /* The assessment used to be its own 145 SAR product, gating a RESULT rather
      than a document — the only thing in the app that did. It is now part of
      the case file, so the entitlement asked for here is the case one. */
-  if (!has("case")){ pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); return; }
+  /* …but only when there is something to sell. With nothing computed, the
+     reader goes to the result screen and is told what is missing. */
+  if (!has("case") && !assessmentEmpty()){ pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; if (renderPaywall()) show("paywall"); return; }
 
   /* The brief asks for the second pass to run before the result is presented,
      so it does — but never at the cost of the reader seeing their assessment.
@@ -7445,10 +7681,14 @@ function renderTermResult(){
        <p>${t("tm_r_notfinal")}</p>
      </div>`;
 
+  /* The source line renders on every card, granting or denying, in the same
+     grammar the money lines use — `law` for a cited article, `method` for a
+     reading or an answer of the reader's own. */
   document.getElementById("termSections").innerHTML = termSections().map(s =>
     `<div class="tm-sec">
        <div class="hd"><b>${t(s.k)}</b><span class="tm-tag ${s.state}">${t("tm_st_" + s.state)}</span></div>
        <p>${t(s.why)}</p>
+       ${s.src ? `<p class="src-line ${/^tm_src_\d/.test(s.src) ? "law" : "method"}">${t(s.src)}</p>` : ""}
      </div>`).join("");
 
   /* WHAT COULD STILL RAISE THIS FIGURE, BESIDE THE FIGURE.
@@ -7461,13 +7701,43 @@ function renderTermResult(){
      the second-pass review roughly 1,400px further down, under a heading that
      reads as housekeeping. Same sentence, moved to where the money is. */
   const cur = t("eos_sar"), lines = termLines();
+  /* THE ANSWER, AT THE SIZE OF AN ANSWER.
+     This screen answers one question — "how much am I owed?" — and set the
+     figure in the same 15px as every other row on it. The score ring was the
+     only thing in the product allowed to be big, and it lives on a different
+     screen entirely. The reader who has just lost their income now sees the
+     number they came for, and the contested figure stays deliberately smaller
+     beside it, because it is a different kind of money. */
+  const heroCertain = lines.length ? money(termTotalCertain()) : null;
+  const row = ls => ls.map(l =>
+    `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
+     <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("");
   document.getElementById("termMoney").innerHTML =
+    (heroCertain ? `<div class="tm-hero">
+       <div class="lbl">${t(termTotalContested() > 0 ? "tm_m_total_certain" : "tm_m_total")}</div>
+       <div class="amt">${heroCertain}<small>${cur}</small></div>
+       ${termTotalContested() > 0
+         ? `<div class="alt">${t("tm_m_total_contested")}: <b>${money(termTotalContested())} ${cur}</b></div>`
+         : ""}
+     </div>` : "") +
+    /* The card above splits the two figures; this list used to put all five
+       rows back in one column in identical weight, so a phone reader scanning
+       them adds the contested one back in — reintroducing, 400px later, the
+       exact confusion the card exists to prevent. The rows are grouped the
+       way the figures are. */
     `<div class="tm-money">
-       ${lines.length ? lines.map(l =>
-         `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
-          <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("")
-        : `<p class="cap">${t("tm_m_none")}</p>`}
-       ${lines.length ? `<div class="r tot"><span>${t("tm_m_total")}</span><b>${money(termTotal())} ${cur}</b></div>` : ""}
+       ${lines.length ? row(lines.filter(l => !l.contested)) +
+           (lines.some(l => l.contested)
+             ? `<p class="tm-split-h">${t("tm_m_total_contested")}</p>` + row(lines.filter(l => l.contested))
+             : "")
+        : `<p class="cap">${t("tm_m_none")}</p>
+           <p class="cap">${t("tm_m_none_sale")}</p>
+           <button class="ghost wide" id="termFillIn">${t("tm_m_none_cta")}</button>`}
+       ${/* The totals moved into the card above, at the size an answer
+            deserves. Repeating them here would be the same figure twice,
+            400px apart — the defect this file keeps rediscovering. What stays
+            is the sentence that explains why there are two of them. */
+         lines.length && termTotalContested() > 0 ? `<p class="cap">${t("tm_m_total_split")}</p>` : ""}
        ${lines.length ? termCouldRise().map(k =>
          `<p class="tm-rise"><span class="up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M4 7l4-4 4 4"/></svg></span><span>${t(k)}</span></p>`).join("") : ""}
        ${termTermOdd() ? `<p class="cap">${t("cf_term_odd")}</p>` : ""}
@@ -7537,13 +7807,19 @@ function renderTermResult(){
   document.getElementById("termHowFactors").innerHTML = [
     ["tm_hw_answers", t("tm_hw_answers_b").replace("{h}", t(termHow() ? termHow().label : "th_other"))],
     ["tm_hw_service", t("tm_hw_service_b")
-      .replace("{y}", fmtNum(termParts().y)).replace("{m}", fmtNum(termParts().m))],
+      .replace("{s}", svcText(termParts().y, termParts().m))],
     ["tm_hw_track", t(isNonSaudi() ? "tm_hw_track_nonsa" : "tm_hw_track_sa")],
     ["tm_hw_docs", t("tm_hw_docs_b")
-      .replace("{n}", fmtNum(term.docs.length)).replace("{s}", t(ev.key))],
+      .replace("{n}", countNoun("cnt_doc", term.docs.length)).replace("{s}", t(ev.key))],
     ["tm_hw_rules", t("tm_hw_rules_b")]
   ].map(([k, body]) =>
     `<details><summary>${t(k)}</summary><p>${body}</p></details>`).join("");
+
+  /* CSP is script-src 'self' with no 'unsafe-inline', so an inline onclick
+     here would be silently inert — bound as a property, like every other
+     control this file builds. */
+  const fill = document.getElementById("termFillIn");
+  if (fill) fill.onclick = () => { termStep = 0; renderTermQ(); show("termq"); };
 
   renderTermSteps();
 }
@@ -7555,13 +7831,17 @@ function renderTermSteps(){
      check, not as an upsell — because a route added later must not be able to
      hand out documents nobody bought. */
   const full = has("case");
-  const gate = go => full ? go : () => { pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; renderPaywall(); show("paywall"); };
-  const label = k => t(k);
+  /* With nothing computed there is no purchase to offer from here either: the
+     CTA disappears rather than routing to a paywall for an empty assessment.
+     The card above already says what is missing. */
+  const gate = (k, go) => full ? [t(k), go]
+    : assessmentEmpty() ? null
+    : [t(k), () => { pwMode = "case"; pwOrigin = "term"; pwPlan = 0; pwUpgrade = null; if (renderPaywall()) show("paywall"); }];
   const steps = [
     ["tm_n1", "tm_n1_b", null],
     ["tm_n2", "tm_n2_b", [t("tm_n2_cta"), () => { renderTermEv(); show("termev"); }]],
-    ["tm_n3", "tm_n3_b", [label("tm_n3_cta"), gate(() => { renderTermLtr(); show("termltr"); })]],
-    ["tm_n4", "tm_n4_b", [label("tm_n4_cta"), gate(() => { renderTermDoc(); show("termdoc"); })]],
+    ["tm_n3", "tm_n3_b", gate("tm_n3_cta", () => { renderTermLtr(); show("termltr"); })],
+    ["tm_n4", "tm_n4_b", gate("tm_n4_cta", () => { renderTermDoc(); show("termdoc"); })],
     ["tm_n5", "tm_n5_b", null]
   ];
   const host = document.getElementById("termSteps");
@@ -7616,8 +7896,24 @@ function renderPrivacyCopy(){
        flagsUrl() is the same test the fetch itself makes, so the copy and the
        behaviour cannot disagree — which is the failure this whole pattern
        exists to prevent. */
-    body.textContent = t(on ? "acc_privacy_b_ai" : "acc_privacy_b") +
+    const full = t(on ? "acc_privacy_b_ai" : "acc_privacy_b") +
       (flagsUrl() ? "\n\n" + t("acc_privacy_flags") : "");
+    /* Split at the first blank line, never mid-sentence: the lead paragraph
+       is the promise, and everything after it is the detail. With no blank
+       line (the short, AI-off copy) there is nothing to fold and the fold
+       does not appear at all. */
+    /* Only the AI copy is long enough to be worth folding. With the AI off the
+       whole answer is three sentences, and hiding two of them behind "the four
+       exceptions" would name four things that do not exist. */
+    const cut = on ? full.indexOf("\n\n") : -1;
+    const fold = document.getElementById("accPrivacyMore");
+    const rest = document.getElementById("accPrivacyRest");
+    body.textContent = cut === -1 ? full : full.slice(0, cut);
+    if (fold && rest){
+      fold.hidden = cut === -1;
+      rest.textContent = cut === -1 ? "" : full.slice(cut + 2);
+      if (cut === -1) fold.open = false;
+    }
   }
 }
 
@@ -8291,8 +8587,14 @@ function reviewPayload(){
     article_87_exception: term.exc87,
     reason_given: String(term.reason || "").slice(0, 500),
     amounts: termLines().map(l => ({ item: l.key, amount: Math.round(l.amt),
-                                     basis: l.src, kind: l.kind })),
-    total: Math.round(termTotal()),
+                                     basis: l.src, kind: l.kind,
+                                     contested: !!l.contested })),
+    /* Split for the reviewer too. It was handed one merged figure and no way
+       to know part of it was contingent, so the only thing it could do was
+       agree with the merge — the reviewer we ask "does this hold together"
+       could not see the join. */
+    total_certain: Math.round(termTotalCertain()),
+    total_contested: Math.round(termTotalContested()),
     sections: termSections().map(s => ({ item: s.k, state: s.state })),
     certainty: termLines().map(l => ({ item: l.key, level: certaintyFor(l.key).level })),
     could_not_assess: termUnassessed().map(g => g.key),
@@ -8428,7 +8730,15 @@ function buildTermDoc(){
     "",
     t("tm_d_h_money"),
     ...(money$.length ? money$ : [t("tm_d_none")]),
-    ...(money$.length ? [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`] : []),
+    /* Two figures here too. The document is what reaches the employer and the
+       friendly-settlement filing; a single sum there asserts as owed money
+       that depends on a ruling, which is the one claim in it that could be
+       thrown back at the reader. */
+    ...(money$.length ? (termTotalContested() > 0
+        ? [`• ${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`,
+           t("tm_l_split_more"),
+           `• ${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`]
+        : [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`]) : []),
     /* The screen is where the honesty lives; this document is what actually
        goes to the employer, the lawyer and the friendly-settlement filing. It
        was carrying the understated total with no mention that an unanswered
@@ -8501,15 +8811,22 @@ function renderTermTone(){
 
 function buildTermLtr(){
   const cur = t("eos_sar"), lines = termLines();
-  const items = lines.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  /* Numbered 1..5 including the contested item, then totalled 1..4 — the
+     recipient saw five numbered claims and a total that did not match them.
+     The two groups are listed separately, each numbered from one, each with
+     its own total, so the arithmetic on the page is the arithmetic. */
+  const certain = lines.filter(l => !l.contested), contested = lines.filter(l => l.contested);
+  const list = ls => ls.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  const items = list(certain);
   const body = [
     t("tm_l_open_" + termTone),
     "",
     ...termFacts(),
     "",
-    items.length ? t("tm_l_items") : t("tm_l_noitems"),
+    lines.length ? t("tm_l_items") : t("tm_l_noitems"),
     ...items,
-    ...(items.length ? [`${t("tm_m_total")}: ${money(termTotal())} ${cur}`] : []),
+    ...(items.length ? [`${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`] : []),
+    ...(contested.length ? ["", t("tm_l_split_more"), ...list(contested)] : []),
     "",
     t("tm_l_ask_" + termTone),
     "",
@@ -9550,7 +9867,13 @@ function armReveals(root){
       if (e.isIntersecting){ e.target.classList.add("in"); revealObserver.unobserve(e.target); }
     }), { threshold:.12, rootMargin:"0px 0px -6% 0px" });
   }
-  const sel = ".clause, .pcard, .brow, .src, .tl-item, .acc-sec, .doc";
+  /* .lib-item and .tm-sec added: the rights library and the termination
+     result both render long, scrolled lists that appeared all at once with
+     no scroll-linked motion at all, an oversight from the redesign that gave
+     them their current groupings. Same restrained treatment as every other
+     card here — a small fade-and-rise, once, gated on reduced motion — not a
+     new effect. */
+  const sel = ".clause, .pcard, .brow, .src, .tl-item, .acc-sec, .doc, .lib-item, .tm-sec";
   (root || document).querySelectorAll(sel).forEach(el=>{
     if (el.dataset.rv) return;
     el.dataset.rv = "1";
@@ -9584,6 +9907,15 @@ function onScroll(){
     const mark = card.querySelector(".share-mark"), ring = card.querySelector(".ring");
     if (mark) mark.style.transform = "translateY(" + d + "px)";
     if (ring) ring.style.transform = "translateY(" + (d * 0.6) + "px)";
+  }
+  /* Same drift on the termination money card, so the answer this screen
+     exists to give has the same quiet weight as the score does — present
+     immediately, no fade delay, just a few pixels of parallax so the page
+     reads as a physical thing rather than a slideshow. */
+  const hero = document.querySelector("#screen-termres.active .tm-hero .amt");
+  if (hero){
+    const d2 = Math.max(-5, Math.min(5, window.scrollY * -0.06));
+    hero.style.transform = "translateY(" + d2 + "px)";
   }
 }
 
@@ -10946,7 +11278,7 @@ function scanGate(kind){
     pendingScan = kind;
     pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
     pwUpgrade = null; pwUpBack = null;
-    renderPaywall(); show("paywall");
+    if (renderPaywall()) show("paywall");
     return false;
   }
   return true;
@@ -10993,18 +11325,32 @@ function openPaywall(){
      applyFlags() re-renders it if the answer differs. A reader never waits on
      the network to see a screen. */
   ensureFlags();
-  pwMode = "letter"; pwUpgrade = null; pwUpBack = null;
+  /* pwOrigin BELONGS TO WHOEVER OPENS THE PAYWALL, and this was one of the two
+     entry points that did not set it. renderPaywall() derives isTerm from it,
+     so a reader who merely looked at the termination paywall and backed out
+     arrived here to a screen titled "Your termination assessment", a preview
+     of their employment facts, a shape block counting their entitlements — and
+     a pay button reading "Show my full assessment 149 SAR". One tap recorded
+     the 149 letter and rendered the 349 assessment. Every commercial guard in
+     this file is downstream of pwOrigin; the guards were right and their input
+     was stale. */
+  pwMode = "letter"; pwOrigin = "letter"; pwUpgrade = null; pwUpBack = null;
   if (has("letter")){ renderLetter(); show("letter"); return; }
   pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));   /* the intended choice */
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 
 /* Opening the paywall to sell a step up. The reader is shown the difference,
    not the full price a second time, and only the tier they do not yet hold. */
-function openUpgrade(mode, tier, back){
-  pwMode = mode; pwUpgrade = tier; pwPlan = 0;
+function openUpgrade(mode, tier, back, origin){
+  /* Same reason as openPaywall(): an upgrade opened after a termination visit
+     inherited "term" and was rendered — and priced, and gated — as one. The
+     origin defaults to the mode, which is true of every caller today; a
+     termination upgrade passes "term" explicitly rather than relying on
+     whatever the last screen happened to leave behind. */
+  pwMode = mode; pwOrigin = origin || mode; pwUpgrade = tier; pwPlan = 0;
   if (back) pwUpBack = back;
-  renderPaywall(); show("paywall");
+  if (renderPaywall()) show("paywall");
 }
 let pwUpBack = null;
 
@@ -11024,8 +11370,15 @@ function renderPaywall(){
      negotiation points, and a reader buying the full read of their contract
      has not chosen any. The screen appeared with no plans and no price.
      Caught by opening it, not by reading it. */
+  /* RETURNS FALSE RATHER THAN JUST RETURNING, and the difference is money.
+     Every caller used to pair `renderPaywall(); show("paywall")` unconditionally,
+     so on the paths this guard refuses the reader was navigated to a paywall
+     that had not been re-rendered — showing whatever offer was last built
+     there. Reached from the letter with no points chosen, after a look at the
+     termination paywall, that was a 349 SAR assessment offer sitting above the
+     letter's state. A screen that cannot be built must not be shown. */
   if (isTerm ? !term : isCase ? !eosData : isReview ? !current
-      : (!current || !selected().length)) return;
+      : (!current || !selected().length)) return false;
   const titleKey = pwUpgrade ? "pw_up_title" : isTerm ? "pw_term_title"
                  : isCase ? "pw_case_title" : isReview ? "pw_rev_title" : "pw_title";
   const freeKey  = isTerm ? "pw_term_free"  : isCase ? "pw_case_free"
@@ -11112,7 +11465,10 @@ function renderPaywall(){
   renderRedeem();
   const pay = document.getElementById("payBtn");
   const chosen = activePlans()[pwPlan];
-  pay.disabled = !chosen || !buyable(chosen);
+  /* Last line of defence. Both routes into a termination paywall now check
+     first, but a route added later must not be able to sell an assessment that
+     found nothing — so the button itself refuses. */
+  pay.disabled = !chosen || !buyable(chosen) || (isTerm && assessmentEmpty());
   /* One key here read "Get my letter" on a 245 SAR case file and on a
      termination assessment. The button now names what it sells. */
   /* isTerm is tested BEFORE isCase, and the order is the point. Both are true
@@ -11122,6 +11478,7 @@ function renderPaywall(){
   pay.textContent = t(pwUpgrade ? "pw_pay_up" : isTerm ? "pw_pay_term"
                     : isCase ? "pw_pay_case" : isReview ? "pw_pay_rev" : "pw_pay")
     + " " + priceLabel(chosen ? chosen.amt : 0);
+  return true;
 }
 
 /* WHAT THE READER IS BUYING, BEFORE THEY BUY IT.
@@ -11139,13 +11496,19 @@ function renderPwShape(isTerm, isCase){
     const law = lines.filter(l => l.kind === "law").length;
     const method = lines.length - law;
     const sep = lang === "ar" ? "، " : ", ";
+    /* "0 entitlements we found in your case:" — a count, a colon and no list.
+       Nothing found means there is nothing to describe, so the shape is empty
+       and the pay button beside it is disabled. */
+    if (!lines.length){ host.hidden = true; host.innerHTML = ""; return; }
     items.push([fmtNum(lines.length), t("pw_sh_found")
-      .replace("{n}", fmtNum(lines.length))
+      .replace("{n}", countNoun("cnt_ent", lines.length))
       .replace("{list}", lines.map(l => t(l.key)).join(sep)), false]);
-    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law)).replace("{m}", fmtNum(method)), false]);
+    /* "1 are Wodouh's own reading" — the verb agreed with nothing. */
+    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law))
+      .replace("{m}", fmtNum(method)).replace("{v}", t(method === 1 ? "is_1" : "is_p")), false]);
     if (gaps.length)
       items.push([fmtNum(gaps.length), t("pw_sh_gaps")
-        .replace("{n}", fmtNum(gaps.length))
+        .replace("{n}", countNoun("cnt_item", gaps.length))
         .replace("{list}", gaps.map(g => t(g.key)).join(sep)), true]);
     items.push(["✓", t("pw_sh_each"), false]);
   } else {
@@ -11269,6 +11632,13 @@ function creditPack(bought){
 }
 
 function grantAndGo(){
+  /* THE SINGLE ROUTE INTO THE PAID STATE, so the refusal belongs here too.
+     "Do not sell an assessment that found nothing" was enforced on the pay
+     button, and redemption codes do not go through the pay button — they call
+     this directly. No code can reach it today (REDEEM_HASHES is empty), which
+     is exactly the moment to put the guard on the path rather than on one of
+     the controls that happens to lead to it. */
+  if (pwOrigin === "term" && assessmentEmpty()) return;
   const chosen = activePlans()[pwPlan];
   /* Monotonic: a grant may only ever move a reader up. Writing unconditionally
      meant granting a cheaper tier silently revoked a dearer one — a reader who
