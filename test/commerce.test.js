@@ -458,6 +458,26 @@ async function seedTermination(p){
        `the saving it claims (${claimed && claimed[1]}) is the catalogue's own arithmetic (${saving})`);
   }
 
+  /* ---- one numeral convention across every surface a reader crosses.
+     The homepage wrote ١٤٩ and م/٥١ while the app one tap away writes 149 and
+     م/51 — the same price in two scripts. app/index.html settled the question
+     in its own comment and gave the reason: a figure you have to re-read is a
+     figure you do not trust. Comments are stripped, since the reasoning for
+     this rule necessarily quotes what it forbids. */
+  console.log("\n— one numeral convention, across every surface");
+  {
+    const strip = f => readFileSync(path.join(ROOT, f), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/<!--[\s\S]*?-->/g, " ");
+    const SURFACES = ["index.html", "app/index.html", "assets/landing.js",
+                      "privacy/index.html", "terms/index.html", "refund/index.html",
+                      "support/index.html"];
+    for (const f of SURFACES){
+      const hits = (strip(f).match(/[\u0660-\u0669]+/g) || []);
+      ok(hits.length === 0,
+         `${f} uses one set of digits${hits.length ? " — also found " + [...new Set(hits)].slice(0,5).join(", ") : ""}`);
+    }
+  }
+
   /* ---- a price comparison is a factual claim about a market, and this
      product's whole argument is that it cites what it asserts. Both surfaces
      carried "a lawyer consultation typically runs 400-1,000 SAR" with no

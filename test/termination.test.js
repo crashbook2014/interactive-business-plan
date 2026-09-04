@@ -505,6 +505,77 @@ async function art87Certainty(p){
   ok(/سنتين/.test(svc.two) && /شهر واحد/.test(svc.two), `the dual has its own form (${svc.two})`);
   ok(svc.zeroM === "6 سنوات", `and zero months is dropped rather than printed (${svc.zeroM})`);
   ok(/11 سنة/.test(svc.many), `11+ takes the singular accusative (${svc.many})`);
+
+  /* One helper, every counted noun. The duration was fixed once and six other
+     counts on the same screens kept formatting themselves by hand — "2 شهرًا"
+     where the dual belongs, "7 شهرًا" where the plural does, "1 من الأوراق"
+     for a single sheet, and an English "1 are Wodouh's own reading". */
+  console.log("\n— every counted noun agrees, in both languages");
+  const nouns = await p.evaluate(() => {
+    const out = {};
+    for (const L of ["ar","en"]){
+      lang = L;
+      for (const stem of ["eos_y","eos_m","cnt_d","cnt_doc","cnt_ent","cnt_item"])
+        for (const n of [0,1,2,3,7,10,11,25,100])
+          out[`${L}/${stem}/${n}`] = countNoun(stem, n);
+    }
+    lang = "en";
+    return out;
+  });
+  const badForm = Object.entries(nouns).filter(([, v]) => !v || /\{n\}|undefined/.test(v));
+  ok(badForm.length === 0, `every form resolves${badForm.length ? " — " + badForm.slice(0,4).map(x=>x[0]).join(", ") : ""}`);
+  /* The four shapes, spot-checked where Arabic actually differs. A helper that
+     returns the same string for 2 and for 7 is not doing the job. */
+  const ar = k => nouns["ar/" + k];
+  ok(ar("cnt_d/2") === "يومين" && ar("cnt_doc/2") === "ورقتين" && ar("cnt_ent/2") === "استحقاقين",
+     `the dual is used for 2 (${ar("cnt_d/2")}, ${ar("cnt_doc/2")}, ${ar("cnt_ent/2")})`);
+  ok(/أيام/.test(ar("cnt_d/7")) && /أوراق/.test(ar("cnt_doc/7")) && /بنود/.test(ar("cnt_item/7")),
+     `3-10 takes the plural (${ar("cnt_d/7")}, ${ar("cnt_doc/7")}, ${ar("cnt_item/7")})`);
+  ok(/يومًا/.test(ar("cnt_d/25")) && /ورقة/.test(ar("cnt_doc/25")) && /بندًا/.test(ar("cnt_item/25")),
+     `11+ takes the singular accusative (${ar("cnt_d/25")}, ${ar("cnt_doc/25")}, ${ar("cnt_item/25")})`);
+  ok(ar("cnt_doc/1") === "ورقة واحدة" && ar("cnt_doc/2") === "ورقتين",
+     `and one and two drop the numeral entirely (${ar("cnt_doc/1")}, ${ar("cnt_doc/2")})`);
+
+  /* And the strings that USE them no longer carry a noun of their own — that
+     is what made the duration fix miss these six in the first place. */
+  const hand = await p.evaluate(() =>
+    ["appl_notice","appl_leave","appl_unpaid","appl_comp_fixed","tm_hw_docs_b",
+     "tm_hw_service_b","pw_sh_found","pw_sh_gaps"]
+      /* Only a noun sitting NEXT TO its placeholder is the defect. The same
+         nouns appear in ordinary prose in these sentences ("the number of
+         documents doesn't change the amounts"), which is fine. */
+      .filter(k => /\{[a-z]\}\s*(شهرًا|شهر|يومًا|يوم|أوراق|ورقة|استحقاقات|بنود|سنة|days|months|items|entitlements|documents)\b/
+        .test(T[k].ar + " " + T[k].en)));
+  ok(hand.length === 0,
+     `no sentence hard-codes a counted noun beside its number${hand.length ? " — " + hand.join(", ") : ""}`);
+
+  /* The English verb agreed with nothing: "1 are Wodouh's own reading". */
+  const verb = await p.evaluate(() => {
+    lang = "en";
+    const out = {};
+    /* One line exactly — the case where every English plural used to be
+       wrong at once — and a multi-line case beside it. */
+    const cases = { one: { how:"other", otherAmt:3000 },
+                    many: { how:"employer", start:"2018-01-01", end:"2026-01-01",
+                            wage:10000, ctype:"indef", noticeDue:60, noticeGiven:0,
+                            leaveDays:10, unpaidMonths:2 } };
+    for (const [k, c] of Object.entries(cases)){
+      term = Object.assign(blankTerm(), c);
+      renderPwShape(true, false);
+      out[k] = { n: termLines().length, text: document.getElementById("pwShape").textContent };
+    }
+    return out;
+  });
+  ok(verb.one.n === 1 && verb.many.n > 1,
+     `the two shapes really are one line and several (${verb.one.n}, ${verb.many.n})`);
+  const shape = verb.one.text + " " + verb.many.text;
+  ok(/\b1 is Wodouh's own reading\b/.test(shape),
+     `the paywall's verb agrees with its own count (${(shape.match(/\d+ (is|are) Wodouh's own reading/g) || []).join(" / ")})`);
+  ok(!/\b1 (are|entitlements|items)\b/.test(shape),
+     "and nothing is pluralised at a count of one");
+  ok(/1 entitlement found in/.test(verb.one.text) &&
+     new RegExp(verb.many.n + " entitlements found in").test(verb.many.text),
+     "the entitlement count is itself a counted noun, singular and plural");
   ok(!/[٠-٩]/.test(Object.values(svc).join(" ")),
      "and every digit is Latin, in Arabic too");
 

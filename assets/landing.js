@@ -59,7 +59,7 @@ const T = {
   q2s:{ar:"مستأجر",en:"A tenant"},
   q2note:{ar:"وهذا النوع من البنود قابل للاعتراض غالبًا — عقدك المسجّل في إيجار هو سندك.",
           en:"A clause like that is usually contestable — your Ejar-registered contract is your proof."},
-  q3:{ar:"«سلّمت المشروع وانتظرت ٦٠ يومًا عشان أستلم. الاتفاق كان يقول كذا فعلًا.»",
+  q3:{ar:"«سلّمت المشروع وانتظرت 60 يومًا عشان أستلم. الاتفاق كان يقول كذا فعلًا.»",
       en:"“I delivered and waited sixty days to get paid. The agreement did say so.”"},
   q3s:{ar:"مستقل",en:"A freelancer"},
 
@@ -69,7 +69,7 @@ const T = {
   st1p:{ar:"ارفع ملف PDF أو الصق نص العقد. يُقرأ على جهازك، وما يُرفع إلا إذا كان ممسوحًا ضوئيًا ووافقت.",
         en:"Upload a PDF or paste the text. It's read on your device, and only uploaded if it's a scan and you agree."},
   st2:{ar:"اقرأ الخلاصة",en:"Read the verdict"},
-  st2p:{ar:"تقييم من ١٠٠، وكل بند مشروح بلغة بسيطة: أحمر انتبه، أصفر فاوض، أخضر مطمئن.",
+  st2p:{ar:"تقييم من 100، وكل بند مشروح بلغة بسيطة: أحمر انتبه، أصفر فاوض، أخضر مطمئن.",
         en:"A score out of 100 and every clause in plain language: red to pause, amber to negotiate, green to relax."},
   st3:{ar:"أرسل خطابك",e:"",en:"Send your letter"},
   st3p:{ar:"أضف البنود وأنت تقرأ، ونجمعها لك خطاب تفاوض مهذب وواثق ترسله كما هو.",
@@ -114,11 +114,11 @@ const T = {
   p4t:{ar:"الأفضل قيمة",en:"Best value"},
   p4p:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض — أقل من مجموعها.",
        en:"The full review, the case file and the negotiation letter — for less than their sum."},
-  p4g:{ar:"تحصل على: الثلاثة كاملة، وتوفّر ١٤٨ ر.س عن شرائها منفصلة.",
+  p4g:{ar:"تحصل على: الثلاثة كاملة، وتوفّر 148 ر.س عن شرائها منفصلة.",
        en:"You get: all three, saving 148 SAR against buying them separately."},
   price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — وضوح يجهّز لك ملفك قبل أن تذهب إليه.",
                 en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
-  price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة · ما أعجبك خلال ١٤ يومًا؟ نرجّع لك المبلغ — حتى لو استخدمته.",
+  price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة · ما أعجبك خلال 14 يومًا؟ نرجّع لك المبلغ — حتى لو استخدمته.",
              en:"The price shown is the total you pay, no VAT added · Not happy within 14 days? We refund you — even if you already used it."},
   p1g:{ar:"تحصل على: التقييم، والقرار، وأول تنبيه، وحاسبة نهاية الخدمة.",
        en:"You get: the score, the decision, the first flag, and the end-of-service calculator."},
@@ -142,7 +142,7 @@ const T = {
   t2p:{ar:"يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة: نشرح ونساعدك تفهم وتقرر، وإذا كانت حالتك تحتاج رأيًا مهنيًا نقول لك ذلك بوضوح.",
        en:"Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm: we explain and help you understand and decide, and when your situation needs professional judgement, we tell you so plainly."},
   t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
-  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق. المراجع محدّثة حتى فبراير ٢٠٢٥، تاريخ نفاذ آخر تعديلات النظام.",
+  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق. المراجع محدّثة حتى فبراير 2025، تاريخ نفاذ آخر تعديلات النظام.",
        en:"Every flag carries its reason and its reference in the Saudi Labor Law — and every source is published, with its official link and review date, on our how-we-verify page. References are current to February 2025, when the latest amendments came into force."},
 
   k_faq:{ar:"أسئلة",en:"Questions"},
@@ -156,7 +156,7 @@ const T = {
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
     ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة — وضوح غير مسجَّل فيها حاليًا."],
     ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ خلال 14 يومًا بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."],
-    ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/٥١ وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
+    ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/51 وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
     ["Do you keep my contract?","No. It's read and analyzed inside the app on your device, and we don't store it. The only exceptions are optional and happen only when you ask for them — a scanned contract has to be uploaded to be read at all, and we tell you before it is. Delete the app and everything we hold on your device goes with it."],
@@ -211,10 +211,17 @@ function applyLang(){
      There is no build step to share a constant between these two files, so
      the agreement is enforced by test/commerce.test.js, which reads both and
      fails when they differ. */
-  document.getElementById("p1ba").innerHTML = (lang==="ar" ? "١٩٩" : "199") + `<small>${sar}</small>`;
-  document.getElementById("p2a").innerHTML = (lang==="ar" ? "١٤٩" : "149") + `<small>${sar}</small>`;
-  document.getElementById("p3a").innerHTML = (lang==="ar" ? "٣٤٩" : "349") + `<small>${sar}</small>`;
-  document.getElementById("p4a").innerHTML = (lang==="ar" ? "٥٤٩" : "549") + `<small>${sar}</small>`;
+  /* ONE NUMERAL CONVENTION, AND IT IS THE APP'S.
+     This page wrote ١٤٩ and م/٥١ while the app it links to writes 149 and
+     م/51 — the same price in two scripts, one tap apart. app/index.html
+     settled the question and says why: readers here move between Arabic
+     contracts, bank apps and government portals that mostly use Latin
+     digits, and a figure you have to re-read is a figure you do not trust.
+     The language no longer changes the numerals. */
+  document.getElementById("p1ba").innerHTML = "199" + `<small>${sar}</small>`;
+  document.getElementById("p2a").innerHTML = "149" + `<small>${sar}</small>`;
+  document.getElementById("p3a").innerHTML = "349" + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = "549" + `<small>${sar}</small>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");

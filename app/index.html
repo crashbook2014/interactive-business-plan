@@ -2648,7 +2648,7 @@ const T = {
   au_or:{ar:"أو",en:"or"},
   au_email_lab:{ar:"بريدك الإلكتروني",en:"Your email"},
   au_email_go:{ar:"أرسل لي رمزًا",en:"Send me a code"},
-  au_code_lab:{ar:"أرسلنا رمزًا من ٦ أرقام إلى {e}",en:"We sent a 6-digit code to {e}"},
+  au_code_lab:{ar:"أرسلنا رمزًا من 6 أرقام إلى {e}",en:"We sent a 6-digit code to {e}"},
   au_code_go:{ar:"ادخل",en:"Sign in"},
   au_again:{ar:"ما وصلني — أرسله مرة ثانية",en:"Didn't arrive — send it again"},
   au_sending:{ar:"جارٍ الإرسال…",en:"Sending…"},
@@ -3143,12 +3143,12 @@ const T = {
   /* The shape of the work, shown before payment. Counts and names only — no
      amount appears in any of these strings, and none may be added. */
   pw_sh_head:{ar:"ما الذي يفتحه الدفع",en:"What paying unlocks"},
-  pw_sh_found:{ar:"‏{n} استحقاقات وجدناها في حالتك: {list}",
-               en:"{n} entitlements found in your situation: {list}"},
+  pw_sh_found:{ar:"‏{n} وجدناها في حالتك: {list}",
+               en:"{n} found in your situation: {list}"},
   pw_sh_law:{ar:"‏{n} منها مسندة إلى مادة موثّقة، و{m} اجتهاد وضوح — كلٌّ منها موسوم بمصدره",
-             en:"{n} of them cite a verified article, {m} are Wodouh's own reading — each one labelled"},
-  pw_sh_gaps:{ar:"‏{n} بنود لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
-              en:"{n} items we could not assess, and what each one needs: {list}"},
+             en:"{n} of them cite a verified article, {m} {v} Wodouh's own reading — each one labelled"},
+  pw_sh_gaps:{ar:"‏{n} لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
+              en:"{n} we could not assess, and what each one needs: {list}"},
   pw_sh_each:{ar:"كل مبلغ يذكر القاعدة، وكيف تنطبق على أرقامك، ومصدرها، ودرجة اليقين",
               en:"Every amount states its rule, how it applies to your numbers, its source, and how certain it is"},
   pw_sh_case_claim:{ar:"مطالبتك بالأرقام، كل بند بمصدره",
@@ -3571,16 +3571,16 @@ const T = {
   tm_hw_answers_b:{ar:"اخترت: {h}. هذا الاختيار وحده يحدد أي مواد ننظر فيها وكيف تُحسب المكافأة.",
                    en:"You chose: {h}. That one choice decides which articles we look at and how the award is calculated."},
   tm_hw_service:{ar:"مدة خدمتك",en:"Your length of service"},
-  tm_hw_service_b:{ar:"{y} سنة و{m} شهر — تدخل مباشرة في حساب المكافأة والتعويض.",
-                   en:"{y} years and {m} months — this feeds straight into the award and the compensation figure."},
+  tm_hw_service_b:{ar:"{s} — تدخل مباشرة في حساب المكافأة والتعويض.",
+                   en:"{s} — this feeds straight into the award and the compensation figure."},
   tm_hw_track:{ar:"جنسيتك في النظام",en:"Which body of law applies to you"},
   tm_hw_track_sa:{ar:"طبّقنا مسار المواطن السعودي: العقد قد يكون غير محدد المدة، وقواعد الإشعار تنطبق.",
                   en:"We applied the Saudi track: the contract may be indefinite, and the notice rules apply."},
   tm_hw_track_nonsa:{ar:"طبّقنا مسار المقيم: عقدك محدد المدة دائمًا، فتعويض الإنهاء يُحسب بأجر المدة الباقية، وقواعد الإشعار ما تنطبق.",
                      en:"We applied the resident track: your contract is always fixed-term, so termination compensation is the wages for the remaining term, and the notice rules don't apply."},
   tm_hw_docs:{ar:"الأوراق اللي عندك",en:"The documents you have"},
-  tm_hw_docs_b:{ar:"علّمت {n} من الأوراق، وهذا يعطي قوة أدلة: {s}. عدد الأوراق ما يغيّر المبالغ، لكنه يغيّر قدرتك على إثباتها.",
-                en:"You ticked {n} of them, giving evidence strength: {s}. The count doesn't change the amounts — it changes your ability to prove them."},
+  tm_hw_docs_b:{ar:"علّمت {n}، وهذا يعطي قوة أدلة: {s}. عدد الأوراق ما يغيّر المبالغ، لكنه يغيّر قدرتك على إثباتها.",
+                en:"You ticked {n}, giving evidence strength: {s}. The count doesn't change the amounts — it changes your ability to prove them."},
   tm_hw_rules:{ar:"الأنظمة اللي طبّقناها",en:"The rules we applied"},
   tm_hw_rules_b:{ar:"كل مادة تظهر هنا محققة في سجل المصادر داخل التطبيق. اللي ما وراه مادة محققة نقوله بصريح العبارة إنه قراءة وضوح لا نص نظامي.",
                  en:"Every article shown here is verified in the sources register inside the app. Anything without a verified article says plainly that it's Wodouh's reading, not a statutory rule."},
@@ -3808,16 +3808,16 @@ const T = {
                en:"Your service is {s}. You said you were asked to resign — if the cause was an employer breach, our reading is that your statutory rights survive intact, including the full award rather than the reduced one."},
   appl_eos_87:{ar:"خدمتك {s}، وذكرت: {e}. النظام يستثني هذي الحالة من تخفيض الاستقالة، فالمكافأة كاملة.",
                en:"Your service is {s}, and you told us: {e}. The law excepts that case from the resignation reduction, so the award is the full one."},
-  appl_notice:{ar:"عقدك يذكر {d} يومًا إشعارًا، وأُعطيت {g}. الفرق {n} يومًا، وعليه حُسب المبلغ.",
-               en:"Your contract states {d} days' notice and you were given {g}. The gap is {n} days, and the amount is calculated on it."},
-  appl_leave:{ar:"ذكرت {d} يومًا رصيدًا، على أجر يومي مشتق من {w} ريال شهريًا.",
-              en:"You reported {d} days of balance, at a daily rate derived from {w} SAR a month."},
-  appl_unpaid:{ar:"ذكرت {m} شهرًا غير مدفوع، على راتب {w} ريال.",
-               en:"You reported {m} months unpaid, at {w} SAR a month."},
+  appl_notice:{ar:"عقدك يذكر {d} إشعارًا، وأُعطيت {g}. الفرق {n}، وعليه حُسب المبلغ.",
+               en:"Your contract states {d} of notice and you were given {g}. The gap is {n}, and the amount is calculated on it."},
+  appl_leave:{ar:"ذكرت {d} رصيدًا، على أجر يومي مشتق من {w} ريال شهريًا.",
+              en:"You reported {d} of balance, at a daily rate derived from {w} SAR a month."},
+  appl_unpaid:{ar:"ذكرت {m} غير مدفوعة، على راتب {w} ريال.",
+               en:"You reported {m} unpaid, at {w} SAR a month."},
   appl_comp_indef:{ar:"عقدك غير محدد المدة، فالحساب بأجر 15 يومًا عن كل سنة من خدمتك {s} — أو حد الشهرين، أيهما أعلى.",
                    en:"Your contract is indefinite, so the calculation is 15 days' wages for each year of your {s} — or the two-month floor, whichever is higher."},
-  appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} شهرًا وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
-                   en:"Your contract is fixed-term with about {m} months left at termination — or the two-month floor, whichever is higher."},
+  appl_comp_fixed:{ar:"عقدك محدد المدة وباقٍ منه نحو {m} وقت الإنهاء — أو حد الشهرين، أيهما أعلى.",
+                   en:"Your contract is fixed-term with about {m} left at termination — or the two-month floor, whichever is higher."},
   appl_comp_fixed_unknown:{ar:"عقدك محدد المدة، لكن ما أعطيتنا تاريخ نهايته، فما نقدر نحسب المدة الباقية. الرقم المعروض هو الحد الأدنى فقط — أعطنا التاريخ يتغيّر.",
                            en:"Your contract is fixed-term but you haven't given us its end date, so we can't compute the remaining term. The figure shown is the floor only — give us the date and it changes."},
   appl_other:{ar:"المبلغ اللي أدخلته: {v}. ما تحققنا منه، وهو يتبع نص عقدك.",
@@ -4024,6 +4024,31 @@ const T = {
   eos_m_2:{ar:"شهرين",en:"2 months"},
   eos_m_p:{ar:"{n} أشهر",en:"{n} months"},
   eos_m_m:{ar:"{n} شهرًا",en:"{n} months"},
+  /* THE SAME FOUR SHAPES, FOR EVERY NOUN THE APP COUNTS.
+     The years and months above read as Arabic; six other counts on the same
+     screens did not — "2 شهرًا" where the dual belongs, "7 شهرًا" where the
+     plural does, "1 من الأوراق" for a single sheet. They were formatted by
+     hand at their call sites, one string at a time, which is why fixing the
+     duration once did not fix them. All of them go through countNoun() now. */
+  /* Arabic has no copula here, so the slot is simply empty in it. */
+  is_1:{ar:"",en:"is"},
+  is_p:{ar:"",en:"are"},
+  cnt_d_1:{ar:"يوم واحد",en:"1 day"},
+  cnt_d_2:{ar:"يومين",en:"2 days"},
+  cnt_d_p:{ar:"{n} أيام",en:"{n} days"},
+  cnt_d_m:{ar:"{n} يومًا",en:"{n} days"},
+  cnt_doc_1:{ar:"ورقة واحدة",en:"1 document"},
+  cnt_doc_2:{ar:"ورقتين",en:"2 documents"},
+  cnt_doc_p:{ar:"{n} أوراق",en:"{n} documents"},
+  cnt_doc_m:{ar:"{n} ورقة",en:"{n} documents"},
+  cnt_ent_1:{ar:"استحقاق واحد",en:"1 entitlement"},
+  cnt_ent_2:{ar:"استحقاقين",en:"2 entitlements"},
+  cnt_ent_p:{ar:"{n} استحقاقات",en:"{n} entitlements"},
+  cnt_ent_m:{ar:"{n} استحقاقًا",en:"{n} entitlements"},
+  cnt_item_1:{ar:"بند واحد",en:"1 item"},
+  cnt_item_2:{ar:"بندين",en:"2 items"},
+  cnt_item_p:{ar:"{n} بنود",en:"{n} items"},
+  cnt_item_m:{ar:"{n} بندًا",en:"{n} items"},
   eos_yrs_join:{ar:"{y} و{m}",en:"{y}, {m}"},
   eos_yrs:{ar:"{y} سنة و{m} شهر",en:"{y} years, {m} months"},
   eos_b_first:{ar:"أول 5 سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
@@ -6429,6 +6454,8 @@ function calcEos(){
   const exc = eosHow === "resign" && eosExc87Applies();
   const factor = (eosHow === "resign" && !exc) ? resignFactor(y) : 1;
   const total = sub * factor;
+  /* The only case where a subtotal is a different number from the total. */
+  const eosAdjusted = factor !== 1;
 
   const svc = svcText(parts.y, parts.m);
   const cur = t("eos_sar");
@@ -6443,8 +6470,15 @@ function calcEos(){
        <div class="rows">
          ${row(t("eos_b_first"), money(firstAmt)+" "+cur)}
          ${after > 0 ? row(t("eos_b_after"), money(afterAmt)+" "+cur) : ""}
-         ${row(t("eos_b_sub"), money(sub)+" "+cur)}
-         ${eosHow==="resign" && !exc ? row(t("eos_b_factor"), factor===0 ? "0" : (factor===1 ? "1" : (factor<0.5?"1/3":"2/3"))) : ""}
+         ${/* "Subtotal before adjustment" sat directly above an identical
+              "Estimated total" whenever no adjustment applied — a label that
+              raises a question and then never answers it, on the one screen
+              whose whole job is showing the arithmetic. The subtotal and the
+              factor now appear only when the factor actually moves the
+              figure; otherwise the total stands alone, which is the truth. */
+           ""}
+         ${eosAdjusted ? row(t("eos_b_sub"), money(sub)+" "+cur) : ""}
+         ${eosAdjusted ? row(t("eos_b_factor"), factor===0 ? "0" : (factor<0.5?"1/3":"2/3")) : ""}
          ${row(t("eos_b_total"), money(total)+" "+cur, "tot")}
        </div>
        ${exc ? `<p class="eos-note">${t("eos_exc87")}</p>` : ""}
@@ -7191,20 +7225,20 @@ function appliesText(l){
       return t("appl_eos_full").replace("{s}", svc);
     }
     case "tm_m_notice":
-      return t("appl_notice").replace("{d}", fmtNum(term.noticeDue))
-        .replace("{g}", fmtNum(term.noticeGiven || 0))
-        .replace("{n}", fmtNum(Math.max(0, term.noticeDue - (term.noticeGiven || 0))));
+      return t("appl_notice").replace("{d}", countNoun("cnt_d", term.noticeDue))
+        .replace("{g}", countNoun("cnt_d", term.noticeGiven || 0))
+        .replace("{n}", countNoun("cnt_d", Math.max(0, term.noticeDue - (term.noticeGiven || 0))));
     case "tm_m_leave":
-      return t("appl_leave").replace("{d}", fmtNum(term.leaveDays))
+      return t("appl_leave").replace("{d}", countNoun("cnt_d", term.leaveDays))
         .replace("{w}", money(termWage()));
     case "tm_m_unpaid":
-      return t("appl_unpaid").replace("{m}", fmtNum(term.unpaidMonths))
+      return t("appl_unpaid").replace("{m}", countNoun("eos_m", term.unpaidMonths))
         .replace("{w}", money(termWage()));
     case "tm_m_comp": {
       const m = termRemainingMonths();
       return termCtype() === "fixed"
         ? (m == null ? t("appl_comp_fixed_unknown")
-                     : t("appl_comp_fixed").replace("{m}", fmtNum(Math.round(m))))
+                     : t("appl_comp_fixed").replace("{m}", countNoun("eos_m", Math.round(m))))
         : t("appl_comp_indef").replace("{s}", svc);
     }
     default:
@@ -7652,10 +7686,10 @@ function renderTermResult(){
   document.getElementById("termHowFactors").innerHTML = [
     ["tm_hw_answers", t("tm_hw_answers_b").replace("{h}", t(termHow() ? termHow().label : "th_other"))],
     ["tm_hw_service", t("tm_hw_service_b")
-      .replace("{y}", fmtNum(termParts().y)).replace("{m}", fmtNum(termParts().m))],
+      .replace("{s}", svcText(termParts().y, termParts().m))],
     ["tm_hw_track", t(isNonSaudi() ? "tm_hw_track_nonsa" : "tm_hw_track_sa")],
     ["tm_hw_docs", t("tm_hw_docs_b")
-      .replace("{n}", fmtNum(term.docs.length)).replace("{s}", t(ev.key))],
+      .replace("{n}", countNoun("cnt_doc", term.docs.length)).replace("{s}", t(ev.key))],
     ["tm_hw_rules", t("tm_hw_rules_b")]
   ].map(([k, body]) =>
     `<details><summary>${t(k)}</summary><p>${body}</p></details>`).join("");
@@ -11278,12 +11312,14 @@ function renderPwShape(isTerm, isCase){
        and the pay button beside it is disabled. */
     if (!lines.length){ host.hidden = true; host.innerHTML = ""; return; }
     items.push([fmtNum(lines.length), t("pw_sh_found")
-      .replace("{n}", fmtNum(lines.length))
+      .replace("{n}", countNoun("cnt_ent", lines.length))
       .replace("{list}", lines.map(l => t(l.key)).join(sep)), false]);
-    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law)).replace("{m}", fmtNum(method)), false]);
+    /* "1 are Wodouh's own reading" — the verb agreed with nothing. */
+    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law))
+      .replace("{m}", fmtNum(method)).replace("{v}", t(method === 1 ? "is_1" : "is_p")), false]);
     if (gaps.length)
       items.push([fmtNum(gaps.length), t("pw_sh_gaps")
-        .replace("{n}", fmtNum(gaps.length))
+        .replace("{n}", countNoun("cnt_item", gaps.length))
         .replace("{list}", gaps.map(g => t(g.key)).join(sep)), true]);
     items.push(["✓", t("pw_sh_each"), false]);
   } else {
