@@ -40,6 +40,17 @@ const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "";
 const MAX_BYTES = 8 * 1024 * 1024;
 const MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 
+/* THIS ENDPOINT HAD NO LIMIT AT ALL. Every other function that costs real
+   money per call (analyze) or fans out to a third party (oauth-callback,
+   webhook) is rate-limited; this one proxies a real upload to Anthropic's
+   paid Files API on every call and was not. Auth-gated is not the same as
+   rate-limited: a single compromised or shared account could still upload
+   without bound. Per-user, since this route always has a signed-in caller —
+   there is no IP fallback to reach for. Same durable, cross-instance counter
+   the other three functions use (bump_rate_limit, service_role-only). */
+const RATE_MAX = 6;
+const RATE_WINDOW = "00:01:00";
+
 function cors() {
   return {
     "access-control-allow-origin": ALLOWED_ORIGIN || "null",
@@ -106,6 +117,15 @@ Deno.serve(async (req) => {
      the hazard this whole design exists to avoid. */
   const uid = await callerId(req);
   if (!uid) return json({ error: "sign_in_required" }, 401);
+
+  const limited = await rest("rpc/bump_rate_limit", {
+    method: "POST",
+    body: JSON.stringify({ p_bucket: `upload:${uid}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
+  }).then((r) => r.ok ? r.json().catch(() => null) : null, () => null);
+  /* Same fail-open-on-infra-trouble, fail-closed-on-explicit-refusal shape as
+     analyze/index.ts and oauth-callback/index.ts: a limiter outage must not
+     take uploads down with it. */
+  if (limited === false) return json({ error: "rate_limited" }, 429);
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

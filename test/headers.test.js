@@ -169,5 +169,45 @@ ok(/\[auth\.email\][\s\S]*?enable_signup\s*=\s*false/.test(toml),
 ok(/\[auth\.external\.apple\][\s\S]*?enabled\s*=\s*false/.test(toml),
    "Apple stays off until there is a paid developer account, so no dead sign-in button renders");
 
+/* ---- the Edge Functions default CORS closed, not open.
+   analyze/index.ts read `Deno.env.get("ALLOWED_ORIGIN") ?? "*"` — a paid,
+   rate-limited endpoint that reopened to every origin on the internet the
+   moment its one required secret was ever unset. Its sibling, upload/index.ts,
+   already got this right: `?? ""`, echoed into the response as the literal
+   string "null", which no Origin header a browser sends ever equals. Same
+   shape now enforced on both, and asserted here so a future edit to either
+   file can't silently reintroduce the open default — this reads source, not
+   a live response, because the function is deployed by hand and this is the
+   only check that runs before that happens. */
+console.log("\n— the Claude proxy's CORS default fails closed");
+{
+  const fns = readFileSync(path.join(ROOT, "supabase/functions/analyze/index.ts"), "utf8");
+  const up  = readFileSync(path.join(ROOT, "supabase/functions/upload/index.ts"), "utf8");
+  const OPEN_DEFAULT = /ALLOWED_ORIGIN["']?\)\s*\?\?\s*"\*"/;
+  ok(!OPEN_DEFAULT.test(fns), "analyze/index.ts no longer defaults ALLOWED_ORIGIN to \"*\"");
+  ok(!OPEN_DEFAULT.test(up),  "upload/index.ts never did");
+  /* Both closed forms end up the same: an empty configured origin becomes the
+     literal string "null" in the header, not a wildcard and not an empty
+     header (which some browsers treat as "no restriction" for prior CORS). */
+  ok(/ALLOWED_ORIGIN \|\| "null"/.test(fns) && /ALLOWED_ORIGIN \|\| "null"/.test(up),
+     "both functions echo the literal string \"null\" when unconfigured, not the empty header");
+}
+
+/* ---- the Claude proxy rate-limits durably, not per-isolate.
+   Was `const buckets = new Map()` — reset on every cold start, and never
+   shared between two isolates warm at once, on the one endpoint in this repo
+   whose own comment says it "costs real money per call". Its cheaper
+   siblings (webhook, oauth-callback) already used the durable Postgres
+   counter; this checks analyze and upload use the same one now, and that the
+   in-memory map is gone rather than merely unused. */
+console.log("\n— the Claude proxy and the upload endpoint rate-limit durably");
+{
+  const fns = readFileSync(path.join(ROOT, "supabase/functions/analyze/index.ts"), "utf8");
+  const up  = readFileSync(path.join(ROOT, "supabase/functions/upload/index.ts"), "utf8");
+  ok(!/new Map<string, number\[\]>/.test(fns), "the in-memory bucket map is gone from analyze/index.ts");
+  ok(/bump_rate_limit/.test(fns), "analyze/index.ts calls the durable counter");
+  ok(/bump_rate_limit/.test(up),  "upload/index.ts — previously unlimited — now calls it too");
+}
+
 console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nthe headers hold, and none of them is weaker than the tag it replaces");
 process.exit(FAIL.length ? 1 : 0);
