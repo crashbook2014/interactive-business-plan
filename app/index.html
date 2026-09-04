@@ -9867,7 +9867,13 @@ function armReveals(root){
       if (e.isIntersecting){ e.target.classList.add("in"); revealObserver.unobserve(e.target); }
     }), { threshold:.12, rootMargin:"0px 0px -6% 0px" });
   }
-  const sel = ".clause, .pcard, .brow, .src, .tl-item, .acc-sec, .doc";
+  /* .lib-item and .tm-sec added: the rights library and the termination
+     result both render long, scrolled lists that appeared all at once with
+     no scroll-linked motion at all, an oversight from the redesign that gave
+     them their current groupings. Same restrained treatment as every other
+     card here — a small fade-and-rise, once, gated on reduced motion — not a
+     new effect. */
+  const sel = ".clause, .pcard, .brow, .src, .tl-item, .acc-sec, .doc, .lib-item, .tm-sec";
   (root || document).querySelectorAll(sel).forEach(el=>{
     if (el.dataset.rv) return;
     el.dataset.rv = "1";
@@ -9901,6 +9907,15 @@ function onScroll(){
     const mark = card.querySelector(".share-mark"), ring = card.querySelector(".ring");
     if (mark) mark.style.transform = "translateY(" + d + "px)";
     if (ring) ring.style.transform = "translateY(" + (d * 0.6) + "px)";
+  }
+  /* Same drift on the termination money card, so the answer this screen
+     exists to give has the same quiet weight as the score does — present
+     immediately, no fade delay, just a few pixels of parallax so the page
+     reads as a physical thing rather than a slideshow. */
+  const hero = document.querySelector("#screen-termres.active .tm-hero .amt");
+  if (hero){
+    const d2 = Math.max(-5, Math.min(5, window.scrollY * -0.06));
+    hero.style.transform = "translateY(" + d2 + "px)";
   }
 }
 

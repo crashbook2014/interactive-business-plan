@@ -281,6 +281,82 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "and the paste box is still focused — the wait is skipped, not the focus");
   await rp.close();
 
+  /* ---- 6. long-scrolling screens move as you scroll, without a burst of
+     entrance animation.
+     armReveals() and onScroll() already gave the score card and several
+     screens a small, restrained fade-and-rise plus a capped parallax drift.
+     The rights library and the termination result were rebuilt with new
+     card classes this session (.lib-item, .tm-sec, .tm-hero) and were never
+     added to the selector or the drift target — they rendered fully formed
+     with no relationship to scroll position at all, on the two screens most
+     likely to be long enough for it to matter. */
+  console.log("\n— the rights library and the termination result move with scroll");
+
+  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p2.goto(APP);
+  await p2.waitForFunction(() => typeof window.show === "function");
+
+  const rights = await p2.evaluate(async () => {
+    nat = "sa"; renderLib(); show("rights");
+    const total = document.querySelectorAll("#screen-rights .lib-item").length;
+    const before = document.querySelectorAll("#screen-rights .lib-item.in").length;
+    window.scrollTo(0, 2000);
+    await new Promise(r => setTimeout(r, 250));
+    const after = document.querySelectorAll("#screen-rights .lib-item.in").length;
+    return { total, before, after };
+  });
+  ok(rights.total > 5, `the library has enough cards to be worth revealing (${rights.total})`);
+  ok(rights.before < rights.total,
+     `cards below the fold are not all pre-revealed on arrival (${rights.before} of ${rights.total})`);
+  ok(rights.after > rights.before,
+     `scrolling reveals more of them (${rights.before} -> ${rights.after})`);
+
+  const term = await p2.evaluate(async () => {
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-31", wage:12000, noticeDue:60, noticeGiven:10, leaveDays:14,
+      unpaidMonths:2, ctype:"indef", docs:["d_contract","d_letter"] });
+    owned.case = "plan_case"; renderTermResult(); show("termres");
+    window.scrollTo(0, 0);
+    const flat = document.querySelector("#screen-termres .tm-hero .amt").style.transform;
+    window.scrollTo(0, 600);
+    await new Promise(r => setTimeout(r, 250));
+    const drifted = document.querySelector("#screen-termres .tm-hero .amt").style.transform;
+    const total = document.querySelectorAll("#screen-termres .tm-sec").length;
+    const revealed = document.querySelectorAll("#screen-termres .tm-sec.in").length;
+    return { flat, drifted, total, revealed };
+  });
+  ok(term.flat === "" || term.flat === "translateY(0px)",
+     `the answer sits still at the top of the page (${term.flat})`);
+  ok(term.drifted !== term.flat && /translateY\(-\d/.test(term.drifted),
+     `and drifts a few pixels once the reader has scrolled past it (${term.drifted})`);
+  ok(/translateY\(-([0-4]|5)(\.\d+)?px\)/.test(term.drifted),
+     `the drift stays small — a few pixels, not a slide (${term.drifted})`);
+  ok(term.revealed > 0 && term.total > 0,
+     `the section cards themselves are part of the same reveal system (${term.revealed}/${term.total})`);
+
+  /* Reduced motion must still refuse this, exactly as it refuses the score
+     card's own drift — a second surface using the same onScroll() function
+     must not be able to reintroduce motion the first surface correctly
+     turns off. */
+  const p3 = await b.newPage({ viewport: { width: 390, height: 844 },
+                                reducedMotion: "reduce" });
+  p3.on("pageerror", e => FAIL.push("pageerror: " + e.message));
+  await p3.goto(APP);
+  await p3.waitForFunction(() => typeof window.show === "function");
+  const stillFlat = await p3.evaluate(async () => {
+    term = Object.assign(blankTerm(), { how:"employer", start:"2018-01-01",
+      end:"2026-01-31", wage:12000, noticeDue:60, noticeGiven:10, leaveDays:14,
+      unpaidMonths:2, ctype:"indef", docs:["d_contract","d_letter"] });
+    owned.case = "plan_case"; renderTermResult(); show("termres");
+    window.scrollTo(0, 600);
+    await new Promise(r => setTimeout(r, 250));
+    return document.querySelector("#screen-termres .tm-hero .amt").style.transform;
+  });
+  ok(stillFlat === "" || stillFlat === "translateY(0px)",
+     `a reader who asked for reduced motion gets no drift here either (${stillFlat})`);
+  await p2.close(); await p3.close();
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\ngestures commit on flick or distance, keep their motion continuous, and never fight reduced motion");
   process.exit(FAIL.length ? 1 : 0);
