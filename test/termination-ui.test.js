@@ -123,7 +123,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     srcs: document.querySelectorAll("#termMoney .src-line").length,
     claims: document.querySelectorAll(".tm-claim").length,
     hows: document.querySelectorAll(".tm-how details").length,
-    total: [...document.querySelectorAll("#termMoney .r.tot")].map(r => r.textContent).join(" | "),
+    /* The totals live in the hero card now — the one figure this screen
+       exists to give, at the size of an answer rather than of a table row. */
+    total: (document.querySelector("#termMoney .tm-hero") || { textContent: "" }).textContent,
+    heroPx: (() => { const a = document.querySelector("#termMoney .tm-hero .amt");
+                     return a ? parseFloat(getComputedStyle(a).fontSize) : 0; })(),
+    rowPx: (() => { const r = document.querySelector("#termMoney .r > b");
+                    return r ? parseFloat(getComputedStyle(r).fontSize) : 0; })(),
     text: document.getElementById("screen-termres").textContent
   }));
   ok(res.secs >= 6, `assessment renders ${res.secs} sections`);
@@ -134,7 +140,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      case carries contested money — but a bare unlabelled figure is not. */
   ok(/Estimated potential entitlement/i.test(res.total) ||
      (/Owed on the face of it/i.test(res.total) && /Depends on a ruling/i.test(res.total)),
-     `the totals are labelled, and contested money is separated when there is any (${res.total})`);
+     `the totals are labelled, and contested money is separated when there is any (${res.total.trim().slice(0,80)})`);
+  /* The screen answers one question, and set the answer in the same 15px as
+     every other row on it. A hierarchy is not a hierarchy if the reader has
+     to hunt for the figure they came for. */
+  ok(res.heroPx >= res.rowPx * 2,
+     `the figure the reader came for is allowed to be big (${res.heroPx}px against ${res.rowPx}px rows)`);
   ok(/not a final determination/i.test(res.text), "the screen says it is not a final determination");
 
   console.log("\n— next steps, case file and letter");

@@ -336,7 +336,11 @@ async function art87Certainty(p){
       owned.case = "plan_case"; renderTermResult();
       const el = document.querySelector("#termMoney .tm-rise");
       const money = document.getElementById("termMoney");
-      const tot = money.querySelector(".r.tot");
+      /* The total moved into the hero card at the top of #termMoney, so
+         "after the total" is now measured against that. The property is
+         unchanged: the reader must meet the figure before the caveat that
+         the figure is a floor. */
+      const tot = money.querySelector(".tm-hero");
       return { total: Math.round(termTotal()), has: !!el,
                text: el ? el.textContent.trim() : "",
                /* the screen is where the honesty lives; the document is what
@@ -353,7 +357,7 @@ async function art87Certainty(p){
     return out;
   });
   ok(rise.skipped.has, "skipping the Article 87 question shows a note beside the total");
-  ok(rise.skipped.afterTotal, "and the note sits inside the money card, after the total");
+  ok(rise.skipped.afterTotal, "and the note sits inside the money card, after the figure it qualifies");
   ok(/becomes the full one/i.test(rise.skipped.text),
      "the note says the award could become the full one, not merely that it is uncertain");
   ok(rise.marriage.total > rise.skipped.total,

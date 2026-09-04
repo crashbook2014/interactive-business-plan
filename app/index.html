@@ -940,6 +940,20 @@
   .tm-tag.ok{background:var(--green-bg);color:var(--green-ink)}
   .tm-tag.review{background:var(--amber-bg);color:var(--amber-ink)}
   .tm-tag.issue{background:var(--red-bg);color:var(--red-ink)}
+  /* The one figure this screen exists to give, at the size the eos calculator
+     already gives its own — the two screens answer the same question and only
+     one of them used to look like it. */
+  .tm-hero{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+    padding:20px 18px 16px;margin-bottom:10px;text-align:center;box-shadow:var(--e2),var(--edge)}
+  .tm-hero .lbl{font-size:12.5px;color:var(--ink-2)}
+  .tm-hero .amt{font-family:var(--en);font-size:36px;font-weight:800;letter-spacing:-.03em;
+    color:var(--teal-ink);line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;direction:ltr}
+  html[lang="ar"] .tm-hero .amt{font-family:var(--ar);font-weight:600;direction:rtl}
+  .tm-hero .amt small{font-family:var(--en);font-size:15px;font-weight:700;letter-spacing:0;
+    margin-inline-start:6px;color:var(--ink-2)}
+  .tm-hero .alt{font-size:12.5px;color:var(--ink-2);margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--line)}
+  .tm-hero .alt b{color:var(--ink);font-weight:700;white-space:nowrap}
   .tm-money{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);padding:14px}
   .tm-money .r{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
     padding:9px 0;border-bottom:1px solid var(--line)}
@@ -3577,8 +3591,11 @@ const T = {
      the reader's own answers is not weaker than a cited rule, it is a
      different claim — and saying which it is takes nothing away. */
   src_you:{ar:"من إجاباتك أنت — لا من نص نظامي",en:"From your own answers — not a statutory rule"},
-  tm_src_wage:{ar:"حساب من الشهور اللي ذكرتها، لا من نص نظامي.",
-               en:"Calculated from the months you reported, not from a statutory rule."},
+  /* Rendered after src_method ("Wodouh's reading — not a statutory rule"), so
+     it said "not a statutory rule" twice in one line. It only has to add what
+     that prefix does not: where the figure came from. */
+  tm_src_wage:{ar:"محسوب من الشهور اللي ذكرتها.",
+               en:"Calculated from the months you reported."},
   tm_src_other:{ar:"المبلغ اللي أدخلته أنت — يتبع نص عقدك لا النظام.",
                 en:"The amount you entered — governed by your contract's wording, not the statute."},
 
@@ -7639,19 +7656,33 @@ function renderTermResult(){
      the second-pass review roughly 1,400px further down, under a heading that
      reads as housekeeping. Same sentence, moved to where the money is. */
   const cur = t("eos_sar"), lines = termLines();
+  /* THE ANSWER, AT THE SIZE OF AN ANSWER.
+     This screen answers one question — "how much am I owed?" — and set the
+     figure in the same 15px as every other row on it. The score ring was the
+     only thing in the product allowed to be big, and it lives on a different
+     screen entirely. The reader who has just lost their income now sees the
+     number they came for, and the contested figure stays deliberately smaller
+     beside it, because it is a different kind of money. */
+  const heroCertain = lines.length ? money(termTotalCertain()) : null;
   document.getElementById("termMoney").innerHTML =
+    (heroCertain ? `<div class="tm-hero">
+       <div class="lbl">${t(termTotalContested() > 0 ? "tm_m_total_certain" : "tm_m_total")}</div>
+       <div class="amt">${heroCertain}<small>${cur}</small></div>
+       ${termTotalContested() > 0
+         ? `<div class="alt">${t("tm_m_total_contested")}: <b>${money(termTotalContested())} ${cur}</b></div>`
+         : ""}
+     </div>` : "") +
     `<div class="tm-money">
        ${lines.length ? lines.map(l =>
          `<div class="r"><span>${t(l.key)}</span><b>${money(l.amt)} ${cur}</b></div>
           <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " — " + t(l.src)}</p>`).join("")
         : `<p class="cap">${t("tm_m_none")}</p>
            <p class="cap">${t("tm_m_none_sale")}</p>`}
-       ${!lines.length ? ""
-         : termTotalContested() > 0
-           ? `<div class="r tot"><span>${t("tm_m_total_certain")}</span><b>${money(termTotalCertain())} ${cur}</b></div>
-              <div class="r tot soft"><span>${t("tm_m_total_contested")}</span><b>${money(termTotalContested())} ${cur}</b></div>
-              <p class="cap">${t("tm_m_total_split")}</p>`
-           : `<div class="r tot"><span>${t("tm_m_total")}</span><b>${money(termTotal())} ${cur}</b></div>`}
+       ${/* The totals moved into the card above, at the size an answer
+            deserves. Repeating them here would be the same figure twice,
+            400px apart — the defect this file keeps rediscovering. What stays
+            is the sentence that explains why there are two of them. */
+         lines.length && termTotalContested() > 0 ? `<p class="cap">${t("tm_m_total_split")}</p>` : ""}
        ${lines.length ? termCouldRise().map(k =>
          `<p class="tm-rise"><span class="up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M4 7l4-4 4 4"/></svg></span><span>${t(k)}</span></p>`).join("") : ""}
        ${termTermOdd() ? `<p class="cap">${t("cf_term_odd")}</p>` : ""}
