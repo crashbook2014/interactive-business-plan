@@ -65,6 +65,31 @@ enabled = false
 client_id = "env(SUPABASE_AUTH_APPLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_APPLE_SECRET)"
 
+# Phone sign-in, for the reader who has a number and no address they check.
+# Same six-digit code as email — no password path is created here either.
+#
+# THIS COSTS MONEY PER MESSAGE, which is why it is a separate switch: the
+# project can be fully configured, Google and email working, and this off.
+# app/auth.js checks PHONE_SIGNIN before rendering the form, for the same
+# reason Apple is gated — a form that cannot deliver a code is worse than one
+# fewer option.
+#
+# THE THREE SECRETS BELOW ARE SET WITH `supabase secrets set`, NEVER COMMITTED.
+# message_service_sid takes a Twilio Messaging Service SID (MG…). If the account
+# has a plain From-number instead of a Messaging Service, put the number here in
+# E.164 — Twilio accepts either as the sender, but a Messaging Service is what
+# survives adding a second number later.
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+template = "Your Wodouh code is {{ .Code }}"
+
+[auth.sms.twilio]
+enabled = true
+account_sid = "env(TWILIO_ACCOUNT_SID)"
+auth_token = "env(TWILIO_AUTH_TOKEN)"
+message_service_sid = "env(TWILIO_MESSAGE_SERVICE_SID)"
+
 # ---------------------------------------------------------------- functions
 #
 # THE SETTING THAT DECIDES WHETHER TWO OF THESE WORK AT ALL.

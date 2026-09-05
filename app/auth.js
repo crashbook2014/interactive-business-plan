@@ -67,6 +67,11 @@
      a dead sign-in button is worse than one fewer option. */
   function appleAvailable() { return configured() && cfg().APPLE_SIGNIN === true; }
 
+  /* Phone sign-in is a Twilio account away from working even on a fully
+     configured project, so it gets the same explicit switch Apple has rather
+     than being assumed on because Supabase itself is configured. */
+  function phoneAvailable() { return configured() && cfg().PHONE_SIGNIN === true; }
+
   /* WHICH PROVIDERS ARE ACTUALLY TURNED ON, asked rather than assumed.
    *
    * Apple was already gated on a config flag, with the reasoning that a dead
@@ -307,6 +312,63 @@
     return api("/auth/v1/verify", {
       method: "POST", anon: true,
       body: { type: "email", email: addr, token: tok }
+    }).then(function (d) {
+      if (!d || !d.access_token) throw new Error("bad_code");
+      session = {
+        access_token: d.access_token,
+        refresh_token: d.refresh_token,
+        expires_at: Date.now() + (d.expires_in || 3600) * 1000,
+        user: d.user || null
+      };
+      save();
+      emit();
+      return session.user;
+    });
+  }
+
+  /* ------------------------------------------------- PHONE, VIA SMS CODE
+   * The same six-digit shape as email, for a reader who has a phone number and
+   * no address they check. Saudi mobile numbers only: this is a sign-in
+   * identity, so the format has to be exact, and a number that normalises to
+   * something the reader did not mean is an account they cannot get back into.
+   *
+   * DELIBERATELY NOT `savePhone()`'s validation. That one records a contact
+   * number the reader may want reached at — an expat's number abroad is a
+   * perfectly good contact number and a useless sign-in identity. Two purposes,
+   * two rules, on purpose.
+   *
+   * Accepts the four ways a Saudi number is actually written and returns E.164,
+   * which is the only form GoTrue accepts. Anything else returns null and is
+   * refused before a request is made.
+   */
+  function normalizeSaudiPhone(number) {
+    var raw = String(number || "").replace(/[\s()‏‎-]/g, "");
+    var m = /^\+?966(5\d{8})$/.exec(raw) || /^0?(5\d{8})$/.exec(raw);
+    return m ? "+966" + m[1] : null;
+  }
+
+  function sendPhoneCode(phone) {
+    if (!configured()) return Promise.reject(new Error("not_configured"));
+    var e164 = normalizeSaudiPhone(phone);
+    if (!e164) return Promise.reject(new Error("bad_phone"));
+    return api("/auth/v1/otp", {
+      method: "POST", anon: true,
+      body: { phone: e164, create_user: true }
+    }).then(function () { return e164; });
+  }
+
+  /* type "sms" is GoTrue's name for a phone sign-in code, the counterpart of
+     "email" above. Same session shape comes back, so init(), onChange and
+     api() are untouched by this existing. */
+  function verifyPhoneCode(phone, code) {
+    if (!configured()) return Promise.reject(new Error("not_configured"));
+    var e164 = normalizeSaudiPhone(phone);
+    if (!e164) return Promise.reject(new Error("bad_phone"));
+    var tok = String(code || "").replace(/\D/g, "");
+    if (tok.length < 6) return Promise.reject(new Error("bad_code"));
+    return api("/auth/v1/verify", {
+      method: "POST", anon: true,
+      body: { type: "sms", phone: e164, token: tok }
     }).then(function (d) {
       if (!d || !d.access_token) throw new Error("bad_code");
       session = {
@@ -608,9 +670,13 @@
     apiCount: apiCount,
     configured: configured,
     appleAvailable: appleAvailable,
+    phoneAvailable: phoneAvailable,
     providers: providers,
     sendEmailCode: sendEmailCode,
     verifyEmailCode: verifyEmailCode,
+    normalizeSaudiPhone: normalizeSaudiPhone,
+    sendPhoneCode: sendPhoneCode,
+    verifyPhoneCode: verifyPhoneCode,
     authorizeUrl: authorizeUrl,
     preflight: preflight,
     init: init,

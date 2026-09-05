@@ -2061,6 +2061,23 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <button class="au-btn mail" id="auCodeGo" type="submit" onclick="verifyMailCode()" data-t="au_code_go"></button>
         <button class="au-again" id="auAgain" type="button" onclick="sendMailCode()" data-t="au_again"></button>
       </form>
+      <!-- PHONE, FOR EVERYONE WITHOUT AN ADDRESS THEY CHECK. Same two-step
+           shape as email, and hidden entirely unless PHONE_SIGNIN is on and
+           the project reports the provider enabled — an SMS form that cannot
+           send an SMS is the worst of the three doors. -->
+      <form class="au-mail" id="auPhoneForm" hidden onsubmit="return false">
+        <label class="au-lab" for="auPhone" data-t="au_phone_lab"></label>
+        <input id="auPhone" type="tel" inputmode="tel" autocomplete="tel"
+               spellcheck="false" dir="ltr" placeholder="05XXXXXXXX"/>
+        <button class="au-btn mail" id="auPhoneGo" type="submit" onclick="sendSmsCode()" data-t="au_phone_go"></button>
+      </form>
+      <form class="au-mail" id="auPhoneCodeForm" hidden onsubmit="return false">
+        <label class="au-lab" for="auPhoneCode" id="auPhoneCodeLab"></label>
+        <input id="auPhoneCode" type="text" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" dir="ltr" placeholder="123456"/>
+        <button class="au-btn mail" id="auPhoneCodeGo" type="submit" onclick="verifySmsCode()" data-t="au_phone_code_go"></button>
+        <button class="au-again" id="auPhoneAgain" type="button" onclick="sendSmsCode()" data-t="au_again"></button>
+      </form>
     </div>
     <p class="tq-skip au-skip" id="auSkip" onclick="closeSignin()" data-t="au_skip"></p>
     <div class="tm-sec au-what">
@@ -2498,6 +2515,23 @@ window.WODOUH_CONFIG = Object.assign({
   /* Deployed and live — see docs/claude-analysis.md for what changed in the
      privacy copy as a result. */
   ANALYZE_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/analyze"
+
+  /* PHONE_SIGNIN is DELIBERATELY ABSENT, which means off.
+   *
+   * The code path is built and tested, but every SMS costs money at Twilio and
+   * nothing has yet proved a code reaches a real Saudi handset. Turning this on
+   * before that is proved puts a form on the sign-in screen that silently
+   * delivers nothing — and sign-in is now the only door into the app, so a
+   * broken door here is a locked product.
+   *
+   * TO TURN IT ON, in this order:
+   *   1. Twilio account → Messaging Service → note the SID
+   *   2. supabase secrets set TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… \
+   *        TWILIO_MESSAGE_SERVICE_SID=…
+   *   3. Supabase → Authentication → Providers → Phone → enable, provider Twilio
+   *   4. send yourself a code on a real handset and sign in with it
+   *   5. only then add:  PHONE_SIGNIN: true,  above this comment
+   */
 }, window.WODOUH_CONFIG || {});
 
 /* ==================================================== RUNTIME FEATURE FLAGS
@@ -2715,6 +2749,19 @@ const T = {
                en:"We couldn't send the code just now. Try again shortly."},
   au_off:{ar:"تسجيل الدخول بهذه الطريقة غير متاح حاليًا. جرّب البريد الإلكتروني.",
           en:"This sign-in method isn't available right now. Try email instead."},
+
+  /* Phone sign-in. The placeholder in the field shows 05… because that is how
+     a Saudi number is written on a business card; the app converts it. Saying
+     "Saudi mobile" in the label is not a restriction announced for its own
+     sake — it is the difference between a code that arrives and a wait that
+     never ends. */
+  au_phone_lab:{ar:"رقم جوالك السعودي",en:"Your Saudi mobile number"},
+  au_phone_go:{ar:"أرسل لي رمزًا برسالة",en:"Text me a code"},
+  au_phone_code_go:{ar:"ادخل",en:"Sign in"},
+  au_bad_phone:{ar:"اكتب رقم جوال سعودي، مثل 0512345678.",
+                en:"Enter a Saudi mobile number, like 0512345678."},
+  au_sms_err:{ar:"ما قدرنا نرسل الرسالة الحين. جرّب بعد شوي أو استخدم البريد.",
+              en:"We couldn't send the text just now. Try again shortly, or use email."},
 
   /* The local-data question. Their work moving to a server is exactly the kind
      of thing that gets asked, not assumed. */
@@ -5962,6 +6009,10 @@ function openSignin(back){
   const eb = document.getElementById("auEmail");
   if (eb) eb.value = "";
   renderMailAuth();
+  auPhoneNum = "";
+  const pb = document.getElementById("auPhone");
+  if (pb) pb.value = "";
+  renderPhoneAuth();
   /* "No thanks, keep going without one" is the wrong offer at the one door
      that requires an account. It becomes a plain Back there. */
   const skip = document.getElementById("auSkip");
@@ -6004,12 +6055,20 @@ function renderProviders(){
     /* Email is a provider too, and forgetting it here would print "no sign-in
        method is enabled" on a screen with a working email form on it. */
     const eOn = ext.email !== false;
+    /* Phone is the one provider asked about POSITIVELY (=== true, not
+       !== false). The others fail open because showing a button that might not
+       work beats hiding one that does; an SMS form that cannot send is not the
+       same bargain, and it must also clear the local config switch. */
+    const pOn = ext.phone === true &&
+                !!(WodouhAuth.phoneAvailable && WodouhAuth.phoneAvailable());
     if (g) g.hidden = !gOn;
     if (ap) ap.hidden = !aOn;
     mailOn = eOn;
     renderMailAuth();
+    phoneOn = pOn;
+    renderPhoneAuth();
     if (none){
-      none.hidden = gOn || aOn || eOn;
+      none.hidden = gOn || aOn || eOn || pOn;
       none.textContent = t("au_none");
     }
   }).catch(()=>{});
@@ -6080,6 +6139,64 @@ function verifyMailCode(){
     .then(() => { auMail = ""; renderMailAuth(); afterSignIn(); })
     .catch(() => mailErr("au_bad_code"))
     .then(() => { btn.disabled = false; btn.textContent = t("au_code_go"); });
+}
+
+/* ------------------------------------------------------- PHONE SIGN-IN
+   The same two-step shape as email, deliberately: one state machine to read,
+   one to get wrong. `auPhoneNum` holds the NORMALISED number that a code was
+   actually sent to, not what was typed — verifying against the typed form
+   would fail for anyone who wrote 05… where +966… was sent. */
+let auPhoneNum = "";
+/* Unlike mailOn, this starts FALSE. Email fails open because it costs nothing
+   to show a form that turns out to be unavailable; every SMS costs money and a
+   phone form that cannot deliver is a dead end at the only door into the app.
+   It opens only on two positive answers: the config switch and the project. */
+let phoneOn = false;
+function renderPhoneAuth(){
+  const on = !!(authOn() && WodouhAuth.sendPhoneCode &&
+                WodouhAuth.phoneAvailable && WodouhAuth.phoneAvailable() && phoneOn);
+  const f1 = document.getElementById("auPhoneForm");
+  const f2 = document.getElementById("auPhoneCodeForm");
+  if (!f1 || !f2) return;
+  f1.hidden = !on || !!auPhoneNum;
+  f2.hidden = !on || !auPhoneNum;
+  if (auPhoneNum){
+    document.getElementById("auPhoneCodeLab").textContent =
+      t("au_code_lab").replace("{e}", auPhoneNum);
+  }
+}
+
+function sendSmsCode(){
+  const box = document.getElementById("auPhone");
+  const btn = document.getElementById("auPhoneGo");
+  const err = document.getElementById("auErr");
+  if (err) err.hidden = true;
+  if (!box || !btn) return;
+  btn.disabled = true; btn.textContent = t("au_sending");
+  WodouhAuth.sendPhoneCode(box.value)
+    .then(num => {
+      auPhoneNum = num;
+      renderPhoneAuth();
+      const c = document.getElementById("auPhoneCode");
+      if (c){ c.value = ""; c.focus(); }
+    })
+    .catch(e => {
+      mailErr(String(e && e.message) === "bad_phone" ? "au_bad_phone" : "au_sms_err");
+    })
+    .then(() => { btn.disabled = false; btn.textContent = t("au_phone_go"); });
+}
+
+function verifySmsCode(){
+  const box = document.getElementById("auPhoneCode");
+  const btn = document.getElementById("auPhoneCodeGo");
+  const err = document.getElementById("auErr");
+  if (err) err.hidden = true;
+  if (!box || !btn) return;
+  btn.disabled = true; btn.textContent = t("au_checking");
+  WodouhAuth.verifyPhoneCode(auPhoneNum, box.value)
+    .then(() => { auPhoneNum = ""; renderPhoneAuth(); afterSignIn(); })
+    .catch(() => mailErr("au_bad_code"))
+    .then(() => { btn.disabled = false; btn.textContent = t("au_phone_code_go"); });
 }
 
 /* Where a reader lands once they are in. Coming from the scan gate they get

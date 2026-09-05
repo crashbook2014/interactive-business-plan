@@ -37,6 +37,7 @@ const ORDER = [
   "situations.test.js",
   "motion.test.js",
   "accounts.test.js",
+  "phone-auth.test.js",
   "commerce.test.js",
   "admin.test.js",
   "ask.test.js",

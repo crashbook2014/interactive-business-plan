@@ -68,4 +68,25 @@ window.WODOUH_CONFIG = {
    *
    * APPLE_SIGNIN: true
    */
+
+  /* OPTIONAL — phone sign-in by SMS code.
+   *
+   * A SEPARATE SWITCH, for the same reason Apple is one, plus a sharper one:
+   * every code sent costs money at Twilio. Leave it out and the phone form
+   * does not render and no message can be sent.
+   *
+   * Set it to true only once all of these are true:
+   *   - Supabase → Authentication → Providers → Phone is enabled, with Twilio
+   *     selected as the SMS provider
+   *   - TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_MESSAGE_SERVICE_SID
+   *     are set as project secrets (`supabase secrets set`), never in this file
+   *   - a real code has arrived on a real Saudi handset at least once
+   *
+   * Sign-in numbers are Saudi mobiles only (+9665XXXXXXXX). That is stricter
+   * than the contact number in Account, and deliberately so: this one is an
+   * identity, and a number that normalises to something the reader did not
+   * mean is an account they cannot get back into.
+   *
+   * PHONE_SIGNIN: true
+   */
 };
