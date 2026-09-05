@@ -37,12 +37,14 @@ const T = {
           en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the labour-law source for every point, and a letter ready to send. Pick Saudi or resident, and we show the rules that actually apply to you."},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
-  /* "no sign-up" was removed here once analysing a contract needed an account;
-     the exception carved out at the time — that the calculator genuinely
-     needed none — has since gone too, because every screen now requires one.
-     What is left is true and is the promise that matters: free is real, and it
-     is one scan a month. A free account is named up front rather than
-     discovered at the first tap. */
+  /* "no sign-up" was removed here once analysing a contract needed an account.
+     The wording has been wrong in both directions since: it was narrowed to
+     "every screen requires one" when the gate briefly covered everything, and
+     that is false again now the calculator and the rights library are
+     deliberately outside it. What is true, and what this says: analysing a
+     contract needs a free account, those two surfaces do not and say so on
+     their own screens, and the free tier is real at one scan a month. Named up
+     front rather than discovered at the first tap. */
   hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
   shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
