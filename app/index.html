@@ -883,6 +883,9 @@
      that wandered in. Single column at every width: these are things to read,
      not options to compare, and a two-up grid on a phone makes eight-word
      descriptions into columns two words wide. */
+  .fu-kicker{font-size:12.5px;font-weight:700;color:var(--teal);margin:0 2px 6px;
+      letter-spacing:.02em}
+  html[lang="ar"] .fu-kicker{font-weight:400;font-size:14px;letter-spacing:0}
   .fu-h{font-size:13px;font-weight:700;color:var(--ink-2);margin:22px 2px 10px;
       letter-spacing:.01em}
   html[lang="ar"] .fu-h{font-weight:400;font-size:14.5px}
@@ -2126,6 +2129,13 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
        Rendered from data rather than written as markup, so a feature cannot
        be added in one language and forgotten in the other. -->
   <section class="screen" id="screen-future">
+    <!-- The positioning statement, and the only place in the app it appears.
+         It belongs on the screen that earns it: this is where the claim to be
+         a "system" rather than a contract reader is actually explained, and a
+         reader who has just been told what is coming can judge the sentence
+         against the list under it. Putting it on the home screen would be
+         asserting it at someone who came to solve a problem today. -->
+    <p class="fu-kicker" data-t="fu_pos"></p>
     <h2 class="section-title" data-t="fu_title"></h2>
     <p class="pw-note" data-t="fu_sub"></p>
     <div class="fu-arc" id="fuArc"></div>
@@ -3158,6 +3168,13 @@ const T = {
      Written in Arabic first and then put into English, not translated out of
      it — the Arabic is the product's first language and reads like someone
      wrote it. Every future line is future tense in both. */
+  /* The positioning. "System" is a claim, and the screen it sits on is the
+     argument for it — which is why it lives here and nowhere else. The four
+     supporting verbs are the same four the progression below uses, so the
+     statement and the roadmap are visibly the same idea rather than a slogan
+     with a list under it. */
+  fu_pos:{ar:"وضوح — نظامك الشخصي لذكاء العقود",
+          en:"Wodouh — your personal contract intelligence system"},
   fu_title:{ar:"مستقبل وضوح",en:"The future of Wodouh"},
   fu_sub:{ar:"اليوم يساعدك وضوح تفهم عقودك. وبكرة يساعدك تديرها وتتابعها وتتصرّف فيها طول عمر العقد.",
           en:"Today Wodouh helps you understand your contracts. Tomorrow it will help you manage, monitor and act on them for as long as they run."},
