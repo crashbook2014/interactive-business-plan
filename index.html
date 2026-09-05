@@ -14,8 +14,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#F7F1E6" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
-<meta name="description" content="وضوح — اقرأ عقدك بوضوح قبل ما توقّع. تقييم فوري، تنبيهات للمخاطر، وخطاب تفاوض جاهز."/>
-<title>وضوح — اقرأ عقدك قبل ما توقّع</title>
+<!-- POSITIONING FIRST, INTENT SECOND. The page's primary language is Arabic
+     and stays Arabic here: this metadata is what someone typing "عقد عمل" into
+     Google reads, and an English title would answer a question nobody asked.
+     "نظامك الشخصي لذكاء العقود" names what Wodouh is; the half after the "·"
+     keeps the sentence people actually search for. What the description does
+     NOT say is that Wodouh keeps or manages your contracts — it reads one you
+     bring it, and nothing on this page may promise a vault it does not have.
+     assets/landing.js sets document.title per language and must agree. -->
+<meta name="description" content="وضوح — نظامك الشخصي لذكاء العقود. افهم عقدك، واعرف حقوقك، واكتشف المخاطر قبل ما توقّع: تقييم فوري، وشرح كل بند بمصدره، وخطاب تفاوض جاهز."/>
+<title>وضوح — نظامك الشخصي لذكاء العقود · اقرأ عقدك قبل ما توقّع</title>
 
 <!-- LINK PREVIEWS.
      Wodouh's realistic distribution is one person forwarding it to a colleague
@@ -34,18 +42,18 @@
 <link rel="canonical" href="https://alwodouh.com/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="وضوح — Wodouh"/>
-<meta property="og:title" content="اقرأ عقدك بوضوح — قبل ما توقّع"/>
-<meta property="og:description" content="تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى — مع مصدر كل رقم. يشتغل على جهازك."/>
+<meta property="og:title" content="وضوح — نظامك الشخصي لذكاء العقود"/>
+<meta property="og:description" content="افهم عقدك، واعرف حقوقك، واكتشف المخاطر قبل ما توقّع — تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى، مع مصدر كل رقم. يشتغل على جهازك."/>
 <meta property="og:url" content="https://alwodouh.com/"/>
 <meta property="og:image" content="https://alwodouh.com/assets/og-cover.png"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="وضوح — اقرأ عقدك بوضوح قبل ما توقّع"/>
+<meta property="og:image:alt" content="وضوح — نظامك الشخصي لذكاء العقود"/>
 <meta property="og:locale" content="ar_SA"/>
 <meta property="og:locale:alternate" content="en_US"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="اقرأ عقدك بوضوح — قبل ما توقّع"/>
-<meta name="twitter:description" content="تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى — مع مصدر كل رقم."/>
+<meta name="twitter:title" content="وضوح — نظامك الشخصي لذكاء العقود"/>
+<meta name="twitter:description" content="افهم عقدك، واعرف حقوقك، واكتشف المخاطر — تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى، مع مصدر كل رقم."/>
 <meta name="twitter:image" content="https://alwodouh.com/assets/og-cover.png"/>
 <!-- The only machine-readable identity anchor for "Wodouh" as an entity —
      nothing here is not already true of the site; script type="application/ld+json"
@@ -60,7 +68,8 @@
       "name": "Wodouh",
       "alternateName": "وضوح",
       "url": "https://alwodouh.com/",
-      "logo": "https://alwodouh.com/assets/og-cover.png"
+      "logo": "https://alwodouh.com/assets/og-cover.png",
+      "slogan": "نظامك الشخصي لذكاء العقود"
     },
     {
       "@type": "WebSite",
@@ -272,6 +281,20 @@
   .row.amber{background:var(--amber-bg)} .row.amber .dot{background:var(--amber)}
   .row.green{background:var(--green-bg)} .row.green .dot{background:var(--green)}
 
+  /* positioning band. Same card idiom as .quote/.step/.feat — one border, one
+     radius token, the shared shadow pair — so the page gains a statement and
+     not a new visual language. Its top padding is halved because it sits
+     directly under the hero and the full section rhythm read as a gap. */
+  .posline{padding-top:clamp(26px,4vw,54px)}
+  .pos{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+    padding:clamp(24px,4vw,40px) clamp(20px,3.5vw,34px);box-shadow:var(--e1),var(--edge);text-align:center;
+    max-width:760px;margin-inline:auto}
+  .pos h2{font-size:clamp(22px,3.1vw,33px)}
+  .pos .kicker{margin-bottom:10px}
+  .pos-verbs{margin-top:14px;font-size:clamp(15.5px,1.9vw,19px);color:var(--teal-ink);
+    line-height:1.9;max-width:46ch;margin-inline:auto;text-wrap:balance}
+  .pos .sec-lede{max-width:58ch;margin-inline:auto}
+
   /* section furniture */
   .kicker{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
     color:var(--teal);margin-bottom:12px}
@@ -449,6 +472,20 @@
         <div class="row amber"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round"/></svg></span><b data-t="shot_r2"></b></div>
         <div class="row green"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b data-t="shot_r3"></b></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- The page says what Wodouh IS before it argues why you need it. Deliberately
+     neither .launch-only nor .soon-only: what the product is does not change
+     when the curtain lifts, and it carries no call to action to go stale. -->
+<section class="posline">
+  <div class="wrap">
+    <div class="pos">
+      <p class="kicker" data-t="k_pos"></p>
+      <h2 data-t="pos_h"></h2>
+      <p class="pos-verbs" data-t="pos_verbs"></p>
+      <p class="sec-lede" data-t="pos_p"></p>
     </div>
   </div>
 </section>

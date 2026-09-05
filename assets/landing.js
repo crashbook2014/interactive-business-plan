@@ -49,6 +49,25 @@ const T = {
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
   shot_r3:{ar:"الراتب والبدلات",en:"Salary & benefits"},
 
+  /* ---- WHAT WODOUH IS, in its own words.
+     The page already argues the product well — a hero that names one decision,
+     a problem, three steps, six features. What it never did was say what the
+     thing IS, so a reader who arrived from a forwarded link met a contract
+     scanner and left with no idea it was anything more.
+     This is a positioning layer, not a promise layer. "نظامك الشخصي لذكاء
+     العقود" is deliberately followed, in the same block, by the concrete list
+     of what actually happens — because "system" left on its own would be read
+     as a place your contracts are kept and watched, and Wodouh keeps nothing,
+     watches nothing and compares nothing. Nothing here is new capability;
+     every clause below already ships. */
+  k_pos:{ar:"وش هو وضوح",en:"What Wodouh is"},
+  pos_h:{ar:"وضوح — نظامك الشخصي لذكاء العقود",
+         en:"Wodouh — your personal contract intelligence system"},
+  pos_verbs:{ar:"افهم عقودك. اعرف حقوقك. اكتشف المخاطر. وكن مستعدًا.",
+             en:"Understand your contracts. Know your rights. Spot risks. Stay ahead."},
+  pos_p:{ar:"أي عقد قدّامك — عمل أو إيجار أو عمل حر — تفتحه في وضوح وتطلع منه فاهم: تقييمه، والبنود اللي تنتبه لها ومصدرها من النظام، ومستحقاتك إذا انتهى، وخطاب تفاوض جاهز إذا حبيت ترد. القرار قرارك، ودورنا إنك تاخذه وأنت داري.",
+         en:"Any contract in front of you — employment, rental or freelance — you open it in Wodouh and come out understanding it: the score, the clauses to watch and where each one sits in the law, what you're owed if it ends, and a negotiation letter ready if you want to answer back. The decision stays yours; our job is that you make it knowing."},
+
   k_problem:{ar:"المشكلة",en:"The problem"},
   problem_h:{ar:"العقود مكتوبة عشان تُوقَّع، مو عشان تُفهَم.",en:"Contracts are written to be signed, not to be understood."},
   problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط — لأن السؤال يجي في وقت ما فيه مجال للتردد. هذي مواقف نسمعها كثيرًا:",
@@ -205,7 +224,12 @@ function applyLang(){
   document.documentElement.lang = lang;
   if (typeof setDir === "function") setDir();
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  document.title = lang === "ar" ? "وضوح — اقرأ عقدك قبل ما توقّع" : "Wodouh — read your contract before you sign";
+  /* Kept in step with the static <title> in index.html: the positioning
+     first, the search-intent line after it in Arabic, which is the page's
+     primary language and the one people type their question in. */
+  document.title = lang === "ar"
+    ? "وضوح — نظامك الشخصي لذكاء العقود · اقرأ عقدك قبل ما توقّع"
+    : "Wodouh — Your Personal Contract Intelligence System";
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
@@ -252,7 +276,7 @@ function armReveals(){
   revealIO = new IntersectionObserver(es=>es.forEach(e=>{
     if (e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); }
   }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
-  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
+  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .pos-verbs, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
     .forEach((el,i)=>{
       if (el.getBoundingClientRect().top < window.innerHeight * 0.9){ el.classList.add("rv","in"); return; }
       el.classList.add("rv");

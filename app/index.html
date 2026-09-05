@@ -860,17 +860,57 @@
 
   /* tab bar — permanent orientation across the four roots */
   .tabbar[hidden]{display:none}
-  .tabbar{position:sticky;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  /* Columns come from however many tabs TABS holds, rather than a hardcoded
+     count that a fifth tab would silently break. */
+  .tabbar{position:sticky;bottom:0;z-index:6;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;
       background:color-mix(in srgb, var(--sand) 88%, transparent);backdrop-filter:blur(12px);
       border-top:1px solid var(--line);margin:18px -18px 0;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
   @supports not (backdrop-filter: blur(4px)){ .tabbar{background:var(--sand)} }
   .tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 4px;border-radius:var(--r-md);
       color:var(--ink-2);transition:color .15s}
   .tab svg{width:21px;height:21px}
-  .tab span{font-size:10.5px;font-weight:700}
-  html[lang="ar"] .tab span{font-weight:400;font-size:12px}
+  /* Five columns on a 360px phone is ~70px each. The label must shrink to fit
+     rather than wrap to two lines and shove the bar's height around. */
+  .tab span{font-size:10.5px;font-weight:700;max-width:100%;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+  html[lang="ar"] .tab span{font-weight:400;font-size:11.5px}
   .tab.on{color:var(--teal)}
   .tab.on svg{stroke-width:2.3}
+
+  /* future — the roadmap screen. Reuses the card surface, radius, line and
+     amber badge the rest of the app already uses; nothing new is invented
+     here, so the screen reads as the same product rather than a landing page
+     that wandered in. Single column at every width: these are things to read,
+     not options to compare, and a two-up grid on a phone makes eight-word
+     descriptions into columns two words wide. */
+  .fu-h{font-size:13px;font-weight:700;color:var(--ink-2);margin:22px 2px 10px;
+      letter-spacing:.01em}
+  html[lang="ar"] .fu-h{font-weight:400;font-size:14.5px}
+  .fu-step{display:flex;gap:12px;align-items:flex-start;padding:11px 0}
+  .fu-step + .fu-step{border-top:1px solid var(--line)}
+  .fu-dot{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:12px;font-weight:700;background:var(--sand);
+      color:var(--ink-2);border:1px solid var(--line)}
+  .fu-step.now .fu-dot{background:var(--teal);color:var(--on-teal);border-color:var(--teal)}
+  .fu-step div:last-child,.fu-card div:last-child{display:flex;flex-direction:column;gap:3px}
+  .fu-step b,.fu-card b,.fu-cat b{font-size:15px;color:var(--teal-ink)}
+  .fu-step span,.fu-card span,.fu-cat span{font-size:13px;line-height:1.65;color:var(--ink-2)}
+  .fu-card{display:flex;gap:12px;align-items:flex-start;background:var(--card);
+      border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px;margin-bottom:9px}
+  .fu-ic{flex:none;font-size:21px;line-height:1.2}
+  .fu-cat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
+      padding:12px 14px;margin-bottom:9px}
+  /* The name and its badge share a line; the description gets its own, or it
+     runs straight on from the badge and reads as one sentence. */
+  .fu-cat span{display:block;margin-top:5px}
+  .fu-cat.now{border-color:color-mix(in srgb, var(--teal) 34%, var(--line))}
+  /* The badge already exists for plans; scoped here so a "coming soon" chip
+     looks like the "not yet available" chip a reader has already met. */
+  .fu-card .badge,.fu-cat .badge,.fu-step .badge{display:inline-block;font-size:10.5px;
+      font-weight:700;color:var(--amber-ink);background:var(--amber-bg);border-radius:99px;
+      padding:1px 8px;margin-inline-start:6px;vertical-align:middle}
+  .fu-card .badge,.fu-step .badge{align-self:flex-start;margin-inline-start:0}
+  .fu-cat .badge.now,.fu-step .badge.now{color:var(--on-teal);background:var(--teal)}
 
   /* home: trust line, sample disclosure, saved contracts */
   /* min-height, because the tap target was depending on the LANGUAGE. This
@@ -2077,6 +2117,23 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
+  <!-- THE ROADMAP, AND THE ONE SCREEN IN THIS APP THAT SELLS NOTHING.
+       Every card here is a thing Wodouh cannot do yet. That makes this the
+       easiest screen in the product to lie on, so two rules govern it:
+       nothing is described in the present tense, and the four things that DO
+       work today are named at the bottom without a "coming soon" badge, so a
+       reader can tell the built from the intended at a glance.
+       Rendered from data rather than written as markup, so a feature cannot
+       be added in one language and forgotten in the other. -->
+  <section class="screen" id="screen-future">
+    <h2 class="section-title" data-t="fu_title"></h2>
+    <p class="pw-note" data-t="fu_sub"></p>
+    <div class="fu-arc" id="fuArc"></div>
+    <div class="fu-grid" id="fuGrid"></div>
+    <div class="fu-cats" id="fuCats"></div>
+    <p class="disclaimer" data-t="fu_foot"></p>
+  </section>
+
   <!-- ACCOUNTS. Both screens are unreachable unless Supabase is configured;
        nothing routes here otherwise and no entry point renders. -->
   <section class="screen" id="screen-signin">
@@ -3094,7 +3151,93 @@ const T = {
   tab_review:{ar:"راجع",en:"Review"},
   tab_rights:{ar:"حقوقي",en:"Rights"},
   tab_remind:{ar:"تذكيراتي",en:"Reminders"},
+  tab_future:{ar:"قريبًا",en:"Coming"},
   tab_account:{ar:"حسابي",en:"Account"},
+
+  /* THE ROADMAP SCREEN.
+     Written in Arabic first and then put into English, not translated out of
+     it — the Arabic is the product's first language and reads like someone
+     wrote it. Every future line is future tense in both. */
+  fu_title:{ar:"مستقبل وضوح",en:"The future of Wodouh"},
+  fu_sub:{ar:"اليوم يساعدك وضوح تفهم عقودك. وبكرة يساعدك تديرها وتتابعها وتتصرّف فيها طول عمر العقد.",
+          en:"Today Wodouh helps you understand your contracts. Tomorrow it will help you manage, monitor and act on them for as long as they run."},
+  /* The progression: what the product is, and what it is becoming. Kept to
+     four words and four sentences — a longer version of this becomes a
+     manifesto, and nobody reads a manifesto on a phone. */
+  fu_arc_h:{ar:"إلى وين ماشي وضوح",en:"Where Wodouh is going"},
+  fu_a1:{ar:"افهم",en:"Understand"},
+  fu_a1d:{ar:"يقرأ عقدك ويشرح لك وش يعني — وهذا شغّال اليوم.",
+          en:"It reads your contract and explains what it means. This works today."},
+  fu_a2:{ar:"تذكّر",en:"Remember"},
+  fu_a2d:{ar:"يرتّب لك المعلومة المهمة في عقودك ويحفظها في مكان واحد.",
+          en:"It will keep what matters in your contracts organised in one place."},
+  fu_a3:{ar:"تابِع",en:"Monitor"},
+  fu_a3d:{ar:"ينبّهك للتواريخ والتغييرات والمخاطر قبل ما تفوتك.",
+          en:"It will watch the dates, the changes and the risks, and tell you before they pass you."},
+  fu_a4:{ar:"تصرّف",en:"Act"},
+  fu_a4d:{ar:"يساعدك تقرر وش تسوي، ويجهّز لك الورق اللي تحتاجه.",
+          en:"It will help you decide what to do, and prepare the documents you need to do it."},
+  fu_now:{ar:"شغّال اليوم",en:"Working today"},
+
+  fu_soon:{ar:"قريبًا",en:"Coming soon"},
+  fu_grid_h:{ar:"اللي نبنيه",en:"What we're building"},
+
+  fu_vault:{ar:"خزانة عقودي",en:"My contract vault"},
+  fu_vault_d:{ar:"عقودك المهمة كلها مرتّبة في مكان واحد آمن.",
+              en:"Your important contracts, organised in one secure place."},
+  fu_ask:{ar:"اسأل وضوح عن عقدك",en:"Ask Wodouh about your contract"},
+  /* Deliberately says "about YOUR contract". Ask exists today and answers from
+     verified labour law; it does not receive the document. That gap is the
+     feature, so the card names it instead of blurring the two. */
+  fu_ask_d:{ar:"اليوم تقدر تسأل وضوح عن نظام العمل. وقريبًا يجاوبك من نص عقدك أنت — «أقدر أستقيل في فترة التجربة؟»",
+            en:"Today you can ask Wodouh about labour law. Soon it will answer from the text of your own contract — “can I resign during probation?”"},
+  fu_alert:{ar:"تنبيهات ذكية",en:"Smart contract alerts"},
+  fu_alert_d:{ar:"ما يفوتك تاريخ ولا التزام: انتهاء العقد، التجديد، نهاية التجربة، مدة الإشعار، مواعيد الدفع.",
+              en:"Never miss a date or an obligation: expiry, renewal, the end of probation, notice periods, payment dates."},
+  fu_diff:{ar:"كشف التغييرات",en:"Change detection"},
+  fu_diff_d:{ar:"قارن نسختين من العقد وشوف وش تغيّر بالضبط — بند زاد، بند راح، راتب تغيّر، غرامة جديدة.",
+             en:"Compare two versions of a contract and see exactly what changed — a clause added, a clause gone, pay changed, a new penalty."},
+  fu_rights:{ar:"حقوقك والتزاماتك",en:"Rights and obligations"},
+  fu_rights_d:{ar:"وش لك ووش عليك، مفصولين بوضوح — لا تكتشف التزامًا بعد فوات وقته.",
+               en:"What you're owed and what you owe, kept clearly apart — so an obligation isn't a surprise."},
+  fu_time:{ar:"الخط الزمني للعقد",en:"Contract timeline"},
+  fu_time_d:{ar:"مواعيد عقدك المهمة على خط واحد: التوقيع، التجربة، المراجعة، التجديد، الانتهاء.",
+             en:"Your contract's dates on one line: signed, probation, review, renewal, expiry."},
+  fu_watch:{ar:"مراقبة المخاطر",en:"Risk monitoring"},
+  fu_watch_d:{ar:"بدل قراءة واحدة وخلاص، متابعة مستمرة تخليك سابق المخاطر المهمة.",
+              en:"Instead of one reading and done, an eye that stays open on the risks that matter."},
+  fu_nego:{ar:"ذكاء التفاوض",en:"Negotiation intelligence"},
+  fu_nego_d:{ar:"وش تقدر تفاوض عليه، وكيف تجهّز ردّك — بناءً على خطابات وضوح الموجودة اليوم.",
+             en:"What you can negotiate, and help preparing your response — building on the letters Wodouh already writes."},
+  fu_docs:{ar:"أوراق مكتوبة لك",en:"Documents written for you"},
+  fu_docs_d:{ar:"تحوّل ما اكتشفه وضوح إلى خطابات وطلبات وإشعارات جاهزة — توسعة لما يسويه اليوم.",
+             en:"Turn what Wodouh finds into finished letters, requests and notices — an extension of what it already does."},
+  fu_loan:{ar:"القروض والتمويل البنكي",en:"Bank loans and financing"},
+  fu_loan_d:{ar:"افهم عقد التمويل قبل ما توقّعه: نسبة الربح، إجمالي ما ستسدّده، الرسوم، السداد المبكر، التأخر، والضمانات. وضوح يقرأ العقد فقط — ما يربط بحسابك البنكي، وما يقدّم طلب تمويل، وما يقرّر لك موافقة أو رفض.",
+             en:"Understand a financing agreement before you sign: the profit rate, the total you will repay, the fees, early settlement, late payment and security. Wodouh would read the agreement only — no bank connection, no application, no lending decision."},
+
+  fu_cats_h:{ar:"أنواع العقود",en:"Contract types"},
+  fu_cat_now:{ar:"متاح اليوم",en:"Available today"},
+  fu_cat_next:{ar:"قادم",en:"Planned"},
+  fu_cat_emp:{ar:"عقد عمل",en:"Employment"},
+  fu_cat_emp_d:{ar:"مدعوم بالكامل: تحليل، ومبالغ، وحاسبة نهاية الخدمة، وخطابات.",
+                en:"Fully supported: analysis, amounts, the end-of-service calculator, and letters."},
+  fu_cat_rent:{ar:"عقد إيجار",en:"Rental"},
+  fu_cat_rent_d:{ar:"مدعوم: تحليل البنود والتنبيهات وخطاب للمؤجّر.",
+                 en:"Supported: clause analysis, flags, and a letter to the landlord."},
+  fu_cat_free:{ar:"عقد عمل حر",en:"Freelance"},
+  fu_cat_free_d:{ar:"مدعوم: تحليل البنود والتنبيهات وخطاب للعميل.",
+                 en:"Supported: clause analysis, flags, and a letter to the client."},
+  fu_cat_supp:{ar:"عقد توريد",en:"Supplier"},
+  fu_cat_supp_d:{ar:"ما زال ما بدأ. نقوله عشان تعرف وش ناقص، لا عشان نوحي إنه موجود.",
+                 en:"Not started. Listed so you know what's missing, not to imply it exists."},
+  fu_cat_loan:{ar:"تمويل بنكي",en:"Bank financing"},
+  fu_cat_loan_d:{ar:"قادم — اقرأ التفاصيل فوق.",en:"Planned — see above."},
+
+  /* The line that keeps this screen honest. Without it a roadmap reads as a
+     specification, and a reader plans around dates nobody promised. */
+  fu_foot:{ar:"كل شي معلّم «قريبًا» في هذه الصفحة ما زال تحت التخطيط: ما له تاريخ، وما هو جزء من أي خطة مدفوعة اليوم، وقد يتغيّر أو ما يُبنى أصلًا. اللي تدفع مقابله اليوم هو اللي شغّال اليوم فقط.",
+           en:"Everything marked “coming soon” here is still planned: it has no date, it is not part of anything you can buy today, and it may change or not be built at all. What you pay for today is only what works today."},
   try_sample:{ar:"أو جرّب نموذجًا",en:"Or try a sample"},
   privacy_line:{ar:"يُحلَّل النص على جهازك — لا يغادر ولا نحتفظ به.",
                 en:"Your text is analyzed on your device — it never leaves it and we don't keep it."},
@@ -5214,6 +5357,7 @@ function applyLang(){
   renderMode();
   renderHomeReminders();
   renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
+  renderFuture();
   renderPrivacyCopy();
   renderSigninCopy();
   /* The "coming soon" badges are built in code rather than carried on a
@@ -6025,6 +6169,122 @@ const LIB_GO = {
   openRightsCase: ()=>openRightsCase()
 };
 
+/* ================================================================= future
+ *
+ * The roadmap screen. Built from these three lists rather than from markup so
+ * that a card cannot exist in one language and not the other, and so the
+ * "coming soon" badge is attached by the data rather than remembered by hand.
+ *
+ * textContent everywhere, like the rest of this file. These strings are ours
+ * rather than a reader's, but the rule that no copy reaches innerHTML is worth
+ * more than the one line it saves here.
+ */
+const FU_ARC = [
+  ["fu_a1", "fu_a1d", true],
+  ["fu_a2", "fu_a2d", false],
+  ["fu_a3", "fu_a3d", false],
+  ["fu_a4", "fu_a4d", false]
+];
+const FU_CARDS = [
+  ["🗂️", "fu_vault",  "fu_vault_d"],
+  ["🧠", "fu_ask",    "fu_ask_d"],
+  ["🔔", "fu_alert",  "fu_alert_d"],
+  ["🔄", "fu_diff",   "fu_diff_d"],
+  ["⚖️", "fu_rights", "fu_rights_d"],
+  ["📅", "fu_time",   "fu_time_d"],
+  ["🚨", "fu_watch",  "fu_watch_d"],
+  ["🤝", "fu_nego",   "fu_nego_d"],
+  ["✍️", "fu_docs",   "fu_docs_d"],
+  ["🏦", "fu_loan",   "fu_loan_d"]
+];
+/* `true` means it works TODAY and must never carry a "soon" badge. The four
+   that do are the reason this list is here: a roadmap that leaves a reader
+   unsure which parts are real has cost them more than it told them. */
+const FU_CATS = [
+  ["fu_cat_emp",  "fu_cat_emp_d",  true],
+  ["fu_cat_rent", "fu_cat_rent_d", true],
+  ["fu_cat_free", "fu_cat_free_d", true],
+  ["fu_cat_supp", "fu_cat_supp_d", false],
+  ["fu_cat_loan", "fu_cat_loan_d", false]
+];
+
+function renderFuture(){
+  const arc = document.getElementById("fuArc");
+  const grid = document.getElementById("fuGrid");
+  const cats = document.getElementById("fuCats");
+  if (!arc || !grid || !cats) return;
+
+  const head = (host, key) => {
+    const h = document.createElement("h3");
+    h.className = "fu-h";
+    h.textContent = t(key);
+    host.appendChild(h);
+  };
+  const badge = (host, key, cls) => {
+    const b = document.createElement("span");
+    b.className = "badge" + (cls ? " " + cls : "");
+    b.textContent = t(key);
+    host.appendChild(b);
+  };
+
+  arc.innerHTML = "";
+  head(arc, "fu_arc_h");
+  FU_ARC.forEach(([k, d, now], i) => {
+    const step = document.createElement("div");
+    step.className = "fu-step" + (now ? " now" : "");
+    const dot = document.createElement("div");
+    dot.className = "fu-dot";
+    dot.textContent = String(i + 1);
+    dot.setAttribute("aria-hidden", "true");
+    const body = document.createElement("div");
+    const b = document.createElement("b");
+    b.textContent = t(k);
+    body.appendChild(b);
+    if (now) badge(body, "fu_now", "now");
+    const p = document.createElement("span");
+    p.textContent = t(d);
+    body.appendChild(p);
+    step.appendChild(dot); step.appendChild(body);
+    arc.appendChild(step);
+  });
+
+  grid.innerHTML = "";
+  head(grid, "fu_grid_h");
+  FU_CARDS.forEach(([icon, k, d]) => {
+    const card = document.createElement("div");
+    card.className = "fu-card";
+    const ic = document.createElement("div");
+    ic.className = "fu-ic";
+    ic.textContent = icon;
+    ic.setAttribute("aria-hidden", "true");
+    const body = document.createElement("div");
+    const b = document.createElement("b");
+    b.textContent = t(k);
+    body.appendChild(b);
+    badge(body, "fu_soon");
+    const p = document.createElement("span");
+    p.textContent = t(d);
+    body.appendChild(p);
+    card.appendChild(ic); card.appendChild(body);
+    grid.appendChild(card);
+  });
+
+  cats.innerHTML = "";
+  head(cats, "fu_cats_h");
+  FU_CATS.forEach(([k, d, now]) => {
+    const row = document.createElement("div");
+    row.className = "fu-cat" + (now ? " now" : "");
+    const b = document.createElement("b");
+    b.textContent = t(k);
+    row.appendChild(b);
+    badge(row, now ? "fu_cat_now" : "fu_cat_next", now ? "now" : "");
+    const p = document.createElement("span");
+    p.textContent = t(d);
+    row.appendChild(p);
+    cats.appendChild(row);
+  });
+}
+
 function renderLib(){
   const wrap = document.getElementById("rightsLib");
   if (!wrap) return;
@@ -6142,7 +6402,11 @@ function signedIn(){ return !!authUser; }
  * Reading a contract, the reminders, the assistant and everything that writes
  * or spends still need an account.
  *
- * AN ALLOWLIST, NOT A LIST OF GATED SCREENS. Four names get through. A screen
+ * The roadmap screen is open for a different reason: it holds nothing about
+ * anyone, asks for nothing, and does nothing. Requiring an account to read
+ * what a product intends to build one day would be hard to say out loud.
+ *
+ * AN ALLOWLIST, NOT A LIST OF GATED SCREENS. Five names get through. A screen
  * added next year is gated because it is new, not because someone remembered
  * to add it to a list — the failure mode of the other shape is a hole nobody
  * notices until it is found.
@@ -6152,7 +6416,7 @@ function signedIn(){ return !!authUser; }
  * show() directly, and anything in this file can. A gate in the wrappers would
  * be a gate around the front door of a building with open windows.
  */
-const AUTH_FREE = ["onboard", "signin", "eos", "rights"];
+const AUTH_FREE = ["onboard", "signin", "eos", "rights", "future"];
 function authAllow(name){
   /* AN UNCONFIGURED BUILD IS NOT GATED, and this is the one exception to "no
      exceptions". With no Supabase project there is no account to be had, so
@@ -10454,6 +10718,11 @@ const TABS = [
   { id:"home",     label:"tab_review",  icon:'<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/>' },
   { id:"rights",   label:"tab_rights",  icon:'<path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/>' },
   { id:"timeline", label:"tab_remind",  icon:'<path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/>' },
+  /* Fifth tab, and the only one that is not a working surface — it is the
+     product's own roadmap. It sits before Account rather than after it so the
+     account, which is where a reader goes to leave or to pay, stays the last
+     thing in the row where it has always been. */
+  { id:"future",   label:"tab_future",  icon:'<path d="M12 3l2.4 5.6L20 10l-4.4 3.7L17 20l-5-3-5 3 1.4-6.3L4 10l5.6-1.4z"/>' },
   { id:"account",  label:"tab_account", icon:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.5 4-5 7-5s5.8 1.5 7 5"/>' }
 ];
 const ROOTS = TABS.map(x=>x.id);
@@ -10465,6 +10734,7 @@ function goTab(id){
      about to be sent to the door. */
   if (obDone && !authAllow(id)){ authRedirect(id); return; }
   if (id === "timeline"){ tlOrigin = "tab"; renderTimeline(); }
+  if (id === "future") renderFuture();
   /* The account screen shows subscription state, so it is a governed surface. */
   if (id === "account"){ ensureFlags(); renderAccount(); }
   lateralNav = true;                 /* siblings cross-fade instead of pushing */

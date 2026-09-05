@@ -30,6 +30,7 @@ const ORDER = [
   "pwa.test.js",
   "seo.test.js",
   "soon.test.js",
+  "future.test.js",
   "layout.test.js",
   "surfaces.test.js",
   "pdf.test.js",
@@ -44,6 +45,7 @@ const ORDER = [
   "contract-review.test.js",
   "termination.test.js",
   "claude-path.test.js",
+  "ai-context.test.js",
   "termination-ui.test.js",
   "scenarios.test.js",
 ];

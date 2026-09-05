@@ -146,13 +146,15 @@ const STUB = (apple) => {
     ok(walk.ids.length > 20, `the walk covers every screen in the markup (${walk.ids.length})`);
     /* The tour and the door itself are the two that must stay open: one is
        where a new reader starts, the other is how they get in. */
-    /* Four, and exactly four. The tour and the door, plus the two surfaces
-       deliberately left open — the calculator and the rights library, which are
-       what makes the free proposition true rather than merely claimed. A fifth
-       name appearing here is a hole, not a feature. */
-    const EXPECTED_OPEN = ["eos", "onboard", "rights", "signin"];
+    /* Five, and exactly five. The tour and the door; the calculator and the
+       rights library, which are what make the free proposition true rather
+       than merely claimed; and the roadmap screen, which holds nothing about
+       anyone and asks for nothing. A SIXTH name appearing here is a hole, not
+       a feature — this list is written out in full precisely so that widening
+       the gate is a deliberate edit to a test rather than a side effect. */
+    const EXPECTED_OPEN = ["eos", "future", "onboard", "rights", "signin"];
     ok(JSON.stringify([...walk.opened].sort()) === JSON.stringify(EXPECTED_OPEN),
-       `only the tour, the door, the calculator and the rights library open (${walk.opened.join(", ") || "none"})`);
+       `only the tour, the door, the calculator, the rights library and the roadmap open (${walk.opened.join(", ") || "none"})`);
     ok(walk.elsewhere.length === 0,
        `and every other screen lands on the door, not somewhere else${walk.elsewhere.length ? ": " + walk.elsewhere.join(", ") : ""}`);
 
