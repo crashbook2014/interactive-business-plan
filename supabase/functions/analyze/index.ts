@@ -115,28 +115,67 @@ async function bucketFor(req: Request): Promise<string> {
    a fresh one, was never actually held to RATE_MAX.
    bump_rate_limit is a fixed-window counter in Postgres, callable only by
    service_role (0006_function_grants.sql). Same raw-fetch style as
-   resolveUpload() above: no new import for a call this small. Fails OPEN on
-   missing config or a network error to the RPC itself — matching
-   oauth-callback's `data?.ok === false` check — because a transient limiter
-   outage must not take the whole analysis feature down with it; it fails
-   CLOSED (refuses) only on an explicit `false` from the database. */
-async function overLimit(bucket: string): Promise<boolean> {
-  if (!SUPABASE_URL || !SERVICE_KEY) return false;
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bump_rate_limit`, {
-      method: "POST",
-      headers: {
-        apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ p_bucket: `ai:${bucket}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
-    });
-    if (!res.ok) return false;
-    const allowed = await res.json().catch(() => null);
-    return allowed === false;
-  } catch {
-    return false;
+   resolveUpload() above: no new import for a call this small.
+
+   THIS USED TO FAIL OPEN, AND THAT WAS THE WRONG TRADE ON THIS ENDPOINT.
+
+   The old reasoning was that a transient limiter outage must not take the
+   analysis feature down with it, matching oauth-callback's `data?.ok === false`
+   check. It is a good rule and it does not belong here. oauth-callback fails
+   open onto a redirect; this function fails open onto a metered call to
+   Anthropic that the owner pays for. So the two failure modes are not
+   comparable: one costs a retry, the other costs money at whatever rate a
+   caller cares to send, for as long as the limiter stays unreachable, with
+   nothing in the product to notice or stop it.
+
+   Worse than the transient case was the permanent one. Missing config
+   returned "allowed" too, so a deploy that simply forgot SUPABASE_URL or the
+   service key produced an endpoint that spent money with no limit at all and
+   looked completely healthy while doing it. A hole that silent is not a
+   degradation, it is an unfunded liability waiting on the first person who
+   notices the URL.
+
+   So: fail CLOSED, and be loud about it. One retry absorbs the ordinary blip
+   that the fail-open was really written for — most transient RPC failures are
+   a single dropped connection, not an outage — and anything that survives the
+   retry refuses. The refusal is a 429, which the app already renders as "the
+   service is busy right now, try again in a minute": true, useful, and it
+   asks the reader to do the one thing that will work.
+
+   THE TRADE, STATED PLAINLY: if the counter is genuinely unreachable, AI
+   analysis stops. That is a real cost and it was a real argument for the old
+   behaviour. It is accepted deliberately, because an unbounded bill is not
+   recoverable and a few minutes of "try again" is. */
+type LimitCheck = "allow" | "deny" | "unavailable";
+
+async function checkLimit(bucket: string): Promise<LimitCheck> {
+  /* Not a transient condition and not something to serve through: a paid
+     endpoint whose limiter is not configured should refuse from its first
+     request, so this is found at deploy time rather than on a bill. */
+  if (!SUPABASE_URL || !SERVICE_KEY) return "unavailable";
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bump_rate_limit`, {
+        method: "POST",
+        headers: {
+          apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ p_bucket: `ai:${bucket}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
+      });
+      if (!res.ok) continue;
+      const allowed = await res.json().catch(() => null);
+      /* The database answers with a boolean. Anything else means the counter
+         did not actually run, and a shape we cannot read is not permission. */
+      if (allowed === false) return "deny";
+      if (allowed === true) return "allow";
+      continue;
+    } catch {
+      /* fall through to the retry, then to "unavailable" */
+    }
   }
+  return "unavailable";
 }
 
 /* The instruction. The document never appears in here — it is passed as a
@@ -476,7 +515,14 @@ Deno.serve(async (req) => {
      ANALYZE_URL and never calls this; if it is called anyway, say why. */
   if (!API_KEY) return json({ error: "not_configured" }, 503);
 
-  if (await overLimit(await bucketFor(req))) return json({ error: "rate_limited" }, 429);
+  /* Both refusals are a 429, which the app renders as "busy, try in a minute"
+     — accurate for either. They are distinguished in the body so that a
+     limiter that is DOWN is separable from a caller who is over their limit
+     when someone reads the logs; the reader is told the same true thing
+     either way. */
+  const limit = await checkLimit(await bucketFor(req));
+  if (limit === "deny") return json({ error: "rate_limited" }, 429);
+  if (limit === "unavailable") return json({ error: "limiter_unavailable" }, 429);
 
   let body: { kind?: string; text?: string; assessment?: unknown; q?: string; lang?: string; ctx?: unknown; nat?: string; upload?: string };
   try {

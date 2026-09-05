@@ -224,24 +224,43 @@ async function serveWithAiCsp(page){
      device must be named on this page — the failure this catches is a fourth
      one being added and the copy still describing three. If you add a flow,
      add it here; that is the point. */
-  /* The scan upload was added as a fourth exception and this list was not
-     updated, so the check went on enforcing three against copy that
-     enumerates four — the precise failure the comment above warns about,
-     landing on the test rather than the page.
-     A NOTE ON THE FOURTH, so nobody reads its presence as a claim: the copy
-     discloses the scan upload and the server supports it, but the client has
-     no upload call site yet, so nothing actually sends a file today. That is
-     over-disclosure, which is the safe direction, and it is tracked
-     separately. What belongs here is that every exception the page CLAIMS is
-     also named on it. */
+  /* THE SCAN UPLOAD WAS LISTED HERE AND HAS BEEN REMOVED, in both directions
+     at once: from the copy and from this list.
+
+     Its history is worth keeping. It was added as a fourth exception, this
+     list was not updated, and the check went on enforcing three against copy
+     that enumerated four — the precise failure the comment above warns about,
+     landing on the test rather than the page. It was then noted that the copy
+     disclosed a file upload the CLIENT CANNOT PERFORM: the server supports it,
+     but nothing in the app has ever had a call site that sends a file. That
+     was called over-disclosure and left alone as the safe direction.
+
+     It is not the safe direction. A privacy page that describes a data flow
+     which does not exist is inaccurate in exactly the way a privacy page must
+     not be, and it is worse than harmless: it teaches a reader that their file
+     may be uploaded, which is the single fear this product exists to answer.
+     Being frightening about something you do not do costs trust and buys
+     nothing. So the page now says what actually happens to a scan — Wodouh
+     refuses it and asks for pasted text — and this list is three again. */
   const FLOWS = [/A closer read of your contract/i, /AI second-pass review/i,
-                 /Ask a question/i, /Read a scanned contract/i];
+                 /Ask a question/i];
   const named = FLOWS.filter(re => re.test(claim2.acc)).length;
   ok(named === FLOWS.length,
      `configured: every off-device flow is named on the privacy page (${named}/${FLOWS.length})`);
   const count = (claim2.acc.match(/There are (\w+) exceptions?/i) || [])[1];
   ok(({ one:1, two:2, three:3, four:4 })[String(count).toLowerCase()] === FLOWS.length,
      `configured: and the number it claims matches the number there are (says "${count}")`);
+  /* The copy and the code have to agree in BOTH directions, which is what
+     stopped this being caught for so long. If a real upload call site is ever
+     added, the page must gain the disclosure back in the same change — and
+     until then it must not claim one. */
+  const appSrc = require("node:fs").readFileSync(
+    require("node:path").join(__dirname, "..", "app", "index.html"), "utf8");
+  const hasUploadCall = /functions\/v1\/upload|UPLOAD_URL/.test(appSrc);
+  ok(hasUploadCall === false,
+     "the client still has no call site that uploads a file, as the page now says");
+  ok(!/uploads the FILE|uploads the file itself/i.test(claim2.acc),
+     "and the page no longer describes a file upload that cannot happen");
   ok(/reason field/i.test(claim2.acc),
      "configured: it still says the reason text is sent by the review");
   ok(/can change any amount/i.test(claim2.acc),

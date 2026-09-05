@@ -49,15 +49,15 @@
     <p>حين تلصق نص عقدك أو ترفع ملف PDF، يُستخرج النص ويُفحص <strong>داخل متصفحك</strong>. الدرجة، والتنبيهات، والبنود، ومكافأة نهاية الخدمة، وكل رقم في التقييم — كلها تُحسب على جهازك. لا نرفع العقد، ولا نخزّنه، ولا نطّلع عليه.</p>
     <p>وشغلك في التطبيق يبقى في <strong>ذاكرة متصفحك وحدها</strong> (localStorage) ما لم تطلب أنت مزامنته. إذا حذفت بيانات المتصفح أو حذفت التطبيق، ذهب معه كل ما لم يُزامن، ولا توجد عندنا نسخة منه.</p>
 
-    <h2>الاستثناءات — أربعة، كلها اختيارية، ولكل واحدة موافقتها</h2>
-    <p>هذه هي الحالات الوحيدة التي يغادر فيها نص عقدك أو ملفه جهازك. لا تعمل أي منها تلقائيًا، ولا تُفعَّل إلا بضغطك على موافقة مكتوب فيها ماذا سيُرسل. إذا رفضتها كلها، يعمل التطبيق كاملًا.</p>
+    <h2>الاستثناءات — ثلاثة، كلها اختيارية، ولكل واحدة موافقتها</h2>
+    <p>هذه هي الحالات الوحيدة التي يغادر فيها نص عقدك أو ملفه جهازك. لا تعمل أي منها تلقائيًا، ولا تُفعَّل إلا بضغطك على موافقة مكتوب فيها ماذا سيُرسل. إذا رفضتها كلها، يعمل التطبيق كاملًا. وكلها تُرسل نصًّا كتبته أنت أو استُخرج على جهازك — ولا يغادر جهازك ملف أبدًا.</p>
     <ol>
       <li><strong>«قراءة أعمق لعقدك»</strong> — يُرسل نص العقد وحده. بدون أرقامك ولا إجاباتك.</li>
       <li><strong>«مراجعة ثانية بالذكاء الاصطناعي»</strong> — يُرسل أكثر: تواريخك وأجرك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق التي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.</li>
       <li><strong>«اسأل سؤالك»</strong> — يُرسل سؤالك كما كتبته. وفيه خانة منفصلة داخل الشاشة نفسها: إذا علّمتها أُرسلت معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء ليكون الجواب على حالتك؛ وإذا تركتها فلا يخرج غير السؤال.</li>
-      <li><strong>«اقرأ عقدًا ممسوحًا ضوئيًا»</strong> — الوحيد الذي يرفع <strong>الملف نفسه</strong> لا نصّه. نلجأ إليه فقط إذا كان عقدك صورة أو مسحًا ضوئيًا لا نستطيع قراءة نصه على جهازك. يتطلّب تسجيل دخول، ويُحذف الملف من خوادم Anthropic فور انتهاء التحليل وفي كل الأحوال خلال ساعة.</li>
     </ol>
-    <p>الأربعة تمرّ عبر خادم وضوح إلى نموذج Claude من شركة Anthropic. الثلاثة الأولى لا يُحفظ منها شيء في أي مرحلة؛ والرابع يُحفظ الملف مؤقتًا ثم يُحذف. ولا يستطيع أي منها تغيير مبلغ — الحساب كله يبقى على جهازك.</p>
+    <p>الثلاثة تمرّ عبر خادم وضوح إلى نموذج Claude من شركة Anthropic، ولا يُحفظ منها شيء في أي مرحلة. ولا يستطيع أي منها تغيير مبلغ — الحساب كله يبقى على جهازك.</p>
+    <p>وإذا كان عقدك صورة أو مسحًا ضوئيًا بلا نص نقدر نقرأه على جهازك، فوضوح <strong>لا يرفعه</strong>: يقول لك إنه ما قدر يقرأه ويطلب منك لصق النص. قراءة العقود الممسوحة ضوئيًا ما زالت قيد التطوير، وهذه الصفحة ستُحدَّث قبل تفعيلها لا بعده.</p>
 
     <h2>سؤال واحد صغير عن الميزات</h2>
     <p>حين تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا: أي الميزات مفعّلة الآن. لا يحمل هذا الطلب شيئًا عنك ولا عن عقدك — لا حسابك ولا أرقامك ولا نصّك — وإذا لم يصله جواب أكمل التطبيق عمله كأن شيئًا لم يكن.</p>
@@ -127,15 +127,15 @@
     <p>When you paste your contract or open a PDF, the text is extracted and examined <strong>inside your browser</strong>. The score, the flags, the clause review, the end-of-service award, every figure in the assessment — all computed on your device. We do not upload your contract, store it, or read it.</p>
     <p>Your work stays in <strong>your browser's storage alone</strong> (localStorage) unless you ask us to sync it. Clear your browser data or delete the app and everything unsynced goes with it. We hold no copy of it.</p>
 
-    <h2>The exceptions — four, all optional, each separately consented</h2>
-    <p>These are the only cases where anything leaves your device. None runs automatically. Each requires you to tick a consent that states what will be sent. Decline all four and the app works in full.</p>
+    <h2>The exceptions — three, all optional, each separately consented</h2>
+    <p>These are the only cases where anything leaves your device. None runs automatically. Each requires you to tick a consent that states what will be sent. Decline all three and the app works in full. All three send text you typed or text extracted on your device — no file ever leaves it.</p>
     <ol>
       <li><strong>"A closer read of your contract"</strong> — sends the contract text alone. Not your figures, not your answers.</li>
       <li><strong>"AI second-pass review"</strong> — sends more: your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.</li>
       <li><strong>"Ask a question"</strong> — sends your question as you typed it. A separate tick box on the same screen adds your dates, wage, contract type and how the job ended so the answer can be about your situation. Leave it unticked and only the question goes.</li>
-      <li><strong>"Read a scanned contract"</strong> — the only one that uploads <strong>the file itself</strong> rather than its text. Used only when your contract is a photo or a scan with no text we can read on your device. It requires signing in, and the file is deleted from Anthropic's servers as soon as the analysis returns, and within an hour in every case.</li>
     </ol>
-    <p>All four go through Wodouh's server to Anthropic's Claude model. Nothing is stored at any point for the first three; the fourth stores the file briefly and then deletes it. None of them can change any amount — the arithmetic stays on your device.</p>
+    <p>All three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — the arithmetic stays on your device.</p>
+    <p>If your contract is a photo or a scan with no text we can read on your device, Wodouh does <strong>not</strong> upload it: it tells you it could not read it and asks you to paste the text instead. Reading scanned contracts is still being built, and this page will be updated before it is switched on, not after.</p>
 
     <h2>One small question about features</h2>
     <p>When you open the payment screen or your account, the app asks our servers which features are switched on right now, and the sign-in screen asks which ways of signing in are enabled. Neither request carries anything about you or your contract — no account, no figures, no text — and if no answer comes back the app carries on exactly as it would have.</p>
