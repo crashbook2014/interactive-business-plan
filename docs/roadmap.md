@@ -9,7 +9,7 @@ is how "coming soon" turns into a lie told slowly.
 once, for real, on a real device. Code that runs in a test is not a shipped
 feature.
 
-Last updated: 5 September 2026.
+Last updated: 5 September 2026 — **launched**.
 
 ---
 
@@ -87,6 +87,27 @@ a theoretical one.
 
 ## Shipped, kept here for the record
 
+- **Launch** (5 Sept 2026) — the curtain is up. `/app/` opens with no
+  `#preview` key. `soon.test.js` now reads the flag and asserts whichever side
+  is shipped, so un-launching stays a one-line change with test cover, tested
+  green in both directions.
+- **Everything is free** (5 Sept 2026) — `FREE_NOW` opens every entitlement
+  from one switch. This is also what made launching defensible: the launch
+  checklist's own blocker was that launching with payments off shows strangers
+  a paywall that cannot take money, and now no paywall renders at all.
+- **AI contract analysis, verified live** (5 Sept 2026) — `analyze` deployed as
+  version 6 with the fail-closed limiter, and confirmed working on the live
+  site by the founder: a real contract returned real findings.
+  What that single check actually proves, since the function imports
+  `corpus.json`, `grade.mjs` and `review-contract.mjs` at module load: all
+  four files are structurally intact — invalid JSON or a syntax error in
+  either grader would have stopped it booting at all — `checkLimit` returned
+  "allow", so `SUPABASE_URL`, the service key and `bump_rate_limit` are all
+  reachable in production, and CORS matches the live origin.
+  What it does NOT prove: that the legal register's CONTENT is byte-perfect. A
+  transposed digit still parses. The `ask` feature is what exercises those
+  rows — see below.
+
 - **Email sign-in by one-time code** — no password path, by design.
 - **Google sign-in.**
 - **The sign-in gate** (Sept 2026) — an account is required for everything
@@ -120,3 +141,12 @@ than an oversight.
 - **No signed-out reader has ever been observed using this build.** Every claim
   about where the gate feels earned is reasoning, not evidence. The first real
   users are the test.
+- **The legal register has not been verified since the version-6 deploy.** Its
+  29 rows were hand-transcribed into the deploy call, and while the function
+  boots (so the JSON parses), nothing has yet checked that an article number or
+  a riyal figure did not change in transit. Asking a question through "اسأل
+  سؤالك" that returns a *verified*-tier answer with a citation would exercise
+  those rows against the real register. Worth doing once.
+- **The iOS runbook has still never been run on a real iPhone.**
+  `docs/ios-test-runbook.md`. Every automated test to date is headless
+  Chromium on Linux.
