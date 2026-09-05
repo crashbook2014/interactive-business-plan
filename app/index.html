@@ -973,6 +973,12 @@
   /* end-of-service calculator */
   .form{display:grid;gap:12px;margin-bottom:16px}
   .fld{display:block}
+  /* The date a reader actually picked, spelled out, because the input above it
+     is formatted by the browser rather than by this page. Quiet: it is a
+     confirmation, not a warning. */
+  .date-echo{display:block;margin-top:5px;font-size:12.5px;color:var(--ink-2);font-style:normal}
+  html[lang="ar"] .date-echo{font-size:13.5px}
+  .date-echo[hidden]{display:none}
   .fld>span{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
   .fld em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-2);margin-top:5px;opacity:.85}
   .fld input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
@@ -983,7 +989,15 @@
       padding:11px 10px;font-size:13px;color:var(--ink);box-shadow:var(--e1),var(--edge);transition:border-color .15s}
   .opts button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:700}
   html[lang="ar"] .opts button.on{font-weight:400}
-  .opts button:first-child{grid-column:1/-1}
+  /* THE FIRST OPTION SPANS THE ROW ONLY WHEN THAT LEAVES CLEAN PAIRS BELOW IT.
+     Unconditionally, this turned every TWO-option group into one full-width
+     button with a half-width orphan beside it — «محدد المدة» across the top and
+     «غير محدد المدة» hanging off one side, which reads as a layout accident
+     rather than a choice. :nth-last-child(odd) on the first child is true only
+     when the group holds an odd number, so three options still render as one
+     wide plus a pair (which is what the rule was written for) and two or four
+     render as tidy rows. */
+  .opts button:first-child:nth-last-child(odd){grid-column:1/-1}
   /* Seven termination options read as a list, not a keypad. */
   .opts.stack{grid-template-columns:1fr}
   .opts.stack button{text-align:start;padding:14px 14px;min-height:44px;line-height:1.45}
@@ -2834,6 +2848,11 @@ const T = {
      Offered where an account BUYS something and nowhere else. The app has
      always worked signed out and still does; nothing below gates a screen. */
   au_title:{ar:"احفظ شغلك",en:"Save your work"},
+  /* Straight off the tour, with nothing done yet. Names the account and its
+     price, which is the only thing being asked for at this moment, and does
+     not claim there is work to keep. The subtitle underneath then says what
+     is free without one. */
+  au_title_gate:{ar:"سوِّ حسابك المجاني",en:"Create your free account"},
   /* THE HEADLINE THAT DESCRIBED THE WRONG MOMENT.
      The reader has just pasted their contract and pressed analyse. What
      happens next is that they are stopped — and the screen said "Save your
@@ -5400,6 +5419,7 @@ function applyLang(){
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
   renderEos(); if (document.getElementById("eosOut").innerHTML) calcEos();
+  echoAllDates();   /* the words under each date are language-dependent */
   if (eosData){ renderCase(); renderCaseDoc(); }
   /* Unconditional: the paywall serves three flows, and two of them have no
      `current` contract. It guards its own missing state. */
@@ -6534,8 +6554,17 @@ function openSignin(back){
    applyLang() so both paths agree. */
 function renderSigninCopy(){
   const scanDoor = authWant === "scan";
+  /* THE THIRD DOOR, WHICH USED TO BORROW THE WRONG HEADLINE.
+     "Save your work" is right when a reader has work: they have read a
+     contract, or built an assessment, and an account keeps it. Arriving here
+     straight off the last onboarding card they have done nothing at all — no
+     contract, nothing saved, no work to lose — and being offered to save it
+     reads as a screen written for somebody else. Worse, the button they just
+     pressed said "review my contract free", so the first thing the product
+     does after the tour is answer a different question than the one asked. */
+  const gateDoor = !scanDoor && authWant === "nav";
   const ttl = document.getElementById("auTitle"), sb = document.getElementById("auSub");
-  if (ttl) ttl.textContent = t(scanDoor ? "au_title_scan" : "au_title");
+  if (ttl) ttl.textContent = t(scanDoor ? "au_title_scan" : gateDoor ? "au_title_gate" : "au_title");
   if (sb)  sb.textContent  = t(scanDoor ? "au_sub_scan"   : "au_sub");
 }
 
@@ -7060,6 +7089,7 @@ function renderEos(){
       excWrap.appendChild(b);
     });
   }
+  echoAllDates(document.getElementById("screen-eos"));
 }
 
 /* Calendar arithmetic, not averaged days: an exact three-year span must come
@@ -7689,7 +7719,50 @@ function renderTermQ(){
   };
   document.getElementById("tqForm").innerHTML = st.fields.map(f => F[f]()).join("");
   bindTermQ();
+  echoAllDates(document.getElementById("tqForm"));
 }
+
+/* THE BROWSER CHOOSES A DATE INPUT'S FORMAT, NOT THIS PAGE.
+ *
+ * <input type="date"> renders in the BROWSER's locale, which on most phones
+ * sold here is US English — so an Arabic reader was typing into a field that
+ * showed 03/01/2019 and reading it as 3 January. It is 1 March. Both dates
+ * are plausible for a job, neither looks wrong, and every riyal figure in the
+ * calculator and the assessment is derived from these two fields. This is the
+ * one place in the product where a formatting default can produce a confident
+ * wrong number that the reader has no way to catch.
+ *
+ * The format cannot be forced: `lang` does not govern it in Chrome, and
+ * replacing the native picker with three text boxes would cost the phone
+ * keyboard and the calendar, which are worth more than the ambiguity.
+ *
+ * So the date is echoed back in words underneath — "1 مارس 2019" — which is
+ * unambiguous in either reading. The assessment already does this for the
+ * dates it reports; this is the same courtesy at the point of entry, where it
+ * can still be corrected.
+ *
+ * Delegated, so it covers every date input in the app including the ones the
+ * termination flow builds at runtime, and any added later. */
+function echoDate(input){
+  if (!input || input.type !== "date" || !input.parentElement) return;
+  let el = input.parentElement.querySelector(".date-echo");
+  if (!el){
+    el = document.createElement("em");
+    el.className = "date-echo";
+    input.insertAdjacentElement("afterend", el);
+  }
+  /* "T00:00:00" makes this LOCAL midnight. Without it the string parses as
+     UTC, and west of Greenwich the echo would name the day before the one the
+     reader picked — which is the exact class of bug this is here to prevent. */
+  el.textContent = input.value ? fmtDate(input.value + "T00:00:00") : "";
+  el.hidden = !input.value;
+}
+function echoAllDates(root){
+  (root || document).querySelectorAll('input[type="date"]').forEach(echoDate);
+}
+document.addEventListener("input", (e) => {
+  if (e.target && e.target.type === "date") echoDate(e.target);
+});
 
 function dateFld(id, label, val, hint){
   return `<label class="fld" for="${id}"><span>${t(label)}</span>
