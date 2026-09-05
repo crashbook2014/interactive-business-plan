@@ -1569,6 +1569,13 @@
                  background:var(--amber-bg);border-radius:99px;padding:1px 8px;
                  margin-inline-start:6px;vertical-align:middle}
   .au-skip{text-align:center;cursor:pointer;text-decoration:underline;margin-top:4px}
+  /* Deliberately not styled as a fourth sign-in button: it is the one control
+     here that does NOT ask for an identity, and it should not read as another
+     row in the same list. Full width and 44px tall so it is a real target. */
+  .au-free{display:block;width:100%;min-height:44px;margin:14px 0 2px;padding:10px 12px;
+           background:none;border:none;color:var(--teal);font-size:14px;font-weight:700;
+           text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:center}
+  html[lang="ar"] .au-free{font-size:15px;font-weight:400}
   .au-what{margin-top:18px}
   .au-err{margin-top:12px;font-size:13px;color:var(--red-ink)}
   .ph-l{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
@@ -2126,6 +2133,24 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <button class="au-again" id="auPhoneAgain" type="button" onclick="sendSmsCode()" data-t="au_again"></button>
       </form>
     </div>
+    <!-- THE WAY OUT, WITHOUT AN ACCOUNT.
+         This screen tells the reader the calculator and the rights library work
+         without an account and invites them to try those first. For a while it
+         then gave them no way to get there: no tab bar (this is not a root
+         screen), no skip, and a back chevron hidden once the tour is done. The
+         only live controls were the two that ask for an identity. A true
+         sentence with no door behind it reads as a lie, and it was being read
+         that way on the first screen after the tour.
+         Not a tab bar: this is not a root screen and pretending otherwise
+         would put three more locked doors in front of someone who has just
+         declined the first one. One link, to the thing the sentence above it
+         names. -->
+    <!-- To the rights library, not straight to the calculator, because the
+         library is a ROOT screen: it brings the tab bar with it, and it carries
+         the "كم أستحق؟" card that opens the calculator. Landing on the
+         calculator instead would satisfy half of the sentence above and strand
+         the reader on a screen with no tab bar and one way back — to here. -->
+    <button class="au-free" id="auFree" type="button" onclick="goTab('rights')"></button>
     <div class="tm-sec au-what">
       <p><b data-t="au_what"></b></p>
       <p data-t="au_what_b"></p>
@@ -2812,6 +2837,10 @@ const T = {
      they check that the door they want is on its way, rather than leaving them
      to conclude this app is not for them. The button cannot be pressed, so it
      cannot fail. */
+  /* Names the two surfaces the subtitle above already named, so the link is
+     visibly the door to the thing just promised rather than a general escape. */
+  au_free:{ar:"جرّب الحاسبة ودليل الحقوق بدون حساب",
+           en:"Try the calculator and rights library — no account"},
   au_soon:{ar:"قريبًا",en:"Not yet available"},
   au_phone_soon:{ar:"الدخول برقم الجوال",en:"Sign in with a mobile number"},
   au_phone_lab:{ar:"رقم جوالك السعودي",en:"Your Saudi mobile number"},
@@ -5191,6 +5220,8 @@ function applyLang(){
      [data-t] node, so applyLang() would leave them in the previous language.
      Same reason renderSigninCopy() is called here. */
   renderAppleAuth(); renderPhoneAuth();
+  const auFree = document.getElementById("auFree");
+  if (auFree) auFree.textContent = t("au_free");
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -6164,6 +6195,14 @@ function resumeAfterAuth(){
 function openSignin(back){
   if (!authOn()) return;
   authBack = back || "account";
+  /* Only where the reader is actually stuck. Opening sign-in from inside the
+     app leaves the back chevron and the tab bar behind it; the link is for the
+     post-tour case, where this screen is the whole world. */
+  const free = document.getElementById("auFree");
+  if (free){
+    free.hidden = !obDone || signedIn();
+    free.textContent = t("au_free");
+  }
   renderAppleAuth();
   const err = document.getElementById("auErr");
   if (err) err.hidden = true;

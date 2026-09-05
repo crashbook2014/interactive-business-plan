@@ -293,6 +293,45 @@ const STUB = (apple) => {
   ok(/reach you|نوصلك/i.test(seam.text),
      "and gives the same reason the sign-in screen gives, in the same words");
 
+  /* ---- THE SCREEN MUST NOT BE A DEAD END.
+   *
+   * It says the calculator and the rights library work without an account and
+   * invites the reader to try those first. For a while it then offered no way
+   * to reach them: not a root screen so no tab bar, no skip, and the back
+   * chevron hidden once the tour is done. Every live control asked for an
+   * identity. A true sentence with no door behind it reads as a lie, and this
+   * is the first screen after the tour.
+   *
+   * Asserted by DRIVING it, not by looking for a link: click whatever the
+   * escape control is and require that the calculator actually opens with no
+   * session. A link that exists and goes nowhere would pass a DOM check. */
+  console.log("\n— the sign-in screen offers a way to the free surfaces");
+  const escape = await p.evaluate(() => {
+    obDone = true; authUser = null;
+    openSignin("home");
+    const el = document.getElementById("auFree");
+    const vis = !!el && getComputedStyle(el).display !== "none" && !el.hidden;
+    if (!vis) return { vis, landed: null, label: "" };
+    const label = el.textContent;
+    el.click();
+    const landed = (document.querySelector(".screen.active") || {}).id;
+    /* Both halves of the promise, driven: the library is where the link goes,
+       and the calculator must be reachable onward from it without signing in. */
+    const onward = [...document.querySelectorAll("#screen-rights button")]
+      .find(x => /openEos/.test(x.getAttribute("onclick") || ""));
+    if (onward) onward.click();
+    return { vis, landed, label,
+             tabbar: !document.getElementById("tabbar").hidden,
+             calc: (document.querySelector(".screen.active") || {}).id };
+  });
+  ok(escape.vis === true, "a control that does not ask for an identity is present");
+  ok(escape.landed === "screen-rights",
+     `and it actually reaches the rights library with no session (${escape.landed})`);
+  ok(escape.calc === "screen-eos",
+     `and the calculator is reachable onward from there (${escape.calc})`);
+  ok(/calculator|الحاسبة/i.test(escape.label) && /rights|الحقوق/i.test(escape.label),
+     "naming the same two surfaces the subtitle above it promises");
+
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p2.goto(APP);
