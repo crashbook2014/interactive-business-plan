@@ -22,7 +22,7 @@
  * These assertions are geometric on purpose. "Looks fine" is not a test; a gap
  * that must equal 56 and margins that must match each other are.
  */
-const { playwright, launchOpts, APP, signInStub } = require("./_env.js");
+const { playwright, launchOpts, APP, signInStub, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 
 const FAIL = [];
@@ -82,7 +82,9 @@ async function geometry(p){
     await p.goto(APP);
     await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
     await p.evaluate(signInStub);
+    await p.evaluate(paywallOn);
     await p.evaluate(() => { nat = "sa"; show("home"); });
     await p.waitForTimeout(250);
 
@@ -194,6 +196,7 @@ async function geometry(p){
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
   await p.evaluate(() => { nat = "sa"; if (lang === "ar") toggleLang(); show("home"); });
   await p.waitForTimeout(300);
   const en = await geometry(p);
@@ -235,6 +238,7 @@ async function geometry(p){
         const errs = []; pg.on("pageerror", e => errs.push(e.message.slice(0, 90)));
         await pg.goto(APP); await pg.waitForTimeout(500);
     await pg.evaluate(signInStub);
+    await pg.evaluate(paywallOn);
         await pg.evaluate(l => { if (lang !== l) { lang = l; applyLang(); } }, L);
         for (const [name, code] of Object.entries(SCENES)) {
           await pg.evaluate(code);
@@ -273,6 +277,7 @@ async function geometry(p){
     const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
     await pg.goto(APP); await pg.waitForTimeout(500);
     await pg.evaluate(signInStub);
+    await pg.evaluate(paywallOn);
     for (const L of ["en", "ar"]) {
       const r = await pg.evaluate(l => {
         lang = l; applyLang(); nat = "sa"; obDone = true;

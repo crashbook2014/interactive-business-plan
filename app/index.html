@@ -1631,6 +1631,10 @@
                  background:var(--amber-bg);border-radius:99px;padding:1px 8px;
                  margin-inline-start:6px;vertical-align:middle}
   .au-skip{text-align:center;cursor:pointer;text-decoration:underline;margin-top:4px}
+  .free-now{background:var(--green-bg);border-radius:var(--r-md);padding:12px 14px;margin:0 0 14px}
+  .free-now b{display:block;color:var(--teal-ink);font-size:15px;margin-bottom:4px}
+  .free-now p{font-size:13px;line-height:1.65;color:var(--ink-2)}
+  .free-now[hidden]{display:none}
   /* Deliberately not styled as a fourth sign-in button: it is the one control
      here that does NOT ask for an identity, and it should not read as another
      row in the same list. Full width and 44px tall so it is a real target. */
@@ -2536,6 +2540,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <h2 class="section-title" data-t="pl_title"></h2>
     <p class="pw-note" data-t="pl_sub"></p>
     <div class="seg" id="billSeg"></div>
+    <!-- Shown only while FREE_NOW. A price list a reader cannot be charged
+         from is not a neutral thing to leave standing: it tells them the
+         product costs money and quietly contradicts the app letting them
+         through every door. Said once, at the top, rather than by editing
+         every card — the catalogue has to come back intact. -->
+    <div class="free-now" id="plFree" hidden></div>
     <div class="plan-cards" id="planCards"></div>
     <p class="demo-tag" data-t="pl_enterprise"></p>
     <p class="disclaimer" data-t="pw_demo"></p>
@@ -2932,6 +2942,12 @@ const T = {
      visibly the door to the thing just promised rather than a general escape. */
   au_free:{ar:"جرّب الحاسبة ودليل الحقوق بدون حساب",
            en:"Try the calculator and rights library — no account"},
+  /* Only rendered while FREE_NOW. Says what is true now and what is true
+     later, because a reader who plans around "free" and is charged next month
+     was misled by the omission rather than by the sentence. */
+  free_now_h:{ar:"كل شي مجاني الحين",en:"Everything is free right now"},
+  free_now_b:{ar:"الأسعار تحت معروضة عشان تعرف الخطة، لكن ما فيه دفع الحين: كل الميزات مفتوحة لك بالكامل ومجانًا. لو صار فيه اشتراك مدفوع لاحقًا، بنقولها لك قبل لا يصير — ما راح نبدأ نحاسبك بدون ما تدري.",
+             en:"The prices below show where this is heading, but nothing is being charged: every feature is open to you, in full, free. If paid plans start later we will tell you before that happens — you will not simply find yourself being charged."},
   au_soon:{ar:"قريبًا",en:"Not yet available"},
   au_phone_soon:{ar:"الدخول برقم الجوال",en:"Sign in with a mobile number"},
   au_phone_lab:{ar:"رقم جوالك السعودي",en:"Your Saudi mobile number"},
@@ -9745,6 +9761,16 @@ function renderPlans(){
      invents a yearly figure nobody set, is how a price screen starts lying. */
   const seg = document.getElementById("billSeg");
   if (seg){ seg.innerHTML = ""; seg.hidden = true; }
+  const fn = document.getElementById("plFree");
+  if (fn){
+    fn.hidden = !FREE_NOW;
+    if (FREE_NOW){
+      fn.innerHTML = "";
+      const h = document.createElement("b"); h.textContent = t("free_now_h");
+      const b2 = document.createElement("p"); b2.textContent = t("free_now_b");
+      fn.appendChild(h); fn.appendChild(b2);
+    }
+  }
   const wrap = document.getElementById("planCards");
   wrap.innerHTML = "";
   PLANS_T.forEach(pl=>{
@@ -11930,7 +11956,41 @@ function activePlans(){
 function planIndex(mode, id){
   return (PLAN_SETS[mode] || PLANS).findIndex(p => p.name === id);
 }
+/* ============================================================ FREE_NOW
+ *
+ * THE WHOLE PRODUCT IS FREE WHILE THIS IS TRUE. Founder's decision, taken
+ * while the product is still behind the pre-launch curtain and before real
+ * payment exists: nothing is worth gating from the first readers, and the
+ * value of what they say back is larger than the revenue not collected.
+ *
+ * ONE SWITCH, AND IT IS THIS VARIABLE. Set it to false and every price, every
+ * paywall and every entitlement returns exactly as it was — nothing else is
+ * edited to turn charging back on. That is the whole point of doing it here
+ * rather than by deleting the gates: a paywall removed by deletion has to be
+ * rebuilt, and rebuilt from memory it comes back subtly different.
+ *
+ * IT IS READ IN EXACTLY TWO PLACES, because the product only has two gates:
+ *   - has()             — owns the review / letter / case entitlements
+ *   - reviewUnlocked()  — owns the free-scan limit and the full-review unlock
+ * Everything paid in this app funnels through one of those two. Nothing else
+ * needs to know, and nothing else should be taught to.
+ *
+ * WHAT IT DOES NOT DO: it does not touch the payments flag, the catalogue, or
+ * a single price. Money still cannot move — `payments` is false in app_flags —
+ * so this opens the doors without pretending a transaction happened.
+ *
+ * `let`, not `const`, for one reason: the paywall suites switch it off and run
+ * the whole paid journey against the real gates. A paywall that is off and
+ * untested is a paywall that quietly rots until the day it is needed, and that
+ * day is a bad one to discover it. See paywallOn() in test/_env.js.
+ */
+let FREE_NOW = true;
+
 function has(mode, tier){
+  /* Free, so everything is held. Deliberately above the owned[] lookup: the
+     reader's real entitlements are left untouched underneath, so switching
+     this off restores exactly what they had actually bought. */
+  if (FREE_NOW) return true;
   const held = owned[mode];
   if (!held) return false;
   if (!tier) return true;
@@ -12122,6 +12182,7 @@ function scanGate(kind){
    made worse by this; it is fixed by entitlements living server-side, which
    belongs with real payments and does not exist yet. */
 function reviewUnlocked(){
+  if (FREE_NOW) return true;       /* see FREE_NOW, above has() */
   if (owned.review === "plan_biz") return true;
   if (owned.review === "plan_reviews5") return packLive();
   return owned.review === "plan_review";

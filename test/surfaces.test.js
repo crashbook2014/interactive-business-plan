@@ -16,7 +16,7 @@
  * Run with `npm test`, which starts the server for you. Set WODOUH_URL
  * to point the same assertions at the deployed site.
  */
-const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { playwright, launchOpts, BASE, APP, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 
 const FAIL = [];
@@ -28,6 +28,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
+  /* The shipped build ships the paywall OFF (FREE_NOW). Switch it on so the
+     paid journey below is tested against the real gates. */
+  await p.evaluate(paywallOn);
 
   /* ---------------------------------------------- letter builder */
   console.log("\n— letter builder / selective assembly");

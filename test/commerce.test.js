@@ -18,7 +18,7 @@
  *
  * Run with `npm test`. WODOUH_URL points them at the deployed site.
  */
-const { playwright, launchOpts, APP, signInStub } = require("./_env.js");
+const { playwright, launchOpts, APP, signInStub, paywallOn } = require("./_env.js");
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const ROOT = path.join(__dirname, "..");
@@ -50,6 +50,7 @@ async function seedTermination(p){
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
 
   /* ------------------------------------------------- the price ladder */
   console.log("\n— the price ladder");
@@ -807,6 +808,7 @@ async function seedTermination(p){
   await p.evaluate(() => location.reload());
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
   await seedTermination(p);
 
   const before = await p.evaluate(async () => {
@@ -1208,6 +1210,7 @@ async function seedTermination(p){
   await p.evaluate(() => location.reload());
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
   const reloaded = await p.evaluate(() => owned.case);
   ok(reloaded === "plan_case", "a real entitlement survives a reload");
 
@@ -1519,6 +1522,52 @@ async function seedTermination(p){
      "and they are exactly PAY_MARKS — one place to correct when a gateway is chosen");
   ok(!/<i>mada<\/i>|<i>Apple/.test(app),
      "no payment method is hard-coded in the markup any more");
+
+  /* ---- FREE_NOW: the paywall is switched off, and that must be true in the
+     shipped build rather than only in a comment.
+     Everything above this point runs with paywallOn(), which proves the gates
+     still work. This block is the other half: with the switch left alone, the
+     doors are actually open. Both matter — a build that claims to be free and
+     still gates one flow charges nobody and frustrates everybody. */
+  console.log("\n— free for everyone, while FREE_NOW says so");
+  {
+    const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
+    pg.on("pageerror", e => FAIL.push("pageerror(free): " + e.message));
+    await pg.goto(APP);
+    await pg.waitForFunction(() => typeof window.show === "function");
+    await pg.evaluate(signInStub);          /* NB: no paywallOn() here, on purpose */
+    const free = await pg.evaluate(() => {
+      nat = "sa"; obDone = true;
+      owned = { review: null, letter: null, case: null };   /* has bought nothing */
+      return {
+        flag: FREE_NOW,
+        review: has("review"), letter: has("letter"), caseFile: has("case"),
+        top: has("review", "plan_biz"),      /* even the highest rung */
+        unlocked: reviewUnlocked(),
+        scan: scanGate("emp")
+      };
+    });
+    ok(free.flag === true, "the shipped build has the paywall switched off");
+    ok(free.review && free.letter && free.caseFile,
+       "a reader who has bought nothing holds every entitlement");
+    ok(free.top === true, "including the top of the ladder, not just the first rung");
+    ok(free.unlocked === true, "the full review is unlocked rather than the one-scan teaser");
+    ok(free.scan === true, "and the scan gate lets them straight through");
+
+    /* A price list standing over an open door needs a sentence, or it tells
+       the reader the opposite of what the app is doing. */
+    const banner = await pg.evaluate(() => {
+      show("plans"); renderPlans();
+      const el = document.getElementById("plFree");
+      return { shown: !!el && !el.hidden, text: el ? el.textContent : "" };
+    });
+    ok(banner.shown === true, "the plans screen says plainly that nothing is being charged");
+    ok(/free|مجاني/i.test(banner.text), "in the reader's own language");
+    /* The promise that makes it safe to say "free" without trapping anyone. */
+    ok(/before that happens|قبل لا يصير/i.test(banner.text),
+       "and promises warning before that ever changes");
+    await pg.close();
+  }
 
   await b.close();
   if (FAIL.length){

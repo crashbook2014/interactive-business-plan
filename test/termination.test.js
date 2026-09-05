@@ -18,7 +18,7 @@
  * Run with `npm test`, which starts the server for you. Set WODOUH_URL
  * to point the same assertions at the deployed site.
  */
-const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { playwright, launchOpts, BASE, APP, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -69,6 +69,9 @@ async function art87Certainty(p){
   });
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
+  /* The shipped build ships the paywall OFF (FREE_NOW). Switch it on so the
+     paid journey below is tested against the real gates. */
+  await p.evaluate(paywallOn);
 
   /* Drive the real flow: home card -> 7 options -> questions -> evidence -> paid result */
   const run = await p.evaluate(([how, track, extra]) => {

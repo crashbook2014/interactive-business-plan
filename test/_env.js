@@ -83,4 +83,22 @@ function signInStub(){
 }
 const signInSrc = "(" + signInStub.toString() + ")();";
 
-module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC, signInStub, signInSrc };
+/* TURN THE PAYWALL BACK ON, FOR THE SUITES THAT EXIST TO PROVE IT WORKS.
+ *
+ * The shipped build has FREE_NOW = true (see app/index.html): every door is
+ * open and nothing is charged, by the founder's decision while the product is
+ * pre-launch. That is a switch, not a deletion — the gates, the prices and the
+ * entitlement ladder are all still there, waiting.
+ *
+ * Which means they can rot. A paywall nobody exercises is one that fails the
+ * day it is switched back on, and by then the failure is a revenue bug found
+ * by a customer. So the paid suites flip the switch and walk the real journey:
+ * they prove the paywall STILL WORKS while it is off.
+ *
+ * Anything asserting the free-for-everyone behaviour deliberately does not
+ * call this.
+ */
+function paywallOn(){ FREE_NOW = false; }
+const paywallSrc = "(" + paywallOn.toString() + ")();";
+
+module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC, signInStub, signInSrc, paywallOn, paywallSrc };

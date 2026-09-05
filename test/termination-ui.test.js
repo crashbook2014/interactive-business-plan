@@ -8,7 +8,7 @@
  * Run with `npm test`, which starts the server for you. Set WODOUH_URL
  * to point the same assertions at the deployed site.
  */
-const { playwright, launchOpts, BASE, APP, signInStub } = require("./_env.js");
+const { playwright, launchOpts, BASE, APP, signInStub, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -20,12 +20,14 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
 
   /* Clear onboarding and pick a track the way a first-time reader would. */
   await p.evaluate(() => { localStorage.clear(); });
   await p.reload();
   await p.waitForFunction(() => typeof window.show === "function");
   await p.evaluate(signInStub);
+  await p.evaluate(paywallOn);
   /* The app opens in Arabic. These assertions read English strings, so switch
      first and come back to Arabic at the end — the RTL pass is the point. */
   await p.evaluate(() => { nat = "sa"; obDone = true; lang = "en"; applyLang(); show("home"); });
