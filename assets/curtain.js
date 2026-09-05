@@ -18,5 +18,5 @@
  * flash of "Try it now" before it turns into "Coming soon" would look broken
  * on a slow connection, which is most connections.
  */
-window.WODOUH_LAUNCHED = false;
+window.WODOUH_LAUNCHED = true;
 if (!window.WODOUH_LAUNCHED) document.documentElement.className += " soon";

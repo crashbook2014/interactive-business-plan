@@ -13,7 +13,7 @@ un-hiding it, and the guarantee that hiding it cost nothing.
 | `alwodouh.com/app/` | **Locked.** Redirects to the pre-launch page |
 | `alwodouh.com/app/#preview` | **The key.** Opens the full working app — use it to demo |
 | The product itself | Untouched. Every screen, every calculation, every paywall |
-| The tests | 13 suites, all green, run **through** the lock on every push |
+| The tests | 27 suites, all green. `soon.test.js` reads the flag and asserts whichever side is shipped, so un-launching stays tested |
 
 **Nothing was deleted or disabled to do this.** `test/soon.test.js` asserts
 that directly: every launch-day element is still in the document, one CSS class
@@ -28,13 +28,13 @@ Two lines. Change `false` to `true` in both:
 
 | File | Line |
 |---|---|
-| `index.html` | `window.WODOUH_LAUNCHED = false;` — in the `<head>` |
+| `assets/curtain.js` | `window.WODOUH_LAUNCHED = false;` — the landing flag moved here from `index.html`'s `<head>` |
 | `app/index.html` | `window.WODOUH_LAUNCHED = false;` — in the `<head>` |
 
 Then:
 
 ```sh
-npm test            # all 13 suites must pass
+npm test            # all 27 suites must pass
 git commit -am "Launch"
 git push origin HEAD:main
 ```
@@ -46,8 +46,12 @@ to everyone, and every link into it comes back.
 
 - The nav, hero, pricing and closing CTAs point at the app again instead of at
   the contact section
-- The contact section is hidden (the number and email stay in the file — put
-  them back on the page deliberately if you want them after launch)
+- The contact section **stays visible**. This file used to say it is hidden; it
+  never was — `#contact` carries no `.soon-only` class, so it survives the
+  flip. Left that way deliberately at the September 2026 launch: the whole
+  justification for requiring an account is that someone who used Wodouh can be
+  reached and supported, and removing the one place showing a number and an
+  address at the moment real people arrive would contradict it
 - `/app/` opens for everyone, with or without the `#preview` key
 - The pre-launch badge, the "we're finishing the final review" note and the
   launch-pricing line all retire

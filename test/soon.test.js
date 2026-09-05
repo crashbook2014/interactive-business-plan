@@ -17,26 +17,52 @@
  * front of it.
  */
 const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
+/* WHICH SIDE OF THE CURTAIN IS SHIPPED, read from the file rather than assumed.
+ *
+ * This suite used to assume the curtain was always down, so launching the
+ * product failed twelve assertions in the one file whose job is to make
+ * launching safe. That is exactly backwards: the checklist promises the
+ * curtain is symmetric — "nothing about launching is one-way" — and a
+ * suite that only tests one direction cannot keep that promise.
+ *
+ * So it now asserts the CORRECT half for whichever state is committed, and
+ * the state-independent half either way: nothing was deleted, the flag is
+ * still a flag, and the door still behaves for sign-in callbacks. Flip the
+ * flag back and this file proves the curtain again, with no edit. */
+const LAUNCHED = /window\.WODOUH_LAUNCHED\s*=\s*true/.test(
+  readFileSync(path.join(__dirname, "..", "assets", "curtain.js"), "utf8"));
+
 (async () => {
   const b = await chromium.launch(launchOpts());
+  console.log(LAUNCHED
+    ? "  ..  the curtain is UP: asserting the product is open to everyone"
+    : "  ..  the curtain is DOWN: asserting the product is hidden");
 
   /* ---- 1. the lock */
-  console.log("\n— the app is locked to the public");
+  console.log(LAUNCHED ? "\n— the app is open to the public" : "\n— the app is locked to the public");
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
   await p.goto(BASE + "/app/", { waitUntil: "domcontentloaded" });
   await p.waitForLoadState("load");
-  ok(!/\/app\//.test(p.url()),
-     `opening /app/ without the key lands somewhere else (${p.url().replace(BASE, "") || "/"})`);
   const landed = await p.evaluate(() => ({
     soon: document.documentElement.className.includes("soon"),
     text: document.body.textContent
   }));
-  ok(landed.soon, "and what it lands on is the pre-launch page");
-  ok(/قريبًا|Launching soon/i.test(landed.text), "which says so in words");
+  if (LAUNCHED){
+    ok(/\/app\//.test(p.url()),
+       `opening /app/ with no key stays on the app (${p.url().replace(BASE, "") || "/"})`);
+    ok(!landed.soon, "and it is the real product, not the pre-launch page");
+  } else {
+    ok(!/\/app\//.test(p.url()),
+       `opening /app/ without the key lands somewhere else (${p.url().replace(BASE, "") || "/"})`);
+    ok(landed.soon, "and what it lands on is the pre-launch page");
+    ok(/قريبًا|Launching soon/i.test(landed.text), "which says so in words");
+  }
 
   /* ---- 2. the key */
   console.log("\n— the preview key opens the real product");
@@ -78,11 +104,19 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       text: document.body.textContent
     };
   });
-  ok(dom.soonMode, "the site root is in pre-launch mode");
-  ok(dom.launchCount > 0 && dom.launchVisible === 0,
-     `every launch-day element is still in the document but hidden (${dom.launchCount} present, ${dom.launchVisible} visible)`);
-  ok(dom.soonVisible > 0, "and the pre-launch framing is what shows instead");
-  ok(dom.appLinks === 0, "no visible link walks a visitor into the locked app");
+  if (LAUNCHED){
+    ok(!dom.soonMode, "the site root is in launched mode");
+    ok(dom.launchCount > 0 && dom.launchVisible > 0,
+       `the launch-day elements are present and showing (${dom.launchVisible} of ${dom.launchCount})`);
+    ok(dom.soonVisible === 0, "and the pre-launch framing has retired");
+    ok(dom.appLinks > 0, `the links into the app are back (${dom.appLinks})`);
+  } else {
+    ok(dom.soonMode, "the site root is in pre-launch mode");
+    ok(dom.launchCount > 0 && dom.launchVisible === 0,
+       `every launch-day element is still in the document but hidden (${dom.launchCount} present, ${dom.launchVisible} visible)`);
+    ok(dom.soonVisible > 0, "and the pre-launch framing is what shows instead");
+    ok(dom.appLinks === 0, "no visible link walks a visitor into the locked app");
+  }
   ok(dom.prices >= 3, `the prices are still shown — the pitch survives the curtain (${dom.prices})`);
 
   /* ---- 4. the contact route works, and there is exactly one of each */
@@ -96,7 +130,16 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       shown: document.getElementById("contact").offsetParent !== null
     };
   });
-  ok(contact.shown, "the contact section is visible before launch");
+  /* VISIBLE IN BOTH STATES, DELIBERATELY. docs/launch-checklist.md said the
+     contact section "is hidden" at launch, and it never was — #contact carries
+     no .soon-only class, so it survives the flip. Left that way on purpose
+     rather than fixed to match the doc: the entire justification for requiring
+     an account is that someone who used Wodouh can be reached and supported,
+     and removing the one place that shows a number and an address at the exact
+     moment real people arrive would contradict it. The checklist line is the
+     thing that was wrong, and it has been corrected. */
+  ok(contact.shown,
+     `the contact section is visible${LAUNCHED ? " after launch too, so support stays reachable" : " before launch"}`);
   ok(contact.wa.length === 1 && /wa\.me\/966563438351/.test(contact.wa[0]),
      "WhatsApp points at the one number, in international form");
   ok(/[?&]text=/.test(contact.wa[0]),
@@ -154,24 +197,37 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   });
   ok(closeSection.launchGated === true,
      "close_p is gated to the launched product, not shown unconditionally");
-  ok(closeSection.soonPromiseVisible === true && closeSection.launchPromiseVisible === false,
-     "and under the curtain, the soon-mode promise shows while the launch-mode one does not");
+  ok(LAUNCHED
+       ? (closeSection.launchPromiseVisible === true && closeSection.soonPromiseVisible === false)
+       : (closeSection.soonPromiseVisible === true && closeSection.launchPromiseVisible === false),
+     LAUNCHED ? "and with the curtain up, the launch promise shows and the soon one does not"
+              : "and under the curtain, the soon-mode promise shows while the launch-mode one does not");
 
   /* ---- 5. launch is one flag, not a rebuild */
-  console.log("\n— launch is a flag, and flipping it brings everything back");
-  const flipped = await root.evaluate(() => {
-    /* Exactly what setting the flag to true does: the class comes off. */
-    document.documentElement.classList.remove("soon");
+  console.log(LAUNCHED
+    ? "\n— launch is a flag, and flipping it back restores the curtain"
+    : "\n— launch is a flag, and flipping it brings everything back");
+  const flipped = await root.evaluate((launched) => {
+    /* Exactly what flipping the flag does: the class goes on or comes off.
+       Simulated in the direction the product is NOT currently in, so the way
+       BACK is the thing under test. */
+    document.documentElement.classList.toggle("soon", launched);
     const vis = el => getComputedStyle(el).display !== "none";
     return {
       launchVisible: [...document.querySelectorAll(".launch-only")].filter(vis).length,
       soonVisible: [...document.querySelectorAll(".soon-only")].filter(vis).length,
       appLinks: [...document.querySelectorAll('a[href*="app/index.html"]')].filter(vis).length
     };
-  });
-  ok(flipped.launchVisible > 0 && flipped.soonVisible === 0,
-     `removing one class restores the launched site and retires the pre-launch framing (${flipped.launchVisible} back, ${flipped.soonVisible} left over)`);
-  ok(flipped.appLinks > 0, "and the links into the app come back with it");
+  }, LAUNCHED);
+  if (LAUNCHED){
+    ok(flipped.soonVisible > 0 && flipped.launchVisible === 0,
+       `adding one class puts the curtain back and retires the launched framing (${flipped.soonVisible} back, ${flipped.launchVisible} left over)`);
+    ok(flipped.appLinks === 0, "and the links into the app go away with it");
+  } else {
+    ok(flipped.launchVisible > 0 && flipped.soonVisible === 0,
+       `removing one class restores the launched site and retires the pre-launch framing (${flipped.launchVisible} back, ${flipped.soonVisible} left over)`);
+    ok(flipped.appLinks > 0, "and the links into the app come back with it");
+  }
 
   /* The flag itself must actually be a flag — a hardcoded curtain with no way
      back is the failure this whole file exists to prevent. */
@@ -182,8 +238,8 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     await q.close();
     return v;
   }));
-  ok(flags.every(v => v === false),
-     "both pages carry the same flag, currently false");
+  ok(flags.every(v => v === LAUNCHED),
+     `both pages carry the same flag, currently ${LAUNCHED}`);
 
   /* ================================ 3. THE CURTAIN MUST NOT EAT A SIGN-IN
      Supabase returns the session in the URL FRAGMENT, and app/auth.js reads it
@@ -217,8 +273,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      preview key, so the next reload does not eject the reader again. */
   ok(!/access_token/.test(cb.hash),
      "the token is scrubbed from the address bar once it has been read");
-  ok(/preview/.test(cb.hash),
-     `and the preview key is put back, so a reload keeps them inside (${cb.hash || "empty"})`);
+  /* app/auth.js only re-adds the key while the curtain is down — with it up
+     there is nothing to keep anyone inside, and a stray #preview on a public
+     URL would be a puzzle rather than a door. */
+  ok(LAUNCHED ? !/preview/.test(cb.hash) : /preview/.test(cb.hash),
+     LAUNCHED
+       ? `and no preview key is left behind, because there is no curtain to get back through (${cb.hash || "empty"})`
+       : `and the preview key is put back, so a reload keeps them inside (${cb.hash || "empty"})`);
 
   const err = await lands("#error=access_denied&error_description=nope");
   ok(err.inside,
@@ -226,11 +287,17 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   /* The half that keeps the curtain a curtain. */
   const bare = await lands("");
-  ok(!bare.inside, "a bare visit is still sent to the coming-soon page");
+  ok(LAUNCHED ? bare.inside : !bare.inside,
+     LAUNCHED ? "a bare visit simply opens the app, which is what launching means"
+              : "a bare visit is still sent to the coming-soon page");
   const noise = await lands("#something-else");
-  ok(!noise.inside, "and so is an unrelated hash — the door did not open generally");
+  ok(LAUNCHED ? noise.inside : !noise.inside,
+     LAUNCHED ? "and an unrelated hash opens it too — there is no door left to hold"
+              : "and so is an unrelated hash — the door did not open generally");
   const near = await lands("#access_tokenish=1");
-  ok(!near.inside, "a hash that merely resembles a callback does not get in");
+  ok(LAUNCHED ? near.inside : !near.inside,
+     LAUNCHED ? "as does one that merely resembles a callback"
+              : "a hash that merely resembles a callback does not get in");
 
   /* THE WATCHDOG HAS TO KNOW ABOUT THE CURTAIN TOO.
      It walked "/app/" with no key, so the guard above sent it to the

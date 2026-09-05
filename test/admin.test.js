@@ -41,8 +41,17 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const m = appSrc.match(new RegExp(`const ${k}\\s*=\\s*(true|false)`));
     ok(!!m && m[1] === "false", `${k} is false, so an unreachable flag table cannot leave it on`);
   }
-  ok(/window\.WODOUH_LAUNCHED\s*=\s*false/.test(appSrc),
-     "the launch curtain is still a compiled constant, not a remote flag");
+  /* THE POINT IS THAT IT IS COMPILED, NOT THAT IT IS OFF.
+     This used to demand the literal `false`, which quietly made "the curtain
+     cannot be switched remotely" and "the curtain is currently down" the same
+     assertion — so launching the product failed a test about the admin
+     console. The property worth keeping is that the flag is a constant in the
+     shipped file: an unreachable or hostile flag table must not be able to
+     open or close the door. Either value satisfies that; a remote lookup
+     would not. */
+  const launchFlag = appSrc.match(/window\.WODOUH_LAUNCHED\s*=\s*(true|false)\s*;/);
+  ok(!!launchFlag,
+     `the launch curtain is a compiled constant, not a remote flag (= ${launchFlag ? launchFlag[1] : "not found"})`);
 
   const browser = await playwright().chromium.launch(launchOpts());
   const page = await browser.newPage();
