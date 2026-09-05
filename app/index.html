@@ -1537,6 +1537,14 @@
   .au-btn svg{width:19px;height:19px;flex:none}
   .au-btn:active{transform:scale(.985)}
   .au-btn.apple{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  /* A sign-in method that is coming but not here. Faded and inert, matching
+     .plan.soon, so it reads as an announcement rather than a broken button. */
+  .au-btn.soon{opacity:.55;cursor:default;background:var(--card);color:var(--ink-2);
+               border-color:var(--line)}
+  .au-btn.soon:active{transform:none}
+  .au-btn .badge{display:inline-block;font-size:10.5px;font-weight:700;color:var(--amber-ink);
+                 background:var(--amber-bg);border-radius:99px;padding:1px 8px;
+                 margin-inline-start:6px;vertical-align:middle}
   .au-skip{text-align:center;cursor:pointer;text-decoration:underline;margin-top:4px}
   .au-what{margin-top:18px}
   .au-err{margin-top:12px;font-size:13px;color:var(--red-ink)}
@@ -2061,6 +2069,10 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <button class="au-btn mail" id="auCodeGo" type="submit" onclick="verifyMailCode()" data-t="au_code_go"></button>
         <button class="au-again" id="auAgain" type="button" onclick="sendMailCode()" data-t="au_again"></button>
       </form>
+      <!-- Named while it is still coming, so a reader with no Google account
+           and no email they check can see that their door is on its way rather
+           than conclude this app is not for them. Inert, so it cannot fail. -->
+      <button class="au-btn soon" id="auPhoneSoon" type="button" disabled hidden></button>
       <!-- PHONE, FOR EVERYONE WITHOUT AN ADDRESS THEY CHECK. Same two-step
            shape as email, and hidden entirely unless PHONE_SIGNIN is on and
            the project reports the provider enabled — an SMS form that cannot
@@ -2704,21 +2716,22 @@ const T = {
                  en:"Create your free account to see your results"},
   au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، ويخلّي حد الفحص المجاني الشهري يُحسب على أحد، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
                en:"Your first contract scan is free. An account keeps that result available to you, lets the one-free-scan-a-month limit be counted against somebody, and means we can reach you if you need help. The text of your contract is read on your device, and we don't store it."},
-  /* THIS HAS NOW BEEN NARROWED TWICE, and the history is kept rather than
-     tidied away, because each step broke a promise the previous one made.
+  /* NARROWED THREE TIMES, and the history is kept rather than tidied away,
+     because each step changed a promise the previous one made.
      It first said the app "works without an account AND ALWAYS WILL". When the
      free scan started being counted per person, that narrowed to everything
-     except reading a contract. It is now false altogether: an account is
-     required for every screen.
+     except reading a contract. It then went to nothing at all when the sign-in
+     gate landed. It now names the two surfaces that ARE still open — the
+     calculator and the rights library — which is both true and the strongest
+     thing this screen can say.
 
-     SO IT SAYS SO, PLAINLY, AND SAYS WHY. A reader who is asked for an account
-     is owed the reason, and "so we can reach you if something goes wrong with
-     your case" is the actual one — not a euphemism about personalisation. The
-     privacy sentence stays because it is still true and it is the thing this
-     reader is most likely to be worried about. See docs/pricing.md for the
-     argument on both sides of this decision. */
-  au_sub:{ar:"يلزمك حساب عشان تستخدم التطبيق. السبب بصراحة: عشان نقدر نوصلك ونساعدك إذا احتجت، ونحفظ شغلك لو غيّرت جهازك. نص عقدك يُقرأ على جهازك وما نخزّنه عندنا — هذا ما تغيّر.",
-          en:"You'll need an account to use Wodouh. The plain reason: so we can reach you and help if you need it, and so your work is still here if you change phone. The text of your contract is still read on your device and still isn't stored by us — that part hasn't changed."},
+     THE OPEN SURFACES ARE NAMED FIRST, ON PURPOSE. A reader deciding whether
+     to hand over an email is better served by "try these two for free right
+     now" than by a reason to trust us that they have no way to check yet. The
+     reason for the door follows, in plain words rather than a euphemism about
+     personalisation. See docs/pricing.md for the argument on both sides. */
+  au_sub:{ar:"الحاسبة ودليل الحقوق يشتغلون بدون حساب — جرّبهم أول. الباقي يلزمه حساب: عشان نقدر نوصلك ونساعدك إذا احتجت، ونحفظ شغلك لو غيّرت جهازك. ونص عقدك يُقرأ على جهازك وما نخزّنه عندنا.",
+          en:"The calculator and the rights library work without an account — try those first. The rest needs one: so we can reach you and help if you need it, and so your work is still here if you change phone. The text of your contract is still read on your device and still isn't stored by us."},
   au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
   au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
   /* Hidden when the reader arrived here BECAUSE they asked to scan: offering
@@ -2758,6 +2771,14 @@ const T = {
      "Saudi mobile" in the label is not a restriction announced for its own
      sake — it is the difference between a code that arrives and a wait that
      never ends. */
+  /* SHOWN BUT UNBUYABLE, the same shape the plans use for a tier that is
+     priced and not yet built (plan_soon). A sign-in method that is coming is
+     worth naming: it tells a reader who has no Google account and no email
+     they check that the door they want is on its way, rather than leaving them
+     to conclude this app is not for them. The button cannot be pressed, so it
+     cannot fail. */
+  au_soon:{ar:"قريبًا",en:"Not yet available"},
+  au_phone_soon:{ar:"الدخول برقم الجوال",en:"Sign in with a mobile number"},
   au_phone_lab:{ar:"رقم جوالك السعودي",en:"Your Saudi mobile number"},
   au_phone_go:{ar:"أرسل لي رمزًا برسالة",en:"Text me a code"},
   au_phone_code_go:{ar:"ادخل",en:"Sign in"},
@@ -4139,11 +4160,14 @@ const T = {
   eos_open:{ar:"مكافأة نهاية الخدمة",en:"End-of-service pay"},
   eos_open_sub:{ar:"وقّعت أو انتهى عقدك؟ احسب مستحقك مجانًا",en:"Signed already, or it ended? Calculate what you're owed — free"},
   eos_title:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
-  /* "no sign-up" was true for this screen's whole life and is not any more.
-     What replaces it is the part that is still true and is what the reader
-     actually cares about here: the arithmetic is shown, and it costs nothing. */
-  eos_sub:{ar:"أدخل بياناتك ونعرض لك الحساب خطوة بخطوة — مجانًا.",
-           en:"Enter your details and we'll show the arithmetic step by step — free."},
+  /* "no sign-up" was true for this screen's whole life, was briefly false while
+     the sign-in gate covered every screen, and is true again: the calculator is
+     one of the two surfaces deliberately left open. The claim is restored
+     rather than left weakened, because it is the single most valuable sentence
+     on the most-linked screen in the product — and because a claim that is true
+     should be made. Both halves are said now: free, and no account. */
+  eos_sub:{ar:"أدخل بياناتك ونعرض لك الحساب خطوة بخطوة — مجانًا وبدون تسجيل.",
+           en:"Enter your details and we'll show the arithmetic step by step — free, no sign-up."},
   eos_start:{ar:"تاريخ بداية العمل",en:"Start date"},
   eos_end:{ar:"تاريخ نهاية العمل",en:"End date"},
   eos_wage:{ar:"آخر أجر شهري كامل (ر.س)",en:"Last full monthly wage (SAR)"},
@@ -5122,6 +5146,10 @@ function applyLang(){
   renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
   renderPrivacyCopy();
   renderSigninCopy();
+  /* The "coming soon" badges are built in code rather than carried on a
+     [data-t] node, so applyLang() would leave them in the previous language.
+     Same reason renderSigninCopy() is called here. */
+  renderAppleAuth(); renderPhoneAuth();
   if (document.getElementById("accPlan")) renderAccount();
   if (chat.length) renderAssist();
   renderPlans(); renderBiz();
@@ -6019,14 +6047,24 @@ function signedIn(){ return !!authUser; }
 
 /* ==================================================== THE DOOR
  *
- * ONCE THE TOUR IS DONE, EVERY SCREEN REQUIRES AN ACCOUNT. The calculator
- * included. This is a deliberate reversal of how this app worked for its whole
- * life until now, and the reasoning on both sides is written down in
- * docs/pricing.md rather than lost — the short version is that the founder
- * wants to be able to reach and support the person who used the tool, and a
- * reader who leaves no way to be contacted cannot be followed up with.
+ * ONCE THE TOUR IS DONE, AN ACCOUNT IS REQUIRED — WITH TWO THINGS LEFT OPEN.
  *
- * AN ALLOWLIST, NOT A LIST OF GATED SCREENS. Two names get through. A screen
+ * The reason for the door is reachability: someone who used Wodouh and left no
+ * way to be contacted cannot be supported or followed up with. The reasoning on
+ * both sides is in docs/pricing.md rather than lost.
+ *
+ * THE CALCULATOR AND THE RIGHTS LIBRARY STAY OPEN, and that is a deliberate
+ * exception rather than an oversight. They are the two surfaces that give
+ * something away before asking for anything: a real end-of-service figure with
+ * the arithmetic shown, and the law itself. They are what makes the free
+ * proposition true rather than merely claimed, and they are what someone
+ * arriving from a search result is looking for. Asking for an account first
+ * would be asking to be trusted before having done anything to earn it.
+ *
+ * Reading a contract, the reminders, the assistant and everything that writes
+ * or spends still need an account.
+ *
+ * AN ALLOWLIST, NOT A LIST OF GATED SCREENS. Four names get through. A screen
  * added next year is gated because it is new, not because someone remembered
  * to add it to a list — the failure mode of the other shape is a hole nobody
  * notices until it is found.
@@ -6036,7 +6074,7 @@ function signedIn(){ return !!authUser; }
  * show() directly, and anything in this file can. A gate in the wrappers would
  * be a gate around the front door of a building with open windows.
  */
-const AUTH_FREE = ["onboard", "signin"];
+const AUTH_FREE = ["onboard", "signin", "eos", "rights"];
 function authAllow(name){
   /* AN UNCONFIGURED BUILD IS NOT GATED, and this is the one exception to "no
      exceptions". With no Supabase project there is no account to be had, so
@@ -6079,8 +6117,7 @@ function resumeAfterAuth(){
 function openSignin(back){
   if (!authOn()) return;
   authBack = back || "account";
-  const ap = document.getElementById("auApple");
-  if (ap) ap.hidden = !WodouhAuth.appleAvailable();
+  renderAppleAuth();
   const err = document.getElementById("auErr");
   if (err) err.hidden = true;
   const none = document.getElementById("auNone");
@@ -6122,6 +6159,43 @@ function renderSigninCopy(){
   if (sb)  sb.textContent  = t(scanDoor ? "au_sub_scan"   : "au_sub");
 }
 
+/* APPLE, WHICH IS ANNOUNCED RATHER THAN HIDDEN WHILE IT IS COMING.
+ *
+ * THIS FILE USED TO ARGUE THE OPPOSITE — "a dead sign-in button is worse than
+ * one fewer option" — and hid Apple entirely wherever it was not configured.
+ * That reasoning was about a button that LOOKS live and then fails, which is a
+ * different thing from one that is visibly inert and labelled. The founder's
+ * call is to name what is coming, so a reader who signs in with Apple
+ * everywhere else can see it is on the way instead of concluding this app is
+ * not for them. The button is `disabled`, so the failure the old rule was
+ * protecting against cannot happen: it cannot be pressed at all.
+ *
+ * Only where accounts exist. On an unconfigured build the whole screen is
+ * unreachable, and announcing a provider there would be announcing something
+ * twice removed from working. */
+/* Same fail-open as mailOn: true until /auth/v1/settings says otherwise, so a
+   check that has not come back is not a reason to demote a working button. */
+let appleOn = true;
+function renderAppleAuth(){
+  const ap = document.getElementById("auApple");
+  if (!ap) return;
+  const live = authOn() && appleOn && WodouhAuth.appleAvailable();
+  ap.hidden = !authOn();
+  ap.disabled = !live;
+  ap.classList.toggle("soon", !live);
+  ap.classList.toggle("apple", live);
+  const lab = ap.querySelector("[data-t='au_apple']");
+  if (lab) lab.textContent = t("au_apple");
+  let badge = ap.querySelector(".badge");
+  if (!live && !badge){
+    badge = document.createElement("span");
+    badge.className = "badge";
+    ap.appendChild(document.createTextNode(" "));   /* see renderPhoneAuth() */
+    ap.appendChild(badge);
+  }
+  if (badge){ badge.textContent = t("au_soon"); badge.hidden = live; }
+}
+
 /* Hide a provider the project has not enabled, rather than let the reader
    discover it by landing on Supabase's raw JSON error. Renders the buttons
    first and corrects them when the answer arrives, so nobody waits on the
@@ -6146,12 +6220,19 @@ function renderProviders(){
     const pOn = ext.phone === true &&
                 !!(WodouhAuth.phoneAvailable && WodouhAuth.phoneAvailable());
     if (g) g.hidden = !gOn;
-    if (ap) ap.hidden = !aOn;
     mailOn = eOn;
     renderMailAuth();
     phoneOn = pOn;
     renderPhoneAuth();
+    /* Apple is re-rendered rather than hidden here: the project reporting it
+       disabled is one of the ways it is "coming", not a reason to erase it. */
+    appleOn = aOn;
+    renderAppleAuth();
     if (none){
+      /* COUNTS ONLY DOORS THAT OPEN. A "coming soon" button is not a way in,
+         so it must not suppress the notice that says there is no way in — that
+         would leave a reader staring at two greyed-out buttons with nothing
+         telling them the fault is ours. */
       none.hidden = gOn || aOn || eOn || pOn;
       none.textContent = t("au_none");
     }
@@ -6242,6 +6323,18 @@ function renderPhoneAuth(){
   const f1 = document.getElementById("auPhoneForm");
   const f2 = document.getElementById("auPhoneCodeForm");
   if (!f1 || !f2) return;
+  /* Not built yet is not the same as not existing. The announcement shows in
+     exactly the case the form does not, and only where accounts exist at all —
+     promising a sign-in method on a build that has no backend would be
+     announcing something twice removed from working. */
+  const soon = document.getElementById("auPhoneSoon");
+  if (soon){
+    soon.hidden = on || !authOn();
+    /* The space between the two spans is not decorative. Flex `gap` separates
+       them visually, but a screen reader concatenates text nodes — without it
+       this announces as "mobile numberNot yet available". */
+    soon.innerHTML = `<span>${t("au_phone_soon")}</span> <span class="badge">${t("au_soon")}</span>`;
+  }
   f1.hidden = !on || !!auPhoneNum;
   f2.hidden = !on || !auPhoneNum;
   if (auPhoneNum){

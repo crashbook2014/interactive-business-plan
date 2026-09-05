@@ -562,11 +562,12 @@ async function seedTermination(p){
        "the consent exception is named, in both languages");
   }
 
-  /* ---- "no sign-up" was false on two of the three surfaces that said it, and
-     is now false on all three. The calculator was the one honest instance and
-     kept its claim for as long as it was true; since every screen requires an
-     account, NO surface may say it. What each surface must still say is that
-     free means free — the price did not change, only the door. */
+  /* ---- "no sign-up" was false on two of the three surfaces that said it. The
+     calculator is the one honest instance and keeps its claim: it is one of the
+     two surfaces deliberately left outside the sign-in gate, so the sentence is
+     true there and nowhere else. It was briefly removed while the gate covered
+     every screen, and restored when the gate was narrowed — a claim that is
+     true should be made, especially on the most-linked screen in the product. */
   console.log("\n— the homepage does not promise analysis without an account");
   {
     const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
@@ -577,11 +578,15 @@ async function seedTermination(p){
     if (authShips){
       ok(!/no sign-up/i.test(landing) && !/بدون تسجيل/.test(landing),
          "the homepage claims no sign-up nowhere");
-      /* INVERTED: the calculator's claim was true until the gate reached it. */
-      ok(!/eos_sub:[\s\S]{0,200}(بدون تسجيل|no sign-up)/.test(src5),
-         "the EOS calculator no longer claims no-sign-up, because it now needs one");
+      /* The app's one true instance survives: the calculator asks for nothing. */
+      ok(/eos_sub:[\s\S]{0,200}بدون تسجيل/.test(src5),
+         "the EOS calculator keeps its true no-sign-up claim");
       ok(/eos_sub:[\s\S]{0,200}(مجان|free)/i.test(src5),
-         "but it still says the thing that is still true: it costs nothing");
+         "and says it costs nothing too — two different promises, both true");
+      /* The claim is only honest while the gate actually lets it through. */
+      const freeList = (src5.match(/const AUTH_FREE = \[([^\]]*)\]/) || [])[1] || "";
+      ok(/"eos"/.test(freeList) && /"rights"/.test(freeList),
+         `and the gate really does leave them open, rather than the copy merely saying so (${freeList.trim()})`);
     }
   }
 
@@ -628,8 +633,10 @@ async function seedTermination(p){
        CONTRACT needs an account. Now the whole app does, and the Terms have to
        say the broader thing — including that this is a change from how the app
        used to work, since a reader who used it before is owed that. */
-    ok(/requires an account/i.test(terms) && /يتطلّب حسابًا/.test(terms),
-       "and state that using the app requires an account, in both languages");
+    ok(/requires you to be signed in/i.test(terms) && /يتطلّب تسجيل دخول/.test(terms),
+       "and state that the rest of the app requires signing in, in both languages");
+    ok(/work without an account/i.test(terms) && /يعملان بلا حساب/.test(terms),
+       "while naming the two surfaces that do not, so the Terms match the gate");
     ok(/this is a change/i.test(terms) && /تغيير عن السابق/.test(terms),
        "and say plainly that this is a change from how it used to work");
     ok(/an account is free/i.test(terms) && /الحساب مجاني/.test(terms),

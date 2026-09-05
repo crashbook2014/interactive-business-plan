@@ -146,8 +146,13 @@ const STUB = (apple) => {
     ok(walk.ids.length > 20, `the walk covers every screen in the markup (${walk.ids.length})`);
     /* The tour and the door itself are the two that must stay open: one is
        where a new reader starts, the other is how they get in. */
-    ok(walk.opened.length === 2 && walk.opened.includes("onboard") && walk.opened.includes("signin"),
-       `only the tour and the sign-in screen open (${walk.opened.join(", ") || "none"})`);
+    /* Four, and exactly four. The tour and the door, plus the two surfaces
+       deliberately left open — the calculator and the rights library, which are
+       what makes the free proposition true rather than merely claimed. A fifth
+       name appearing here is a hole, not a feature. */
+    const EXPECTED_OPEN = ["eos", "onboard", "rights", "signin"];
+    ok(JSON.stringify([...walk.opened].sort()) === JSON.stringify(EXPECTED_OPEN),
+       `only the tour, the door, the calculator and the rights library open (${walk.opened.join(", ") || "none"})`);
     ok(walk.elsewhere.length === 0,
        `and every other screen lands on the door, not somewhere else${walk.elsewhere.length ? ": " + walk.elsewhere.join(", ") : ""}`);
 
@@ -158,25 +163,29 @@ const STUB = (apple) => {
       const out = {};
       obDone = true; authUser = null;
       openEos();    out.eos = at();
+      goTab("rights"); out.rights = at();
       goTab("account"); out.tab = at();
       openAssist("rights"); out.assist = at();
       return out;
     });
-    ok(doors.eos === "screen-signin" && doors.tab === "screen-signin" && doors.assist === "screen-signin",
-       `the calculator, the tabs and the assistant all reach the door instead (${JSON.stringify(doors)})`);
+    ok(doors.eos === "screen-eos" && doors.rights === "screen-rights",
+       `the calculator and the rights library open signed out, as intended (${doors.eos}, ${doors.rights})`);
+    ok(doors.tab === "screen-signin" && doors.assist === "screen-signin",
+       `while the account tab and the assistant reach the door (${doors.tab}, ${doors.assist})`);
 
     /* AND IT REMEMBERS. A gate that forgets where the reader was going turns
        one interruption into two: sign in, then find your way back alone. */
     const resumed = await p0.evaluate(() => {
       obDone = true; authUser = null;
-      show("eos");
+      pendingNav = null;
+      show("timeline");                     /* a gated screen, so it redirects */
       const pending = pendingNav && pendingNav.payload;
       authUser = { id: "u1" };              /* they sign in */
       resumeAfterAuth();
       return { pending, landed: (document.querySelector(".screen.active") || {}).id };
     });
-    ok(resumed.pending === "eos", `it records where they were going (${resumed.pending})`);
-    ok(resumed.landed === "screen-eos",
+    ok(resumed.pending === "timeline", `it records where they were going (${resumed.pending})`);
+    ok(resumed.landed === "screen-timeline",
        `and signing in delivers them there rather than to a generic home (${resumed.landed})`);
   }
   await p0.close();
@@ -197,6 +206,11 @@ const STUB = (apple) => {
       id: document.querySelector(".screen.active").id,
       google: vis(document.getElementById("auGoogle")),
       apple: vis(document.getElementById("auApple")),
+      appleDisabled: !!(document.getElementById("auApple") || {}).disabled,
+      appleBadge: ((document.getElementById("auApple") || {}).querySelector
+        ? (document.getElementById("auApple").querySelector(".badge") || {}).textContent : "") || "",
+      phoneSoon: vis(document.getElementById("auPhoneSoon")),
+      phoneSoonDisabled: !!(document.getElementById("auPhoneSoon") || {}).disabled,
       /* No password field anywhere. Not hidden — absent. */
       pwFields: document.querySelectorAll('#screen-signin input[type="password"]').length,
       emailFields: document.querySelectorAll('#screen-signin input[type="email"]').length,
@@ -205,7 +219,22 @@ const STUB = (apple) => {
   });
   ok(screen.id === "screen-signin", "the screen opens when configured");
   ok(screen.google === true, "Google is offered");
-  ok(screen.apple === false, "Apple is NOT offered without an Apple developer account — a dead button is worse than one fewer option");
+  /* REVERSED, by founder decision, and the old rule is worth restating because
+     it was a good one: "a dead sign-in button is worse than one fewer option."
+     That rule was about a button that LOOKS live and then fails on a Supabase
+     error page. This one is `disabled` and labelled "Not yet available", so the
+     failure it protected against cannot occur — it cannot be pressed. What is
+     bought in exchange is that a reader who signs in with Apple everywhere else
+     sees their door is coming rather than concluding the app is not for them.
+     docs/roadmap.md is what stops that promise from ageing silently. */
+  ok(screen.apple === true,
+     "Apple is SHOWN without an Apple developer account, as an announcement rather than a door");
+  ok(screen.appleDisabled === true,
+     "but it cannot be pressed, so the dead-button failure the old rule named cannot happen");
+  ok(/Not yet available|قريبًا/.test(screen.appleBadge),
+     `and it is labelled as coming rather than looking broken ("${screen.appleBadge}")`);
+  ok(screen.phoneSoon === true && screen.phoneSoonDisabled === true,
+     "phone sign-in is announced the same way, and is equally unpressable");
   /* THE EMAIL HALF OF THIS INVERTED, deliberately. It read "no password or
      email field anywhere", and the email half was true only while OAuth was
      the only way in. Email sign-in is now a way in, so a missing email field
@@ -222,10 +251,18 @@ const STUB = (apple) => {
      told at the exact moment the reader is deciding whether to trust us — so
      the assertion is that the OLD PROMISE IS GONE, and that the screen says
      what is actually true and why. */
-  ok(!/without an account|بدون حساب/i.test(screen.text),
-     "the screen no longer promises the app works without an account, because it does not");
-  ok(/you'll need an account|يلزمك حساب/i.test(screen.text),
-     "it says plainly that an account is needed");
+  /* REWRITTEN TWICE, and both turns are worth knowing. This asserted for the
+     app's whole life that the screen promised it works without an account;
+     when the gate covered everything, it asserted that promise was GONE. The
+     gate was then narrowed to leave the calculator and the rights library
+     open, so the screen names those two by name — which is a true claim again,
+     and a more useful one than either absolute. */
+  ok(/without an account|بدون حساب/i.test(screen.text),
+     "the screen still names what works without an account, because two things do");
+  ok(/calculator|الحاسبة/i.test(screen.text) && /rights|الحقوق/i.test(screen.text),
+     "and names them specifically rather than claiming the whole app is open");
+  ok(/the rest needs one|الباقي يلزمه حساب/i.test(screen.text),
+     "while saying plainly that the rest needs an account");
   ok(/reach you|نوصلك/i.test(screen.text),
      "and gives the actual reason rather than a euphemism");
 

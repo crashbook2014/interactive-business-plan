@@ -113,21 +113,32 @@ window resets it. The copy says "you get one free scan a month"; it does not
 claim we prevent a second. Enforcing it would require an account before the
 first thing anyone tries, which costs more trust than the scans are worth.
 
-> **Superseded — September 2026.** See *An account is now required for
-> everything* below. The paragraph above is kept because its argument was not
-> refuted, it was outweighed: an account is now required before the first thing
-> anyone tries, and the trust cost it names is real and was accepted knowingly.
+> **Partly superseded — September 2026.** See *An account is now required for
+> most of the app* below. The argument above was not refuted, and it is the
+> reason the calculator and the rights library stayed open: those are still
+> reachable before anyone is asked for anything. An account IS now required
+> before reading a contract, setting a reminder, or asking the assistant, and
+> the trust cost that paragraph names is real and was accepted knowingly.
 
-## September 2026 — an account is now required for everything
+## September 2026 — an account is now required for most of the app
 
 **The decision.** Every screen past the introductory tour requires a signed-in
-account. The end-of-service calculator, the rights library, the reminders and
-the assistant are all included. There are no exceptions, other than an
-unconfigured build (no Supabase project at all), where there is no account to
-be had and gating would produce a locked box rather than a product.
+account, **except the end-of-service calculator and the rights library**, which
+are deliberately left open. Reading a contract, the reminders and the assistant
+all require one. The other exception is an unconfigured build (no Supabase
+project at all), where there is no account to be had and gating would produce a
+locked box rather than a product.
 
-**Whose decision and why.** The founder's, made explicitly and confirmed twice
-after the costs below were put to them in writing. The reason is not
+The two open surfaces are the ones that give something away before asking for
+anything: a real end-of-service figure with the arithmetic shown, and the law
+itself. They are what makes the free proposition true rather than merely
+claimed, and they are what someone arriving from a search result came for.
+Asking for an account first would be asking to be trusted before having done
+anything to earn it. The first cut of this change gated them too; that lasted
+one review and was reversed by the founder on exactly this reasoning.
+
+**Whose decision and why.** The founder's, made explicitly, and narrowed by
+them again after the first cut shipped and the costs below were put in writing. The reason is not
 monetisation and not scan-limit enforcement: it is that someone who used
 Wodouh and leaves no way to be contacted cannot be followed up with, supported,
 or asked what happened next — and at this stage of the product, being able to
@@ -139,14 +150,18 @@ away.
 - It reverses the principle above, and the stronger one in `app/auth.js` that
   read *"the signed-out app is the whole app."* Both are rewritten in place with
   a pointer here rather than deleted.
-- The calculator was the product's most-linked, most-tested free surface and its
-  cleanest demonstration of good faith: a real number, no cost, nothing asked
-  for. That demonstration now happens after a sign-in rather than before it.
+- The reminders and the assistant were free to reach and are no longer. That is
+  a real loss for a reader who wanted to track a deadline without committing to
+  anything, and it is the part of this change with the least to say for itself.
+  The calculator and the rights library were kept open precisely so the
+  product still demonstrates good faith before asking for anything.
 - `docs/audit-2026-08-overhaul.md` called a false "these are free" claim *the
   single most damaging defect in the codebase*. Nothing here makes that claim
   false again — free still means free of charge, and the account is free — but
   the wording of every affected surface had to change, because "free" and "no
   sign-up" were being read as one promise and are now two different things.
+  The calculator's own "no sign-up" claim was removed and then restored, since
+  it is true again.
 - Six test suites asserted accountless access as a property of the product.
   They were not deleted: the assertions were **inverted** and annotated at each
   site, so the record shows a decision that changed rather than a test that
