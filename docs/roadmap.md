@@ -9,6 +9,24 @@ is how "coming soon" turns into a lie told slowly.
 once, for real, on a real device. Code that runs in a test is not a shipped
 feature.
 
+Last updated: 5 September 2026.
+
+---
+
+## Blocked on the founder — nothing moves until these do
+
+Everything in this section is finished code waiting on an account, a payment,
+or a signature. None of it can be unblocked from inside the repository.
+
+| What | What is needed | Unblocks |
+|---|---|---|
+| **Twilio account** | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and either a Messaging Service SID or a From-number. Set as Supabase secrets, never committed. | Phone sign-in |
+| **Apple Developer account** | ~$99/yr, then the provider configured in Supabase → Authentication → Providers → Apple | Apple sign-in |
+| **Legal review** | Read the rewritten *Accounts* sections of `/terms/` and `/privacy/` in both languages and say whether the wording stands | Publishing the current gate copy |
+
+Both sign-in methods are announced in the app right now, as disabled buttons
+marked *قريبًا*. That promise is live and ageing from today.
+
 ---
 
 ## Announced in the app, not yet working
@@ -71,6 +89,34 @@ a theoretical one.
 
 - **Email sign-in by one-time code** — no password path, by design.
 - **Google sign-in.**
-- **The sign-in gate** — an account is required for everything except the
-  end-of-service calculator and the rights library, which are deliberately left
-  open. The decision and what it cost are in `docs/pricing.md`, September 2026.
+- **The sign-in gate** (Sept 2026) — an account is required for everything
+  except the end-of-service calculator and the rights library, which are
+  deliberately left open. First shipped covering every screen including the
+  calculator; narrowed within a day, because the two open surfaces are what
+  make the free proposition true rather than merely claimed. The decision and
+  what it cost are in `docs/pricing.md`.
+- **The account is disclosed in the tour** (Sept 2026) — a note above the final
+  onboarding button, in the same words the sign-in screen uses. Without it the
+  tour ended on "check my contract free" and the next screen asked for an
+  account, which is a bait-and-switch even though both statements are true.
+- **The onboarding footer stays on screen** (Sept 2026) — a pre-existing bug
+  found while placing that note: the tour's advance button was rendering below
+  the viewport on the last card (English at 390×844, both languages at
+  360×640), reachable only by scrolling a screen that gives no sign there is
+  anything below it. Guarded now at three small viewports in both languages.
+
+---
+
+## Known, not scheduled
+
+Real, worth doing, nobody is doing it yet. Listed so it is a decision rather
+than an oversight.
+
+- **The tab bar is visible on the rights library while signed out**, and three
+  of its four tabs lead straight to the sign-in screen. Honest, since the gate
+  catches them, but it offers the reader three doors that are all locked. Worth
+  a look once there is evidence of how people actually move around the
+  signed-out app.
+- **No signed-out reader has ever been observed using this build.** Every claim
+  about where the gate feels earned is reasoning, not evidence. The first real
+  users are the test.
