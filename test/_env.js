@@ -54,4 +54,33 @@ const SHOWN_SRC =
   "(el) => !!el && getComputedStyle(el).display !== 'none' " +
   "&& getComputedStyle(el).visibility !== 'hidden'";
 
-module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC };
+/* SIGN THE TEST READER IN — because since the gate landed, every screen past
+ * the tour requires an account and a suite that walks the app is a suite that
+ * has to get through the door.
+ *
+ * WHAT THIS DOES NOT DO is turn the gate off. It puts a session in place, which
+ * is what a real reader does, so the assertions still run through the gate
+ * rather than around it. A suite that wants to prove the gate HOLDS simply does
+ * not call this.
+ *
+ * Both halves are needed. authAllow() reads signedIn() → authUser, and boot
+ * routing waits on authReady; a stub that sets only the first still races the
+ * real init() resolving to null underneath it. WodouhAuth.user() is stubbed too
+ * because scanGate() asks that one rather than authUser.
+ *
+ * Exported as a FUNCTION (Playwright serialises it into the page) rather than a
+ * source string like SHOWN_SRC, since callers run it, not inject it into
+ * another expression. signInSrc is the same thing as text, for the two suites
+ * that build page scripts as strings.
+ */
+function signInStub(){
+  authUser = { id: "test-user", email: "test@example.com" };
+  authReady = Promise.resolve();
+  if (typeof WodouhAuth !== "undefined"){
+    WodouhAuth.init = () => Promise.resolve(authUser);
+    WodouhAuth.user = () => authUser;
+  }
+}
+const signInSrc = "(" + signInStub.toString() + ")();";
+
+module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC, signInStub, signInSrc };

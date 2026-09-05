@@ -37,10 +37,12 @@ const T = {
           en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the labour-law source for every point, and a letter ready to send. Pick Saudi or resident, and we show the rules that actually apply to you."},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
-  /* "no sign-up" was false: auth ships configured, so analysing a contract
-     hits the wall. The free tier is real — one scan a month — and saying so
-     is a better promise than one the first tap contradicts. The EOS
-     calculator genuinely needs no account, and says so on its own screen. */
+  /* "no sign-up" was removed here once analysing a contract needed an account;
+     the exception carved out at the time — that the calculator genuinely
+     needed none — has since gone too, because every screen now requires one.
+     What is left is true and is the promise that matters: free is real, and it
+     is one scan a month. A free account is named up front rather than
+     discovered at the first tap. */
   hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
   shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},

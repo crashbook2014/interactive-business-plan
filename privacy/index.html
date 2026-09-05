@@ -47,7 +47,7 @@
 
     <h2>الأساس: التحليل يحدث على جهازك</h2>
     <p>حين تلصق نص عقدك أو ترفع ملف PDF، يُستخرج النص ويُفحص <strong>داخل متصفحك</strong>. الدرجة، والتنبيهات، والبنود، ومكافأة نهاية الخدمة، وكل رقم في التقييم — كلها تُحسب على جهازك. لا نرفع العقد، ولا نخزّنه، ولا نطّلع عليه.</p>
-    <p>وما تحفظه في التطبيق دون تسجيل دخول يبقى في <strong>ذاكرة متصفحك وحدها</strong> (localStorage). إذا حذفت بيانات المتصفح أو حذفت التطبيق، ذهب معه كل شيء، ولا توجد عندنا نسخة.</p>
+    <p>وشغلك في التطبيق يبقى في <strong>ذاكرة متصفحك وحدها</strong> (localStorage) ما لم تطلب أنت مزامنته. إذا حذفت بيانات المتصفح أو حذفت التطبيق، ذهب معه كل ما لم يُزامن، ولا توجد عندنا نسخة منه.</p>
 
     <h2>الاستثناءات — أربعة، كلها اختيارية، ولكل واحدة موافقتها</h2>
     <p>هذه هي الحالات الوحيدة التي يغادر فيها نص عقدك أو ملفه جهازك. لا تعمل أي منها تلقائيًا، ولا تُفعَّل إلا بضغطك على موافقة مكتوب فيها ماذا سيُرسل. إذا رفضتها كلها، يعمل التطبيق كاملًا.</p>
@@ -70,8 +70,9 @@
     <p>ونقولها بصراحة: هذا <em>سجل</em> نحترمه، لا قفل. لأن عقدك يُقرأ على جهازك أنت، ما فيه خادم عندنا يقدر يمنع فحصًا أصلًا. الحساب يخلّي مسح المتصفح أو النافذة الخاصة ما تصفّر العدّاد — وما يعني أن العدّاد ما يُتجاوز أبدًا لمن أصرّ. اخترنا الضمان الأضعف لأن الأقوى يتطلّب إرسال عقدك لنا، وهذا آخر شيء يعد به هذا التطبيق.</p>
 
     <h2>إذا سجّلت الدخول</h2>
-    <p>الحاسبة ودليل الحقوق والتذكيرات والمساعد — كلها تشتغل بدون حساب. قراءة عقد تحتاج حسابًا، للسبب المذكور فوق.</p>
-    <p>تقدر تسجّل بـ Google أو Apple أو <strong>بأي بريد إلكتروني</strong>. الدخول بالبريد يرسل رمزًا من 6 أرقام إلى عنوانك؛ ما فيه كلمة مرور، يعني ما فيه كلمة مرور نحفظها ولا أحد يسرقها. العنوان يُحفظ لدى مزوّد المصادقة (Supabase) ولدى الخدمة التي توصّل البريد.</p>
+    <p>استخدام التطبيق يتطلّب حسابًا: بعد الجولة التعريفية، كل شاشة — بما فيها الحاسبة ودليل الحقوق والتذكيرات والمساعد — تحتاج تسجيل دخول. وهذا تغيير عن السابق، حيث كانت هذه الشاشات تعمل بلا حساب.</p>
+    <p>وما تغيّر هو <em>الدخول</em>، لا ما نجمعه عنك بعده. العقد ما زال يُقرأ على جهازك، وما زلنا لا نرفعه ولا نخزّنه. وما هو مذكور في هذه الصفحة عن البيانات هو كل ما لدينا.</p>
+    <p>تقدر تسجّل بـ Google أو Apple أو <strong>بأي بريد إلكتروني</strong> أو <strong>برقم جوالك السعودي</strong>. الدخول بالبريد يرسل رمزًا من 6 أرقام إلى عنوانك، والدخول بالجوال يرسل رمزًا مماثلًا برسالة نصية؛ ما فيه كلمة مرور في أي من الطريقتين، يعني ما فيه كلمة مرور نحفظها ولا أحد يسرقها. العنوان أو الرقم يُحفظ لدى مزوّد المصادقة (Supabase) ولدى الخدمة التي توصّل البريد أو الرسالة (Twilio للرسائل النصية).</p>
     <p>عند تسجيل الدخول نحفظ:</p>
     <ul>
       <li>هويتك من المزوّد: الاسم والبريد والصورة، إن أتاحها</li>
@@ -92,7 +93,7 @@
     <ul>
       <li>لا نبيع بياناتك ولا نشاركها لأغراض إعلانية</li>
       <li>لا نضع أدوات تتبّع أو تحليلات طرف ثالث في التطبيق</li>
-      <li>لا نستخدم رقم جوالك للتحقّق من هويتك ولا لتسجيل الدخول</li>
+      <li>لا نستخدم <strong>رقم التواصل</strong> الذي تدخله في شاشة حسابك لتسجيل الدخول ولا للتحقّق من هويتك. وهو منفصل عن رقم الجوال الذي تختار الدخول به، إن اخترت ذلك — الأول للتواصل معك، والثاني هويتك في التطبيق، وقد يكونان مختلفين</li>
       <li>لا نطّلع على عقدك</li>
     </ul>
 
@@ -123,7 +124,7 @@
 
     <h2>The foundation: analysis happens on your device</h2>
     <p>When you paste your contract or open a PDF, the text is extracted and examined <strong>inside your browser</strong>. The score, the flags, the clause review, the end-of-service award, every figure in the assessment — all computed on your device. We do not upload your contract, store it, or read it.</p>
-    <p>Anything you save without an account stays in <strong>your browser's storage alone</strong> (localStorage). Clear your browser data or delete the app and it all goes with it. We hold no copy.</p>
+    <p>Your work stays in <strong>your browser's storage alone</strong> (localStorage) unless you ask us to sync it. Clear your browser data or delete the app and everything unsynced goes with it. We hold no copy of it.</p>
 
     <h2>The exceptions — four, all optional, each separately consented</h2>
     <p>These are the only cases where anything leaves your device. None runs automatically. Each requires you to tick a consent that states what will be sent. Decline all four and the app works in full.</p>
@@ -146,8 +147,9 @@
     <p>Being honest about what this is: it is a <em>record</em> we honour, not a lock. Because your contract is read on your own device, no server of ours is in a position to stop a scan. Counting against an account means clearing your browser or opening a private window no longer resets the limit. It does not mean the limit cannot be circumvented by someone determined to. We chose the weaker guarantee because the stronger one would require sending your contract to us, which is the one thing this app promises never to do.</p>
 
     <h2>If you sign in</h2>
-    <p>The calculator, the rights library, the reminders and the assistant all work without an account. Reading a contract needs one, for the reason above.</p>
-    <p>You can sign in with Google, with Apple, or with <strong>any email address</strong>. Email sign-in sends a six-digit code to that address; there is no password, so there is no password for us to store or for anyone to steal. The address is held by our authentication provider (Supabase) and by the service that delivers the mail.</p>
+    <p>Using the app requires an account: after the introductory tour, every screen — including the calculator, the rights library, the reminders and the assistant — requires you to be signed in. This is a change; those screens previously worked without one.</p>
+    <p>What changed is the <em>door</em>, not what we collect once you are through it. Your contract is still read on your device, and we still do not upload or store it. What this page describes is still the whole of what we hold.</p>
+    <p>You can sign in with Google, with Apple, with <strong>any email address</strong>, or with a <strong>Saudi mobile number</strong>. Email sign-in sends a six-digit code to that address; phone sign-in sends the same kind of code as a text message. Neither has a password, so there is no password for us to store or for anyone to steal. The address or number is held by our authentication provider (Supabase) and by the service that delivers the message (Twilio, for text messages).</p>
     <p>When you sign in we store:</p>
     <ul>
       <li>your identity from the provider: name, email and avatar, where they are given</li>
@@ -168,7 +170,7 @@
     <ul>
       <li>We do not sell your data or share it for advertising</li>
       <li>There are no third-party trackers or analytics in the app</li>
-      <li>Your phone number is never used to verify you or to sign you in</li>
+      <li>The <strong>contact number</strong> you enter on your account screen is never used to sign you in or to verify you. It is separate from a mobile number you may choose to sign in with — the first is how we reach you, the second is your identity in the app, and they can be different numbers</li>
       <li>We do not read your contract</li>
     </ul>
 

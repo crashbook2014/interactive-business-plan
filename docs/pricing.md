@@ -113,6 +113,50 @@ window resets it. The copy says "you get one free scan a month"; it does not
 claim we prevent a second. Enforcing it would require an account before the
 first thing anyone tries, which costs more trust than the scans are worth.
 
+> **Superseded — September 2026.** See *An account is now required for
+> everything* below. The paragraph above is kept because its argument was not
+> refuted, it was outweighed: an account is now required before the first thing
+> anyone tries, and the trust cost it names is real and was accepted knowingly.
+
+## September 2026 — an account is now required for everything
+
+**The decision.** Every screen past the introductory tour requires a signed-in
+account. The end-of-service calculator, the rights library, the reminders and
+the assistant are all included. There are no exceptions, other than an
+unconfigured build (no Supabase project at all), where there is no account to
+be had and gating would produce a locked box rather than a product.
+
+**Whose decision and why.** The founder's, made explicitly and confirmed twice
+after the costs below were put to them in writing. The reason is not
+monetisation and not scan-limit enforcement: it is that someone who used
+Wodouh and leaves no way to be contacted cannot be followed up with, supported,
+or asked what happened next — and at this stage of the product, being able to
+reach the person who used it is worth more than the readers the door turns
+away.
+
+**What it costs, recorded so it is not rediscovered as a surprise.**
+
+- It reverses the principle above, and the stronger one in `app/auth.js` that
+  read *"the signed-out app is the whole app."* Both are rewritten in place with
+  a pointer here rather than deleted.
+- The calculator was the product's most-linked, most-tested free surface and its
+  cleanest demonstration of good faith: a real number, no cost, nothing asked
+  for. That demonstration now happens after a sign-in rather than before it.
+- `docs/audit-2026-08-overhaul.md` called a false "these are free" claim *the
+  single most damaging defect in the codebase*. Nothing here makes that claim
+  false again — free still means free of charge, and the account is free — but
+  the wording of every affected surface had to change, because "free" and "no
+  sign-up" were being read as one promise and are now two different things.
+- Six test suites asserted accountless access as a property of the product.
+  They were not deleted: the assertions were **inverted** and annotated at each
+  site, so the record shows a decision that changed rather than a test that
+  quietly went missing. `test/accounts.test.js` now proves the gate holds by
+  walking every screen in the markup with no session.
+
+**What did NOT change.** The price of anything, the privacy architecture, or
+where a contract is read. The contract is still analysed on the reader's own
+device and still never stored. The door moved; nothing behind it did.
+
 ## July 2026 — 30% uplift
 
 All paid tiers were raised roughly 30% by founder decision, rounded to clean

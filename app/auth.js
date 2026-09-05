@@ -2,20 +2,29 @@
  *
  * THREE RULES GOVERN THIS FILE.
  *
- * 1. THE SIGNED-OUT APP IS THE WHOLE APP. Nothing here gates a screen, blocks
- *    a flow, or changes navigation. Unconfigured, offline, or never signed in,
- *    every existing path keeps running against localStorage. An account buys
- *    sync and nothing else.
+ * 1. AN ACCOUNT IS NOW REQUIRED TO USE THE APP — but the gate is NOT in this
+ *    file. Nothing here blocks a flow or changes navigation; that decision
+ *    lives in one place, authAllow() in app/index.html, so there is one answer
+ *    to "what requires an account" rather than two that can disagree. This file
+ *    still does exactly one job: get a session, or report that there is none.
+ *    Unconfigured or offline, it reports none and says so quietly.
+ *
+ *    RULE 1 USED TO READ "THE SIGNED-OUT APP IS THE WHOLE APP", and it is
+ *    rewritten rather than deleted because that was a real principle held for
+ *    a long time, tested, and then reversed on purpose. docs/pricing.md carries
+ *    the reasoning on both sides.
  *
  * 2. CONTRACT TEXT NEVER LEAVES THE DEVICE. We sync the OUTCOME of an analysis
  *    — a score, which rules fired, a verdict key — and the artefacts the reader
  *    authored. Never pasted text, PDF bytes, or clause quotes. 0001_init.sql is
  *    written around the same constraint.
  *
- * 3. GOOGLE AND APPLE ONLY. There is no password path in this file. Not
- *    hidden, not disabled — absent. A password that does not exist cannot be
- *    reused, phished, or leaked, and it is one fewer screen to get right in two
- *    languages.
+ * 3. NO PASSWORDS, BY ANY ROUTE. Four doors — Google, Apple, an emailed code
+ *    and a texted code — and not one of them has a password field. Not hidden,
+ *    not disabled: absent. A password that does not exist cannot be reused,
+ *    phished, or leaked, and it is one fewer screen to get right in two
+ *    languages. (This rule said "Google and Apple only" when those were the
+ *    only two; the principle it was protecting was never the count.)
  *
  * WHY THERE IS NO SUPABASE SDK HERE
  *

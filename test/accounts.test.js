@@ -7,8 +7,13 @@
  *
  * Five properties, in the order they matter:
  *
- *   1. The app still works signed out. No screen gates, no flow ends at
- *      "create an account". Unconfigured, accounts do not exist at all.
+ *   1. An account is REQUIRED, and the screen that asks for one says so
+ *      honestly. This property was the exact opposite until the gate landed —
+ *      it read "the app still works signed out, no screen gates" — and the
+ *      inversion is marked at each assertion rather than quietly rewritten,
+ *      because a test that changes its mind should say that it did.
+ *      Unconfigured, accounts still do not exist at all, and nothing is gated:
+ *      there would be no account to be had.
  *   2. The marketing tick is UNCHECKED and is a SEPARATE control from the
  *      number. Saving a number never implies permission to market to it.
  *   3. Skipping is a real answer, and can never be recorded as consent.
@@ -109,6 +114,71 @@ const STUB = (apple) => {
   ok(configured ? true : forced.reached === false, configured
     ? "with a project configured, the sign-in screen is reachable as intended"
     : "and calling openSignin() directly does not reach the screen");
+
+  /* ---- THE GATE ITSELF: IMPOSSIBLE, NOT MERELY DISCOURAGED.
+   *
+   * This is the assertion the whole change rests on, so it is made the hard
+   * way: not "the tab bar doesn't offer it" and not "openEos() redirects", but
+   * show() itself — the single function every route in this app goes through —
+   * called DIRECTLY, for every screen the product has, with no session.
+   *
+   * Named screens are not enumerated by hand either. A list written today is a
+   * list that a screen added next year is missing from, and the gate is an
+   * allowlist precisely so that new screens are closed by default. So the walk
+   * is driven by the DOM: every .screen in the markup, whatever it is called.
+   */
+  if (configured){
+    console.log("\n— with a project configured and nobody signed in, every screen is closed");
+    const walk = await p0.evaluate(() => {
+      obDone = true;
+      authUser = null;                      /* signed out, definitively */
+      const ids = [...document.querySelectorAll(".screen")]
+        .map(s => s.id.replace("screen-", ""));
+      const opened = [], elsewhere = [];
+      for (const id of ids){
+        show(id);
+        const landed = (document.querySelector(".screen.active") || {}).id;
+        if (landed === "screen-" + id) opened.push(id);
+        else if (landed !== "screen-signin") elsewhere.push(id + "→" + landed);
+      }
+      return { ids, opened, elsewhere };
+    });
+    ok(walk.ids.length > 20, `the walk covers every screen in the markup (${walk.ids.length})`);
+    /* The tour and the door itself are the two that must stay open: one is
+       where a new reader starts, the other is how they get in. */
+    ok(walk.opened.length === 2 && walk.opened.includes("onboard") && walk.opened.includes("signin"),
+       `only the tour and the sign-in screen open (${walk.opened.join(", ") || "none"})`);
+    ok(walk.elsewhere.length === 0,
+       `and every other screen lands on the door, not somewhere else${walk.elsewhere.length ? ": " + walk.elsewhere.join(", ") : ""}`);
+
+    /* The wrappers, which is where a reader actually taps. Gated BEFORE their
+       pre-work, so a signed-out tap costs no render and no request. */
+    const doors = await p0.evaluate(() => {
+      const at = () => (document.querySelector(".screen.active") || {}).id;
+      const out = {};
+      obDone = true; authUser = null;
+      openEos();    out.eos = at();
+      goTab("account"); out.tab = at();
+      openAssist("rights"); out.assist = at();
+      return out;
+    });
+    ok(doors.eos === "screen-signin" && doors.tab === "screen-signin" && doors.assist === "screen-signin",
+       `the calculator, the tabs and the assistant all reach the door instead (${JSON.stringify(doors)})`);
+
+    /* AND IT REMEMBERS. A gate that forgets where the reader was going turns
+       one interruption into two: sign in, then find your way back alone. */
+    const resumed = await p0.evaluate(() => {
+      obDone = true; authUser = null;
+      show("eos");
+      const pending = pendingNav && pendingNav.payload;
+      authUser = { id: "u1" };              /* they sign in */
+      resumeAfterAuth();
+      return { pending, landed: (document.querySelector(".screen.active") || {}).id };
+    });
+    ok(resumed.pending === "eos", `it records where they were going (${resumed.pending})`);
+    ok(resumed.landed === "screen-eos",
+       `and signing in delivers them there rather than to a generic home (${resumed.landed})`);
+  }
   await p0.close();
 
   /* ---- 2. configured: two buttons, and Apple only where it works */
@@ -146,8 +216,18 @@ const STUB = (apple) => {
   ok(screen.pwFields === 0, "there is no password field anywhere on the screen");
   ok(screen.emailFields === 1,
      `and exactly one email field, for the code sign-in (${screen.emailFields})`);
-  ok(/without an account/i.test(screen.text) || /بدون حساب/.test(screen.text),
-     "and the screen says plainly that the app works without an account");
+  /* INVERTED, deliberately. This asserted the opposite for the app's whole
+     life: that the screen promised the app works without an account. Since
+     every screen past the tour requires one, that sentence would now be a lie
+     told at the exact moment the reader is deciding whether to trust us — so
+     the assertion is that the OLD PROMISE IS GONE, and that the screen says
+     what is actually true and why. */
+  ok(!/without an account|بدون حساب/i.test(screen.text),
+     "the screen no longer promises the app works without an account, because it does not");
+  ok(/you'll need an account|يلزمك حساب/i.test(screen.text),
+     "it says plainly that an account is needed");
+  ok(/reach you|نوصلك/i.test(screen.text),
+     "and gives the actual reason rather than a euphemism");
 
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
@@ -511,8 +591,14 @@ console.log("\n— a sign-in provider the project has not enabled is not offered
     ok(seen.mail === wantMail,
        `${name}: the email form is ${wantMail ? "offered" : "withheld"}`);
     if (wantNotice) {
-      ok(/without an account|بدون حساب/.test(seen.noticeText),
-         `${name}: and the notice says the app still works without one, which is true`);
+      /* This used to assert the notice reassured the reader that the app works
+         without an account. With every screen gated, no sign-in method means
+         nobody can get in AT ALL — so the notice has to own that as our fault
+         rather than offer a way through that no longer exists. */
+      ok(!/without an account|بدون حساب/.test(seen.noticeText),
+         `${name}: the notice does not offer a way in that no longer exists`);
+      ok(/our side|fault|من عندنا/i.test(seen.noticeText),
+         `${name}: and says plainly that being unable to sign in is our fault, not the reader's`);
     }
     await d.close();
   }
@@ -605,6 +691,6 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
      "onboarding does not make the absolute claim the app itself stopped making");
 }
 
-  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\naccounts are optional, consent is never assumed, and the contract never leaves");
+  console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nan account is required and honestly explained, consent is never assumed, and the contract never leaves");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

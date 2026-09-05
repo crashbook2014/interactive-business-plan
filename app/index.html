@@ -2079,7 +2079,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <button class="au-again" id="auPhoneAgain" type="button" onclick="sendSmsCode()" data-t="au_again"></button>
       </form>
     </div>
-    <p class="tq-skip au-skip" id="auSkip" onclick="closeSignin()" data-t="au_skip"></p>
     <div class="tm-sec au-what">
       <p><b data-t="au_what"></b></p>
       <p data-t="au_what_b"></p>
@@ -2703,25 +2702,29 @@ const T = {
      been read on their device before this screen appears. */
   au_title_scan:{ar:"سوِّ حسابك المجاني عشان تشوف النتيجة",
                  en:"Create your free account to see your results"},
-  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، وهو اللي يخلّي حد الفحص المجاني الشهري يُحسب على أحد. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
-               en:"Your first contract scan is free. An account keeps that result available to you, and it is what lets the one-free-scan-a-month limit be counted against somebody. The text of your contract is read on your device, and we don't store it."},
-  /* THIS SAID "works without an account AND ALWAYS WILL" until the free scan
-     started being counted per person. That was a forward promise, not a
-     description, and quietly deleting it would be the worse of the two ways
-     to break it. It is narrowed instead, to the part that is still true and
-     is most of the app: the calculator, the rights library, the reminders and
-     the assistant all still need nothing. Reading a contract needs an account
-     now, because one free scan a month has to be counted against somebody. */
-  au_sub:{ar:"الحاسبة ودليل الحقوق والتذكيرات والمساعد — كلها تشتغل بدون حساب، وراح تظل كذا. الحساب لازم لقراءة عقد، لأن الفحص المجاني الشهري لازم يُحسب على أحد.",
-          en:"The calculator, the rights library, the reminders and the assistant all work without an account, and always will. An account is needed to read a contract, because one free scan a month has to be counted against somebody."},
+  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، ويخلّي حد الفحص المجاني الشهري يُحسب على أحد، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
+               en:"Your first contract scan is free. An account keeps that result available to you, lets the one-free-scan-a-month limit be counted against somebody, and means we can reach you if you need help. The text of your contract is read on your device, and we don't store it."},
+  /* THIS HAS NOW BEEN NARROWED TWICE, and the history is kept rather than
+     tidied away, because each step broke a promise the previous one made.
+     It first said the app "works without an account AND ALWAYS WILL". When the
+     free scan started being counted per person, that narrowed to everything
+     except reading a contract. It is now false altogether: an account is
+     required for every screen.
+
+     SO IT SAYS SO, PLAINLY, AND SAYS WHY. A reader who is asked for an account
+     is owed the reason, and "so we can reach you if something goes wrong with
+     your case" is the actual one — not a euphemism about personalisation. The
+     privacy sentence stays because it is still true and it is the thing this
+     reader is most likely to be worried about. See docs/pricing.md for the
+     argument on both sides of this decision. */
+  au_sub:{ar:"يلزمك حساب عشان تستخدم التطبيق. السبب بصراحة: عشان نقدر نوصلك ونساعدك إذا احتجت، ونحفظ شغلك لو غيّرت جهازك. نص عقدك يُقرأ على جهازك وما نخزّنه عندنا — هذا ما تغيّر.",
+          en:"You'll need an account to use Wodouh. The plain reason: so we can reach you and help if you need it, and so your work is still here if you change phone. The text of your contract is still read on your device and still isn't stored by us — that part hasn't changed."},
   au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
   au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
   /* Hidden when the reader arrived here BECAUSE they asked to scan: offering
      to "keep going without one" at the one door that requires one is an
      invitation into a dead end. Still shown everywhere else, where it is
      true. */
-  au_skip:{ar:"لا شكرًا، أكمل بدون حساب",en:"No thanks — keep going without one"},
-  au_skip_scan:{ar:"رجوع",en:"Back"},
   au_what:{ar:"وش نحفظ؟",en:"What we save"},
   au_what_b:{ar:"نتيجة التقييم وخطاباتك وتذكيراتك. ما نحفظ نص عقدك ولا ملفه — هذي ما تطلع من جهازك أصلًا.",
              en:"Your assessment result, your letters and your reminders. Not your contract's text or file — those never leave your device in the first place."},
@@ -3052,8 +3055,17 @@ const T = {
      that omits something it can. */
   acc_privacy_flags:{ar:"شيء أخير، صغير وصريح: لما تفتح شاشة الدفع أو حسابك، يسأل التطبيق خوادمنا سؤالًا واحدًا — أي الميزات مفعّلة الآن. ما يحمل معه شيئًا عنك ولا عن عقدك: لا حسابك، ولا أرقامك، ولا نصّك. وإذا ما وصله جواب، يكمل التطبيق شغله كأن شيئًا لم يكن.",
                       en:"One last thing, small and stated plainly: when you open the payment screen or your account, the app asks our servers a single question — which features are switched on right now. It carries nothing about you or your contract: no account, no figures, no text. If no answer comes back, the app carries on exactly as it would have."},
-  au_none:{ar:"ما فيه طريقة تسجيل دخول مفعّلة الآن. الحاسبة ودليل الحقوق والتذكيرات تشتغل بدون حساب.",
-           en:"No sign-in method is switched on right now. The app works in full without an account — the only thing an account adds is keeping your work if you change device."},
+  /* THIS STRING NOW DESCRIBES A LOCKED FRONT DOOR, and that is a change worth
+     naming. It used to be reassurance — no sign-in available, but the app
+     works anyway. Since every screen requires an account, no sign-in method
+     means nobody can get in at all.
+     It is left as an honest apology rather than quietly re-opening the app,
+     because a state where the reader is stuck is a MISCONFIGURATION on our
+     side (every provider disabled at once) and hiding it would just make it
+     take longer to notice. If this string is ever seen by a real reader,
+     something on our end is broken and needs fixing, not routing around. */
+  au_none:{ar:"ما فيه طريقة تسجيل دخول شغّالة الآن، والخلل من عندنا مو من عندك. جرّب بعد شوي — نعتذر عن التعطيل.",
+           en:"No sign-in method is working right now. That's a fault on our side, not yours. Please try again shortly — sorry for the interruption."},
   acc_signin_cta:{ar:"سجّل دخولك",en:"Sign in"},
   acc_signed_h:{ar:"حسابك",en:"Your account"},
   acc_signed_anon:{ar:"مسجّل دخولك",en:"Signed in"},
@@ -4127,8 +4139,11 @@ const T = {
   eos_open:{ar:"مكافأة نهاية الخدمة",en:"End-of-service pay"},
   eos_open_sub:{ar:"وقّعت أو انتهى عقدك؟ احسب مستحقك مجانًا",en:"Signed already, or it ended? Calculate what you're owed — free"},
   eos_title:{ar:"احسب مكافأة نهاية الخدمة",en:"Calculate end-of-service pay"},
-  eos_sub:{ar:"أدخل بياناتك ونعرض لك الحساب خطوة بخطوة — بدون تسجيل.",
-           en:"Enter your details and we'll show the arithmetic step by step — no sign-up."},
+  /* "no sign-up" was true for this screen's whole life and is not any more.
+     What replaces it is the part that is still true and is what the reader
+     actually cares about here: the arithmetic is shown, and it costs nothing. */
+  eos_sub:{ar:"أدخل بياناتك ونعرض لك الحساب خطوة بخطوة — مجانًا.",
+           en:"Enter your details and we'll show the arithmetic step by step — free."},
   eos_start:{ar:"تاريخ بداية العمل",en:"Start date"},
   eos_end:{ar:"تاريخ نهاية العمل",en:"End date"},
   eos_wage:{ar:"آخر أجر شهري كامل (ر.س)",en:"Last full monthly wage (SAR)"},
@@ -5144,6 +5159,10 @@ function show(name, back){
      Sending the reader home is the honest outcome: there is genuinely nothing
      to show them, and home is where they can start again. */
   if ((name === "result" || name === "clauses") && !current) name = "home";
+  /* THE DOOR — see authAllow() for what this is and why it is here rather than
+     in the navigation wrappers. Before any DOM is touched, so a gated screen
+     never flashes on its way to being replaced. */
+  if (obDone && !authAllow(name)){ authRedirect(name, back); return; }
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active","back","lateral","dragging","settling","gesture"));
   const el = document.getElementById("screen-"+name);
   el.classList.add("active");
@@ -5974,24 +5993,88 @@ function openRightsCase(){ if (eosData) openCase(); else openEos(); }
 
 /* ============================================================ accounts
  *
- * WHERE SIGN-IN IS OFFERED, AND WHERE IT IS NOT.
+ * WHERE SIGN-IN IS REQUIRED, WHICH IS NOW EVERYWHERE.
  *
- * It is offered at exactly the moments an account buys something: saving work,
- * carrying it to another phone, paying. It is never a gate. There is no
- * sign-in wall, no screen that checks for a session before rendering, and no
- * flow that ends at "create an account to continue". The app worked signed out
- * before this file gained a backend and it still does — which is also §13 of
- * the customer-journey document, and the reason the free diagnosis is worth
- * anything.
+ * THIS SECTION USED TO SAY THE OPPOSITE, and the reversal is recorded rather
+ * than overwritten. Sign-in was offered only where an account bought something
+ * — saving work, changing phone, paying — and was explicitly never a gate. The
+ * founder has since decided that every screen past the tour requires an
+ * account, the calculator included, so that a reader who uses the tool can
+ * actually be reached and supported afterwards. What that costs is real and is
+ * written down in docs/pricing.md next to the argument it overturned; this is
+ * not a decision that was made by forgetting the other side of it.
+ *
+ * The gate itself is authAllow()/authRedirect() below, applied inside show().
  *
  * ACCOUNTS ARE ABSENT, NOT DISABLED, WHEN UNCONFIGURED. Same pattern as the AI
  * and the paywall: no Supabase project means no entry point renders and no
- * request is made.
+ * request is made — and, since there would be no account to be had, no gate
+ * either. That is the single exception, and it exists so a local checkout is
+ * not a locked box.
  */
 let authUser = null, authBack = "account";
 
 function authOn(){ return typeof WodouhAuth !== "undefined" && WodouhAuth.configured(); }
 function signedIn(){ return !!authUser; }
+
+/* ==================================================== THE DOOR
+ *
+ * ONCE THE TOUR IS DONE, EVERY SCREEN REQUIRES AN ACCOUNT. The calculator
+ * included. This is a deliberate reversal of how this app worked for its whole
+ * life until now, and the reasoning on both sides is written down in
+ * docs/pricing.md rather than lost — the short version is that the founder
+ * wants to be able to reach and support the person who used the tool, and a
+ * reader who leaves no way to be contacted cannot be followed up with.
+ *
+ * AN ALLOWLIST, NOT A LIST OF GATED SCREENS. Two names get through. A screen
+ * added next year is gated because it is new, not because someone remembered
+ * to add it to a list — the failure mode of the other shape is a hole nobody
+ * notices until it is found.
+ *
+ * GATED IN show() ITSELF, not in the wrappers. openEos(), goTab() and the rest
+ * are not the only routes to a screen: the test suites reach several by calling
+ * show() directly, and anything in this file can. A gate in the wrappers would
+ * be a gate around the front door of a building with open windows.
+ */
+const AUTH_FREE = ["onboard", "signin"];
+function authAllow(name){
+  /* AN UNCONFIGURED BUILD IS NOT GATED, and this is the one exception to "no
+     exceptions". With no Supabase project there is no account to be had, so
+     gating would lock every reader out of a product that cannot let them in.
+     This is a local-development and misconfiguration fallback, not a way to
+     opt out: the shipped build is configured, so this returns false there. */
+  if (!authOn()) return true;
+  if (signedIn()) return true;
+  return AUTH_FREE.indexOf(name) >= 0;
+}
+
+/* WHAT THEY WERE TRYING TO DO WHEN THE DOOR STOPPED THEM.
+ *
+ * One slot, two shapes: a screen they were navigating to, or a scan they were
+ * about to run. It replaces the old `pendingScan`, which held only the second
+ * — and once every screen can send someone to sign-in, "what were they doing"
+ * has more than one answer. Kept as one variable rather than two so it is
+ * impossible for both to be set and for the wrong one to win.
+ */
+let pendingNav = null;
+
+/* Remember where they were going, so signing in delivers them there rather
+   than to a generic home screen that makes them start the journey again. */
+function authRedirect(name, back){
+  pendingNav = { kind: "screen", payload: name };
+  authWant = "nav";
+  openSignin(back || "home");
+}
+
+/* Put them back where they were interrupted. Falls through to authBack on
+   anything unrecognised rather than trapping the reader on the sign-in screen
+   they have just successfully passed. */
+function resumeAfterAuth(){
+  const p = pendingNav; pendingNav = null;
+  if (p && p.kind === "scan"){ analyze(p.payload); return; }
+  if (p && p.kind === "screen"){ show(p.payload); return; }
+  show(authBack, 1);
+}
 
 function openSignin(back){
   if (!authOn()) return;
@@ -6013,12 +6096,13 @@ function openSignin(back){
   const pb = document.getElementById("auPhone");
   if (pb) pb.value = "";
   renderPhoneAuth();
-  /* "No thanks, keep going without one" is the wrong offer at the one door
-     that requires an account. It becomes a plain Back there. */
-  const skip = document.getElementById("auSkip");
-  if (skip) skip.textContent = t(authWant === "scan" ? "au_skip_scan" : "au_skip");
-  /* Same test as the skip label above, for the same reason: this door is
-     opened for two different purposes and only one of them is "save". */
+  /* THE BACK CHEVRON IS REMOVED ONCE THE TOUR IS DONE, because at that point
+     there is nowhere behind this screen to go: every destination is gated, so
+     tapping back would route straight through the gate and land here again.
+     A control that does nothing is worse than no control. During the tour it
+     stays — returning to the tour is a real destination. */
+  const bk = document.querySelector("#screen-signin .back");
+  if (bk) bk.hidden = obDone;
   renderSigninCopy();
   show("signin");
   renderProviders();
@@ -6203,13 +6287,12 @@ function verifySmsCode(){
    what they came for; from anywhere else, back where they were. */
 let authWant = null;
 function afterSignIn(){
-  const want = authWant; authWant = null;
+  authWant = null;
   /* The count is per account, so it has to be read before the resumed scan
-     decides whether it is free. */
-  loadScanCount().then(() => {
-    if (want === "scan"){ resumeScan(); return; }
-    show(authBack, 1);
-  });
+     decides whether it is free. resumeAfterAuth() reads the pending intent
+     itself, so there is no second copy of "what were they doing" here to fall
+     out of step with the first. */
+  loadScanCount().then(resumeAfterAuth);
 }
 
 /* ASK BEFORE NAVIGATING. Supabase answers a disabled provider with 400 JSON
@@ -6351,12 +6434,23 @@ function migrateYes(){
 
 function migrateNo(){ migrateDone(); }
 
+/* Resolves once WHO THE READER IS is known — not once everything that follows
+   from knowing has finished. Boot routing waits on this and nothing else,
+   because the profile work below takes the screen itself and would otherwise
+   be undone by the route it was waiting for. Starts resolved so an
+   unconfigured build boots without waiting for a session it will never have. */
+let authReady = Promise.resolve();
+
 function initAuth(){
   if (!authOn()) return;
   WodouhAuth.onChange(u => { authUser = u; loadScanCount().then(renderAccount); });
-  WodouhAuth.init().then(u => {
+  const who = WodouhAuth.init().then(u => {
     authUser = u;
     renderAccount();
+    return u;
+  }, () => { authUser = null; return null; });
+  authReady = who.then(() => {}, () => {});
+  who.then(u => {
     if (!u) return;
     return WodouhAuth.getProfile().then(p => {
       /* Their existing work comes BEFORE the phone question: it is data they
@@ -6427,7 +6521,14 @@ function renderSituations(){
   if (a) a.hidden = !(typeof askAvailable === "function" && askAvailable());
 }
 
-function openEos(){ renderEos(); show("eos"); }
+/* The gate in show() would catch this anyway. Checking first is not
+   redundancy for its own sake: renderEos() reads and writes state and the
+   render is wasted work for someone who is about to be sent to sign-in. Same
+   argument at goTab(), which calls ensureFlags() — a network request. */
+function openEos(){
+  if (obDone && !authAllow("eos")){ authRedirect("eos"); return; }
+  renderEos(); show("eos");
+}
 
 function renderEos(){
   const wrap = document.getElementById("eosHow");
@@ -8170,6 +8271,7 @@ function openAsk(){
      closes the case where something calls it anyway, so a screen that cannot
      answer can never be reached. */
   if (!askAvailable()) return;
+  if (obDone && !authAllow("ask")){ authRedirect("ask"); return; }
   askAnswer = null; askError = null; renderAsk(); show("ask");
 }
 
@@ -9136,6 +9238,7 @@ function renderBiz(){
 let asOrigin = "home";
 
 function openAssist(origin){
+  if (obDone && !authAllow("assist")){ authRedirect("assist"); return; }
   asOrigin = origin;
   if (!chat.length){
     chat.push({ who:"bot", text:t("as_intro") });
@@ -10178,6 +10281,10 @@ const ROOTS = TABS.map(x=>x.id);
 
 let lateralNav = false;
 function goTab(id){
+  /* Before the pre-work, not after: ensureFlags() below is a network request
+     and renderTimeline() is a full redraw, both pointless for a reader who is
+     about to be sent to the door. */
+  if (obDone && !authAllow(id)){ authRedirect(id); return; }
   if (id === "timeline"){ tlOrigin = "tab"; renderTimeline(); }
   /* The account screen shows subscription state, so it is a governed surface. */
   if (id === "account"){ ensureFlags(); renderAccount(); }
@@ -11375,12 +11482,11 @@ function useScan(){
    An UNCONFIGURED build is untouched: with no project there is no account to
    count against, so gating would lock the reader out of a product that has
    nothing to sell them. */
-let pendingScan = null;
 function scanGate(kind){
   if (!authOn()) return true;
   if (reviewUnlocked()) return true;
   if (!WodouhAuth.user()){
-    pendingScan = kind;
+    pendingNav = { kind: "scan", payload: kind };
     authWant = "scan";
     openSignin("home");
     return false;
@@ -11392,17 +11498,13 @@ function scanGate(kind){
        were shown contract A's result — because nothing had recorded that B was
        what they came for. Five pieces of paywall state were set here and the
        only one that mattered to the reader was missing. */
-    pendingScan = kind;
+    pendingNav = { kind: "scan", payload: kind };
     pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
     pwUpgrade = null; pwUpBack = null;
     if (renderPaywall()) show("paywall");
     return false;
   }
   return true;
-}
-function resumeScan(){
-  const k = pendingScan; pendingScan = null;
-  if (k) analyze(k); else show(authBack, 1);
 }
 
 /* Does this reader get the WHOLE review, or the scan?
@@ -11787,10 +11889,10 @@ function grantAndGo(){
   /* THE SCAN THEY PAID FOR RUNS NOW, and deliberately after saveState() rather
      than before it. analyze() re-enters scanGate(), which asks reviewUnlocked()
      — so the entitlement has to be written first or the reader is bounced
-     straight back to the paywall they have just paid at. resumeScan() is reused
-     rather than re-implemented: it already clears pendingScan and already does
-     nothing when there is none. */
-  if (pendingScan){ resumeScan(); return; }
+     straight back to the paywall they have just paid at. resumeAfterAuth() is
+     reused rather than re-implemented: it already clears the pending intent and
+     already does nothing when there is none. */
+  if (pendingNav && pendingNav.kind === "scan"){ resumeAfterAuth(); return; }
   /* An upgrade returns the reader to the step they were on, now unlocked,
      rather than dropping them back at the top of a result they have read. */
   if (wasUpgrade && backTo){
@@ -12036,8 +12138,15 @@ initOffline();
 window.addEventListener("scroll", onScroll, { passive:true });
 window.addEventListener("resize", moveTabIndicator, { passive:true });
 /* The tour is the markup's active screen, so skipping it is an explicit move
-   rather than an absence. Done last, once every renderer is initialised. */
-if (obDone) show("home");
+   rather than an absence. Done last, once every renderer is initialised.
+ *
+ * WAITS FOR THE SESSION, AND THAT WAIT IS THE POINT. WodouhAuth.init() re-mints
+ * an access token from a stored refresh token, which is a network round trip;
+ * routing before it answers means authUser is still null, and every returning
+ * reader gets bounced to sign-in on every single reload of an app they are
+ * already signed into. authReady starts resolved, so an unconfigured build and
+ * a reader with no stored session both route on the very next microtask. */
+if (obDone) authReady.then(() => show("home"));
 requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); });
 </script>
 </body>

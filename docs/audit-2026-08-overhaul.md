@@ -67,6 +67,15 @@ a deliverable that does not exist is the single most damaging defect in the
 codebase. It is worse than a wrong riyal figure, because a wrong figure is an
 error and this is a promise.
 
+> **Note, September 2026.** The premise of the paragraph above — that reminders
+> and the assistant "are free to every reader" — was about *price*, and that is
+> still true: they cost nothing. It is no longer true that they are reachable
+> *without an account*; every screen now requires one by explicit founder
+> decision. The finding stands as written; only the sentence "free to every
+> reader" now needs the word "free" read as costing nothing rather than as
+> needing nothing. See `docs/pricing.md`, *September 2026 — an account is now
+> required for everything*, for the decision and what it cost.
+
 **How it was found.** Traced `pwPlan` through every reference; then grepped
 `trackOrView` and `openAssist` for a paid gate and found none.
 

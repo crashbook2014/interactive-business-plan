@@ -24,7 +24,7 @@
  * These are asserted as behaviour, not as source text: the point is what the
  * screen does, not which constant produced it.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, signInStub } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -38,6 +38,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
+  await p.evaluate(signInStub);
   await p.evaluate(() => { nat = "sa"; obDone = true; show("home"); });
 
   /* ---- 1. the tab a drag would reach, and the ends of the row */
@@ -266,6 +267,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   rp.on("pageerror", e => FAIL.push("pageerror(reduced): " + e.message));
   await rp.goto(APP);
   await rp.waitForFunction(() => typeof window.show === "function");
+  await rp.evaluate(signInStub);
   const red = await rp.evaluate(() => ({ matches: REDUCED.matches }));
   ok(red.matches === true, "the page sees the reduced-motion preference");
 

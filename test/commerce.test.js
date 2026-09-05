@@ -18,7 +18,7 @@
  *
  * Run with `npm test`. WODOUH_URL points them at the deployed site.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, signInStub } = require("./_env.js");
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const ROOT = path.join(__dirname, "..");
@@ -49,6 +49,7 @@ async function seedTermination(p){
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
+  await p.evaluate(signInStub);
 
   /* ------------------------------------------------- the price ladder */
   console.log("\n— the price ladder");
@@ -561,9 +562,11 @@ async function seedTermination(p){
        "the consent exception is named, in both languages");
   }
 
-  /* ---- "no sign-up" was false on two of the three surfaces that said it.
-     Auth ships configured, so scanGate() fires in production. The EOS
-     calculator genuinely needs no account and keeps its claim. */
+  /* ---- "no sign-up" was false on two of the three surfaces that said it, and
+     is now false on all three. The calculator was the one honest instance and
+     kept its claim for as long as it was true; since every screen requires an
+     account, NO surface may say it. What each surface must still say is that
+     free means free — the price did not change, only the door. */
   console.log("\n— the homepage does not promise analysis without an account");
   {
     const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8")
@@ -574,9 +577,11 @@ async function seedTermination(p){
     if (authShips){
       ok(!/no sign-up/i.test(landing) && !/بدون تسجيل/.test(landing),
          "the homepage claims no sign-up nowhere");
-      /* The app's one true instance survives: the calculator asks for nothing. */
-      ok(/eos_sub:[\s\S]{0,200}بدون تسجيل/.test(src5),
-         "the EOS calculator keeps its true no-sign-up claim");
+      /* INVERTED: the calculator's claim was true until the gate reached it. */
+      ok(!/eos_sub:[\s\S]{0,200}(بدون تسجيل|no sign-up)/.test(src5),
+         "the EOS calculator no longer claims no-sign-up, because it now needs one");
+      ok(/eos_sub:[\s\S]{0,200}(مجان|free)/i.test(src5),
+         "but it still says the thing that is still true: it costs nothing");
     }
   }
 
@@ -619,8 +624,16 @@ async function seedTermination(p){
 
     ok(!/An account is optional and buys syncing[^<]*nothing more/i.test(terms),
        "the Terms no longer claim an account buys nothing but syncing");
-    ok(/Reading a contract needs one/i.test(terms) && /وقراءة عقد تحتاج حسابًا/.test(terms),
-       "and state that reading a contract needs an account, in both languages");
+    /* Widened with the gate: the Terms used to have to say that READING A
+       CONTRACT needs an account. Now the whole app does, and the Terms have to
+       say the broader thing — including that this is a change from how the app
+       used to work, since a reader who used it before is owed that. */
+    ok(/requires an account/i.test(terms) && /يتطلّب حسابًا/.test(terms),
+       "and state that using the app requires an account, in both languages");
+    ok(/this is a change/i.test(terms) && /تغيير عن السابق/.test(terms),
+       "and say plainly that this is a change from how it used to work");
+    ok(/an account is free/i.test(terms) && /الحساب مجاني/.test(terms),
+       "and that the account itself costs nothing");
     /* The sign-in methods the Terms name must be the ones that exist. Email
        one-time codes shipped and the Terms still said Google or Apple only. */
     ok(/one-time code/i.test(terms) && /برمز لمرة واحدة/.test(terms),
@@ -786,6 +799,7 @@ async function seedTermination(p){
 
   await p.evaluate(() => location.reload());
   await p.waitForFunction(() => typeof window.show === "function");
+  await p.evaluate(signInStub);
   await seedTermination(p);
 
   const before = await p.evaluate(async () => {
@@ -1186,6 +1200,7 @@ async function seedTermination(p){
   });
   await p.evaluate(() => location.reload());
   await p.waitForFunction(() => typeof window.show === "function");
+  await p.evaluate(signInStub);
   const reloaded = await p.evaluate(() => owned.case);
   ok(reloaded === "plan_case", "a real entitlement survives a reload");
 
@@ -1402,7 +1417,7 @@ async function seedTermination(p){
 
   console.log("\n— paying at the scan limit analyses the contract you paid for");
   /* THE DEFECT, and the worst one found: scanGate() interrupts a scan two ways.
-     The sign-in branch recorded pendingScan and resumed it; the paywall branch
+     The sign-in branch recorded the pending scan and resumed it; the paywall branch
      set five pieces of paywall state and recorded nothing. Measured before the
      fix: the reader paid 199 and was shown the PREVIOUS contract's result. */
   const paidScan = await p.evaluate(() => {
@@ -1431,7 +1446,7 @@ async function seedTermination(p){
     document.getElementById("pasteBox").value = B;
     analyze("pasted");                               /* they try to scan B */
     const atGate = { screen: (document.querySelector(".screen.active")||{}).id,
-                     pending: pendingScan };
+                     pending: pendingNav && pendingNav.kind === "scan" ? pendingNav.payload : null };
     pwPlan = activePlans().findIndex(x => x.name === "plan_review");
     grantAndGo();                                    /* they pay 199 */
     return { wasA, atGate };
@@ -1446,7 +1461,7 @@ async function seedTermination(p){
     doc: (current || {}).doc,
     isB: !!(current && current.srcText && /Non-compete/.test(current.srcText)),
     clauses: ((current && current.clauses) || []).length,
-    pending: pendingScan
+    pending: pendingNav
   }));
   ok(landed.isB,
      `after paying, the contract analysed is the one they paid for, not ${paidScan.wasA} (doc=${landed.doc})`);
