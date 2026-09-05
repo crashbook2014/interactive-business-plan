@@ -1109,6 +1109,11 @@
   html[lang="ar"] .ask-src-h{text-transform:none;letter-spacing:0;font-weight:400}
   .ask-unv{font-size:12.5px !important;margin-top:10px !important;color:var(--amber-ink) !important}
   .ask-ref{border-inline-start:3px solid var(--ink-2);margin-bottom:12px}
+  /* Amber, matching every other "this is a limit of what we know" surface in
+     the app rather than the red reserved for something being wrong. */
+  .ai-cut{background:var(--amber-bg);border-radius:var(--r-md);padding:11px 13px;margin:10px 0 4px}
+  .ai-cut b{display:block;color:var(--amber-ink);font-size:14px;margin-bottom:4px}
+  .ai-cut p{font-size:13px;line-height:1.65;color:var(--ink-2)}
   .ai-find{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
   .ai-find b{display:block;font-size:13.5px;margin-bottom:4px}
   .ai-find p{font-size:13px;color:var(--ink-2);line-height:1.65}
@@ -3173,6 +3178,14 @@ const T = {
      supporting verbs are the same four the progression below uses, so the
      statement and the roadmap are visibly the same idea rather than a slogan
      with a list under it. */
+  /* Says the number, not "part of it". A reader who knows 40,000 of 46,300
+     characters were read can judge what is missing; "some of your contract"
+     leaves them guessing, which is the same anxiety the silence caused.
+     Names WHERE the cut falls, because in an employment contract the last
+     pages are usually the non-compete and the penalties. */
+  ai_cut:{ar:"قرأنا أول {n} حرف من عقدك فقط",en:"We read only the first {n} characters of your contract"},
+  ai_cut_b:{ar:"عقدك {total} حرف، وهذا أطول من اللي نقدر نرسله للتحليل. اللي تحت مبني على البداية فقط — وآخر العقد، اللي غالبًا فيه عدم المنافسة والشروط الجزائية، ما دخل في هذه القراءة. لو تبي رأيًا على جزء معيّن، الصقه لحاله.",
+           en:"Your contract is {total} characters, which is longer than we can send for analysis. What's below is based on the beginning only — the end of the contract, where non-compete and penalty clauses usually sit, was not part of this reading. To get a view on a specific part, paste that part on its own."},
   fu_pos:{ar:"وضوح — نظامك الشخصي لذكاء العقود",
           en:"Wodouh — your personal contract intelligence system"},
   fu_title:{ar:"مستقبل وضوح",en:"The future of Wodouh"},
@@ -8644,6 +8657,10 @@ function renderAiPanel(){
     /* textContent, never innerHTML: this string came from a model that read an
        attacker-supplied document. */
     host.querySelector(".ai-summary").textContent = aiFindings.summary || "";
+    /* ABOVE the findings, not below them. A reader who learns after reading
+       eight findings that the document was cut has already formed a view. */
+    const cut = aiCutNote(aiTrim);
+    if (cut) host.querySelector(".tm-sec").insertBefore(cut, host.querySelector(".ai-summary"));
     host.querySelectorAll(".ai-find").forEach((el, i) => {
       el.querySelector("b").textContent = aiFindings.findings[i].title;
       el.querySelector("p").textContent = aiFindings.findings[i].detail;
@@ -8932,18 +8949,63 @@ function aiSourceText(){
   return v.length >= 200 ? v : "";
 }
 
+/* WHAT THE MODEL IS ACTUALLY GIVEN, AND SAYING SO WHEN IT IS NOT ALL OF IT.
+ *
+ * The server refuses anything over 40,000 characters. Both call sites used to
+ * quietly slice to exactly that number, so a 45,000-character bilingual
+ * contract was read at 89% and the reader was told nothing — they saw a
+ * finished analysis with a score on it and no reason to doubt that the whole
+ * document was behind it. The last pages of an employment contract are where
+ * the non-compete and the penalty clauses usually sit, so the silent part was
+ * the expensive part.
+ *
+ * Rejecting outright was the other option and is worse: a long contract is a
+ * legitimate contract, and refusing to read any of it helps nobody. So the
+ * cut stays and stops being silent. This is the same rule the assessment
+ * already follows when it lists what it could not evaluate — absence is
+ * reported, not hidden.
+ *
+ * AI_MAX mirrors the server's MAX_TEXT. If one moves, the other must; the
+ * test reads both and fails when they disagree. */
+const AI_MAX = 40000;
+function aiCut(text){
+  const full = String(text || "");
+  return { text: full.slice(0, AI_MAX), cut: Math.max(0, full.length - AI_MAX), total: full.length };
+}
+/* Set by whichever run last sent a document, and read by the panels so the
+   notice sits with the findings it qualifies rather than somewhere else. */
+let aiTrim = null, crTrim = null;
+
+/* Built as a node rather than a string because it goes into both panels, and
+   one of them assembles its DOM element by element. Amber, not red: the
+   analysis below it is sound as far as it goes, and colouring it as an error
+   would tell the reader to distrust findings that are correct. */
+function aiCutNote(trim){
+  if (!trim) return null;
+  const box = document.createElement("div");
+  box.className = "ai-cut";
+  const b = document.createElement("b");
+  b.textContent = t("ai_cut").replace("{n}", fmtNum(AI_MAX));
+  const p = document.createElement("p");
+  p.textContent = t("ai_cut_b").replace("{total}", fmtNum(trim.total));
+  box.appendChild(b); box.appendChild(p);
+  return box;
+}
+
 async function aiRun(){
   const url = analyzeUrl();
   if (!url || !aiConsent) return;
   const text = aiSourceText();
   if (!text){ aiError = "ai_notext"; renderAiPanel(); return; }
 
+  const trim = aiCut(text);
+  aiTrim = trim.cut ? trim : null;
   aiBusy = true; aiError = null; renderAiPanel();
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: analyzeHeaders(),
-      body: JSON.stringify({ kind: "contract", text: text.slice(0, 40000) })
+      body: JSON.stringify({ kind: "contract", text: trim.text })
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data || !Array.isArray(data.findings)){
@@ -9024,6 +9086,8 @@ async function crRun(){
   const text = aiSourceText();
   if (!text){ crError = "ai_notext"; renderCrPanel(); return; }
 
+  const crT = aiCut(text);
+  crTrim = crT.cut ? crT : null;
   crBusy = true; crError = null; crResult = null; renderCrPanel();
   try {
     const res = await fetch(url, {
@@ -9033,7 +9097,7 @@ async function crRun(){
          get different findings on the same contract — passport retention,
          Iqama fees, sponsorship transfer and return airfare only apply to
          one of them, and raising them for the other is noise. */
-      body: JSON.stringify({ kind: "contract_review", text: text.slice(0, 40000),
+      body: JSON.stringify({ kind: "contract_review", text: crT.text,
                              nat: nat === "nonsa" ? "nonsa" : "sa" })
     });
     const data = await res.json().catch(() => null);
@@ -9107,6 +9171,8 @@ function renderCrPanel(){
   host.appendChild(sec);
 
   if (crBusy){ const p = document.createElement("p"); p.textContent = t("ai_working"); sec.appendChild(p); return; }
+  const crCut = aiCutNote(crTrim);
+  if (crCut && !crError) sec.appendChild(crCut);
   if (crError){
     const p = document.createElement("p"); p.textContent = t(crError); sec.appendChild(p);
     const b = document.createElement("button");

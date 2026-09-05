@@ -127,10 +127,18 @@ async function serveWithAiCsp(page) {
 
   const serverMax = Number((fn.match(/const MAX_TEXT = ([\d_]+)/) || [])[1]?.replace(/_/g, ""));
   ok(serverMax === 40000, `the server documents a ${serverMax}-character ceiling for a document`);
-  /* Both document call sites slice to the same number. */
-  const slices = [...app.matchAll(/text\.slice\(0,\s*(\d+)\)/g)].map(m => Number(m[1]));
-  ok(slices.length >= 2 && slices.every(n => n === serverMax),
-     `and every document call site slices to exactly that (${slices.join(", ")})`);
+  /* The client's ceiling now lives in one named constant instead of being
+     written out at each call site — which is the shape that made the two
+     drift-able in the first place. The assertion follows the constant rather
+     than the literal, so it still fails if the client and the server disagree
+     and no longer fails merely because the duplication was removed. */
+  const clientMax = Number((app.match(/const AI_MAX = (\d+)/) || [])[1]);
+  ok(clientMax === serverMax,
+     `and the client's own ceiling matches it exactly (AI_MAX = ${clientMax})`);
+  const cutCalls = (app.match(/aiCut\(text\)/g) || []).length;
+  ok(cutCalls >= 2, `both document call sites go through that one helper (${cutCalls})`);
+  ok(!/text\.slice\(0,\s*40000\)/.test(app),
+     "and no call site slices to a hardcoded 40000 behind the helper's back");
   /* Over the ceiling the server refuses rather than reading half a contract.
      That is the honest behaviour and it is what makes the client-side slice
      the thing worth watching — see part 4. */
@@ -239,22 +247,55 @@ async function serveWithAiCsp(page) {
   ok(longMissing.length === 0,
      "and the markers at its very end survive, which is where a head-only send would drop them");
 
-  /* WHAT HAPPENS ABOVE THE CEILING, PINNED AS THE CURRENT STATE RATHER THAN
-     ENDORSED. The client slices to 40,000 and sends the head, so a reader who
-     pastes a 45,000-character bilingual contract is analysed on the first 89%
-     of it and is told nothing. The alternative — send it whole and let the
-     server's 413 surface as "we could not read this" — is at least honest
-     about what was read. This assertion exists so that the day someone fixes
-     it, they have to come here and say so on purpose. */
+  /* WHAT HAPPENS ABOVE THE CEILING. This assertion was written to pin the old
+     behaviour rather than endorse it: the client sliced to 40,000 and said
+     nothing, so a reader who pasted a 45,000-character bilingual contract was
+     analysed on the first 89% of it and shown a finished result with a score
+     on it. The last pages of an employment contract are where the non-compete
+     and the penalty clauses usually sit, so the silent part was the expensive
+     part. It said the day someone fixed it they would have to come here and
+     say so on purpose. This is that edit.
+
+     The cut stays — rejecting a long contract outright helps nobody, and a
+     legitimate contract can exceed the ceiling — but it is now declared on
+     screen, above the findings rather than below them, naming both the number
+     of characters read and where the missing part falls. Same rule the
+     assessment already follows when it lists what it could not evaluate:
+     absence is reported, never hidden. */
   sent.length = 0;
   const OVER = "A".repeat(45000);
-  await p.evaluate(async (text) => {
+  const over = await p.evaluate(async (text) => {
     document.getElementById("pasteBox").value = text;
     aiConsent = true;
     await aiRun();
+    const note = document.querySelector("#termAi .ai-cut");
+    const findings = document.querySelector("#termAi .ai-find, #termAi .ai-summary");
+    return {
+      shown: !!note,
+      text: note ? note.textContent : "",
+      /* Above the findings: a reader who learns the document was cut only
+         after reading eight findings has already formed a view. */
+      before: !!(note && findings &&
+                 (note.compareDocumentPosition(findings) & Node.DOCUMENT_POSITION_FOLLOWING))
+    };
   }, OVER);
   ok((sent[0] || {}).text.length === serverMax,
-     `above the ceiling the client cuts to ${serverMax} and says nothing — documented, not endorsed`);
+     `above the ceiling the client still cuts to ${serverMax}, because the server refuses more`);
+  ok(over.shown === true, "but it now says so on screen instead of showing a silent partial read");
+  ok(over.before === true, "and says it above the findings, not after them");
+  ok(over.text.includes("45,000") || over.text.includes("٤٥٬٠٠٠"),
+     `naming the true length of what was pasted, so the reader can judge what is missing (${over.text.slice(0, 60)})`);
+
+  /* And the notice must NOT appear for a document that fitted — a warning that
+     cries wolf on every analysis teaches the reader to ignore it. */
+  sent.length = 0;
+  const under = await p.evaluate(async (text) => {
+    document.getElementById("pasteBox").value = text;
+    aiConsent = true;
+    await aiRun();
+    return !!document.querySelector("#termAi .ai-cut");
+  }, CONTRACT);
+  ok(under === false, "and stays silent when the whole contract fitted");
 
   /* ---- 5. Ask: the question goes, the contract does not */
   console.log("\n— asking a question sends the question, not the contract");
