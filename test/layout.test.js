@@ -296,6 +296,47 @@ async function geometry(p){
     await pg.close();
   }
 
+  /* THE TOUR'S "NEXT" BUTTON WAS OFF THE BOTTOM OF THE SCREEN, and had been
+     for some time — measured off-viewport in English at 390x844 and in both
+     languages at 360x640, before any of the recent copy was added. The card
+     had a min-height and no max-height, so the tallest one (the nationality
+     question: two choice boxes and the longest body text) simply grew past the
+     viewport and took its own advance button with it. The only way on was to
+     scroll a screen that gives no sign there is anything to scroll to.
+
+     Geometric, and across the small viewports where it actually broke — the
+     rest of this suite runs at 1440x900 and 390x844, which is exactly why
+     nothing caught it. The disclosure note is included: a disclosure the
+     reader has to scroll to find is not a disclosure. */
+  console.log("\n— every onboarding card keeps its footer on screen");
+  {
+    for (const vp of [{ width: 360, height: 640 }, { width: 390, height: 844 },
+                      { width: 414, height: 896 }]) {
+      const pg = await b.newPage({ viewport: vp });
+      await pg.goto(APP); await pg.waitForTimeout(400);
+      for (const L of ["en", "ar"]) {
+        const worst = await pg.evaluate(l => {
+          lang = l; applyLang();
+          let out = { off: [], n: 0 };
+          for (let i = 0; i < OB.length; i++) {
+            obIndex = i; natGate = false; renderOnboard();
+            out.n++;
+            const btn = document.getElementById("obNext").getBoundingClientRect();
+            const note = document.getElementById("obNote");
+            const nr = note.hidden ? null : note.getBoundingClientRect();
+            if (btn.bottom > innerHeight + 1 || btn.top < 0) out.off.push("button@" + i);
+            if (nr && (nr.bottom > innerHeight + 1 || nr.top < 0)) out.off.push("note@" + i);
+          }
+          return out;
+        }, L);
+        ok(worst.n === 5, `${vp.width}x${vp.height} ${L}: all ${worst.n} cards rendered`);
+        ok(worst.off.length === 0,
+           `${vp.width}x${vp.height} ${L}: footer stays on screen (${worst.off.join(", ") || "every card"})`);
+      }
+      await pg.close();
+    }
+  }
+
   await b.close();
   if (FAIL.length){
     console.log(`\n${FAIL.length} FAILURES`);

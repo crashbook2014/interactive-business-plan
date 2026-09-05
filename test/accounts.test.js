@@ -266,6 +266,33 @@ const STUB = (apple) => {
   ok(/reach you|نوصلك/i.test(screen.text),
      "and gives the actual reason rather than a euphemism");
 
+  /* ---- THE SEAM: the last thing read before the door.
+   *
+   * The tour's final button says "check my contract free" and the next screen
+   * asks for an account. Both are true; the sequence is a bait-and-switch if
+   * the reader only learns the second part after tapping. So the tour must say
+   * it FIRST, and it must say it in the SAME WORDS as the screen that follows —
+   * two phrasings of one rule two taps apart reads as two rules.
+   *
+   * Asserted rather than left to care, because this is exactly the kind of
+   * sentence a later copy pass deletes for being redundant. It is not
+   * redundant: it is the difference between disclosure and a surprise. */
+  console.log("\n— the tour discloses the account before the door, in the same words");
+  const seam = await p.evaluate(() => {
+    obIndex = OB.length - 1; natGate = false;
+    renderOnboard();
+    const n = document.getElementById("obNote");
+    return { text: n.textContent, shown: !n.hidden,
+             onFirst: (obIndex = 0, renderOnboard(), !document.getElementById("obNote").hidden) };
+  });
+  ok(seam.shown === true, "the note is shown on the last card, beside the button it qualifies");
+  ok(seam.onFirst === false, "and not on the earlier cards, where there is no door coming");
+  ok(/calculator|الحاسبة/i.test(seam.text) && /rights|الحقوق/i.test(seam.text),
+     "it names the two surfaces that need no account");
+  ok(/free|مجاني/i.test(seam.text), "says the account itself is free");
+  ok(/reach you|نوصلك/i.test(seam.text),
+     "and gives the same reason the sign-in screen gives, in the same words");
+
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p2.goto(APP);

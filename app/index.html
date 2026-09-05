@@ -288,7 +288,17 @@
   .disclaimer{margin-top:auto;padding-top:26px;text-align:center;font-size:12px;color:var(--ink-2)}
 
   /* onboarding */
-  #screen-onboard{justify-content:flex-end;min-height:calc(100vh - 90px)}
+  /* A FLOOR WITHOUT A CEILING LET THE BUTTON FALL OFF THE SCREEN.
+     min-height alone means the card grows with its content, so the tallest
+     card — the nationality question, two choice boxes and the longest body
+     text — pushed its own "next" button past the bottom of the viewport. It
+     was already doing this before the disclosure note was added: measured
+     off-screen in English at 390x844, and in both languages at 360x640. The
+     reader's only way on was to scroll a screen that gives no sign there is
+     anything below it.
+     Capping the height and letting the BODY scroll instead pins the footer —
+     dots, disclosure, button — where it can always be reached. */
+  #screen-onboard{justify-content:flex-end;min-height:calc(100vh - 90px);max-height:calc(100vh - 90px)}
   /* 44px touch minimum, applied to the four control groups measured below it
      at 390x844 and 430x932. None of these was unusable, but each was under the
      size the rest of the app already holds to, and the legal links were half
@@ -296,8 +306,17 @@
   .ob-skip{align-self:flex-end;color:var(--ink-2);font-size:13.5px;font-weight:700;
            padding:8px 12px;min-height:44px;display:inline-flex;align-items:center}
   html[lang="ar"] .ob-skip{font-size:15px;font-weight:400}
-  .ob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 8px}
-  .ob-art{width:190px;height:190px;margin-bottom:28px;position:relative;display:flex;align-items:center;justify-content:center}
+  /* min-height:0 so this column may shrink below its content: without it a
+     flex item refuses to go under min-content and pushes the footer — the
+     dots, the disclosure and the button that advances the tour — off the
+     bottom of the viewport. That was reachable only by scrolling, on the one
+     screen where the reader has no reason to think there is anything to
+     scroll to. */
+  .ob-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 8px}
+  /* The illustration is the one part of a tour card that can lose height
+     without losing meaning, so it is what yields on a short screen. */
+  .ob-art{width:190px;height:190px;flex:0 1 auto;min-height:0;margin-bottom:28px;position:relative;display:flex;align-items:center;justify-content:center}
+  .ob-art svg{max-width:100%;max-height:100%}
   .ob-art::before{content:"";position:absolute;inset:-14%;border-radius:50%;
       background:radial-gradient(circle at 50% 45%, var(--teal-soft) 0%, transparent 68%);opacity:.75}
   .ob-art svg{position:relative}
@@ -318,6 +337,10 @@
   .ob-choice.on{border-color:var(--teal);background:var(--teal-soft)}
   .ob-choice.on b{color:var(--teal-ink)}
   #obNext:disabled{opacity:.45;pointer-events:none}
+  .ob-note{font-size:12.5px;line-height:1.6;color:var(--ink-2);text-align:center;
+           margin:0 2px 12px}
+  html[lang="ar"] .ob-note{font-size:13.5px}
+  .ob-note[hidden]{display:none}
   .dots{display:flex;justify-content:center;gap:8px;margin:18px 0 16px}
   /* A display value beats the hidden attribute, so both need an explicit
      guard — this has bitten this file before. */
@@ -1693,6 +1716,18 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <div class="ob-pick" id="obPick" hidden></div>
     </div>
     <div class="dots" id="obDots"></div>
+    <!-- THE LAST THING READ BEFORE THE DOOR. The tour's final button says
+         "check my contract free" and the very next screen asks for an account:
+         true, and still a bait-and-switch if the reader learns it only after
+         tapping. This is deliberately here rather than inside a tour card —
+         it belongs beside the button it qualifies, at the moment of the
+         surprise, not three sentences into a slide about something else.
+
+         ABOVE THE BUTTON, NOT BELOW IT. Below, it sat at the very bottom of a
+         flex-end column and its second line fell off the viewport on a 390×844
+         phone — a disclosure the reader has to scroll to find is not a
+         disclosure. Read the terms, then tap. -->
+    <p class="ob-note" id="obNote" hidden></p>
     <button class="primary" id="obNext" onclick="obNext()" style="margin-top:0"></button>
   </section>
 
@@ -2853,6 +2888,12 @@ const T = {
   ob_skip:{ar:"تخطّي",en:"Skip"},
   ob_next:{ar:"التالي",en:"Next"},
   ob_start:{ar:"راجع عقدي مجانًا",en:"Check my contract free"},
+  /* DELIBERATELY THE SAME WORDS AS au_sub. The reader meets this rule twice,
+     two taps apart — here, and on the sign-in screen it warns them about. Two
+     different phrasings of one rule reads as two rules, and being told the
+     terms twice in different words is its own reason to distrust a thing. */
+  ob_note_auth:{ar:"الحاسبة ودليل الحقوق بدون حساب. والباقي يلزمه حساب مجاني — عشان نقدر نوصلك ونساعدك.",
+                en:"The calculator and the rights library need no account. The rest needs a free one, so we can reach you and help."},
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
@@ -5294,6 +5335,12 @@ function renderOnboard(){
   document.getElementById("obSkip").textContent = t("ob_skip");
   document.getElementById("obNext").textContent = obIndex === OB.length-1 ? t("ob_start") : t("ob_next");
   document.getElementById("obSkip").style.visibility = obIndex === OB.length-1 ? "hidden" : "visible";
+  /* Only on the last card, and never on the nationality gate, where there is
+     no sign-in screen coming next and the note would be answering a question
+     nobody asked. */
+  const note = document.getElementById("obNote");
+  note.hidden = natGate || obIndex !== OB.length-1;
+  note.textContent = t("ob_note_auth");
   /* Reached as a gate rather than as a tour: the dots and the advance button
      would both be lying about where the reader is, so neither appears. The
      only way on is to answer, which is the whole point of being here. */
