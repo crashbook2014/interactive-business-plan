@@ -408,13 +408,16 @@
   .score-card[data-decision="safe"]{--band:var(--green)}
   .score-card[data-decision="negotiate"]{--band:var(--amber)}
   .score-card[data-decision="lawyer"]{--band:var(--red)}
-  .score-card .share-mark{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;
-      padding-bottom:14px;border-bottom:1px solid var(--line)}
-  .score-card .share-mark svg{width:17px;height:17px}
-  .score-card .share-mark span{font-family:var(--en);font-size:10.5px;font-weight:800;letter-spacing:.22em;
-      text-transform:uppercase;color:var(--teal);opacity:.9}
-  .ring{width:120px;height:120px;margin:2px auto 12px;position:relative}
-  .ring svg{transform:rotate(-90deg);overflow:visible}
+  /* THE RING SUPPORTS THE SENTENCE, it does not compete with it.
+     It used to sit between the decision badge and the verdict sentence at
+     120px with a 36px number — three elements saying the same thing in one
+     viewport, none of them clearly first, and the largest of them was the
+     abstraction rather than the answer. A reader does not act on 59; they act
+     on "fair overall, but negotiate two clauses". So the sentence follows the
+     badge directly, and the score follows the sentence at a size that reads
+     as evidence for it. */
+  .ring{width:92px;height:92px;margin:14px auto 10px;position:relative}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
   .ring circle.track{stroke:var(--line)}
   .ring circle.bezel{stroke:var(--line);opacity:.55}
   /* the arc carries a whisper of its own colour as light, never a gradient sweep */
@@ -422,7 +425,7 @@
       filter:drop-shadow(0 0 6px color-mix(in srgb, var(--band) 30%, transparent))}
   @supports not (color: color-mix(in srgb, red, blue)){ .ring circle.val{filter:none} }
   .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .ring .num b{font-family:var(--en);font-size:36px;font-weight:800;letter-spacing:-.03em;
+  .ring .num b{font-family:var(--en);font-size:24px;font-weight:800;letter-spacing:-.03em;
       color:var(--band);line-height:1;font-variant-numeric:tabular-nums}
   .ring .num i{font-style:normal;font-size:10.5px;color:var(--ink-2);direction:ltr;margin-top:3px;
       font-family:var(--en);letter-spacing:.06em}
@@ -455,7 +458,7 @@
   @media (prefers-reduced-motion:no-preference){
     .decision{animation:rise var(--t) var(--ease-spring) both}
   }
-  .verdict{font-size:19px;color:var(--ink);line-height:1.75;text-wrap:balance;margin-top:2px}
+  .verdict{font-size:19px;color:var(--ink);line-height:1.7;text-wrap:balance;margin-top:14px}
   .doc-label{display:inline-block;margin-top:12px;font-size:13px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 14px;font-weight:700}
   /* 44px hit area via a transparent border, visual size unchanged */
   .how-built{display:block;margin:0 auto;font-size:12px;color:var(--ink-2);
@@ -808,7 +811,7 @@
   .bar.tight .brand .name-ar{transform:scale(.92)}
 
   /* Parallax: decorative only, a few pixels */
-  .score-card .share-mark,.score-card .ring{will-change:transform}
+  .score-card .ring{will-change:transform}
 
   /* Copy toast — additive; the button label swap still happens */
   .toast{position:fixed;inset-inline:0;bottom:26px;margin:0 auto;width:max-content;max-width:80%;
@@ -1986,13 +1989,13 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <h2 class="sr-only" data-t="res_head"></h2>
     <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
     <div class="score-card">
-      <div class="share-mark"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
       <div class="decision" id="decision" aria-live="polite">
         <span class="dc-ic" id="dcIcon" aria-hidden="true"></span>
         <b class="dc-label" id="dcLabel"></b>
         <span class="dc-why" id="dcWhy"></span>
         <span class="dc-conf" id="dcConf"></span>
       </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
       <div class="ring">
         <svg width="120" height="120" viewBox="0 0 120 120">
           <circle class="bezel" cx="60" cy="60" r="58.4" fill="none" stroke-width="1"/>
@@ -2002,7 +2005,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         </svg>
         <div class="num"><b id="scoreNum">0</b><i>/ 100</i></div>
       </div>
-      <div class="verdict" id="verdict" aria-live="polite"></div>
       <span class="doc-label" id="docLabel"></span>
       <p class="src-line method score-src" data-t="src_score"></p>
       <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
@@ -10784,8 +10786,7 @@ function onScroll(){
   const card = document.querySelector("#screen-result.active .score-card");
   if (card){
     const d = Math.max(-6, Math.min(6, window.scrollY * -0.08));
-    const mark = card.querySelector(".share-mark"), ring = card.querySelector(".ring");
-    if (mark) mark.style.transform = "translateY(" + d + "px)";
+    const ring = card.querySelector(".ring");
     if (ring) ring.style.transform = "translateY(" + (d * 0.6) + "px)";
   }
   /* Same drift on the termination money card, so the answer this screen
