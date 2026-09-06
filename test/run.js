@@ -22,6 +22,7 @@ const filter = args.find((a) => !a.startsWith("--"));
    minutes. The two heavy suites run last. */
 const ORDER = [
   "headers.test.js",
+  "contrast.test.js",
   "schema.test.js",
   "rls.test.js",
   "calc-fuzz.test.js",

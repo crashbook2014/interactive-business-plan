@@ -10,28 +10,28 @@
  */
 :root{
   --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-  --sand:#F7F1E6; --card:#FDFAF3;
-  --amber:#C9922E; --amber-bg:#F6EAD2;
+  --sand:#F1E9D9; --card:#FFFDF6;
+  --amber:#A87822; --amber-bg:#F6EAD2;
   --ink:#2B3230; --ink-2:#5A625F; --ink-3:#8A918D;
-  --line:#E8DFCE; --line-2:#D9CDB5;
+  --line:#BEAD88; --line-2:#A89570;
   --ar:"Noto Kufi Arabic","Segoe UI",Tahoma,sans-serif;
   --en:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
-    --sand:#141B19; --card:#1B2422;
+    --teal:#46A695; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+    --sand:#0F1513; --card:#212C29;
     --amber:#D9A648; --amber-bg:#2E2618;
     --ink:#EDE6D8; --ink-2:#A3ABA6; --ink-3:#79817D;
-    --line:#2B3633; --line-2:#3A4744;
+    --line:#41504C; --line-2:#55655F;
   }
 }
 :root[data-theme="dark"]{
-  --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
-  --sand:#141B19; --card:#1B2422;
+  --teal:#46A695; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+  --sand:#0F1513; --card:#212C29;
   --amber:#D9A648; --amber-bg:#2E2618;
   --ink:#EDE6D8; --ink-2:#A3ABA6; --ink-3:#79817D;
-  --line:#2B3633; --line-2:#3A4744;
+  --line:#41504C; --line-2:#55655F;
 }
 
 *{box-sizing:border-box}

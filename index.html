@@ -12,8 +12,8 @@
 
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#F7F1E6" media="(prefers-color-scheme: light)"/>
-<meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
+<meta name="theme-color" content="#F1E9D9" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)"/>
 <!-- POSITIONING FIRST, INTENT SECOND. The page's primary language is Arabic
      and stays Arabic here: this metadata is what someone typing "عقد عمل" into
      Google reads, and an English title would answer a question nobody asked.
@@ -94,11 +94,11 @@
     unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
   :root{
     --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F7F1E6; --card:#FDFAF3; --page:#EFE7D8;
-    --amber:#C9922E; --amber-bg:#F6EAD2; --amber-ink:#8A6114;
+    --sand:#F1E9D9; --card:#FFFDF6; --page:#E6DCC6;
+    --amber:#A87822; --amber-bg:#F6EAD2; --amber-ink:#8A6114;
     --red:#B4544A; --red-bg:#F3DFDC;
-    --green:#4E8F5B; --green-bg:#E2EEE2; --green-ink:#33663D;
-    --ink:#2B3230; --ink-2:#5A625F; --line:#E8DFCE; --on-teal:#F7F1E6;
+    --green:#478353; --green-bg:#E2EEE2; --green-ink:#33663D;
+    --ink:#2B3230; --ink-2:#5A625F; --line:#BEAD88; --on-teal:#F1E9D9;
     --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
     --e2:0 2px 6px rgba(74,60,40,.055), 0 10px 24px rgba(74,60,40,.045);
     --e3:0 18px 44px rgba(74,60,40,.11);
@@ -113,23 +113,23 @@
     --ease-move:cubic-bezier(.4,0,.2,1);
   }
   @media (prefers-color-scheme: dark){
-    :root{--teal:#3E9A8B;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B;--sand:#141B19;--card:#1B2422;
-      --page:#0E1412;--amber:#D9A648;--amber-bg:#2E2618;--amber-ink:#E3B865;--red:#C86F63;--red-bg:#2E1E1C;
+    :root{--teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B;--sand:#0F1513;--card:#212C29;
+      --page:#070B0A;--amber:#D9A648;--amber-bg:#2E2618;--amber-ink:#E3B865;--red:#C86F63;--red-bg:#2E1E1C;
       --green:#6BAE78;--green-bg:#1A2A1E;--green-ink:#87C094;--ink:#EDE6D8;--ink-2:#A3ABA6;
-      --line:#2B3633;--on-teal:#0F1614;
+      --line:#41504C;--on-teal:#0F1614;
       --e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42),0 12px 28px rgba(0,0,0,.34);
       --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045)}
   }
-  :root[data-theme="dark"]{--teal:#3E9A8B;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B;--sand:#141B19;--card:#1B2422;
-      --page:#0E1412;--amber:#D9A648;--amber-bg:#2E2618;--amber-ink:#E3B865;--red:#C86F63;--red-bg:#2E1E1C;
+  :root[data-theme="dark"]{--teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B;--sand:#0F1513;--card:#212C29;
+      --page:#070B0A;--amber:#D9A648;--amber-bg:#2E2618;--amber-ink:#E3B865;--red:#C86F63;--red-bg:#2E1E1C;
       --green:#6BAE78;--green-bg:#1A2A1E;--green-ink:#87C094;--ink:#EDE6D8;--ink-2:#A3ABA6;
-      --line:#2B3633;--on-teal:#0F1614;
+      --line:#41504C;--on-teal:#0F1614;
       --e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42),0 12px 28px rgba(0,0,0,.34);
       --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045)}
-  :root[data-theme="light"]{--teal:#1E6E64;--teal-ink:#134B44;--teal-soft:#DCE9E6;--sand:#F7F1E6;
-      --card:#FDFAF3;--page:#EFE7D8;--amber:#C9922E;--amber-bg:#F6EAD2;--amber-ink:#8A6114;
-      --red:#B4544A;--red-bg:#F3DFDC;--green:#4E8F5B;--green-bg:#E2EEE2;--green-ink:#33663D;
-      --ink:#2B3230;--ink-2:#5A625F;--line:#E8DFCE;--on-teal:#F7F1E6;
+  :root[data-theme="light"]{--teal:#1E6E64;--teal-ink:#134B44;--teal-soft:#DCE9E6;--sand:#F1E9D9;
+      --card:#FFFDF6;--page:#E6DCC6;--amber:#A87822;--amber-bg:#F6EAD2;--amber-ink:#8A6114;
+      --red:#B4544A;--red-bg:#F3DFDC;--green:#478353;--green-bg:#E2EEE2;--green-ink:#33663D;
+      --ink:#2B3230;--ink-2:#5A625F;--line:#BEAD88;--on-teal:#F1E9D9;
       --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
       --e2:0 2px 6px rgba(74,60,40,.055), 0 10px 24px rgba(74,60,40,.045);
       --e3:0 18px 44px rgba(74,60,40,.11);--edge:inset 0 1px 0 rgba(255,255,255,.6)}

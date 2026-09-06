@@ -12,8 +12,8 @@
 
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#F7F1E6" media="(prefers-color-scheme: light)"/>
-<meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
+<meta name="theme-color" content="#F1E9D9" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)"/>
 <meta name="robots" content="noindex,nofollow"/>
 <!-- Belt-and-suspenders: robots.txt already disallows /brand/ for the same
      reason stated in admin/index.html — this is a reference page for how the
@@ -45,12 +45,12 @@
     unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
   :root{
     --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F7F1E6; --card:#FDFAF3;
-    --amber:#C9922E; --amber-bg:#F6EAD2;
+    --sand:#F1E9D9; --card:#FFFDF6;
+    --amber:#A87822; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
-    --green:#4E8F5B; --green-bg:#E2EEE2;
+    --green:#478353; --green-bg:#E2EEE2;
     --ink:#2B3230; --ink-2:#5A625F;
-    --line:#E8DFCE;
+    --line:#BEAD88;
     --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
     --e2:0 2px 6px rgba(74,60,40,.055), 0 10px 24px rgba(74,60,40,.045);
     --e3:0 18px 44px rgba(74,60,40,.11);
@@ -69,14 +69,14 @@
   @media (prefers-color-scheme: dark){
     :root{--e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
           --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045);
-          --sand:#141B19;--card:#1B2422;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#2B3633;
-          --teal:#3E9A8B;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
+          --sand:#0F1513;--card:#212C29;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#41504C;
+          --teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
   }
   :root[data-theme="dark"]{--e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
           --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045);
-          --sand:#141B19;--card:#1B2422;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#2B3633;
-          --teal:#3E9A8B;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
-  :root[data-theme="light"]{--sand:#F7F1E6;--card:#FDFAF3;--ink:#2B3230;--ink-2:#5A625F;--line:#E8DFCE;
+          --sand:#0F1513;--card:#212C29;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#41504C;
+          --teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
+  :root[data-theme="light"]{--sand:#F1E9D9;--card:#FFFDF6;--ink:#2B3230;--ink-2:#5A625F;--line:#BEAD88;
           --teal:#1E6E64;--teal-ink:#134B44;--teal-soft:#DCE9E6}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--sand);color:var(--ink);font-family:var(--en);line-height:1.6;-webkit-font-smoothing:antialiased;
@@ -217,7 +217,7 @@
   .flag.red{background:var(--red-bg)} .flag.red .dot{background:var(--red)}
   .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
   .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
-  .cta{margin-top:18px;width:100%;border:0;cursor:pointer;background:var(--teal);color:#F7F1E6;font-family:var(--en);font-size:15px;font-weight:700;border-radius:16px;padding:14px}
+  .cta{margin-top:18px;width:100%;border:0;cursor:pointer;background:var(--teal);color:#F1E9D9;font-family:var(--en);font-size:15px;font-weight:700;border-radius:16px;padding:14px}
   .cta{display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap}
   .cta span[lang="ar"]{font-family:var(--ar);font-weight:400;font-size:16px}
 
@@ -343,11 +343,11 @@
   <div class="grid swatches">
     <div class="swatch"><div class="color" style="background:#1E6E64"></div><div class="meta"><div class="name">Wodouh Teal</div><div class="hex">#1E6E64</div><div class="use">Primary — buttons, links, brand moments</div></div></div>
     <div class="swatch"><div class="color" style="background:#134B44"></div><div class="meta"><div class="name">Teal Ink</div><div class="hex">#134B44</div><div class="use">Logo, headings on light surfaces</div></div></div>
-    <div class="swatch"><div class="color" style="background:#F7F1E6"></div><div class="meta"><div class="name">Sand</div><div class="hex">#F7F1E6</div><div class="use">App background — warm, paper-like</div></div></div>
-    <div class="swatch"><div class="color" style="background:#FDFAF3"></div><div class="meta"><div class="name">Cream Card</div><div class="hex">#FDFAF3</div><div class="use">Cards and raised surfaces</div></div></div>
-    <div class="swatch"><div class="color" style="background:#C9922E"></div><div class="meta"><div class="name">Negotiation Amber</div><div class="hex">#C9922E</div><div class="use">Functional: “worth negotiating” flags only</div></div></div>
+    <div class="swatch"><div class="color" style="background:#F1E9D9"></div><div class="meta"><div class="name">Sand</div><div class="hex">#F1E9D9</div><div class="use">App background — warm, paper-like</div></div></div>
+    <div class="swatch"><div class="color" style="background:#FFFDF6"></div><div class="meta"><div class="name">Cream Card</div><div class="hex">#FFFDF6</div><div class="use">Cards and raised surfaces</div></div></div>
+    <div class="swatch"><div class="color" style="background:#A87822"></div><div class="meta"><div class="name">Negotiation Amber</div><div class="hex">#A87822</div><div class="use">Functional: “worth negotiating” flags only</div></div></div>
     <div class="swatch"><div class="color" style="background:#B4544A"></div><div class="meta"><div class="name">Muted Red</div><div class="hex">#B4544A</div><div class="use">Functional: “red flag” items only — never alarm-red</div></div></div>
-    <div class="swatch"><div class="color" style="background:#4E8F5B"></div><div class="meta"><div class="name">Clear Green</div><div class="hex">#4E8F5B</div><div class="use">Functional: “all clear” items only</div></div></div>
+    <div class="swatch"><div class="color" style="background:#478353"></div><div class="meta"><div class="name">Clear Green</div><div class="hex">#478353</div><div class="use">Functional: “all clear” items only</div></div></div>
     <div class="swatch"><div class="color" style="background:#2B3230"></div><div class="meta"><div class="name">Warm Ink</div><div class="hex">#2B3230</div><div class="use">Body text (secondary: #5A625F)</div></div></div>
   </div>
 </section>
@@ -394,7 +394,7 @@
       <div class="score-card">
         <div class="ring">
           <svg width="118" height="118" viewBox="0 0 118 118">
-            <circle cx="59" cy="59" r="51" stroke="#E8DFCE" stroke-width="9" fill="none"/>
+            <circle cx="59" cy="59" r="51" stroke="#BEAD88" stroke-width="9" fill="none"/>
             <circle cx="59" cy="59" r="51" stroke="#1E6E64" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="102.5"/>
           </svg>
           <div class="num"><b>68</b><i>/ 100</i></div>
@@ -411,28 +411,28 @@
             </div>
           </div>
           <div class="flag amber">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round"/></svg></div>
             <div>
               <h4>Notice period · <span lang="ar">مدة الإشعار</span></h4>
               <p>60 days is on the long side. 30 days is common — worth asking.</p>
             </div>
           </div>
           <div class="flag amber">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round"/></svg></div>
             <div>
               <h4>Overtime pay · <span lang="ar">أجر العمل الإضافي</span></h4>
               <p>The contract doesn’t say how overtime is paid. Ask for it in writing.</p>
             </div>
           </div>
           <div class="flag green">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <div>
               <h4>Salary &amp; benefits · <span lang="ar">الراتب والبدلات</span></h4>
               <p>Clearly stated, paid monthly, with housing and transport allowances. All clear.</p>
             </div>
           </div>
           <div class="flag green">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FDFAF3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <div>
               <h4>Annual leave · <span lang="ar">الإجازة السنوية</span></h4>
               <p>30 days paid leave — matches the standard. All clear.</p>

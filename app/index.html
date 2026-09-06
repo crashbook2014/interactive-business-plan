@@ -35,8 +35,8 @@
 
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="theme-color" content="#F7F1E6" media="(prefers-color-scheme: light)"/>
-<meta name="theme-color" content="#141B19" media="(prefers-color-scheme: dark)"/>
+<meta name="theme-color" content="#F1E9D9" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)"/>
 
 <!-- Home-screen install. iOS reads almost none of the manifest, so the Apple
      tags below are not duplication — they are the only thing Safari honours. -->
@@ -82,15 +82,29 @@
     unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
   :root{
     --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F7F1E6; --card:#FDFAF3;
-    --amber:#C9922E; --amber-bg:#F6EAD2;
+    /* PAGE, CARD AND LINE ARE THREE STEPS, NOT ONE.
+       They used to be almost the same colour: card against page measured
+       1.08:1 and the hairline 1.18:1, so a card carried no weight of its own
+       and structure was doing its work through spacing and shadow alone. That
+       is why dense screens read as a single column. The page drops, the card
+       rises to a warm near-white, and the line becomes a line — 1.19:1 and
+       1.83:1 now. The warmth is unchanged; only the steps between the greys
+       moved. Measured by test/contrast.test.js, which fails the build if any
+       of this regresses. */
+    --sand:#F1E9D9; --card:#FFFDF6;
+    /* --amber was #C9922E, which is 2.45:1 on the page — under the 3:1 that
+       WCAG 1.4.11 requires of a colour carrying meaning, and amber is the
+       MODAL verdict here: "فاوض" is the most common outcome, so the state a
+       low-vision reader could least distinguish was the one they met most.
+       Text keeps --amber-ink, which already passed. */
+    --amber:#A87822; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
-    --green:#4E8F5B; --green-bg:#E2EEE2;
+    --green:#478353; --green-bg:#E2EEE2;
     --amber-ink:#8A6114; --green-ink:#33663D; --red-ink:#8E3A31;
     --ink:#2B3230; --ink-2:#5A625F;
-    --line:#E8DFCE;
-    --on-teal:#F7F1E6;
-    --page:#EFE7D8;                 /* desktop backdrop behind the phone column */
+    --line:#BEAD88;
+    --on-teal:#F1E9D9;
+    --page:#E6DCC6;                 /* desktop backdrop behind the phone column */
     /* Luxury here is material, not ornament: warm-tinted light, paper edges,
        and one consistent geometry — never gold, never gloss. */
     --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
@@ -113,16 +127,19 @@
      in bed the night before signing. Sand becomes the ink, not a grey invert. */
   @media (prefers-color-scheme: dark){
     :root{
-      --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
-      --sand:#141B19; --card:#1B2422;
+      /* The same three-step separation as the light theme, for the same
+         reason: card against page was 1.10:1 here and the hairline 1.27:1.
+         Teal lightens a little to hold 4.5:1 against the raised card. */
+      --teal:#46A695; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+      --sand:#0F1513; --card:#212C29;
       --amber:#D9A648; --amber-bg:#2E2618;
       --red:#C86F63; --red-bg:#2E1E1C;
       --green:#6BAE78; --green-bg:#1A2A1E;
       --amber-ink:#E3B865; --green-ink:#87C094; --red-ink:#E0968B;
       --ink:#EDE6D8; --ink-2:#A3ABA6;
-      --line:#2B3633;
+      --line:#41504C;
       --on-teal:#0F1614;
-      --page:#0E1412;
+      --page:#070B0A;
       --e1:0 1px 2px rgba(0,0,0,.45);
       --e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
       --e3:0 20px 48px rgba(0,0,0,.55);
@@ -132,16 +149,16 @@
     }
   }
   :root[data-theme="dark"]{
-    --teal:#3E9A8B; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
-    --sand:#141B19; --card:#1B2422;
+    --teal:#46A695; --teal-ink:#8FCBBE; --teal-soft:#1B2E2B;
+    --sand:#0F1513; --card:#212C29;
     --amber:#D9A648; --amber-bg:#2E2618;
     --red:#C86F63; --red-bg:#2E1E1C;
     --green:#6BAE78; --green-bg:#1A2A1E;
     --amber-ink:#E3B865; --green-ink:#87C094; --red-ink:#E0968B;
     --ink:#EDE6D8; --ink-2:#A3ABA6;
-    --line:#2B3633;
+    --line:#41504C;
     --on-teal:#0F1614;
-    --page:#0E1412;
+    --page:#070B0A;
     --e1:0 1px 2px rgba(0,0,0,.45);
     --e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
     --e3:0 20px 48px rgba(0,0,0,.55);
@@ -151,15 +168,15 @@
   }
   :root[data-theme="light"]{
     --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F7F1E6; --card:#FDFAF3;
-    --amber:#C9922E; --amber-bg:#F6EAD2;
+    --sand:#F1E9D9; --card:#FFFDF6;
+    --amber:#A87822; --amber-bg:#F6EAD2;
     --red:#B4544A; --red-bg:#F3DFDC;
-    --green:#4E8F5B; --green-bg:#E2EEE2;
+    --green:#478353; --green-bg:#E2EEE2;
     --amber-ink:#8A6114; --green-ink:#33663D; --red-ink:#8E3A31;
     --ink:#2B3230; --ink-2:#5A625F;
-    --line:#E8DFCE;
-    --on-teal:#F7F1E6;
-    --page:#EFE7D8;
+    --line:#BEAD88;
+    --on-teal:#F1E9D9;
+    --page:#E6DCC6;
     --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
     --e2:0 2px 6px rgba(74,60,40,.055), 0 10px 24px rgba(74,60,40,.045);
     --e3:0 18px 44px rgba(74,60,40,.11);
