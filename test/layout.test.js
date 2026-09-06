@@ -22,7 +22,7 @@
  * These assertions are geometric on purpose. "Looks fine" is not a test; a gap
  * that must equal 56 and margins that must match each other are.
  */
-const { playwright, launchOpts, APP, signInStub, paywallOn } = require("./_env.js");
+const { playwright, launchOpts, BASE, APP, signInStub, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 
 const FAIL = [];
@@ -340,6 +340,58 @@ async function geometry(p){
       }
       await pg.close();
     }
+  }
+
+  /* ---- THE LANDING PAGE, MEASURED WITH ITS OWN HIDER LIFTED.
+   *
+   * index.html sets overflow-x:hidden on the body. That is a reasonable
+   * belt-and-braces, and it is also why nobody noticed the footer link row had
+   * been overflowing for some time: the row was simply cut off at the edge of
+   * the screen, and in Arabic the last link sat entirely outside the viewport
+   * where no one could reach it.
+   *
+   * Launching made it worse for free. .foot-links was display:flex with no
+   * flex-wrap, so its links sat on one unwrappable line — 364px of them in a
+   * 360px viewport — and lifting the curtain revealed the .launch-only "open
+   * the app" link, taking it to 392px. Every future link would have cost
+   * another few pixels of silently clipped page.
+   *
+   * SO THE MEASUREMENT REMOVES THE HIDER FIRST. A test that trusts
+   * overflow-x:hidden is a test that reports a clipped page as a clean one,
+   * which is precisely the failure that let this run. 320px is included
+   * because it is the narrowest phone still in real use, and it is where a
+   * non-wrapping row breaks first. */
+  console.log("\n— the landing page does not overflow, hider or no hider");
+  for (const vp of [{ width: 320, height: 568 }, { width: 360, height: 640 },
+                    { width: 390, height: 844 }]) {
+    const pg = await b.newPage({ viewport: vp });
+    pg.on("pageerror", (e) => FAIL.push(`pageerror(landing ${vp.width}): ` + e.message));
+    await pg.goto(BASE + "/");
+    for (const L of ["ar", "en"]) {
+      const r = await pg.evaluate((lang) => {
+        if (lang === "en") {
+          const t = [...document.querySelectorAll("button,a")].find((e) => /English/i.test(e.textContent));
+          if (t) t.click();
+        }
+        document.body.style.overflowX = "visible";
+        document.documentElement.style.overflowX = "visible";
+        const vw = document.documentElement.clientWidth;
+        const over = [];
+        document.querySelectorAll("*").forEach((el) => {
+          const b = el.getBoundingClientRect();
+          if (b.width === 0 || b.height === 0) return;
+          if (b.right > vw + 1 || b.left < -1) {
+            over.push(el.tagName.toLowerCase() + (el.className ? "." + String(el.className).split(" ")[0] : ""));
+          }
+        });
+        return { vw, scrollW: document.documentElement.scrollWidth, over: [...new Set(over)] };
+      }, L);
+      ok(r.over.length === 0,
+         `${vp.width} ${L}: nothing hangs outside the viewport (${r.over.join(", ") || "clean"})`);
+      ok(r.scrollW <= r.vw + 1,
+         `${vp.width} ${L}: and the document is no wider than the screen (${r.scrollW} of ${r.vw})`);
+    }
+    await pg.close();
   }
 
   await b.close();
