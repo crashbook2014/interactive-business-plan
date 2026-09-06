@@ -50,13 +50,17 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     goTab("future");
     return {
       landed: (document.querySelector(".screen.active") || {}).id,
-      tabs: [...document.querySelectorAll(".tab span")].map((x) => x.textContent),
+      tabs: [...document.querySelectorAll("#tabbar [data-tab]")].map((x) => x.dataset.tab),
       barShown: !document.getElementById("tabbar").hidden
     };
   });
   ok(reach.landed === "screen-future",
      `the tab opens the roadmap with no session (${reach.landed})`);
-  ok(reach.tabs.length === 5, `the tab bar carries five tabs (${reach.tabs.length})`);
+  /* Not five. A signed-out bar carries only the tabs that open — see
+     nav-intent.test.js — so what matters here is that the roadmap is one of
+     them, since a roadmap behind an account would be absurd. */
+  ok(reach.tabs.includes("future"),
+     `the roadmap is in the signed-out bar (${reach.tabs.join(", ")})`);
   ok(reach.barShown === true, "and the roadmap is a root screen, so the bar stays up");
 
   /* ---- the badge rule, in both languages */
@@ -149,7 +153,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await small.goto(APP);
   await small.waitForFunction(() => typeof window.show === "function");
   const narrow = await small.evaluate(() => {
-    nat = "sa"; obDone = true; authUser = null;
+    /* Signed in on purpose: five tabs is the crowded case, and a signed-out
+       bar of three would not test the thing this assertion exists for. */
+    nat = "sa"; obDone = true;
+    authUser = { id: "future-test", email: "future@test.local" };
     goTab("future");
     const bar = document.getElementById("tabbar");
     const labels = [...document.querySelectorAll(".tab span")];

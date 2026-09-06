@@ -108,6 +108,17 @@ a theoretical one.
   transposed digit still parses. The `ask` feature is what exercises those
   rows — see below.
 
+- **Navigation is intention** (Sept 2026) — the signed-out tab bar carried all
+  five tabs and three of them (home, timeline, account) bounced the reader
+  straight to sign-in. Five doors, two that opened. The bar now renders only
+  the tabs that open, and the account slot becomes an explicit *sign in* door,
+  so reaching that screen is a choice rather than a rebound. `authRedirect()`
+  is unchanged and still catches deep links. `test/nav-intent.test.js` presses
+  every visible tab in both languages and fails if any of them lands on
+  sign-in. The same commit stopped the two *قريبًا* buttons being faded to .55
+  opacity — they now read as unavailable structurally, with their words at
+  full contrast.
+
 - **Email sign-in by one-time code** — no password path, by design.
 - **Google sign-in.**
 - **The sign-in gate** (Sept 2026) — an account is required for everything
@@ -133,11 +144,6 @@ a theoretical one.
 Real, worth doing, nobody is doing it yet. Listed so it is a decision rather
 than an oversight.
 
-- **The tab bar is visible on the rights library while signed out**, and three
-  of its four tabs lead straight to the sign-in screen. Honest, since the gate
-  catches them, but it offers the reader three doors that are all locked. Worth
-  a look once there is evidence of how people actually move around the
-  signed-out app.
 - **No signed-out reader has ever been observed using this build.** Every claim
   about where the gate feels earned is reasoning, not evidence. The first real
   users are the test.

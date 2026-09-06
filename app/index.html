@@ -1622,10 +1622,16 @@
   .au-btn svg{width:19px;height:19px;flex:none}
   .au-btn:active{transform:scale(.985)}
   .au-btn.apple{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-  /* A sign-in method that is coming but not here. Faded and inert, matching
-     .plan.soon, so it reads as an announcement rather than a broken button. */
-  .au-btn.soon{opacity:.55;cursor:default;background:var(--card);color:var(--ink-2);
-               border-color:var(--line)}
+  /* A sign-in method that is coming but not here. It must read as unavailable
+     BEFORE it is pressed — a control that looks live and then refuses is the
+     navigation equivalent of a locked door with no sign on it.
+     Unavailability is drawn structurally rather than with opacity: a dashed
+     edge, no fill, no shadow. The old rule faded the whole button to .55,
+     which said "off" but also pushed the label and the قريبًا badge — the two
+     pieces of text a reader most needs here — under the AA contrast floor. */
+  .au-btn.soon{cursor:default;background:transparent;color:var(--ink-2);
+               border-style:dashed;border-color:var(--line);box-shadow:none;
+               font-weight:400}
   .au-btn.soon:active{transform:none}
   .au-btn .badge{display:inline-block;font-size:10.5px;font-weight:700;color:var(--amber-ink);
                  background:var(--amber-bg);border-radius:99px;padding:1px 8px;
@@ -3203,6 +3209,7 @@ const T = {
   tab_remind:{ar:"تذكيراتي",en:"Reminders"},
   tab_future:{ar:"قريبًا",en:"Coming"},
   tab_account:{ar:"حسابي",en:"Account"},
+  tab_signin:{ar:"تسجيل الدخول",en:"Sign in"},
 
   /* THE ROADMAP SCREEN.
      Written in Arabic first and then put into English, not translated out of
@@ -10924,18 +10931,54 @@ function goTab(id){
   lateralNav = false;
 }
 
+/* Sign-in, drawn as a door rather than as a person: the account icon promises
+   a place that is yours, and there is no such place until you are in. */
+const SIGNIN_TAB = { id:"signin", label:"tab_signin",
+  icon:'<path d="M14 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 8l4 4-4 4"/><path d="M14 12H4"/>' };
+
+/* NAVIGATION IS INTENTION, and this is where that is enforced.
+ *
+ * A tab a signed-out reader cannot open is not a navigation option, it is a
+ * trapdoor. The tap said "show me my reminders" and the app answered with a
+ * form — the reader moved because they were bounced, not because they chose
+ * to. Three of the five tabs did exactly that: home, timeline and account.
+ *
+ * So the bar carries only the doors that open. The account slot is not simply
+ * dropped, because then a reader on the rights library would have no way into
+ * the product at all; it becomes an explicit sign-in door, labelled as the
+ * thing it does. Pressing it is a decision, not an accident.
+ *
+ * authRedirect() in show() is untouched. It remains the correct answer for a
+ * deep link or a stale tab restored from history — it just stops being the
+ * ordinary path through the app.
+ *
+ * Gated on obDone for the same reason authAllow() is: during the tour there is
+ * no bar, and a half-configured build must not hide its own product.
+ */
+function visibleTabs(){
+  return TABS
+    .map(x => (obDone && x.id === "account" && !authAllow("account")) ? SIGNIN_TAB : x)
+    .filter(x => !obDone || authAllow(x.id));
+}
+
 function renderTabs(){
   const bar = document.getElementById("tabbar");
   const active = document.querySelector(".screen.active");
   const cur = active ? active.id.replace("screen-","") : "home";
   bar.hidden = !ROOTS.includes(cur);
   if (bar.hidden) return;
-  bar.innerHTML = TABS.map(x=>
+  bar.innerHTML = visibleTabs().map(x=>
     `<button class="tab${x.id===cur?" on":""}" data-tab="${x.id}"${x.id===cur?' aria-current="page"':''}>
        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x.icon}</svg>
        <span>${t(x.label)}</span>
      </button>`).join("");
-  bar.querySelectorAll("[data-tab]").forEach(b=>{ b.onclick = ()=>goTab(b.dataset.tab); });
+  bar.querySelectorAll("[data-tab]").forEach(b=>{
+    /* The sign-in door goes through openSignin() rather than goTab(), because
+       it has setup goTab() knows nothing about — and it passes the current
+       screen as the way back, so a reader who changes their mind returns to
+       what they were reading rather than to a generic home. */
+    b.onclick = () => b.dataset.tab === "signin" ? openSignin(cur) : goTab(b.dataset.tab);
+  });
   requestAnimationFrame(moveTabIndicator);
 }
 
