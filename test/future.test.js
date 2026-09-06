@@ -163,9 +163,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     return {
       overflow: document.documentElement.scrollWidth > window.innerWidth,
       /* Five tabs on a 360px phone is ~70px each. A label that wraps to two
-         lines changes the bar's height and shoves the layout above it. */
+         lines changes the bar's height and shoves the layout above it.
+         Measured against the label's OWN line height rather than a fixed 20px:
+         the flat number was a proxy that broke the moment the type scale moved,
+         failing on a 20.4px single line that had wrapped nothing. */
       barHeight: Math.round(bar.getBoundingClientRect().height),
-      wrapped: labels.some((l) => l.getBoundingClientRect().height > 20)
+      wrapped: labels.some((l) =>
+        l.getBoundingClientRect().height > parseFloat(getComputedStyle(l).lineHeight) * 1.5)
     };
   });
   ok(narrow.overflow === false, "no sideways scroll at 360px");
