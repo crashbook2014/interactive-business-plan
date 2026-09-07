@@ -189,6 +189,80 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const threat = /\b(sue|court action|legal action against|report you|we will take)\b/i;
   ok(!Object.values(tones).some(v => threat.test(v)), "no tone contains a threat");
 
+  /* ---------------------------------------------------------------------
+   * NOTHING THIS LETTER SAYS MAY COST THE READER A CLAIM.
+   *
+   * This is the only assertion block in the suite where a failure is legal
+   * harm rather than a defect. The letter is addressed to the opposing party,
+   * so every sentence in it is a sentence the reader's employer gets to quote
+   * back at them — and the reader did not write any of it. We did.
+   *
+   * The bug being guarded shipped. The letter separated the amounts that
+   * follow from stated facts from the one that turns on a ruling nobody has
+   * made — correct, and worth keeping — but it described the second as noted
+   * "not as part of this request" / "لا للمطالبة به في هذه المرحلة". In the
+   * walked example that was 44,993 SAR of Article 77 compensation, against
+   * 59,986 of end-of-service: the largest contingent sum in the case, and the
+   * app put in writing, over the reader's name, that they were not asking for
+   * it. There was also no reservation of rights anywhere in the letter, which
+   * is what turned a clumsy sentence into a dangerous one.
+   *
+   * So: the contingent item stays separated, but recorded as reserved, and
+   * every letter in every tone carries the reservation.
+   */
+  console.log("\n— the letter concedes nothing");
+  const legal = await p.evaluate(() => {
+    show("termnext");
+    [...document.querySelectorAll("#termSteps button")].find(b => b.dataset.step === "2").click();
+    const out = { letters: [] };
+    [...document.querySelectorAll("#termTone button")].forEach(btn => {
+      btn.click();
+      out.letters.push({ tone: btn.textContent.trim(),
+                         body: document.getElementById("termLtrBody").textContent });
+    });
+    show("termnext");
+    [...document.querySelectorAll("#termSteps button")].find(b => b.dataset.step === "3").click();
+    out.doc = document.getElementById("termDocBody").textContent;
+    /* Back to the letter: the language check below starts from this screen,
+       and leaving the app on the case file made it fail for the wrong reason. */
+    show("termnext");
+    [...document.querySelectorAll("#termSteps button")].find(b => b.dataset.step === "2").click();
+    return out;
+  });
+  /* Any sentence that reads as declining to claim, in either language. */
+  const RESERVE = [/rights are reserved|not a waiver/i, /حفظ كافة حقوقي|لا يُعدّ تنازلًا/];
+  /* WHAT IS ACTUALLY DANGEROUS IS THE CLAIMANT DECLINING — not the word
+     "waive". Two earlier versions of this list matched the word itself and
+     both flagged protective sentences: the reservation clause ("this letter
+     is not a waiver of any right") and, better still, the line telling the
+     reader that leave pay "can't be waived by agreement" — which is the app
+     defending a right, scored as if it were surrendering one.
+     So these patterns require the reader to be the one giving something up. */
+  const WAIVER = [
+    /not as part of this request/i,
+    /\bI (?:do not|don't|am not|will not|won't)\s+(?:claim|seek|pursue)/i,
+    /\bI (?:hereby )?waive\b/i,
+    /waiving (?:my|any) (?:right|claim)/i,
+    /لا للمطالبة/,
+    /لا أطالب/,
+    /أتنازل/
+  ];
+  ok(legal.letters.length === 4, `all four tones checked (${legal.letters.length})`);
+  for (const { tone, body } of legal.letters) {
+    const bad = WAIVER.filter((re) => re.test(body));
+    ok(bad.length === 0,
+       `${tone}: nothing in the letter declines a claim (${bad.join(", ") || "clean"})`);
+    ok(RESERVE.some((re) => re.test(body)),
+       `${tone}: and it reserves the reader's rights explicitly`);
+  }
+  /* The case file goes to the employer and to the friendly-settlement filing,
+     so it is held to the same rule as the letter. */
+  const docBad = WAIVER.filter((re) => re.test(legal.doc));
+  const docLine = legal.doc.split("\n").find((l) => WAIVER.some((re) => re.test(l))) || "";
+  ok(docBad.length === 0,
+     `the case file declines nothing either (${docBad.join(", ")} :: ${docLine.slice(0, 120)})`);
+  ok(RESERVE.some((re) => re.test(legal.doc)), "and the case file reserves rights too");
+
   console.log("\n— Arabic, RTL");
   const ar = await p.evaluate(() => {
     lang = "en"; toggleLang();   /* -> ar */

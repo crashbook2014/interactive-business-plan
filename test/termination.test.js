@@ -212,10 +212,17 @@ async function art87Certainty(p){
      contested item in a sentence rather than under the screen's own label —
      the point is that the two are never merged, not that the label is
      identical on every surface. */
+  /* Matched on the ATTRIBUTION rather than the sentence. This was pinned to
+     the exact wording "turns on a determination by the competent authority",
+     which made it fail when that sentence was rewritten to stop the letter
+     declining the contested claim — a change that strengthened the reader's
+     position and broke nothing this assertion exists to protect. What matters
+     is that the contested figure is still attributed to the authority and
+     never merged into the certain one. */
   const SPLIT_MARK = {
     "result screen": /Depends on a ruling/i,
-    "letter": /turns on a determination by the competent authority/i,
-    "case document": /turns on a determination by the competent authority/i
+    "letter": /competent authority/i,
+    "case document": /competent authority/i
   };
   for (const [name, txt] of [["result screen", split.res], ["letter", split.ltr], ["case document", split.doc]]){
     ok(/Owed on the face of it/i.test(txt) && SPLIT_MARK[name].test(txt),

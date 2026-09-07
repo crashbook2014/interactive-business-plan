@@ -4101,8 +4101,19 @@ const T = {
      and this further item turns on a determination I am not making here. */
   tm_l_split_certain:{ar:"وعليه، فالمبالغ المطلوب مراجعتها بحسب الظاهر:",
                       en:"On that basis, the amounts I am asking you to review are:"},
-  tm_l_split_more:{ar:"وهناك بند إضافي يتوقف على تقدير الجهة المختصة، أذكره للعلم لا للمطالبة به في هذه المرحلة:",
-                   en:"There is a further item that turns on a determination by the competent authority. I note it for completeness, not as part of this request:"},
+  /* WHY THIS LINE NO LONGER SAYS "NOT AS PART OF THIS REQUEST".
+     It used to. The letter goes to the opposing party, and that phrasing was
+     the claimant stating in writing that he was not claiming the single
+     largest contingent sum in his own case — in this walkthrough, 44,993 SAR
+     of Article 77 compensation against 59,986 of end-of-service. Whatever it
+     does or does not do as a matter of law, it hands the other side a
+     sentence to quote back, and it was written by us, not by him.
+     The distinction it was drawing is real and worth keeping: one figure
+     follows from facts he has stated, the other turns on a determination
+     nobody has made yet. So the line still separates them — it just records
+     the second as reserved rather than surrendered. */
+  tm_l_split_more:{ar:"وبند إضافي يتوقف تقديره على الجهة المختصة، أورده هنا محفوظًا لا متنازلًا عنه:",
+                   en:"And a further item, the assessment of which rests with the competent authority. I set it out here as reserved, not waived:"},
   tm_l_noitems:{ar:"أطلب توضيح أساس احتساب المخالصة النهائية.",
                 en:"I would like clarification of the basis on which the final settlement was calculated."},
   tm_l_ask_friendly:{ar:"لو فيه شيء فهمته غلط، أنا حاضر أسمع وأصحّح. وإذا كان في محله، أتمنى نرتّب الصرف في أقرب وقت يناسبكم.",
@@ -4117,6 +4128,14 @@ const T = {
   tm_l_close_professional:{ar:"شاكرًا لكم حسن تعاونكم.",en:"Thank you for your cooperation."},
   tm_l_close_firm:{ar:"شاكرًا لكم، وفي انتظار ردّكم.",en:"Thank you — I look forward to your response."},
   tm_l_close_formal:{ar:"وتفضلوا بقبول فائق الاحترام،",en:"Yours faithfully,"},
+  /* THE LINE A LAWYER PUTS ON EVERY LETTER OF THIS KIND, and this one did not
+     have. Without it, anything the letter does not demand can be argued to
+     have been dropped; with it, the letter is a step in a process rather than
+     the outline of a final position. It is deliberately not tone-varied —
+     a reservation of rights is not a matter of register, and a friendlier
+     version of it would be a weaker one. */
+  tm_l_reserve:{ar:"وهذا الخطاب لا يُعدّ تنازلًا عن أي حق، ومع حفظ كافة حقوقي النظامية.",
+                en:"This letter is not a waiver of any right, and all my statutory rights are reserved."},
   tm_l_sign:{ar:"[اسمك]",en:"[Your name]"},
 
   /* ---- ask: a question the app was not built to answer.
@@ -9606,7 +9625,13 @@ function buildTermDoc(){
     t("tm_d_questions_b"),
     "",
     t("tm_d_h_next"),
-    t("tm_d_next_b")
+    t("tm_d_next_b"),
+    "",
+    /* This file reaches the employer and the friendly-settlement filing, per
+       the note on the two totals above — so it carries the same reservation
+       the letter does. A document that lists what is owed without it can be
+       read as the outline of a final position. */
+    t("tm_l_reserve")
   ].join("\n");
 }
 
@@ -9678,6 +9703,9 @@ function buildTermLtr(){
     ...(contested.length ? ["", t("tm_l_split_more"), ...list(contested)] : []),
     "",
     t("tm_l_ask_" + termTone),
+    "",
+    /* Last thing before the sign-off, in every tone. */
+    t("tm_l_reserve"),
     "",
     t("tm_l_close_" + termTone),
     t("tm_l_sign")
