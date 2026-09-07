@@ -50,6 +50,7 @@ const ORDER = [
   "termination.test.js",
   "claude-path.test.js",
   "ai-context.test.js",
+  "duties-relevance.test.js",
   "demand-letter.test.js",
   "termination-ui.test.js",
   "scenarios.test.js",

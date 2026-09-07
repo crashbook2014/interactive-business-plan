@@ -486,6 +486,24 @@
   .flag .advice p{font-size:13px;color:var(--ink-2);line-height:1.7}
   .advice .tip{background:var(--card);border-radius:12px;padding:10px 13px;font-size:13px;color:var(--ink);line-height:1.7}
   .advice .tip b{color:var(--teal-ink)}
+  /* The clause the reader's dispute is actually about. Marked as well as moved:
+     position alone is not a statement, and this is one. */
+  .flag.indispute{box-shadow:0 0 0 2px var(--teal)}
+  .flag.indispute .fl-mark{display:flex}
+  .fl-mark{display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;
+      color:var(--teal-ink);background:var(--teal-soft);padding:5px 12px}
+  html[lang="ar"] .fl-mark{font-weight:400;font-size:13px}
+  /* WHAT YOU AGREED TO DO. The whole result screen answers "what can they do
+     to me"; nothing answered "what did I take on". A reader who only ever
+     sees their rights walks into the obligation they did not read. */
+  .duties{margin-top:18px}
+  .duties h3{font-size:16.5px;color:var(--teal-ink);margin:0 0 4px}
+  .duties .d-sub{font-size:13px;color:var(--ink-2);margin:0 0 12px;line-height:1.7}
+  .duties ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .duties li{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+      padding:13px 15px;box-shadow:var(--e1),var(--edge)}
+  .duties b{display:block;font-size:14px;color:var(--ink);margin-bottom:3px}
+  .duties span{display:block;font-size:13px;color:var(--ink-2);line-height:1.7}
   .flag.red{background:var(--red-bg)} .flag.red .dot{background:var(--red)}
   .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
   .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
@@ -2038,6 +2056,15 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       </div>
       <h3 class="sr-only" data-t="res_flags_h"></h3>
       <div class="flags" id="flags"></div>
+      <!-- WHAT THE READER TOOK ON. Everything above this point answers "what
+           can they do to me". Nothing answered "what did I agree to", and a
+           reader who only ever sees their rights walks into the obligation
+           they did not read. -->
+      <div class="duties" id="duties" hidden>
+        <h3 id="dutyH"></h3>
+        <p class="d-sub" id="dutySub"></p>
+        <ul id="dutyList"></ul>
+      </div>
       <button class="primary detail" onclick="show('clauses')" data-t="cta_clauses"></button>
       <button class="letter-tease" id="letterTease" onclick="openLetterFlow()">
         <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
@@ -3564,6 +3591,13 @@ const T = {
   back_rights:{ar:"حقوقي",en:"My rights"},
   back_score:{ar:"التقييم",en:"Back to score"},
   lg_red:{ar:"انتبه",en:"Red flag"}, lg_amber:{ar:"فاوض",en:"Negotiate"}, lg_green:{ar:"مطمئن",en:"All clear"},
+  fl_indispute:{ar:"هذا البند محل خلافك",en:"This is the clause your dispute is about"},
+  /* The heading has to say WHOSE obligations these are. "Obligations" alone
+     reads as a neutral list of contract terms; the reader needs to know these
+     are the ones pointing at them. */
+  duty_h:{ar:"وش التزمت فيه أنت",en:"What you agreed to do"},
+  duty_sub:{ar:"بقية الصفحة تقول لك وش يقدرون يسوونه فيك. هذي الجهة الثانية — التزامات عليك أنت، حتى لو كانت عادية ومعقولة.",
+            en:"The rest of this page is about what they can do to you. This is the other direction — obligations that fall on you, including the ordinary and reasonable ones."},
   cta_clauses:{ar:"اشرح لي البنود",en:"Explain each clause"},
   clauses_title:{ar:"بندًا بندًا — بلغة واضحة",en:"Clause by clause — in plain language"},
   what_to_do:{ar:"وش تسوي؟",en:"What to do"},
@@ -4849,7 +4883,7 @@ const SAMPLES = {
     verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
     vs:{ar:"عقد عادل بشكل عام — بندان يستحقان المتابعة الآن.",en:"Mostly fair — two clauses are worth raising now."},
     clauses:[
-      { s:"red",
+      { s:"red", topic:"noncompete", duty:true,
         src:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
         t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
     src:{ar:"نظام العمل السعودي — المادة 83",en:"Saudi Labor Law — Article 83"},
@@ -4861,7 +4895,7 @@ const SAMPLES = {
            en:"Ask to narrow it: one city, one year — or remove it if your role doesn't touch trade secrets."},
         r:{ar:"الشرط الواسع لا يعني نفاذه كما كُتب: النظام يشترط تحديد المدة والمكان ونوع العمل. إذا حاولوا تطبيقه عليك، اطلب حصره كتابيًا أو نازعه.",
            en:"A sweeping clause doesn't automatically bite: it must be limited in duration, place and type of work. If they try to enforce it, ask for it in writing narrowed — or contest it."} },
-      { s:"amber",
+      { s:"amber", topic:"notice", duty:true,
         src:{ar:"نظام العمل السعودي — المادة 75",en:"Saudi Labor Law — Article 75"},
         cost:{months:2},
         t:{ar:"مدة الإشعار",en:"Notice period"},
@@ -4872,7 +4906,7 @@ const SAMPLES = {
         a:{ar:"اطلب 30 يومًا، أو 60 للشركة و30 لك.",en:"Ask for 30 days — or 60 for the company, 30 for you."},
         r:{ar:"المدة ملزمة الآن، لكنها قابلة للتقصير بالاتفاق عند الاستقالة. اطلب موافقة كتابية على إعفائك من باقي المدة.",
            en:"The period binds you now, but it can be shortened by agreement when you resign. Ask for written consent to waive the remainder."} },
-      { s:"amber",
+      { s:"amber", topic:"overtime",
         src:{ar:"نظام العمل السعودي — المادة 107",en:"Saudi Labor Law — Article 107"},
         t:{ar:"أجر العمل الإضافي",en:"Overtime pay"},
         q:{ar:"قد يُطلب من الموظف العمل ساعات إضافية وفق حاجة العمل.",
@@ -4883,14 +4917,14 @@ const SAMPLES = {
            en:"Ask for it in writing: the overtime rate and how it's calculated."},
         r:{ar:"سكوت العقد لا يسقط حقك — الأجر الإضافي مستحق نظامًا. احفظ سجل ساعاتك وطالب بالفرق كتابيًا.",
            en:"The contract's silence doesn't cancel the entitlement — overtime is owed by law. Keep your hours log and claim the difference in writing."} },
-      { s:"green",
+      { s:"green", topic:"pay",
         t:{ar:"الراتب والبدلات",en:"Salary & benefits"},
         q:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع نهاية كل شهر ميلادي.",
            en:"A monthly base salary plus 25% housing and 10% transport allowance, paid at the end of each Gregorian month."},
         p:{ar:"واضح ومحدد: الراتب والبدلات ومواعيد الدفع كلها مكتوبة. هذا اللي نحب نشوفه.",
            en:"Clear and specific: salary, allowances, and payment dates are all written down. Exactly what we like to see."},
         a:null },
-      { s:"green",
+      { s:"green", topic:"leave",
         src:{ar:"نظام العمل السعودي — المادة 109",en:"Saudi Labor Law — Article 109"},
         t:{ar:"الإجازة السنوية",en:"Annual leave"},
         q:{ar:"يستحق الموظف إجازة سنوية مدفوعة مدتها ثلاثون يومًا.",
@@ -4902,7 +4936,7 @@ const SAMPLES = {
          either reading, so the sample says so — and still names the point we
          could not confirm, because the sample is what a first-time reader uses
          to decide whether to trust the product. */
-      { s:"amber",
+      { s:"amber", topic:"probation",
         src:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"},
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"يخضع الموظف لفترة تجربة مدتها تسعون يومًا من تاريخ مباشرة العمل.",
@@ -4951,7 +4985,7 @@ const SAMPLES = {
     verdict:{ar:"عقد جيد — بس بند الإخلاء يحتاج وقفة.",en:"A decent lease — but the eviction clause needs a closer look."},
     vs:{ar:"عقد جيد — لكن بند الإخلاء قابل للاعتراض إذا استُخدم ضدك.",en:"A decent lease — but the eviction clause is contestable if used against you."},
     clauses:[
-      { s:"red",
+      { s:"red", topic:"eviction",
         t:{ar:"إنهاء العقد من طرف واحد",en:"Unilateral termination"},
         q:{ar:"يحق للمؤجر إنهاء العقد في أي وقت بإشعار مدته سبعة أيام دون إبداء الأسباب.",
            en:"The landlord may terminate the contract at any time with seven days' notice, without stating reasons."},
@@ -4961,7 +4995,7 @@ const SAMPLES = {
            en:"Ask to remove it, or make it mutual with 60 days' notice for both sides."},
         r:{ar:"الإخلاء بإرادة المؤجر وحده ودون سبب نظامي وإشعار معقول قابل للاعتراض. عقدك المسجّل في إيجار هو سندك — لا تُخلِ بناءً على رسالة شفهية.",
            en:"Eviction at the landlord's sole will, with no lawful reason and no reasonable notice, is contestable. Your Ejar-registered contract is your proof — don't vacate on a verbal message."} },
-      { s:"amber",
+      { s:"amber", topic:"increase",
         t:{ar:"الزيادة السنوية",en:"Annual rent increase"},
         q:{ar:"تُزاد الأجرة السنوية بنسبة 10٪ عند كل تجديد.",
            en:"The annual rent shall increase by 10% upon each renewal."},
@@ -4971,7 +5005,7 @@ const SAMPLES = {
            en:"Negotiate 5%, or tie increases to the area's rental index."},
         r:{ar:"الزيادة المتفق عليها سارية لهذه المدة، لكن التجديد فرصتك: أشعر قبل نافذة عدم التجديد وفاوض أو انتقل.",
            en:"The agreed increase stands for this term, but renewal is your opening: give notice before the non-renewal window and either negotiate or move."} },
-      { s:"amber",
+      { s:"amber", topic:"maintenance", duty:true,
         t:{ar:"الصيانة",en:"Maintenance"},
         q:{ar:"يتحمل المستأجر جميع أعمال الصيانة الدورية والطارئة للعين المؤجرة.",
            en:"The tenant bears all routine and emergency maintenance of the leased premises."},
@@ -4981,13 +5015,13 @@ const SAMPLES = {
            en:"Ask to split it: minor upkeep on you, structural and major repairs on the landlord."},
         r:{ar:"الأعطال الإنشائية الكبرى تبقى عادة على المالك مهما اتسعت الصيغة. وثّق العطل بالصور وراسله كتابيًا قبل أي إصلاح على حسابك.",
            en:"Major structural failures usually remain the landlord's however broadly it's worded. Photograph the fault and write to them before paying for any repair yourself."} },
-      { s:"green",
+      { s:"green", topic:"deposit",
         t:{ar:"التأمين (العربون)",en:"Security deposit"},
         q:{ar:"يسترد المستأجر مبلغ التأمين كاملًا خلال أربعة عشر يومًا من الإخلاء بعد المعاينة.",
            en:"The deposit is refunded in full within fourteen days of vacating, following inspection."},
         p:{ar:"مدة استرداد محددة وشرط معاينة واضح — ممتاز.",en:"A fixed refund window and a clear inspection condition — great."},
         a:null },
-      { s:"green",
+      { s:"green", topic:"registration",
         src:{ar:"شبكة إيجار",en:"Ejar network"},
         t:{ar:"التسجيل في إيجار",en:"Ejar registration"},
         q:{ar:"يُسجَّل هذا العقد في شبكة إيجار وتُدفع الأجرة على أربع دفعات عبر المنصة.",
@@ -5000,7 +5034,7 @@ const SAMPLES = {
     verdict:{ar:"وقّف شوي — ثلاثة بنود تحتاج تفاوض قبل الموافقة.",en:"Hold on — three clauses need negotiating before you agree."},
     vs:{ar:"ثلاثة بنود تستحق ملحقًا أو مطالبة من الآن.",en:"Three clauses are worth an addendum or a claim, starting now."},
     clauses:[
-      { s:"red",
+      { s:"red", topic:"ip", duty:true,
         t:{ar:"الملكية الفكرية",en:"Intellectual property"},
         q:{ar:"تؤول إلى العميل ملكية جميع الأعمال، بما فيها أعمال المصمم السابقة وأدواته المستخدمة في المشروع.",
            en:"All works shall vest in the client, including the designer's pre-existing works and tools used in the project."},
@@ -5010,7 +5044,7 @@ const SAMPLES = {
            en:"Limit ownership to this project's deliverables only, with a license to your tools."},
         r:{ar:"نقل أعمالك السابقة تنازل واسع غير معتاد. اطلب ملحقًا يحصر النقل في مخرجات هذا المشروع — كثير من العملاء يوافقون لأنهم لا يحتاجون أدواتك أصلًا.",
            en:"Handing over your pre-existing work is an unusually broad giveaway. Ask for an addendum limiting the transfer to this project's deliverables — many clients agree, since they never needed your tools."} },
-      { s:"red",
+      { s:"red", topic:"revisions", duty:true,
         t:{ar:"التعديلات",en:"Revisions"},
         q:{ar:"يلتزم المصمم بإجراء التعديلات التي يطلبها العميل حتى القبول النهائي دون مقابل إضافي.",
            en:"The designer shall make all revisions requested by the client until final acceptance, at no extra charge."},
@@ -5020,7 +5054,7 @@ const SAMPLES = {
            en:"Cap it at two or three revision rounds; beyond that, an agreed hourly rate."},
         r:{ar:"وثّق الجولات المنجزة حتى الآن، واطلب ملحقًا يحدد ما تبقى بسعر متفق عليه قبل الاستمرار.",
            en:"Document the rounds delivered so far, and ask for an addendum pricing what remains before you continue."} },
-      { s:"amber",
+      { s:"amber", topic:"payment",
         t:{ar:"موعد السداد",en:"Payment terms"},
         q:{ar:"تُدفع المستحقات خلال ستين يومًا من تاريخ استلام الفاتورة.",
            en:"Payment is due within sixty days of invoice receipt."},
@@ -5030,14 +5064,14 @@ const SAMPLES = {
            en:"Ask for 50% upfront and the balance within 14 days of delivery."},
         r:{ar:"الموعد ملزم، لكن ما بعده تأخر يستوجب المطالبة. أرسل إشعارًا كتابيًا يوم الاستحقاق واحتفظ بالفاتورة وإثبات التسليم.",
            en:"The date binds, but anything past it is late and claimable. Send a written notice on the due date and keep the invoice and proof of delivery."} },
-      { s:"green",
+      { s:"green", topic:"scope",
         t:{ar:"نطاق العمل",en:"Scope of work"},
         q:{ar:"يشمل المشروع تصميم هوية بصرية: شعار، وألوان، وخطوط، ودليل استخدام من عشر صفحات.",
            en:"The project covers a visual identity: logo, colors, typography, and a ten-page usage guide."},
         p:{ar:"النطاق محدد بالتفصيل — يحميك من «زحف» المهام خارج الاتفاق.",
            en:"The scope is precisely defined — protecting you from scope creep."},
         a:null },
-      { s:"green",
+      { s:"green", topic:"delivery", duty:true,
         t:{ar:"مواعيد التسليم",en:"Delivery schedule"},
         q:{ar:"يُسلَّم العمل على ثلاث مراحل متفق عليها، ولكل مرحلة موعد محدد.",
            en:"Work is delivered in three agreed milestones, each with a fixed date."},
@@ -5625,7 +5659,7 @@ function applyLang(){
     if (has("case") && aiRvState !== "working"){ renderTermResult(); renderTermDoc(); renderTermLtr(); }
   }
   if (current){
-    renderResult(false); renderClauses(); renderFeedback();
+    renderResult(false); renderClauses(); renderDuties(); renderFeedback();
     renderLetter(); renderTimeline();
     syncAddButtons(); renderBuilder();
   }
@@ -5846,7 +5880,7 @@ function analyze(kind){
   pwPlan = 0;
   letterSet = new Set();
   runLoading(()=>{
-    renderResult(true); renderClauses(); renderFeedback();
+    renderResult(true); renderClauses(); renderDuties(); renderFeedback();
     recordContract(); renderMyContracts();
     buzz(negotiables().length ? 12 : [10,60,18]);   /* lighter double-tap when all clear */
     show("result");
@@ -6106,26 +6140,41 @@ function renderResult(reset){
      position would have added a different clause to the letter than the one
      the reader tapped. Sorting a list whose index is a key is exactly where
      that goes wrong. */
+  /* IN A DISPUTE, THE CLAUSE THE ARGUMENT IS ABOUT LEADS — whatever colour it
+     is. Severity answers "how fair is this contract", which is the right
+     question for someone deciding whether to sign and the wrong one for
+     someone whose deposit is already being held: their clause is usually the
+     fair one, so it sorted last and, on the result screen, was not shown at
+     all. Severity itself is untouched — the score, the counts and the band all
+     read the same, because a contract's fairness does not change with the mood
+     of the person reading it. Only the order does. */
+  const topic = disputeTopic();
+  const rank = (x) => (topic && x.c.topic === topic ? -1 : 0);
   const ordered = (full
-    ? current.clauses.map((c, i) => ({ c, i }))
+    ? current.clauses.map((c, i) => ({ c, i })).sort((a, b) => rank(a) - rank(b))
     : current.clauses.map((c, i) => ({ c, i }))
-        .sort((a, b) => (SEV[a.c.s] ?? 9) - (SEV[b.c.s] ?? 9))
+        .sort((a, b) => (rank(a) - rank(b)) || (SEV[a.c.s] ?? 9) - (SEV[b.c.s] ?? 9))
         .slice(0, 1));
   ordered.forEach(({ c, i: idx }, pos)=>{
     const div = document.createElement("div");
-    div.className = "flag " + c.s;
+    div.className = "flag " + c.s + (topic && c.topic === topic ? " indispute" : "");
+    const markHtml = (topic && c.topic === topic)
+      ? `<div class="fl-mark"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v8M8 13h.01"/></svg>${esc(t("fl_indispute"))}</div>`
+      : "";
     const adv = adviceFor(c);
     const srcLine = srcOf(c) + costLine(c);
+    /* A green clause that the dispute is about has no advice to show but is
+       still citable, so it still needs its add control. */
     const tip = adv
       ? `<div class="tip"><b>${t(signedMode ? "rights_label" : "what_to_do")}:</b> ${adv[lang]}</div>${srcLine}${addBtnHtml(idx)}`
-      : srcLine;
+      : srcLine + (citable(c) ? addBtnHtml(idx) : "");
     /* SEVERITY IN WORDS, NOT ONLY IN COLOUR.
        The dot and the tint carried the whole meaning of a row: a reader with
        any red-green colour difficulty — around 1 in 12 men — saw a list of
        clause names with no severity at all, and so did anyone reading in
        bright sun. actionLabel() is the same wording the legend above already
        uses, so nothing new is invented and the two cannot drift. */
-    div.innerHTML =
+    div.innerHTML = markHtml +
       `<button aria-expanded="false" onclick="toggleFlag(this)">
          <span class="dot">${ICONS[c.s]}</span>
          <span class="ttl"><h4>${c.t[lang]}</h4><span class="sev-label">${esc(actionLabel(c.s))}</span></span>
@@ -11648,7 +11697,7 @@ function toggleSigned(){
   signedMode = !signedMode; buzz(8); renderMode();
   /* An analysis already on screen is re-framed, never recomputed — the
      findings are the same, only the question changed. */
-  if (current){ renderResult(false); renderClauses(); renderTease(); syncAddButtons(); }
+  if (current){ renderResult(false); renderClauses(); renderDuties(); renderTease(); syncAddButtons(); }
 }
 
 /* The same control as renderMode, for the other axis. Changing track
@@ -11956,9 +12005,29 @@ function actionLabel(sv){
   return t(sv === "red" ? "act_red" : "act_amber");
 }
 
+/* WHICH CLAUSE THE READER'S DISPUTE IS ACTUALLY ABOUT. Null everywhere else. */
+function disputeTopic(){
+  if (!inDispute()) return null;
+  return journey === "rent" ? rentClaim : journey === "gig" ? "payment" : null;
+}
+
+/* WHAT MAY GO INTO A LETTER.
+ *
+ * Advice is what makes a clause negotiable, and for a reader who has not
+ * signed that is the whole test. In a DISPUTE it is the wrong test: the
+ * clause the argument is about is very often a perfectly fair one, so it is
+ * green, so it carries no advice — and it was therefore impossible to cite.
+ * That is why the deposit demand letter quoted the eviction, increase and
+ * maintenance clauses and said nothing whatsoever about the deposit.
+ *
+ * In a dispute that clause is citable as EVIDENCE rather than as something to
+ * negotiate. "Here is what we agreed" is the strongest line in a demand
+ * letter and it needs no advice attached to it. */
+function citable(c){ return !!c.a || (!!disputeTopic() && c.topic === disputeTopic()); }
+
 function selected(){
   if (!current) return [];
-  return current.clauses.filter((c,i)=>c.a && letterSet.has(i));
+  return current.clauses.filter((c,i)=>citable(c) && letterSet.has(i));
 }
 
 function toggleLetterItem(i, el){
@@ -11970,7 +12039,7 @@ function toggleLetterItem(i, el){
 }
 
 function addAllPoints(){
-  current.clauses.forEach((c,i)=>{ if (c.a) letterSet.add(i); });
+  current.clauses.forEach((c,i)=>{ if (citable(c)) letterSet.add(i); });
   buzz(10);
   syncAddButtons(); renderBuilder(true); renderTease();
 }
@@ -12357,7 +12426,10 @@ function buildDemandLetter(){
      against their own copy, which is what makes the letter hard to wave away. */
   const list = items.map((c, i) => {
     const q = c.q ? `\n   «${c.q[lang]}»` : "";
-    return `${pointNum(i)}. ${c.t[lang]}${q}\n   ${adviceFor(c)[lang]}`;
+    /* Evidence rather than advice: a clause cited because the dispute is about
+       it has nothing to negotiate, so the quote stands on its own. */
+    const adv = adviceFor(c);
+    return `${pointNum(i)}. ${c.t[lang]}${q}` + (adv ? `\n   ${adv[lang]}` : "");
   });
   return [
     ...letterHead("dm_to_" + kind, "dm_sub_" + kind),
@@ -13121,6 +13193,32 @@ function fbSend(){
   renderFeedback();
 }
 
+/* The obligations side of the same clause list. Reads `duty` on the clause and
+   nothing else — it invents no obligations of its own, so a contract whose
+   clauses carry no duty flag renders nothing rather than guessing. */
+function renderDuties(){
+  const box = document.getElementById("duties");
+  if (!box) return;
+  const duties = current ? current.clauses.filter(c => c.duty) : [];
+  box.hidden = duties.length === 0;
+  if (box.hidden) return;
+  document.getElementById("dutyH").textContent = t("duty_h");
+  document.getElementById("dutySub").textContent = t("duty_sub");
+  const ul = document.getElementById("dutyList");
+  ul.textContent = "";
+  for (const c of duties){
+    const li = document.createElement("li");
+    const b = document.createElement("b");
+    b.textContent = c.t[lang];
+    const sp = document.createElement("span");
+    /* The quote, because an obligation the reader disputes later is settled by
+       what the contract actually says, not by our paraphrase of it. */
+    sp.textContent = c.q ? "«" + c.q[lang] + "»" : c.p[lang];
+    li.appendChild(b); li.appendChild(sp);
+    ul.appendChild(li);
+  }
+}
+
 function renderClauses(){
   if (!current){ show("home"); return; }
   const wrap = document.getElementById("clauseList");
@@ -13138,7 +13236,7 @@ function renderClauses(){
        <div class="plain">${c.p[lang]}${advice}</div>
        <span class="act">${act}</span>
        ${srcOf(c)}
-       ${c.a ? addBtnHtml(i) : ""}`;
+       ${citable(c) ? addBtnHtml(i) : ""}`;
     wrap.appendChild(div);
   });
 }
