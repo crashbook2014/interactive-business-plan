@@ -29,7 +29,7 @@ const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
-const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
+const SITUATIONS = ["contract", "resign", "term", "owed", "rent", "gig", "ask", "unsure"];
 
 (async () => {
   const b = await chromium.launch(launchOpts());
@@ -64,6 +64,58 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "ask", "unsure"];
   ok(/تم إنهاء عقدي/.test(front),
      "the terminated reader is named on the front door, not buried four screens down");
   ok(/كم أستحق/.test(front), "and so is the one who only wants to know what they are owed");
+  /* The two doors that did not exist. Every other situation on this screen is
+     an employment one, and a product calling itself contract intelligence for
+     every contract had nothing for a tenant or a freelancer to press. */
+  ok(/المؤجّر/.test(front), "the tenant in a dispute has a door of their own");
+  ok(/سلّمت شغل/.test(front), "and so does the freelancer who was not paid");
+
+  /* ---- the two dispute doors, pressed the way a reader presses them.
+     An earlier version of this block called pickSituation() directly and
+     asserted the label was in the DOM. Both passed with the door's onclick
+     pointing at a situation that does not exist — it was testing my own
+     function call, not the button. Click the actual element. */
+  console.log("\n— the dispute doors open, and say something specific when they do");
+  const DISPUTE = {
+    rent: { ar: /الإيجار/, en: /lease/i },
+    gig:  { ar: /مطالبتك|العمل الحر/, en: /claim|freelance/i }
+  };
+  for (const lang of ["ar", "en"]) {
+    for (const which of ["rent", "gig"]) {
+      const head = await p.evaluate(([w, want]) => {
+        if ((document.documentElement.lang === "ar") !== (want === "ar")) toggleLang();
+        nat = "sa"; show("home");
+        const btn = [...document.querySelectorAll(".sit-card")]
+          .find(b => ((b.getAttribute("onclick") || "").includes("'" + w + "'")));
+        if (!btn) return { missing: true };
+        btn.click();
+        return { screen: (document.querySelector(".screen.active") || {}).id,
+                 h: (document.getElementById("helloLine") || {}).textContent || "",
+                 s: (document.getElementById("subLine") || {}).textContent || "" };
+      }, [which, lang]);
+      ok(!head.missing, `${lang}/${which}: the door exists on the home screen`);
+      ok(head.screen === "screen-intake", `${lang}/${which}: pressing it opens the workspace (${head.screen})`);
+      ok(!!head.h && !!head.s, `${lang}/${which}: the workspace is headed`);
+      ok(!/before you sign|قبل ما توقّع/i.test(head.h),
+         `${lang}/${which}: not greeted as if about to sign`);
+      /* And not merely inoffensive — the headline has to be ABOUT the thing
+         they pressed. Without this, falling back to the generic already-signed
+         headline passes, which is how the first version of this guard failed
+         to notice the journey headlines had been removed entirely. */
+      ok(DISPUTE[which][lang].test(head.h + " " + head.s),
+         `${lang}/${which}: and speaks to that situation (${head.h})`);
+    }
+  }
+  /* A journey is sticky, so a door that is NOT a situation has to clear it —
+     otherwise the lease headline follows the reader onto an unrelated visit. */
+  const stale = await p.evaluate(() => {
+    if (document.documentElement.lang !== "ar") toggleLang();
+    nat = "sa"; show("home"); pickSituation("rent");
+    goTab("rights"); startSignedReview();
+    return (document.getElementById("helloLine") || {}).textContent || "";
+  });
+  ok(!/الإيجار/.test(stale),
+     `the Rights door does not inherit a previous situation's headline (${stale})`);
 
   /* ---- 2. each door opens the flow it names */
   console.log("\n— each door opens the flow it names, and not another one");

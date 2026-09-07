@@ -1871,6 +1871,21 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <span><b data-t="sit_owed"></b><span data-t="sit_owed_d"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
+      <!-- THE TWO DOORS THAT DID NOT EXIST. Every situation above is an
+           employment one, so a tenant whose deposit is being withheld and a
+           freelancer who delivered and was not paid had to file themselves
+           under "I received a contract — I want to check it before I sign",
+           which is wrong about both the tense and the problem. -->
+      <button class="sit-card" onclick="pickSituation('rent')">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/><path d="M12 12v3M12 17.5h.01"/></svg></span>
+        <span><b data-t="sit_rent"></b><span data-t="sit_rent_d"></span></span>
+        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+      </button>
+      <button class="sit-card" onclick="pickSituation('gig')">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M12 10v7M14 12h-3.2a1.4 1.4 0 0 0 0 2.8h1.6a1.4 1.4 0 0 1 0 2.8H10"/></svg></span>
+        <span><b data-t="sit_gig"></b><span data-t="sit_gig_d"></span></span>
+        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+      </button>
       <button class="sit-card" onclick="pickSituation('ask')" id="sitAsk" hidden>
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><path d="M12 17.5h.01"/></svg></span>
         <span><b data-t="sit_ask"></b><span data-t="sit_ask_d"></span></span>
@@ -3032,6 +3047,14 @@ const T = {
      Two independent reviews found this same gap from opposite directions.
      These six are the moments people actually arrive in. */
   sit_h:{ar:"وش اللي جابك لوضوح؟",en:"What brings you to Wodouh?"},
+  /* Both are written as the reader would say it, in the tense they are
+     actually in: the contract is signed, the thing has already gone wrong. */
+  sit_rent:{ar:"عندي خلاف مع المؤجّر",en:"I have a dispute with my landlord"},
+  sit_rent_d:{ar:"ماسك التأمين، أو يطلب زيادة، أو يبي يخليني أطلع",
+              en:"Withholding the deposit, demanding an increase, or pushing me out"},
+  sit_gig:{ar:"سلّمت شغل وما استلمت فلوسي",en:"I delivered work and wasn't paid"},
+  sit_gig_d:{ar:"عمل حر — نشوف وش يقوله العقد ونجهّز مطالبة",
+             en:"Freelance — let's see what the contract says and prepare a demand"},
   sit_sub:{ar:"اختر اللي ينطبق عليك، ونكمل معك من هناك.",en:"Pick the one that fits, and we'll take it from there."},
   sit_contract:{ar:"استلمت عقد",en:"I received a contract"},
   sit_contract_d:{ar:"أبي أتأكد منه قبل ما أوقّع",en:"Check it before I sign"},
@@ -3446,6 +3469,16 @@ const T = {
   lt_sub_signed:{ar:"صيغة جاهزة تطرح بها النقاط على الطرف الآخر",
                  en:"Ready wording to raise these points with the other party"},
   hello:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
+  /* The two headlines that exist because "before you sign" was being said to
+     people whose contract was signed years ago. */
+  hello_rent:{ar:"خلنا نقرأ عقد الإيجار، ونشوف وش لك.",
+              en:"Let's read the lease and see where you stand."},
+  sub_rent:{ar:"الصق عقد الإيجار أو ارفعه — نوضّح البنود اللي تخص التأمين والزيادة والإخلاء، ووش تقدر تطالب فيه.",
+            en:"Paste or upload the lease — we'll explain the clauses on the deposit, increases and eviction, and what you can ask for."},
+  hello_gig:{ar:"خلنا نقرأ العقد، ونجهّز مطالبتك.",
+             en:"Let's read the contract and prepare your claim."},
+  sub_gig:{ar:"الصق عقد العمل الحر أو ارفعه — نشوف وش يقوله عن السداد والتسليم، ووش تقدر تطالب فيه.",
+           en:"Paste or upload the freelance contract — we'll see what it says about payment and delivery, and what you can claim."},
   s_clean:{ar:"عرض وظيفي واضح",en:"A clean job offer"}, s_clean_d:{ar:"عقد بلا مفاجآت — نموذج تجريبي",en:"No surprises — sample"},
   doc_clean:{ar:"عرض وظيفي",en:"Job offer"},
   load_clean:{ar:"نراجع الشروط بندًا بندًا…",en:"Checking the terms clause by clause…"},
@@ -7105,6 +7138,16 @@ function pickSituation(which){
     case "term":
       setSigned(true);
       openTerm();
+      break;
+    /* Both readers signed a long time ago and are now in a dispute, so the
+       workspace opens in its already-signed frame — the same door "contract"
+       uses, answering the signed question on their behalf as the employment
+       doors above already do. The headline they land on comes from `journey`,
+       set at the top of this function; see renderMode(). */
+    case "rent":
+    case "gig":
+      setSigned(true);
+      openIntake();
       break;
     case "ask":
       openAsk();
@@ -11099,7 +11142,13 @@ function toggleSamples(){
   document.getElementById("samplesToggle").classList.toggle("open", !w.hidden);
 }
 
-function startSignedReview(){ setSigned(true); openIntake(); }
+/* The Rights-screen door into the workspace. It clears `journey` because it
+   is not one of the situations: without this, a reader who picked the lease
+   dispute earlier, went to Rights, and came back through here would be
+   greeted about a lease they are no longer asking about. The noread retry
+   deliberately does NOT clear it — that is the same reader, on the same
+   contract, after a file we could not read. */
+function startSignedReview(){ journey = null; setSigned(true); openIntake(); }
 
 /* The workspace, on its own screen. Focus lands in the paste box after the
    transition so the reader can start typing without hunting for the field. */
@@ -11485,6 +11534,10 @@ function renderTrackTease(){
    act_red_signed, so a wrong value tells someone who has not signed yet how to
    contest a contract they could simply decline. The correction lives on the
    intake screen, where the question is about the document in front of them. */
+/* Which journeys speak for themselves on the workspace headline. A journey
+   absent from this map uses the ordinary signed/unsigned pair. */
+const JOURNEY_HEAD = { rent: "hello_rent", gig: "hello_gig" };
+
 function renderMode(){
   const b = document.getElementById("signedAsk");
   if (b){
@@ -11493,8 +11546,18 @@ function renderMode(){
   }
   const h = document.getElementById("helloLine"),
         sub = document.getElementById("subLine");
-  if (h) h.textContent = t(signedMode ? "hello_signed" : "hello");
-  if (sub) sub.textContent = t(signedMode ? "sub_signed" : "sub");
+  /* THE HEADLINE FOLLOWS THE JOURNEY, not the signed toggle alone.
+     "قبل ما توقّع" — before you sign — greeted every reader who reached this
+     screen, including the two who arrive from a dispute. Both signed months
+     or years ago, and the thing they came about has already happened. Saying
+     "before you sign" to them is the app answering a question nobody asked,
+     on the screen where they are deciding whether it understands them.
+     Falls through to the signed/unsigned pair for every other route, so a
+     reader who arrives by tab rather than by door is unaffected. */
+  const key = JOURNEY_HEAD[journey];
+  if (h) h.textContent = t(key ? key : signedMode ? "hello_signed" : "hello");
+  if (sub) sub.textContent = t(key ? key.replace("hello", "sub")
+                                   : signedMode ? "sub_signed" : "sub");
 }
 
 /* Set it without a re-frame: used by the doors, before anything is on screen. */
