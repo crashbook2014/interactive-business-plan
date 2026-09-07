@@ -596,6 +596,12 @@
   .letterhead span{font-family:var(--en);font-size:10.5px;font-weight:800;letter-spacing:.24em;
       text-transform:uppercase;color:var(--teal)}
   .letter .body{font-size:15px;line-height:2.05;color:var(--ink);white-space:pre-line}
+  .ltr-send{margin-top:14px}
+  .ltr-send b{display:block;font-size:15px;color:var(--teal-ink);margin-bottom:8px}
+  .ltr-send ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+  .ltr-send li{font-size:13px;line-height:1.7;color:var(--ink-2);padding-inline-start:16px;position:relative}
+  .ltr-send li::before{content:"";position:absolute;inset-inline-start:0;top:8px;
+      width:6px;height:6px;border-radius:99px;background:var(--teal)}
   .letterfoot{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);
       font-size:12px;color:var(--ink-2);text-align:center}
   .letter-actions{display:flex;gap:10px;margin-top:14px}
@@ -2547,6 +2553,14 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="letter-actions">
       <button class="ghost" id="termLtrCopy" onclick="copyTermLtr()"></button>
     </div>
+    <!-- WHAT TO DO WITH IT. Deliberately on the screen and not inside the
+         letter: the letter is copied and sent, and instructions to the sender
+         must not travel to the recipient. A reader who has a correct letter
+         and no idea how to send it has been handed a document, not help. -->
+    <div class="tm-sec ltr-send">
+      <b data-t="tm_l_send_h"></b>
+      <ul id="ltrSend"></ul>
+    </div>
     <p class="disclaimer" data-t="tm_r_disclaim"></p>
   </section>
 
@@ -4076,7 +4090,34 @@ const T = {
   tm_l_title:{ar:"خطاب لصاحب العمل",en:"Letter to your employer"},
   tm_l_sub:{ar:"نفس الوقائع ونفس المبالغ في كل نبرة — اللي يتغيّر هو الأسلوب فقط.",
             en:"The same facts and the same amounts in every tone — only the register changes."},
-  tm_l_to:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
+  /* ---- the header a letter of this kind cannot be without.
+     THE DATE is not decoration. The app itself tells this reader, on the
+     previous screen, that a labour claim is generally not heard after twelve
+     months from the end of the relationship (Article 222). An undated written
+     demand loses the one thing it was for: proof of when the claim was put.
+     The company name, the subject and the reference number are what let a
+     recipient file it and what stop "we never received anything specific". */
+  tm_l_co:{ar:"إلى: [اسم الشركة] — قسم الموارد البشرية",
+           en:"To: [Company name] — Human Resources"},
+  tm_l_date:{ar:"التاريخ",en:"Date"},
+  tm_l_subject:{ar:"الموضوع: مراجعة وصرف المستحقات النهائية",
+                en:"Subject: Review and payment of final entitlements"},
+  tm_l_empno:{ar:"الرقم الوظيفي / رقم الهوية أو الإقامة: [أدخله]",
+              en:"Employee number / ID or Iqama number: [fill in]"},
+  /* ---- THE DEMAND, and it is the same in all four tones.
+     The letter used to ask them to "review the figures and share the basis of
+     calculation" and stop there. That is an enquiry. It was reached by
+     pressing a button that says "claim your rights", and a reader who sends
+     an enquiry believing they have made a demand has lost time they may not
+     have. Tone changes how it is said, never whether it is said.
+     Only the amount that follows from stated facts is demanded — asking for
+     the contingent item as though it were owed would be the mirror of the
+     concession this letter used to make. */
+  tm_l_demand:{ar:"وعليه، أطلب صرف مبلغ {amt}، وموافاتي بردّ مكتوب خلال خمسة عشر يومًا من تاريخ هذا الخطاب.",
+               en:"On that basis I request payment of {amt}, together with a written response within fifteen days of the date of this letter."},
+  tm_l_contact:{ar:"[رقم جوالك]\n[بريدك الإلكتروني]",
+                en:"[Your mobile number]\n[Your email address]"},
+
   tm_tone_friendly:{ar:"ودّي",en:"Friendly"},
   tm_tone_professional:{ar:"مهني",en:"Professional"},
   tm_tone_firm:{ar:"حازم",en:"Firm"},
@@ -4136,6 +4177,17 @@ const T = {
      version of it would be a weaker one. */
   tm_l_reserve:{ar:"وهذا الخطاب لا يُعدّ تنازلًا عن أي حق، ومع حفظ كافة حقوقي النظامية.",
                 en:"This letter is not a waiver of any right, and all my statutory rights are reserved."},
+  tm_l_send_h:{ar:"قبل ما ترسله",en:"Before you send it"},
+  tm_l_send:{ar:["عبّئ الخانات بين الأقواس: اسم الشركة، رقمك الوظيفي أو رقم هويتك، اسمك، وبيانات التواصل. لا ترسله وفيه أقواس.",
+                 "أرسله بوسيلة تثبت الاستلام — البريد الإلكتروني الرسمي للشركة، أو عبر الموارد البشرية مع ختم استلام على نسخة ورقية.",
+                 "احتفظ بنسخة من الخطاب ومن إثبات الإرسال. هذا الإثبات هو اللي يبيّن متى طالبت.",
+                 "لو ما وصلك ردّ خلال خمسة عشر يومًا، الخطوة التالية هي التسوية الودية عبر منصة وزارة الموارد البشرية.",
+                 "انتبه للمدة: الدعوى العمالية لا تُسمع عادةً بعد مضي اثني عشر شهرًا من نهاية العلاقة."],
+             en:["Fill in every bracketed field: company name, your employee or ID number, your name, and your contact details. Do not send it with brackets still in it.",
+                 "Send it by a means that proves receipt — the company's official email, or by hand to HR with a stamped copy returned to you.",
+                 "Keep a copy of the letter and of the proof of sending. That proof is what shows when you made the claim.",
+                 "If there is no reply within fifteen days, the next step is amicable settlement through the Ministry of Human Resources platform.",
+                 "Mind the time limit: a labour claim is generally not heard after twelve months from the end of the relationship."]},
   tm_l_sign:{ar:"[اسمك]",en:"[Your name]"},
 
   /* ---- ask: a question the app was not built to answer.
@@ -9692,23 +9744,38 @@ function buildTermLtr(){
   const certain = lines.filter(l => !l.contested), contested = lines.filter(l => l.contested);
   const list = ls => ls.map((l, i) => `${pointNum(i)}. ${t(l.key)}: ${money(l.amt)} ${cur}`);
   const items = list(certain);
+  const total = termTotalCertain();
   const body = [
+    /* Header first: who it is to, when it was written, and what it is about.
+       The company name and the ID are placeholders in the same style as the
+       signature's [your name], so the reader fills three fields rather than
+       being asked for them in a form they may not have the answers to yet. */
+    t("tm_l_co"),
+    `${t("tm_l_date")}: ${fmtDate(Date.now())}`,
+    t("tm_l_subject"),
+    t("tm_l_empno"),
+    "",
     t("tm_l_open_" + termTone),
     "",
     ...termFacts(),
     "",
     lines.length ? t("tm_l_items") : t("tm_l_noitems"),
     ...items,
-    ...(items.length ? [`${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`] : []),
+    ...(items.length ? [`${t("tm_m_total_certain")}: ${money(total)} ${cur}`] : []),
     ...(contested.length ? ["", t("tm_l_split_more"), ...list(contested)] : []),
     "",
+    /* The demand, before the tone-specific ask rather than instead of it:
+       the ask still requests the calculation basis and the documents, which
+       is worth having, but it is no longer the only thing the letter does. */
+    ...(total > 0 ? [t("tm_l_demand").replace("{amt}", `${money(total)} ${cur}`), ""] : []),
     t("tm_l_ask_" + termTone),
     "",
     /* Last thing before the sign-off, in every tone. */
     t("tm_l_reserve"),
     "",
     t("tm_l_close_" + termTone),
-    t("tm_l_sign")
+    t("tm_l_sign"),
+    t("tm_l_contact")
   ];
   return body.join("\n");
 }
@@ -9716,10 +9783,21 @@ function buildTermLtr(){
 function renderTermLtr(){
   if (!term || !has("case")) return;
   renderTermTone();
-  document.getElementById("termLtrBody").textContent =
-    t("tm_l_to") + "\n\n" + buildTermLtr();
+  document.getElementById("termLtrBody").textContent = buildTermLtr();
   document.getElementById("termLtrFoot").textContent = t("lt_foot");
   document.getElementById("termLtrCopy").textContent = t("copy_btn");
+  /* Rendered with textContent per item rather than as markup: these lines are
+     copy, but the habit of building lists with innerHTML is how a translated
+     string one day becomes an injection. */
+  const send = document.getElementById("ltrSend");
+  if (send){
+    send.textContent = "";
+    for (const line of T.tm_l_send[lang]){
+      const li = document.createElement("li");
+      li.textContent = line;
+      send.appendChild(li);
+    }
+  }
 }
 
 /* ------------------------------------------------ plans & business tier */

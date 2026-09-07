@@ -218,7 +218,8 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     [...document.querySelectorAll("#termTone button")].forEach(btn => {
       btn.click();
       out.letters.push({ tone: btn.textContent.trim(),
-                         body: document.getElementById("termLtrBody").textContent });
+                         body: document.getElementById("termLtrBody").textContent,
+                         certain: termTotalCertain(), contested: termTotalContested() });
     });
     show("termnext");
     [...document.querySelectorAll("#termSteps button")].find(b => b.dataset.step === "3").click();
@@ -255,6 +256,59 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(RESERVE.some((re) => re.test(body)),
        `${tone}: and it reserves the reader's rights explicitly`);
   }
+  /* ---- and what the letter must SAY, not merely avoid saying.
+     A letter reached by pressing "claim your rights" that asks them to review
+     some figures is an enquiry wearing a demand's clothes. These four things
+     are what make it the second: a date, a named sum, a deadline, and enough
+     identity for the recipient to file it and not to claim they never got
+     anything specific. */
+  console.log("\n— the letter is a demand, not an enquiry");
+  const YEAR = String(new Date().getFullYear());
+  const DEADLINE = /fifteen days|خمسة عشر يومًا/;
+  for (const { tone, body, certain, contested } of legal.letters) {
+    /* Its OWN date line, not just the year appearing somewhere. The first
+       version of this checked body.includes(year) and passed happily with the
+       date line deleted, because the employment end date carries the same
+       year — a guard that cannot fail is not a guard. */
+    const dateLine = body.split("\n").find((l) => /^\s*(Date|التاريخ)\s*:/.test(l)) || "";
+    ok(dateLine.includes(YEAR),
+       `${tone}: the letter carries its own date line (${dateLine.trim() || "ABSENT"})`);
+    /* The date matters because the app itself tells this reader, two screens
+       earlier, that a claim is generally not heard after twelve months. */
+    ok(DEADLINE.test(body), `${tone}: and sets a response deadline`);
+    const demand = body.split("\n").find((l) => /request payment|أطلب صرف/.test(l)) || "";
+    ok(!!demand, `${tone}: and names a sum it is asking for`);
+    /* The sum demanded is the one that follows from stated facts. Demanding
+       the contingent figure as though it were owed would be the mirror of the
+       concession this letter used to make. */
+    /* Not "carries a figure" — carries the RIGHT figure. The demand must be
+       the certain total, so a refactor that reached for termTotal() and swept
+       the contingent item in with it fails here rather than in a letter
+       somebody has already sent. */
+    const asked = Number((demand.match(/[\d,]{4,}/) || ["0"])[0].replace(/,/g, ""));
+    ok(asked === Math.round(certain),
+       `${tone}: demands the certain total, not the contingent one (asked ${asked}, certain ${Math.round(certain)})`);
+    if (contested > 0) {
+      ok(asked !== Math.round(certain + contested),
+         `${tone}: and never the two summed (${Math.round(certain + contested)})`);
+    }
+    for (const ph of [/\[Company name\]|\[اسم الشركة\]/, /\[Your name\]|\[اسمك\]/,
+                      /Employee number|الرقم الوظيفي/, /email address|بريدك/]) {
+      ok(ph.test(body), `${tone}: carries ${ph.source.slice(0, 28)}`);
+    }
+  }
+
+  /* Instructions to the sender must not travel to the recipient, so they live
+     on the screen and must NOT appear in the copied text. */
+  console.log("\n— the reader is told what to do with it");
+  const send = await p.evaluate(() => ({
+    items: [...document.querySelectorAll("#ltrSend li")].map((l) => l.textContent.trim()),
+    inLetter: /proof of sending|إثبات الإرسال/.test(document.getElementById("termLtrBody").textContent)
+  }));
+  ok(send.items.length >= 4, `the send guidance renders (${send.items.length} points)`);
+  ok(send.items.every((x) => x.length > 10), "and none of it is blank");
+  ok(send.inLetter === false, "and none of it leaks into the letter the employer receives");
+
   /* The case file goes to the employer and to the friendly-settlement filing,
      so it is held to the same rule as the letter. */
   const docBad = WAIVER.filter((re) => re.test(legal.doc));
