@@ -24,6 +24,7 @@ const ORDER = [
   "headers.test.js",
   "contrast.test.js",
   "type-scale.test.js",
+  "copy-keys.test.js",
   "schema.test.js",
   "rls.test.js",
   "calc-fuzz.test.js",

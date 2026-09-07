@@ -314,17 +314,30 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(biz.stats > 0 && biz.contracts > 0 && biz.seats > 0, "business workspace renders all three sections");
   ok(!/undefined|NaN/.test(biz.bizText), "business workspace contains no undefined or NaN");
 
-  /* ---------------------------------------------- photo + noread */
-  console.log("\n— photo intake and the unreadable path");
+  /* ---------------------------------------------- photo + noread
+     The photo button used to open a camera screen whose viewfinder was a
+     styled div and whose shutter captured nothing — it revealed a note saying
+     so only AFTER the reader had aimed and pressed. The screen is gone; the
+     button now declares itself unavailable before it is touched. */
+  console.log("\n— the unbuilt photo path is unbuilt in the open");
   const ph = await p.evaluate(() => {
-    show("photo");
-    const before = document.getElementById("phNote").hidden;
-    shoot();
-    return { before, after: document.getElementById("phNote").hidden,
-             visible: document.getElementById("screen-photo").classList.contains("active") };
+    openIntake();
+    const b = document.querySelector(".up-photo");
+    return {
+      exists: !!b,
+      disabled: !!b && b.disabled,
+      badge: !!b && (b.querySelector(".badge") || {}).textContent,
+      dashed: !!b && getComputedStyle(b).borderTopStyle,
+      screenGone: !document.getElementById("screen-photo"),
+      noCapture: typeof window.openPhoto === "undefined" && typeof window.shoot === "undefined"
+    };
   });
-  ok(ph.before === true && ph.after === false, "the shutter reveals the honest 'not yet' note");
-  ok(ph.visible, "photo screen activates");
+  ok(ph.exists, "the photo option is still shown, so the intent is still announced");
+  ok(ph.disabled === true, "but it cannot be pressed");
+  ok(!!ph.badge, `and it carries its own 'not yet' badge (${ph.badge})`);
+  ok(ph.dashed === "dashed", `drawn as unavailable rather than live (${ph.dashed})`);
+  ok(ph.screenGone, "the fake viewfinder screen is gone, not merely unadvertised");
+  ok(ph.noCapture, "and so are the functions that pretended to capture");
 
   const nr = await p.evaluate(() => {
     show("noread");

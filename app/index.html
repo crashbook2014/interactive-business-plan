@@ -870,24 +870,15 @@
       color:var(--ink-2);font-size:12px;box-shadow:var(--e1),var(--edge);transition:color .15s,border-color .15s}
   .up-photo:hover{color:var(--teal);border-color:var(--teal)}
   .up-photo svg{width:21px;height:21px}
+  /* Unavailable, drawn the same way .au-btn.soon is: a dashed edge and no
+     fill, so it reads as "not yet" at a glance rather than looking live and
+     then refusing. No opacity fade — the badge is the one word that has to be
+     legible here. */
+  .up-photo.soon{cursor:default;background:transparent;border-style:dashed;box-shadow:none}
+  .up-photo.soon:hover{color:var(--ink-2);border-color:var(--line)}
+  .up-photo .badge{font-size:12px;font-weight:700;color:var(--amber-ink);
+      background:var(--amber-bg);border-radius:99px;padding:1px 7px;line-height:1.5}
   .intake + .or{margin:16px 0 10px}
-
-  /* photo capture */
-  .viewfinder{position:relative;aspect-ratio:3/4;max-height:46vh;border-radius:var(--r-2xl);
-      background:var(--card);border:1px solid var(--line);margin:6px 0 18px;overflow:hidden;
-      display:flex;align-items:center;justify-content:center;box-shadow:var(--e2),var(--edge)}
-  .viewfinder .c{position:absolute;width:30px;height:30px;border:3px solid var(--teal);border-radius:4px}
-  .viewfinder .c.tl{top:16px;left:16px;border-right:0;border-bottom:0}
-  .viewfinder .c.tr{top:16px;right:16px;border-left:0;border-bottom:0}
-  .viewfinder .c.bl{bottom:16px;left:16px;border-right:0;border-top:0}
-  .viewfinder .c.br{bottom:16px;right:16px;border-left:0;border-top:0}
-  .vf-hint{font-size:13px;color:var(--ink-2);text-align:center;max-width:70%}
-  .shutter{width:70px;height:70px;border-radius:999px;border:3px solid var(--teal);margin:0 auto 16px;
-      display:flex;align-items:center;justify-content:center;background:none}
-  .shutter span{width:54px;height:54px;border-radius:999px;background:var(--teal);transition:transform .12s}
-  .shutter:active span{transform:scale(.9)}
-  #screen-photo .notice b{display:block;font-size:14px;margin-bottom:5px;color:var(--ink)}
-  #screen-photo .notice p{font-size:13px;color:var(--ink-2);line-height:1.7}
 
   /* tab bar — permanent orientation across the four roots */
   .tabbar[hidden]{display:none}
@@ -1933,9 +1924,14 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
         <span><b data-t="up_cta"></b><span data-t="up_hint"></span></span>
       </label>
-      <button class="up-photo" onclick="openPhoto()">
+      <!-- ANNOUNCED, NOT BUILT — and it says so before it is pressed.
+           Reading a photograph needs the scan path, which exists on the server
+           and is not yet wired to this screen. Until it is, this is the same
+           disabled-and-badged treatment the unbuilt sign-in methods carry. -->
+      <button class="up-photo soon" type="button" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
         <span data-t="up_photo"></span>
+        <span class="badge" data-t="up_photo_soon"></span>
       </button>
     </div>
     <div class="or" data-t="up_or"></div>
@@ -2131,22 +2127,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   </section>
 
   <!-- PHOTO CAPTURE -->
-  <section class="screen" id="screen-photo">
-    <button class="back" onclick="show('intake',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back"></span></button>
-    <h2 class="section-title" data-t="ph_title"></h2>
-    <div class="viewfinder">
-      <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
-      <span class="vf-hint" data-t="ph_guide"></span>
-    </div>
-    <button class="shutter" onclick="shoot()" aria-label="capture"><span></span></button>
-    <div class="notice" id="phNote" hidden>
-      <b data-t="ph_note_t"></b>
-      <p data-t="ph_note_b"></p>
-    </div>
-    <button class="primary" onclick="show('home',1)" data-t="ph_paste"></button>
-    <p class="disclaimer" data-t="disclaimer"></p>
-  </section>
-
   <!-- RIGHTS (tab root) -->
   <section class="screen" id="screen-rights">
     <h2 class="section-title" data-t="rights_title"></h2>
@@ -3075,14 +3055,8 @@ const T = {
   up_reading:{ar:"نقرأ الملف…",en:"Reading the file…"},
   up_photo:{ar:"صوّر العقد",en:"Photograph it"},
   up_photo_hint:{ar:"صورة من ورقة أو شاشة",en:"A photo of paper or a screen"},
+  up_photo_soon:{ar:"قريبًا",en:"Not yet"},
   up_or:{ar:"أو الصق النص",en:"or paste the text"},
-  ph_title:{ar:"تصوير العقد",en:"Photograph the contract"},
-  ph_guide:{ar:"حاذِ حواف الورقة داخل الإطار",en:"Line the page edges up inside the frame"},
-  ph_shoot:{ar:"التقط",en:"Capture"},
-  ph_note_t:{ar:"قراءة الصور تحتاج تعرّفًا ضوئيًا",en:"Reading photos needs optical recognition"},
-  ph_note_b:{ar:"في النسخة الحقيقية يُقرأ النص من الصورة على جهازك. في هذا النموذج غير مفعّل — الصق النص أو جرّب نموذجًا.",
-             en:"In the real app the text is read from the photo on your device. It isn't enabled in this prototype — paste the text or try a sample."},
-  ph_paste:{ar:"ألصق النص بدلًا من ذلك",en:"Paste the text instead"},
   err_big:{ar:"الملف أكبر من 8 ميجابايت. جرّب تلصق نص العقد بدلًا من رفعه.",en:"That file is over 8 MB. Try pasting the contract text instead."},
   err_type:{ar:"نقرأ PDF والملفات النصية. لو عندك صورة أو صيغة ثانية، الصق النص مباشرة.",en:"We read PDFs and text files. If yours is an image or another format, paste the text directly."},
   how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
@@ -3284,6 +3258,9 @@ const T = {
   fu_soon:{ar:"قريبًا",en:"Coming soon"},
   fu_grid_h:{ar:"اللي نبنيه",en:"What we're building"},
 
+  fu_scan:{ar:"قراءة العقد المصوَّر",en:"Reading a photographed contract"},
+  fu_scan_d:{ar:"صوّر العقد الورقي أو ارفع مسحًا ضوئيًا، ووضوح يقرأه — بدون ما تنسخ النص بنفسك.",
+             en:"Photograph a paper contract or upload a scan, and Wodouh reads it — without you copying the text out yourself."},
   fu_vault:{ar:"خزانة عقودي",en:"My contract vault"},
   fu_vault_d:{ar:"عقودك المهمة كلها مرتّبة في مكان واحد آمن.",
               en:"Your important contracts, organised in one secure place."},
@@ -6289,6 +6266,7 @@ const FU_ARC = [
   ["fu_a4", "fu_a4d", false]
 ];
 const FU_CARDS = [
+  ["📸", "fu_scan",   "fu_scan_d"],
   ["🗂️", "fu_vault",  "fu_vault_d"],
   ["🧠", "fu_ask",    "fu_ask_d"],
   ["🔔", "fu_alert",  "fu_alert_d"],
@@ -10716,8 +10694,6 @@ function initIntake(){
   });
 }
 
-function openPhoto(){ document.getElementById("phNote").hidden = true; show("photo"); }
-function shoot(){ buzz(10); document.getElementById("phNote").hidden = false; }
 
 /* ------------------------------------------------------ motion layer ----
    Everything below is additive: it changes how existing state arrives on
@@ -10823,7 +10799,7 @@ const BACK_OF = {
   case:()=>show("eos",1), casedoc:()=>show("case",1), plans:()=>show(planBack,1),
   lawyerdesk:()=>show(deskBack,1),
   biz:()=>show("plans",1), assist:()=>assistBack(), noread:()=>retryPaste(),
-  photo:()=>show("intake",1), intake:()=>show("home",1), timeline:()=>tlBack()
+  intake:()=>show("home",1), timeline:()=>tlBack()
 };
 /* Which root a horizontal drag would land on, or null when there is nothing
    that way. Extracted so the live preview and the commit agree by construction
@@ -10849,7 +10825,7 @@ function initGestures(){
   /* Velocity, sampled between moves. Distance alone rejected a fast 45px flick
      — unmistakably a back gesture — because it never reached the 60px line. */
   let lastX=0, lastT=0, vx=0;
-  const blocked = t => t.closest("textarea,input,.chat,.caps,.tabbar,.viewfinder");
+  const blocked = t => t.closest("textarea,input,.chat,.caps,.tabbar");
 
   app.addEventListener("pointerdown", e=>{
     if (e.pointerType === "mouse" || blocked(e.target)) return;

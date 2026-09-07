@@ -27,6 +27,9 @@ or a signature. None of it can be unblocked from inside the repository.
 Both sign-in methods are announced in the app right now, as disabled buttons
 marked *قريبًا*. That promise is live and ageing from today.
 
+Photograph-the-contract is announced the same way, on the intake screen. It
+needs no account and no payment — only the client work described below.
+
 ---
 
 ## Announced in the app, not yet working
@@ -67,6 +70,30 @@ they are a promise, and this section is what makes that promise accountable.
 - **Note:** Saudi mobiles only, deliberately. See `normalizeSaudiPhone()` in
   `app/auth.js` for why a sign-in number is held to a stricter rule than a
   contact number.
+
+---
+
+### Reading a photographed or scanned contract
+
+- **State:** the SERVER side is built and deployed. `analyze` accepts an
+  `upload` reference, resolves it against the caller in `resolveUpload()`, and
+  sends the file to Claude as a document block; the grader is told the source
+  is a scan so it drops every unattested figure. None of that is wired to the
+  app.
+- **Blocked on:** client work only. The intake screen needs to capture or pick
+  an image, POST it to the `upload` function, and pass the returned row id to
+  `analyze` — plus the consent step, because this is the one path where the
+  file itself leaves the device.
+- **Done when:** a photograph of a paper contract taken on a real phone comes
+  back with real findings.
+- **Why it matters:** a large share of this product's readers have their
+  contract on paper or as a photo, not as text they can select and copy. Today
+  they are told to type it out.
+- **The copy that has to move with it:** `/privacy/` and the account screen
+  both currently state that a photo or scan is NOT uploaded and that the reader
+  is asked to paste instead. That is true today and becomes false the moment
+  this ships. It is a privacy promise, so it needs the founder's review, not a
+  quiet edit.
 
 ---
 
@@ -118,6 +145,25 @@ a theoretical one.
   sign-in. The same commit stopped the two *قريبًا* buttons being faded to .55
   opacity — they now read as unavailable structurally, with their words at
   full contrast.
+
+- **The fake camera is gone** (Sept 2026) — the intake screen offered
+  "Photograph it" as a live button beside Upload. It opened a camera screen
+  whose viewfinder was a styled `div` with four corner brackets and no
+  `getUserMedia` anywhere, and whose shutter captured nothing: pressing it
+  revealed a note admitting the feature "isn't enabled in this prototype".
+  A reader spent two taps and a moment of hope to be told that. The button now
+  carries the same disabled-and-badged treatment as the unbuilt sign-in
+  methods, the screen and its functions are deleted rather than merely
+  unadvertised, and the feature is listed above where it can be held to
+  account.
+
+- **A copy key was overwriting another one** (Sept 2026) — `ph_title` was
+  declared twice in the dictionary: once for the phone-number screen and once,
+  sixty lines later, for the photo screen. A duplicate key in an object
+  literal is not an error; the second silently wins. So the screen that asks a
+  stranger for their mobile number was headed "Photograph the contract" in the
+  shipped build, in both languages. Deleting the photo screen resolved it, and
+  `test/copy-keys.test.js` now fails the build on any collision.
 
 - **Email sign-in by one-time code** — no password path, by design.
 - **Google sign-in.**
