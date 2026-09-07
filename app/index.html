@@ -2116,6 +2116,14 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
+    <div class="tm-sec" id="dmClaim" hidden>
+      <b id="dmClaimH"></b>
+      <div class="opts"></div>
+    </div>
+    <div class="tm-sec ltr-send" id="ltrSendD" hidden>
+      <b id="ltrSendDH"></b>
+      <ul></ul>
+    </div>
     <button class="track-tease" id="lawyerTease" hidden onclick="openDesk('letter')">
       <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg></span>
       <span><b data-t="ld_open"></b><span data-t="ld_open_sub"></span></span>
@@ -4130,6 +4138,56 @@ const T = {
      demand loses the one thing it was for: proof of when the claim was put.
      The company name, the subject and the reference number are what let a
      recipient file it and what stop "we never received anything specific". */
+  /* ---- the demand letter for a dispute that is not an employment one.
+     EVERY CITATION HERE IS TO THE READER'S OWN CONTRACT, never to a statute.
+     The verified register (_shared/corpus.json) is Saudi Labor Law only, so
+     there is no source behind an article number for a lease or a freelance
+     agreement — and inventing precision is the one thing this product must
+     never do. Quoting the clause the reader is standing on is both honest and
+     stronger: it is the document they both signed. */
+  dm_to_rent:{ar:"إلى: [اسم المؤجّر]",en:"To: [Landlord's name]"},
+  dm_to_gig:{ar:"إلى: [اسم العميل]",en:"To: [Client's name]"},
+  dm_sub_rent:{ar:"الموضوع: مطالبة بموجب عقد الإيجار",
+               en:"Subject: Claim under the lease agreement"},
+  dm_sub_gig:{ar:"الموضوع: مطالبة بمستحقات عن أعمال مُنجزة",
+              en:"Subject: Claim for payment for completed work"},
+  dm_ref:{ar:"مرجع العقد / رقم الوحدة: [أدخله]",en:"Contract reference / unit number: [fill in]"},
+  dm_open_rent:{ar:"السلام عليكم ورحمة الله،\n\nبالإشارة إلى عقد الإيجار المبرم بيننا، أكتب إليكم بخصوص مسألة لم تُسوَّ حتى تاريخه. أدرج أدناه البنود ذات العلاقة من العقد نفسه.",
+                en:"Dear Sir or Madam,\n\nI am writing in connection with the lease agreement between us, regarding a matter that remains unresolved. The relevant clauses of the agreement itself are set out below."},
+  dm_open_gig:{ar:"السلام عليكم ورحمة الله،\n\nبالإشارة إلى الاتفاقية المبرمة بيننا، سلّمت الأعمال المتفق عليها ولم أستلم مستحقاتي حتى تاريخه. أدرج أدناه البنود ذات العلاقة من الاتفاقية نفسها.",
+               en:"Dear Sir or Madam,\n\nI am writing in connection with our agreement. I delivered the agreed work and have not been paid to date. The relevant clauses of the agreement itself are set out below."},
+  dm_items:{ar:"البنود ذات العلاقة في العقد:",en:"The relevant clauses of the contract:"},
+  /* The amount is bracketed because Wodouh does not know it: no dispute
+     assessment asks for it yet. Stating a figure we were never given would be
+     a number with no source, on the one line of the letter that must hold up. */
+  /* THREE DISPUTES, THREE DEMANDS. The door for this journey names all three —
+     "withholding the deposit, demanding an increase, or pushing me out" — so a
+     letter that always demanded the deposit back would be the wrong letter for
+     two readers in three, and a demand naming the wrong claim is worse than no
+     letter at all. Asked on the letter screen rather than before the contract
+     is read: the reading is the value, and this only changes one line. */
+  dm_claim_h:{ar:"وش تطالب فيه؟",en:"What are you claiming?"},
+  dm_claim_deposit:{ar:"مبلغ التأمين",en:"The deposit"},
+  dm_claim_increase:{ar:"الزيادة",en:"The increase"},
+  dm_claim_eviction:{ar:"إشعار الإخلاء",en:"The eviction notice"},
+  dm_demand_rent_deposit:{ar:"وعليه، أطلب إعادة مبلغ التأمين وقدره [أدخل المبلغ] ر.س، أو بيانًا مكتوبًا بأسباب الحسم وما يقابله من مستندات، خلال خمسة عشر يومًا من تاريخ هذا الخطاب.",
+                          en:"On that basis, I request the return of the deposit in the amount of [enter the amount] SAR, or a written statement of the reasons for any deduction together with supporting documents, within fifteen days of the date of this letter."},
+  dm_demand_rent_increase:{ar:"وعليه، أطلب بيانًا مكتوبًا بالأساس التعاقدي للزيادة المطلوبة ومقدارها، وتأكيد الأجرة المستحقة للمدة القادمة، خلال خمسة عشر يومًا من تاريخ هذا الخطاب.",
+                           en:"On that basis, I request a written statement of the contractual basis for the increase sought and its amount, and confirmation of the rent due for the coming term, within fifteen days of the date of this letter."},
+  dm_demand_rent_eviction:{ar:"وعليه، أطلب بيانًا مكتوبًا بالأساس التعاقدي لإشعار الإخلاء ومدة الإشعار المطبّقة، وتأكيد سريان العقد حتى نهاية مدته، خلال خمسة عشر يومًا من تاريخ هذا الخطاب.",
+                           en:"On that basis, I request a written statement of the contractual basis for the eviction notice and the notice period applied, and confirmation that the agreement runs to the end of its term, within fifteen days of the date of this letter."},
+  dm_demand_gig:{ar:"وعليه، أطلب صرف مستحقاتي وقدرها [أدخل المبلغ] ر.س عن الأعمال المسلّمة، خلال خمسة عشر يومًا من تاريخ هذا الخطاب.",
+                 en:"On that basis, I request payment of [enter the amount] SAR for the work delivered, within fifteen days of the date of this letter."},
+  dm_close:{ar:"وشاكرًا لكم حسن تعاونكم.",en:"Thank you for your cooperation."},
+  dm_send_h:{ar:"قبل ما ترسله",en:"Before you send it"},
+  dm_send:{ar:["عبّئ الخانات بين الأقواس: اسم الطرف الآخر، مرجع العقد، المبلغ، اسمك، وبيانات التواصل. لا ترسله وفيه أقواس.",
+               "أرسله بوسيلة تثبت الاستلام، واحتفظ بنسخة من الخطاب ومن إثبات الإرسال.",
+               "هذا الخطاب يستند إلى نص عقدك أنت، لا إلى مادة نظامية — وضوح ما يذكر رقم مادة إلا إذا كان متحقّقًا منه.",
+               "لو ما وصلك ردّ، منازعات الإيجار السكني تُنظر عبر منصة إيجار، والمطالبات المالية الأخرى عبر المحكمة المختصة. للنزاعات المعقّدة راجع محاميًا."],
+           en:["Fill in every bracketed field: the other party's name, the contract reference, the amount, your name and your contact details. Do not send it with brackets still in it.",
+               "Send it by a means that proves receipt, and keep a copy of the letter and of the proof of sending.",
+               "This letter rests on the wording of your own contract, not on a statute — Wodouh does not cite an article number unless it has been verified.",
+               "If there is no reply, residential lease disputes are heard through the Ejar platform, and other monetary claims through the competent court. For a complicated dispute, see a lawyer."]},
   tm_l_co:{ar:"إلى: [اسم الشركة] — قسم الموارد البشرية",
            en:"To: [Company name] — Human Resources"},
   tm_l_date:{ar:"التاريخ",en:"Date"},
@@ -9778,6 +9836,35 @@ function renderTermTone(){
   });
 }
 
+/* THE ANATOMY EVERY DEMAND LETTER SHARES, whoever it is addressed to.
+ *
+ * Extracted from buildTermLtr() when the second and third demand letters were
+ * written, and extracted rather than copied for one reason: the reservation of
+ * rights. A letter that lists what someone owes you and omits "this is not a
+ * waiver" can be read as the outline of a final position, and the way that
+ * omission happens is not carelessness — it is a new letter written later by
+ * someone who copied an older one that predated the clause. Sharing the tail
+ * makes that impossible rather than merely unlikely.
+ *
+ * The date is here for the same reason it is in the employer letter: it is
+ * what proves WHEN a claim was put, and every one of these disputes has a
+ * clock on it.
+ */
+function letterHead(toKey, subjectKey){
+  return [t(toKey), `${t("tm_l_date")}: ${fmtDate(Date.now())}`, t(subjectKey)];
+}
+function letterTail(closeKey){
+  return ["", t("tm_l_reserve"), "", t(closeKey), t("tm_l_sign"), t("tm_l_contact")];
+}
+
+/* Is this reader in a dispute, rather than reading a contract before signing?
+   Set by the two dispute doors on the home chooser. The letter they need is a
+   demand; the negotiation letter's "I'm confident we can reach wording that is
+   fair to both sides" is the wrong instrument for someone whose deposit is
+   being held. */
+const DISPUTE_JOURNEYS = { rent: "rent", gig: "gig" };
+function inDispute(){ return !!DISPUTE_JOURNEYS[journey] && signedMode; }
+
 function buildTermLtr(){
   const cur = t("eos_sar"), lines = termLines();
   /* Numbered 1..5 including the contested item, then totalled 1..4 — the
@@ -9793,9 +9880,7 @@ function buildTermLtr(){
        The company name and the ID are placeholders in the same style as the
        signature's [your name], so the reader fills three fields rather than
        being asked for them in a form they may not have the answers to yet. */
-    t("tm_l_co"),
-    `${t("tm_l_date")}: ${fmtDate(Date.now())}`,
-    t("tm_l_subject"),
+    ...letterHead("tm_l_co", "tm_l_subject"),
     t("tm_l_empno"),
     "",
     t("tm_l_open_" + termTone),
@@ -9813,12 +9898,8 @@ function buildTermLtr(){
     ...(total > 0 ? [t("tm_l_demand").replace("{amt}", `${money(total)} ${cur}`), ""] : []),
     t("tm_l_ask_" + termTone),
     "",
-    /* Last thing before the sign-off, in every tone. */
-    t("tm_l_reserve"),
-    "",
-    t("tm_l_close_" + termTone),
-    t("tm_l_sign"),
-    t("tm_l_contact")
+    /* Reservation, sign-off and contact block — shared, see letterTail(). */
+    ...letterTail("tm_l_close_" + termTone)
   ];
   return body.join("\n");
 }
@@ -12253,7 +12334,60 @@ function pointNum(i){
 
 function negotiables(){ return current ? current.clauses.filter(c=>c.a) : []; }
 
+/* THE DEMAND LETTER, for a reader who is in a dispute rather than reading a
+ * contract before signing.
+ *
+ * It shares its head and tail with the employer letter — date, subject,
+ * reservation of rights, sign-off, contact block — and differs in the middle,
+ * because what it cites is different. The employer letter cites Saudi Labor
+ * Law, which is in the verified register. This one cites nothing but the
+ * reader's own contract: there is no verified source behind an article number
+ * for a lease or a freelance agreement, so quoting the clause both parties
+ * signed is the only honest ground to stand on. It is also the stronger one.
+ *
+ * The amount is a bracketed field rather than a computed figure. Wodouh has
+ * not asked what the deposit was or what the invoice came to — there is no
+ * dispute assessment yet — and printing a number it was never given would put
+ * an unsourced figure on the single line of the letter that has to hold up.
+ */
+function buildDemandLetter(){
+  const kind = DISPUTE_JOURNEYS[journey];
+  const items = selected();
+  /* The clause AS WRITTEN, then what it means. A recipient can check the first
+     against their own copy, which is what makes the letter hard to wave away. */
+  const list = items.map((c, i) => {
+    const q = c.q ? `\n   «${c.q[lang]}»` : "";
+    return `${pointNum(i)}. ${c.t[lang]}${q}\n   ${adviceFor(c)[lang]}`;
+  });
+  return [
+    ...letterHead("dm_to_" + kind, "dm_sub_" + kind),
+    t("dm_ref"),
+    "",
+    t("dm_open_" + kind),
+    "",
+    ...(list.length ? [t("dm_items"), ...list, ""] : []),
+    t(kind === "rent" ? "dm_demand_rent_" + rentClaim : "dm_demand_" + kind),
+    ...letterTail("dm_close")
+  ].join("\n");
+}
+
+/* Which of the three rent disputes this letter is about. Defaults to the
+   deposit because it is the one the door names first and the most common, but
+   it is a default rather than an assumption — the reader can change it and the
+   demand line follows. */
+let rentClaim = "deposit";
+const RENT_CLAIMS = ["deposit", "increase", "eviction"];
+function setRentClaim(v){ rentClaim = v; buzz(8); renderLetter(); }
+
+/* ONE DECISION, HERE. A dispute gets a demand letter; everyone else gets the
+   negotiation letter. renderLetter() used to branch on inDispute() as well,
+   which meant two places had to agree about which letter a reader was owed —
+   and a guard that broke one of them still passed, because the other was
+   holding the screen up. The recipient line moved in for the same reason:
+   the negotiation letter needs it, the demand letter addresses its own
+   recipient by name, and that difference belongs where the letters do. */
 function buildLetter(){
+  if (inDispute()) return buildDemandLetter();
   const items = selected();
   const list = items.map((c,i)=>{
     const n = pointNum(i);
@@ -12269,6 +12403,14 @@ function buildLetter(){
     ? `Regarding the ${t(current.doc).toLowerCase()} signed between us, I would like to raise the following points:`
     : `Thank you for sending the ${t(current.doc).toLowerCase()}. Before signing, I would like to discuss the following points:`;
   return `Dear Sir or Madam,\n\n${openEn}\n\n${list}\n\nI'm confident we can reach wording that is fair to both sides, and I'm happy to talk any of this through.\n\nBest regards,\n[Your name]`;
+}
+
+/* The negotiation letter's recipient line, which the demand letter supplies
+   for itself. Kept out of buildLetter()'s two return paths so neither has to
+   remember it. */
+function letterText(){
+  return inDispute() ? buildLetter()
+                     : LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
 }
 
 /* The pack was sold as "your letter, plus further letters for new contracts for
@@ -12799,10 +12941,45 @@ function pwPay(){
 
 function renderLetter(){
   if (!current || !selected().length) return;
-  document.getElementById("letterBody").textContent =
-    LETTER_TO[current.doc][lang] + "\n\n" + buildLetter();
+  document.getElementById("letterBody").textContent = letterText();
   document.getElementById("copyBtn").textContent = t("copy_btn");
   document.getElementById("letterFoot").textContent = t("lt_foot");
+  /* Sending guidance belongs to the demand letter only: proof of receipt and
+     a forum to escalate to are dispute concerns. A negotiation letter goes to
+     someone the reader is still hoping to work with. */
+  const claim = document.getElementById("dmClaim");
+  if (claim){
+    const show3 = inDispute() && journey === "rent";
+    claim.hidden = !show3;
+    if (show3){
+      document.getElementById("dmClaimH").textContent = t("dm_claim_h");
+      const row = claim.querySelector(".opts");
+      row.textContent = "";
+      for (const c of RENT_CLAIMS){
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "opt" + (c === rentClaim ? " on" : "");
+        b.textContent = t("dm_claim_" + c);
+        b.onclick = () => setRentClaim(c);
+        row.appendChild(b);
+      }
+    }
+  }
+  const send = document.getElementById("ltrSendD");
+  if (send){
+    send.hidden = !inDispute();
+    const head = document.getElementById("ltrSendDH");
+    if (head) head.textContent = t("dm_send_h");
+    const ul = send.querySelector("ul");
+    ul.textContent = "";
+    if (inDispute()){
+      for (const line of T.dm_send[lang]){
+        const li = document.createElement("li");
+        li.textContent = line;
+        ul.appendChild(li);
+      }
+    }
+  }
   renderLawyerTease();
 }
 
