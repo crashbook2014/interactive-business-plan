@@ -421,6 +421,71 @@ async function serveWithAiCsp(page) {
      "and it is the whole document, not a summary of it");
   ok(withDoc.kind === "ask", `still the ask mode (${withDoc.kind})`);
 
+  /* ---- 4. AND BACK AGAIN: what the screen does with the answer.
+   *
+   * THE GAP THIS FILLS, stated plainly because it shipped. The grader was
+   * tested in isolation and the outbound payload was tested here, and both
+   * passed while the feature was dead: the client coerced any tier it did not
+   * recognise to "unverified", "contract" was not in its list, and the quotes
+   * were never copied into the answer object at all. A contract-grounded
+   * answer therefore rendered as "⚠ General knowledge — not verified by us",
+   * which is the opposite of what it was, with its evidence discarded.
+   *
+   * It was demonstrated working by setting askAnswer directly in the page,
+   * which proved the renderer works and proved nothing about whether that
+   * state can ever occur. This asserts the round trip instead.
+   */
+  console.log("\n— and what comes back is what reaches the screen");
+  const roundTrip = async (payload) => p.evaluate(async (reply) => {
+    window.__reply = reply;
+    /* The allowance is day-keyed state, not a counter variable — reset it the
+       way the app stores it, or the second call finds no form to fill. */
+    askUsed = { day: null, n: 0 };
+    askAnswer = null; askError = null;
+    openAsk();
+    document.getElementById("askQ").value = "How much notice must I give?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    const agree = document.getElementById("askAgree");
+    agree.checked = true; agree.dispatchEvent(new Event("change"));
+    const docBox = document.getElementById("askDocAgree");
+    if (docBox){ docBox.checked = true; docBox.dispatchEvent(new Event("change")); }
+    await askRun();
+    return { tier: askAnswer && askAnswer.tier,
+             quotes: (askAnswer && askAnswer.quotes) || [],
+             heading: (document.querySelector(".ask-ans .hd b") || {}).textContent || "",
+             onScreen: [...document.querySelectorAll(".doc-q")].map(q => q.textContent) };
+  }, payload);
+
+  /* The stub answers with whatever __reply holds. */
+  await p.unroute(`${AI_HOST}/**`);
+  await p.route(`${AI_HOST}/**`, async route => {
+    const reply = await p.evaluate(() => window.__reply);
+    await route.fulfill({ status: 200, contentType: "application/json",
+                          body: JSON.stringify(reply) });
+  });
+
+  const QUOTE = "Notice period: 60 days";
+  const grounded = await roundTrip({ tier: "contract", answer: "Your contract sets sixty days.",
+                               cites: [], quotes: [QUOTE] });
+  ok(grounded.tier === "contract", `a contract-tier answer survives the client (${grounded.tier})`);
+  ok(!/General knowledge|معلومة عامة/.test(grounded.heading),
+     `and is not labelled as unverified (${grounded.heading})`);
+  ok(grounded.quotes.length === 1 && grounded.onScreen.length === 1,
+     `its evidence reaches the screen (${grounded.onScreen.length} span)`);
+  ok(grounded.onScreen[0].includes(QUOTE), "and it is the span the server sent");
+
+  /* A tier claiming to be grounded with nothing to show is refused, matching
+     the server's own handling of the same case. */
+  const bare = await roundTrip({ tier: "contract", answer: "It says sixty days.",
+                                 cites: [], quotes: [] });
+  ok(bare.tier === "refused",
+     `a grounded claim with no evidence is refused, not relabelled (${bare.tier})`);
+
+  /* And a tier nobody has heard of is still treated as the weakest one. */
+  const junk = await roundTrip({ tier: "definitely-verified", answer: "Trust me.",
+                                 cites: [], quotes: [] });
+  ok(junk.tier === "unverified", `an unknown tier is read as unverified (${junk.tier})`);
+
   await p.close();
   await b.close();
 

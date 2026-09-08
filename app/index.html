@@ -9294,7 +9294,8 @@ async function askRun(){
       /* Coerced again on this side. The server already graded it; this guards
          the one class of bug that would put unlabelled text on screen — a
          tier we do not recognise must never render as the verified one. */
-      const tier = d.tier === "verified" || d.tier === "refused" ? d.tier : "unverified";
+      const KNOWN = ["verified", "contract", "refused"];
+      const tier = KNOWN.includes(d.tier) ? d.tier : "unverified";
       askAnswer = {
         tier,
         reason: typeof d.reason === "string" ? d.reason : null,
@@ -9302,14 +9303,35 @@ async function askRun(){
         cites: tier === "verified" && Array.isArray(d.cites)
           ? d.cites.slice(0, 6).map(c => ({
               article: c && c.article ? String(c.article).slice(0, 60) : null,
-              claim: String(c && c.claim || "").slice(0, 600)
+              claim: String(c && c.claim || "").slice(0, 600),
+              /* Both language columns, because citeClaim() reads claim_ar for
+                 an Arabic reader and dropping it here would silently show them
+                 the English row instead. */
+              claim_ar: String(c && c.claim_ar || "").slice(0, 600)
             })).filter(c => c.claim)
+          : [],
+        /* The spans a contract answer stands on. Bounded here as well as on
+           the server: everything that renders passes through esc(), but a
+           length cap is cheaper than trusting one. */
+        quotes: tier === "contract" && Array.isArray(d.quotes)
+          ? d.quotes.filter(q => typeof q === "string" && q.trim())
+              .slice(0, 6).map(q => q.slice(0, 400))
           : []
       };
       /* A verified answer with nothing under it is not a verified answer.
          The server enforces this too; disagreeing with it here means
          something is wrong, and the safe reading is the weaker one. */
       if (askAnswer.tier === "verified" && !askAnswer.cites.length) askAnswer.tier = "unverified";
+      /* The same rule for the contract tier, and it refuses rather than
+         demotes — matching what the server does with the same case. This tier
+         claims "here is where I read it in your document"; with nothing to
+         show, that claim is unsupported, and relabelling it "general
+         knowledge" would be a second false statement rather than a safer one,
+         because the answer plainly is not general knowledge. */
+      if (askAnswer.tier === "contract" && !askAnswer.quotes.length){
+        askAnswer.tier = "refused";
+        askAnswer.reason = "no_quote";
+      }
       askText = "";   /* answered — now the box can empty */
     }
   } catch(e){
