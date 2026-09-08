@@ -120,7 +120,12 @@ async function geometry(p){
          that has to be centred now rather than a frame-and-panel pair. */
       ok(near(g.colLeft, g.colRight, 2),
          `the reading column is centred (${g.colLeft} left, ${g.colRight} right)`);
-      ok(g.colW <= 700, `and held to a readable measure (${g.colW}px)`);
+      /* This suite measures HOME, which is the one screen that deliberately
+         takes the whole page — it is a chooser and eight doors want the room.
+         So the bound here is the page measure the nav and the marketing site
+         share, and the 684px reading column for ordinary form screens is
+         asserted in desktop.test.js, where a form is actually on screen. */
+      ok(g.colW <= 1080, `and never wider than the 1080px measure (${g.colW}px)`);
     } else {
       ok(near(g.leftEdge, g.rightEdge, 2),
          `single column is centred (${g.leftEdge} / ${g.rightEdge})`);

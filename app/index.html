@@ -1633,7 +1633,14 @@
   html[lang="ar"] .sit-u p{font-weight:400}
   .sit-u-acts{display:flex;gap:9px;flex-wrap:wrap}
   .sit-u-acts .ghost{flex:1 1 auto;min-height:46px;font-size:14px}
-  @media (min-width:600px){ .sit-grid{display:grid;grid-template-columns:1fr 1fr} }
+  /* NO TWO-COLUMN RULE KEYED TO THE WINDOW. There used to be one at 600px,
+     and it was the worst thing about the app on a laptop: it fired on window
+     width while the frame stayed 440px, so the eight doors rendered at 199px
+     each on a 1440px screen against 354px on a 390px phone — the front door of
+     the product, 44% narrower on the bigger screen. The doors are one per row
+     wherever the column is a column, and a grid only where the page is a page,
+     which is the desktop block at the end of this file. */
+  .hm-hero{display:none}
   /* Accounts. Two buttons, brand-styled, nothing else competing. */
   .au-acts{display:flex;flex-direction:column;gap:11px;margin:20px 0 14px}
   .au-btn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;
@@ -1785,6 +1792,46 @@
        opt out through .dk-split below. */
     .screen{padding:0 22px}
     .screen.active{width:100%;max-width:684px;margin-inline:auto}
+    /* Home opts out of the reading column: it is a chooser, and eight doors
+       want the page. A class on the section rather than an id, so the next
+       screen that is a chooser rather than a form can say so too. */
+    .screen.active.dk-wide{max-width:1080px}
+
+    /* HOME AS A FRONT PAGE.
+       The hero is the retired brand panel's own typography, moved — 36px and
+       19px, both already on the app's nine-step scale. It is deliberately not
+       the marketing site's 54px: adding a tenth step to the scale is a
+       decision with a cost, and the app's front door does not need one to
+       carry a page this wide. */
+    /* CENTRED, and that is a decision rather than a default. Left at the
+       reading edge the hero left the whole other half of a 1080px page empty
+       beside a single line of type — the same lopsidedness this layout exists
+       to remove, in a smaller form. Centred over a three-column grid it reads
+       as a front page, and it costs nothing in RTL because centring has no
+       side to get wrong. */
+    .hm-hero{display:block;margin:38px 0 40px;text-align:center}
+    .hm-hero h1{font-size:36px;color:var(--teal-ink);line-height:1.4;text-wrap:balance}
+    .hm-hero p{margin:14px auto 0;color:var(--ink-2);font-size:19px;max-width:52ch}
+    #screen-home .greet{text-align:center}
+    #screen-home .hello,#screen-home .sub{text-align:center}
+    /* With the pitch above it, the chooser question is a section heading over
+       the doors rather than the first thing on the page. */
+    #screen-home .hello{font-size:19px;margin:0 2px 4px}
+    #screen-home .greet{margin-top:30px}
+
+    /* THREE COLUMNS, AND A DOOR WIDER THAN IT IS ON A PHONE. That is the whole
+       measure of whether this worked: 354px on a 390px phone was the number to
+       beat, and two columns in a 440px frame gave 199px. */
+    #screen-home .sit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    #screen-home .sit-card{align-items:flex-start;padding:16px 16px 15px}
+    #screen-home .sit-card .ic{margin-top:1px}
+    /* The chevron is a phone affordance — a row you swipe into. On a card in a
+       grid the whole card is the target and the arrow only adds noise. */
+    #screen-home .sit-card .go{display:none}
+    /* Saved contracts sit under the doors, not in a column beside them: a
+       reader who has never used the app has none, and a blank right-hand rail
+       is exactly the mistake this layout exists to undo. */
+    #screen-home .mc-list{grid-template-columns:repeat(2,1fr);gap:12px}
   }
 
   /* TWO COLUMNS, BUT ONLY WHERE A SCREEN ASKS FOR THEM.
@@ -1989,8 +2036,22 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
        screen. Fourteen blocks and twenty-two pressable things met a reader
        who had arrived with one question. The workspace now lives on its own
        screen and the doors navigate to it, which is what a door is. -->
-  <section class="screen" id="screen-home">
+  <section class="screen dk-wide" id="screen-home">
     <p class="greet" id="greet"></p>
+    <!-- THE HERO, AND WHERE ITS WORDS COME FROM.
+         This is the brand panel that used to sit beside the framed phone. The
+         panel is gone; the copy is not, and neither is the thing that made it
+         worth keeping — deskAsideKeys() picks a line per journey, so a reader
+         who came through the lease door is not greeted with "before you sign"
+         about a contract they signed years ago. It reads it here now, at the
+         top of their own front page, instead of in a column beside it.
+         Hidden below 900px: on a phone the greeting, the question and the
+         doors are already the whole screen and a hero would only push them
+         under the fold. -->
+    <div class="hm-hero">
+      <h1 id="hmHeroH"></h1>
+      <p id="hmHeroP"></p>
+    </div>
     <h1 class="hello" data-t="sit_h"></h1>
     <p class="sub" data-t="sit_sub"></p>
     <div class="sit" id="situations">
@@ -5952,11 +6013,17 @@ function deskAsideKeys(name){
   return null;
 }
 function renderDeskAside(name){
-  const title = document.getElementById("deskTitle"), sub = document.getElementById("deskSub");
-  if (!title || !sub) return;
   const k = deskAsideKeys(name);
-  title.textContent = t(k ? k + "_h" : "desk_title");
-  sub.textContent = t(k ? k + "_p" : "desk_sub");
+  const h = t(k ? k + "_h" : "desk_title"), p = t(k ? k + "_p" : "desk_sub");
+  const title = document.getElementById("deskTitle"), sub = document.getElementById("deskSub");
+  if (title && sub){ title.textContent = h; sub.textContent = p; }
+  /* THE SAME TWO LINES, ON HOME'S OWN PAGE. The panel they were written for is
+     retired; the reason they were written is not. A reader who came through
+     the lease door still must not be greeted with "before you sign" about a
+     contract they signed years ago — the defect fixed on the intake headline
+     in 71ce2d0, which this kept making one screen earlier. */
+  const hh = document.getElementById("hmHeroH"), hp = document.getElementById("hmHeroP");
+  if (hh && hp){ hh.textContent = h; hp.textContent = p; }
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */

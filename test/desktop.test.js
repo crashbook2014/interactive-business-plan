@@ -43,10 +43,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     // eslint-disable-next-line no-eval
     eval(f);
     const a = document.querySelector(".desk-aside");
-    return { h: (document.getElementById("deskTitle") || {}).textContent || "",
-             sub: (document.getElementById("deskSub") || {}).textContent || "",
+    const hero = document.querySelector(".hm-hero");
+    return { h: (document.getElementById("hmHeroH") || {}).textContent || "",
+             sub: (document.getElementById("hmHeroP") || {}).textContent || "",
              meta: (document.getElementById("deskMeta") || {}).textContent || "",
-             shown: a ? getComputedStyle(a).display !== "none" : false };
+             shown: a ? getComputedStyle(a).display !== "none" : false,
+             heroShown: hero ? getComputedStyle(hero).display !== "none" : false };
   }, fn);
 
   console.log("— the retired aside, and the copy that outlived it");
@@ -55,6 +57,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      chose are the ones home now reads as its own hero, so every assertion
      below still guards live copy. */
   ok(!home.shown, "the brand panel no longer sits beside a framed phone");
+  ok(home.heroShown, "and its two lines are read as home's own hero instead");
   ok(/قبل ما توقّع/.test(home.h), `home keeps the pitch it was written for (${home.h})`);
 
   const term = await asideOn('goTab("home"); pickSituation("term")');
@@ -84,9 +87,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const switched = await p.evaluate(() => {
     nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
     goTab("home"); pickSituation("term");
-    const before = document.getElementById("deskTitle").textContent;
+    const before = document.getElementById("hmHeroH").textContent;
     toggleLang();
-    const after = document.getElementById("deskTitle").textContent;
+    const after = document.getElementById("hmHeroH").textContent;
     return { before, after, lang: document.documentElement.lang };
   });
   ok(switched.after !== switched.before, "the aside follows the language");
@@ -200,6 +203,60 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      `and the Calculate button is not cut off by its edge (${reach.clipped}px past it)`);
   ok(reach.hit === true,
      "and it can actually be clicked where it is drawn");
+
+  /* HOME, WHICH IS THE WHOLE COMPLAINT. "The desktop still looks like a
+     phone" — and measured, it was worse than one: eight doors at 199px each on
+     a 1440px laptop against 354px on a 390px phone, because .sit-grid switched
+     to two columns on WINDOW width while the frame stayed 440px. */
+  console.log("\n— home is a front page, and its doors are not narrower than a phone's");
+  const doorAt = async (w, h) => {
+    const q = await b.newPage({ viewport: { width: w, height: h } });
+    await q.goto(APP);
+    await q.waitForFunction(() => typeof window.show === "function");
+    const r = await q.evaluate(() => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      goTab("home");
+      const cards = [...document.querySelectorAll("#situations .sit-card")].filter((c) => !c.hidden);
+      const first = cards[0].getBoundingClientRect();
+      const top = first.top;
+      const hero = document.querySelector(".hm-hero");
+      return {
+        n: cards.length,
+        w: Math.round(first.width),
+        perRow: cards.filter((c) => Math.abs(c.getBoundingClientRect().top - top) < 4).length,
+        allAbove: cards.every((c) => c.getBoundingClientRect().bottom <= window.innerHeight + 1),
+        heroShown: hero ? getComputedStyle(hero).display !== "none" : false,
+        overflow: document.documentElement.scrollWidth > window.innerWidth,
+      };
+    });
+    await q.close();
+    return r;
+  };
+
+  const phoneDoor = await doorAt(390, 844);
+  ok(phoneDoor.perRow === 1, `on a phone the doors are one per row (${phoneDoor.perRow})`);
+  ok(!phoneDoor.heroShown,
+     "and there is no hero on a phone, where it would only push them under the fold");
+
+  const deskDoor = await doorAt(1440, 900);
+  ok(deskDoor.perRow === 3, `on a laptop they are three across (${deskDoor.perRow})`);
+  /* 199px was the bug and 354px is the phone. This is the number that says
+     whether the laptop is finally getting more than the phone rather than
+     less. */
+  ok(deskDoor.w >= 320,
+     `and a door is ${deskDoor.w}px — the defect drew it at 199px on this exact screen`);
+  ok(deskDoor.allAbove,
+     `with all ${deskDoor.n} of them reachable without scrolling`);
+  ok(deskDoor.heroShown, "and a hero above them");
+  ok(!deskDoor.overflow, "with no sideways overflow");
+
+  /* THE TABLET BAND, which had the same defect and no one had looked. At 768px
+     the window is over 600 so the two-column rule fired, inside a 440px frame:
+     197px doors on a device with more room than a phone, not less. */
+  const tabletDoor = await doorAt(768, 1024);
+  ok(tabletDoor.perRow === 1,
+     `a tablet gets one door per row too, not two crushed into a phone column (${tabletDoor.perRow})`);
+  ok(tabletDoor.w >= 320, `at ${tabletDoor.w}px (the old rule gave it 197px)`);
 
   console.log("\n— a screen that asked for two columns gets two columns");
   const at = async (w, h, fn) => {
