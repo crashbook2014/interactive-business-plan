@@ -175,6 +175,19 @@ function gradeFinding(f, ok, figures, fields, extra) {
    still stores no contract text and this does not change that. */
 const RED_FIELDS = [["clause_ar", 300], ["clause_en", 300], ["issue_ar", 600], ["issue_en", 600]];
 const NEG_FIELDS = [["clause_ar", 300], ["clause_en", 300], ["suggestion_ar", 600], ["suggestion_en", 600]];
+const OBL_FIELDS = [["clause_ar", 300], ["clause_en", 300], ["duty_ar", 600], ["duty_en", 600]];
+
+/* A model-supplied enum is still model-supplied data. It reaches the client and
+   decides which clause sits at the top of a screen for someone in a dispute, so
+   it is checked against the list rather than trusted to be on it. Anything else
+   — including a plausible-looking word that is not in the vocabulary — becomes
+   "other", which the client reads as no topic at all. */
+const TOPICS = new Set([
+  "deposit", "increase", "eviction", "maintenance", "registration",
+  "payment", "delivery", "scope", "ip", "revisions",
+  "notice", "noncompete", "overtime", "pay", "leave", "probation", "other",
+]);
+const gradeTopic = (v) => (typeof v === "string" && TOPICS.has(v) ? v : "other");
 
 /* The key terms table, now typed: the brief asks for numbers where the value is
    a number, because "180" and "180 days" and "one hundred eighty" are the same
@@ -278,7 +291,7 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
   if (conf === "low") {
     return Object.assign(shell, {
       key_terms: NULL_TERMS(),
-      red_flags: [], negotiation_points: [],
+      red_flags: [], negotiation_points: [], obligations: [],
       summary_ar: "", summary_en: "",
       dropped: { findings: 0, terms: [] },
       hedged: false,
@@ -295,11 +308,18 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
   const reds = gradeList(p.red_flags, RED_FIELDS, (f) => ({
     law_reference: gradeRef(f.law_reference, ok),
     severity: f.severity === "medium" ? "medium" : "high",
+    topic: gradeTopic(f.topic),
   }));
-  const negs = gradeList(p.negotiation_points, NEG_FIELDS, () => ({ severity: "medium" }));
+  const negs = gradeList(p.negotiation_points, NEG_FIELDS,
+    (f) => ({ severity: "medium", topic: gradeTopic(f.topic) }));
+  /* Obligations go through the SAME grader as everything else: the hedge
+     filter, the length caps and the money check all apply. "You must pay
+     50,000 on exit" is exactly the kind of unattested figure this exists to
+     catch, and an obligation is the last place it should get through. */
+  const obls = gradeList(p.obligations, OBL_FIELDS, (f) => ({ topic: gradeTopic(f.topic) }));
 
   const kept = (l) => l.filter((x) => !x.dropped);
-  const red_flags = kept(reds), negotiation_points = kept(negs);
+  const red_flags = kept(reds), negotiation_points = kept(negs), obligations = kept(obls);
 
   const sum = (k) => {
     const h = hedge(STR(p[k], 600));
@@ -313,14 +333,16 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
     key_terms: terms,
     red_flags,
     negotiation_points,
+    obligations,
     summary_ar: sum("summary_ar"),
     summary_en: sum("summary_en"),
     /* Reported rather than hidden. A build that silently drops half the
        findings looks identical to a contract with nothing wrong in it. */
     dropped: {
-      findings: (reds.length - red_flags.length) + (negs.length - negotiation_points.length),
+      findings: (reds.length - red_flags.length) + (negs.length - negotiation_points.length)
+              + (obls.length - obligations.length),
       terms: droppedTerms,
     },
-    hedged: [...red_flags, ...negotiation_points].some((f) => f.hedged),
+    hedged: [...red_flags, ...negotiation_points, ...obligations].some((f) => f.hedged),
   });
 }

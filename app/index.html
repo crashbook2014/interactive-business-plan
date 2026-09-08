@@ -1179,6 +1179,10 @@
   .ai-find p{font-size:13px;color:var(--ink-2);line-height:1.65}
   .ai-find.attention b{color:var(--red-ink)}
   .ai-find.review b{color:var(--amber-ink)}
+  /* Neutral on purpose. An obligation gets the ink colour of ordinary text
+     rather than a warning colour, because most of them are unremarkable and
+     colouring them as problems would teach the reader to skip them. */
+  .ai-find.duty b{color:var(--teal-ink)}
   .ai-summary{font-size:13px;color:var(--ink-2);line-height:1.65;margin:6px 0}
   .airv-reason{font-size:13px;color:var(--red-ink);line-height:1.65;margin:8px 0}
   .airv-c{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
@@ -3535,6 +3539,9 @@ const T = {
   cr_terms:{ar:"ما ينص عليه العقد",en:"What the contract states"},
   cr_red:{ar:"بنود توقف عندها",en:"Clauses to stop at"},
   cr_neg:{ar:"بنود تستاهل تفاوض",en:"Worth negotiating"},
+  cr_obl:{ar:"وش التزمت فيه أنت",en:"What you agreed to do"},
+  cr_obl_sub:{ar:"مو مشاكل — التزامات عليك أنت، حتى لو كانت عادية ومعقولة.",
+              en:"Not problems — obligations that fall on you, including the ordinary and reasonable ones."},
   cr_none:{ar:"ما طلع شي يستدعي وقفة في البنود اللي قرأناها.",
            en:"Nothing in the clauses we read calls for a pause."},
   cr_low:{ar:"ما قدرنا نقرأ هذا المستند بثقة كافية، فما نعرض عليك بنودًا استخرجناها منه — أفضل من نعطيك أرقامًا ما تأكدنا منها.",
@@ -9441,9 +9448,13 @@ async function crRun(){
 /* One finding. Built as elements rather than a template string because every
    piece of text here originated in a document a third party wrote, and
    textContent is the only assignment that cannot become markup. */
-function crFindingEl(f){
+function crFindingEl(f, kind){
   const el = document.createElement("div");
-  el.className = "ai-find " + (f.severity === "high" ? "attention" : "review");
+  /* An obligation is not a concern and must not be dressed as one. Most of
+     them are perfectly fair — that is exactly why the reader agreed to them
+     and exactly why they forget them. */
+  el.className = "ai-find " + (kind === "duty" ? "duty"
+                             : f.severity === "high" ? "attention" : "review");
 
   /* The clause first, quoted, so the reader can find it in their own document
      — then what is wrong with it, or what to ask for instead. A finding that
@@ -9455,8 +9466,8 @@ function crFindingEl(f){
     q.textContent = clause;
     el.appendChild(q);
   }
-  const body = (lang === "ar" ? (f.issue_ar || f.suggestion_ar)
-                              : (f.issue_en || f.suggestion_en)) || "";
+  const body = (lang === "ar" ? (f.issue_ar || f.suggestion_ar || f.duty_ar)
+                              : (f.issue_en || f.suggestion_en || f.duty_en)) || "";
   const p = document.createElement("p");
   p.textContent = body;
   el.appendChild(p);
@@ -9559,7 +9570,15 @@ function renderCrPanel(){
     sec.appendChild(tbl);
   }
 
-  const lists = [["cr_red", crResult.red_flags], ["cr_neg", crResult.negotiation_points]];
+  /* In a dispute the clause the argument is about leads its list, exactly as
+     it does for a sample contract — the same principle, applied to findings
+     that came back from the model. Severity is untouched here too: this sorts
+     a rendered list and nothing else. */
+  const topic = disputeTopic();
+  const lead = (list) => (!topic || !Array.isArray(list)) ? list
+    : list.slice().sort((a, b) => (b.topic === topic ? 0 : 1) - (a.topic === topic ? 0 : 1));
+
+  const lists = [["cr_red", lead(crResult.red_flags)], ["cr_neg", lead(crResult.negotiation_points)]];
   let any = 0;
   for (const [label, list] of lists){
     if (!Array.isArray(list) || !list.length) continue;
@@ -9568,7 +9587,22 @@ function renderCrPanel(){
     sec.appendChild(h);
     list.forEach(f => sec.appendChild(crFindingEl(f)));
   }
+  /* "Nothing worth stopping at" is decided by the CONCERNS only. A clean
+     contract that nevertheless binds the reader should say both things: there
+     is nothing wrong here, and here is what you are agreeing to. */
   if (!any){ const p = document.createElement("p"); p.textContent = t("cr_none"); sec.appendChild(p); }
+
+  /* Absent on a response from a server that predates this field, which is the
+     normal case until the function is redeployed — Array.isArray carries that
+     without the screen noticing. */
+  const duties = crResult.obligations;
+  if (Array.isArray(duties) && duties.length){
+    const h = document.createElement("p"); h.className = "lib-h"; h.textContent = t("cr_obl");
+    sec.appendChild(h);
+    const sub = document.createElement("p"); sub.className = "caveat"; sub.textContent = t("cr_obl_sub");
+    sec.appendChild(sub);
+    lead(duties).forEach(f => sec.appendChild(crFindingEl(f, "duty")));
+  }
 
   /* Reported, not hidden. A build that silently filtered half the findings
      looks exactly like a contract with nothing wrong in it. */

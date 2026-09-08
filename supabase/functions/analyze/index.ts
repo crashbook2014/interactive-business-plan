@@ -391,12 +391,28 @@ RULES:
 8. If the contract is bilingual and the Arabic and English versions conflict, report that conflict itself as a high-severity red flag — it is the most consequential defect a bilingual contract can have.
 9. The reader's status is given below as Saudi or Resident. A RESIDENT (non-Saudi) works under a fixed-term contract by default and has additional exposure you must actively check for and report when the contract touches it: retention of the passport by the employer, who bears Iqama and work-permit fees, restrictions on transfer of sponsorship or services, and repatriation airfare at the end of the relationship. Do not return the same findings for a Saudi and a Resident reading the same contract when resident-specific issues are present. For a SAUDI reader, do not raise these — they do not apply.
 
+10. "obligations" is what the READER agreed to do, and it is not a list of problems. A notice period they must serve, a non-compete that binds them, maintenance they took on, work they must deliver, revisions they owe: these belong here whether or not they are fair, and most of them are perfectly fair. Do not move an item here to avoid calling it a red flag, and do not repeat a red flag here merely because it also binds the reader — put it where it does the most good and say the obligation plainly in "duty_ar" and "duty_en". An empty list is a fine answer for a contract that asks almost nothing of them; a contract that binds the reader and returns an empty list is a wrong answer, because a reader who sees only their rights walks into the obligation they did not read.
+11. "topic" says what a clause is ABOUT, from the fixed list in the schema. It is used to bring the clause a reader is arguing about to the top of their screen, nothing more. Choose "other" whenever nothing fits — a wrong topic is worse than none, because it puts the wrong clause in front of someone in a dispute.
+
 "clause_ar" and "clause_en" should carry the clause itself or a close paraphrase, so the reader can find it in their own document. Keep each under 300 characters — a citation, not a reproduction of the contract.
 
 At most 8 entries in each list. Empty lists are a good answer when the contract is clean.`;
 
 const CR_STR = { type: ["string", "null"] };
 const CR_NUM = { type: ["number", "null"] };
+
+/* WHAT A CLAUSE IS ABOUT, as a closed list.
+   The client uses this for one thing only: putting the clause a reader's
+   dispute concerns at the top of their result. It is an enum rather than a
+   free string because it is model-supplied data used to order a screen, and a
+   closed set cannot carry anything but one of these words. "other" is the
+   honest default and the client treats it as no topic at all. */
+const CR_TOPIC = {
+  type: "string",
+  enum: ["deposit", "increase", "eviction", "maintenance", "registration",
+         "payment", "delivery", "scope", "ip", "revisions",
+         "notice", "noncompete", "overtime", "pay", "leave", "probation", "other"],
+};
 
 const CR_RED = {
   type: "object",
@@ -407,8 +423,9 @@ const CR_RED = {
     issue_en: { type: "string" },
     law_reference: CR_STR,
     severity: { type: "string", enum: ["high", "medium"] },
+    topic: CR_TOPIC,
   },
-  required: ["clause_ar", "clause_en", "issue_ar", "issue_en", "law_reference", "severity"],
+  required: ["clause_ar", "clause_en", "issue_ar", "issue_en", "law_reference", "severity", "topic"],
   additionalProperties: false,
 };
 
@@ -419,8 +436,9 @@ const CR_NEG = {
     clause_en: { type: "string" },
     suggestion_ar: { type: "string" },
     suggestion_en: { type: "string" },
+    topic: CR_TOPIC,
   },
-  required: ["clause_ar", "clause_en", "suggestion_ar", "suggestion_en"],
+  required: ["clause_ar", "clause_en", "suggestion_ar", "suggestion_en", "topic"],
   additionalProperties: false,
 };
 
@@ -431,6 +449,26 @@ const CR_NEG = {
    score would give two different numbers for the same contract on two runs and
    leave "how was this calculated?" with no answer. The model contributes what
    it is genuinely better at — finding and explaining clauses. */
+/* WHAT THE READER TOOK ON.
+   Deliberately its own list rather than a flag on red_flags or
+   negotiation_points: an obligation is usually neither. A notice period the
+   reader must serve is not a red flag and there is nothing to negotiate about
+   it — it is simply a thing they agreed to do and will be held to. Folding it
+   into the other two lists would have meant either inventing a problem where
+   there is none, or leaving it out, which is what the product did before. */
+const CR_OBL = {
+  type: "object",
+  properties: {
+    clause_ar: { type: "string" },
+    clause_en: { type: "string" },
+    duty_ar: { type: "string" },
+    duty_en: { type: "string" },
+    topic: CR_TOPIC,
+  },
+  required: ["clause_ar", "clause_en", "duty_ar", "duty_en", "topic"],
+  additionalProperties: false,
+};
+
 const CR_SCHEMA = {
   type: "object",
   properties: {
@@ -467,11 +505,12 @@ const CR_SCHEMA = {
     },
     red_flags: { type: "array", items: CR_RED },
     negotiation_points: { type: "array", items: CR_NEG },
+    obligations: { type: "array", items: CR_OBL },
     summary_ar: { type: "string" },
     summary_en: { type: "string" },
   },
   required: ["contract_meta", "key_terms", "red_flags", "negotiation_points",
-             "summary_ar", "summary_en"],
+             "obligations", "summary_ar", "summary_en"],
   additionalProperties: false,
 };
 

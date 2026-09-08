@@ -374,6 +374,119 @@ const base = (over) => Object.assign({
   ok(!/خلاصة واثقة/.test(lowConf.text),
      "and shows no summary — the confident sentence is the most misleading thing on a document we could not read");
 
+  /* ---- obligations, and the topic vocabulary
+   * An obligation is not a red flag and not a negotiation point, so it is its
+   * own list. It goes through the SAME grader as the other two — the hedge
+   * filter, the length caps, the money check — because "you must pay 50,000 on
+   * exit" is exactly the unattested figure that filter exists to catch, and an
+   * obligation is the last place it should get through.
+   */
+  console.log("\n— what the reader agreed to do");
+  const withDuties = run({ obligations: [
+    { clause_ar: "مدة الإشعار", clause_en: "Notice period",
+      duty_ar: "تلتزم بإشعار ثلاثين يومًا", duty_en: "You must give thirty days notice",
+      topic: "notice" },
+  ] });
+  ok(Array.isArray(withDuties.obligations) && withDuties.obligations.length === 1,
+     `an obligation survives grading (${(withDuties.obligations || []).length})`);
+  ok(withDuties.obligations[0].topic === "notice", "and keeps its topic");
+
+  /* The model supplies the topic, so it is checked against the vocabulary
+     rather than trusted to be in it — it decides which clause sits at the top
+     of the screen for someone in a dispute. */
+  const badTopic = run({ obligations: [
+    { clause_ar: "بند", clause_en: "Clause", duty_ar: "التزام", duty_en: "A duty",
+      topic: "definitely-not-a-topic" },
+  ] });
+  ok(badTopic.obligations[0].topic === "other",
+     `a topic outside the vocabulary becomes "other" (${badTopic.obligations[0].topic})`);
+
+  /* The money rule applies here too. */
+  const richDuty = run({ obligations: [
+    { clause_ar: "شرط جزائي", clause_en: "Penalty", duty_ar: "تدفع 50,000 ريال عند الإنهاء",
+      duty_en: "You must pay 50,000 SAR on exit", topic: "other" },
+  ] });
+  ok(richDuty.obligations.length === 0,
+     `an obligation stating a figure the contract never mentions is dropped (${richDuty.obligations.length})`);
+  ok(richDuty.dropped.findings > 0, "and the drop is reported rather than hidden");
+
+  /* An unreadable document yields no obligations either — the same rule that
+     empties the terms and the findings. */
+  const lowObl = run({ contract_meta: Object.assign(base({}).contract_meta,
+    { extraction_confidence: "low" }), obligations: [
+    { clause_ar: "بند", clause_en: "Clause", duty_ar: "التزام", duty_en: "Duty", topic: "other" }] });
+  ok(Array.isArray(lowObl.obligations) && lowObl.obligations.length === 0,
+     "a document we could not read yields no obligations, whatever the payload said");
+
+  /* ---- THE DEPLOYED FUNCTION DOES NOT KNOW ABOUT ANY OF THIS.
+   * Production runs analyze v6. Its responses carry no `obligations` array and
+   * no `topic` on any finding, and it will keep doing so until somebody with
+   * Supabase access redeploys — which is not something this repo can do for
+   * itself. So the client has to render a v6 response exactly as well as it
+   * did before the schema grew, and "it is safe by construction" is a claim
+   * rather than a proof until something asserts it.
+   *
+   * A missing array is not the same as an empty one, and this is the
+   * difference: an empty obligations list means the model looked and found
+   * none; a missing one means the server has never heard of the question. The
+   * screen must say nothing in both cases, and must not throw in either.
+   */
+  console.log("\n— a response from the function that is actually deployed");
+  const legacy = await p2.evaluate(() => {
+    const errs = [];
+    window.addEventListener("error", (e) => errs.push(e.message), { once: true });
+    /* Exactly the v6 shape: no obligations key at all, no topic on findings. */
+    crResult = {
+      contract_meta: { contract_type_ar: "عقد عمل", contract_type_en: "Employment contract",
+                       parties_identified: true, extraction_confidence: "high",
+                       extraction_notes_ar: "", extraction_notes_en: "" },
+      key_terms: { position_ar: "مطور", position_en: "Developer", salary_amount: 10000,
+                   salary_currency: "SAR", probation_period_days: 90, contract_duration: null,
+                   notice_period_days: 30, working_hours_per_week: 48 },
+      red_flags: [{ clause_ar: "بند عدم المنافسة", clause_en: "Non-compete",
+                    issue_ar: "واسع جدًا", issue_en: "Unusually broad",
+                    law_reference: null, severity: "high" }],
+      negotiation_points: [],
+      summary_ar: "ملخص", summary_en: "Summary",
+      disclaimer_ar: "تنويه", disclaimer_en: "Disclaimer",
+      dropped: { findings: 0, terms: [] },
+    };
+    crError = null; crBusy = false;
+    let threw = null;
+    try { renderCrPanel(); } catch (e) { threw = String(e && e.message || e); }
+    const host = document.getElementById("crPanel");
+    return {
+      threw, errs,
+      html: host.textContent,
+      findings: host.querySelectorAll(".ai-find").length,
+      duties: host.querySelectorAll(".ai-find.duty").length,
+      /* And with a dispute journey set, since that is the path that reads
+         `topic` off findings which a v6 response does not have. */
+    };
+  });
+  ok(!legacy.threw, `a v6 response renders without throwing (${legacy.threw || "no error"})`);
+  ok(legacy.findings === 1, `its findings still render (${legacy.findings})`);
+  ok(legacy.duties === 0, "and no duties section is invented for it");
+  ok(/عدم المنافسة/.test(legacy.html), "the finding's clause is on screen");
+
+  /* The dispute ordering reads `topic` off every finding. On a v6 response
+     that property is undefined on all of them, which must sort harmlessly
+     rather than reordering by accident or throwing. */
+  const legacyDispute = await p2.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("home"); pickSituation("rent"); setRentClaim("deposit");
+    let threw = null;
+    try { renderCrPanel(); } catch (e) { threw = String(e && e.message || e); }
+    const host = document.getElementById("crPanel");
+    return { threw, findings: host.querySelectorAll(".ai-find").length,
+             first: (host.querySelector(".ai-find b") || {}).textContent || "" };
+  });
+  ok(!legacyDispute.threw,
+     `and renders in a dispute, where topic is read (${legacyDispute.threw || "no error"})`);
+  ok(legacyDispute.findings === 1, `with its finding intact (${legacyDispute.findings})`);
+  ok(/عدم المنافسة/.test(legacyDispute.first),
+     `and nothing reordered out from under it (${legacyDispute.first})`);
+
   await b.close();
 
   console.log(FAIL.length
