@@ -258,6 +258,44 @@
     .desk-aside .meta{margin-top:20px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px}
   }
 
+  /* TWO COLUMNS, BUT ONLY WHERE A SCREEN ASKS FOR THEM.
+   *
+   * Widening the frame for all thirty screens would stretch thirty linear
+   * forms across a laptop, which is worse than the phone column, not better.
+   * So a screen opts in with .dk-split and marks the child that belongs in the
+   * second column with data-col="2". Everything else keeps the 440px frame.
+   *
+   * RTL COMES FREE, AND IS STILL TESTED. Grid places columns along the inline
+   * axis, which follows `direction`, so column one lands on the right in
+   * Arabic with no second rule. Free is not the same as verified — see
+   * desktop.test.js.
+   *
+   * SOURCE ORDER IS UNTOUCHED. The second column is positioned, never moved,
+   * so tab order still runs down the form and #eosOut keeps the aria-live
+   * region it had. A reader on a screen reader hears the same app either way.
+   *
+   * 1100px, not 900: at 900 the frame plus the aside plus two usable columns
+   * do not fit, and the result is two cramped columns instead of one good one.
+   */
+  @media (min-width:1100px){
+    /* max-width:440px on the base .app rule caps this, so the cap moves with
+       it. 420px reserved for the aside plus the gaps, so a split screen never
+       pushes the aside off the side of the window. */
+    .app.wide{max-width:min(920px,calc(100vw - 420px));width:100%}
+    /* .screen.active{display:flex} is declared later in this file at equal
+       specificity and would otherwise win, leaving a split screen stacked. */
+    .screen.active.dk-split{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
+    /* Everything spans both columns by default — a header, a title, a
+       disclaimer — so a child added later cannot silently land in a column it
+       was not designed for. Only the two wrappers take a single column. */
+    .screen.active.dk-split > *{grid-column:1/-1}
+    .screen.active.dk-split > .dk-a{grid-column:1}
+    .screen.active.dk-split > .dk-b{grid-column:2}
+    /* The right column sits with the top of the left one rather than centred
+       against a form that grows as the reader fills it in. */
+    .screen.active.dk-split > .dk-b{align-self:start;position:sticky;top:0}
+  }
+
   /* The frame only becomes a fixed-height scroll box when the window is tall
      enough to hold a usable one. It used to do this at any height: on a
      1280×720 or 1024×768 laptop the home screen's 1329px squeezed into a 660px
@@ -2445,10 +2483,11 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   </section>
 
   <!-- END OF SERVICE -->
-  <section class="screen" id="screen-eos">
+  <section class="screen dk-split" id="screen-eos">
     <button class="back" onclick="goTab('rights')"><span class="bk" aria-hidden="true">‹</span><span data-t="back_rights"></span></button>
     <h2 class="section-title" data-t="eos_title"></h2>
     <p class="pw-note" data-t="eos_sub"></p>
+    <div class="dk-a">
     <div class="form">
       <label class="fld" for="eosStart"><span data-t="eos_start"></span><input type="date" id="eosStart"/></label>
       <label class="fld" for="eosEnd"><span data-t="eos_end"></span><input type="date" id="eosEnd"/></label>
@@ -2473,8 +2512,16 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       </div>
     </div>
     <button class="primary" onclick="calcEos()" data-t="eos_calc"></button>
-    <div id="eosOut" aria-live="polite"></div>
-    <p class="src-line law" id="eosSrc" data-t="src_eos" hidden></p>
+    </div>
+    <!-- The result. On a laptop it sits beside the inputs rather than under
+         them, so a reader changing a date sees the number move without
+         scrolling. On a phone this wrapper is a plain div and the order is
+         exactly what it always was — which is also why aria-live still
+         announces from the right place. -->
+    <div class="dk-b">
+      <div id="eosOut" aria-live="polite"></div>
+      <p class="src-line law" id="eosSrc" data-t="src_eos" hidden></p>
+    </div>
     <p class="disclaimer" data-t="eos_verify"></p>
   </section>
 
@@ -3775,9 +3822,35 @@ const T = {
   tl_in:{ar:"بعد {n} يوم",en:"in {n} days"},
   tl_reminders:{ar:"تذكيراتك",en:"Your reminders"},
   desk_title:{ar:"اقرأ عقدك بوضوح — قبل ما توقّع.",en:"Read your contract clearly — before you sign."},
+  /* THE ASIDE FOLLOWS THE READER. It used to be one pitch, written once in
+     applyLang() and never touched again, so a person calculating what they are
+     owed after being fired sat beside "read your contract — before you sign"
+     for the whole session. Same defect as the intake headline fixed in
+     71ce2d0, except this one is next to them the entire time rather than for
+     one screen. Every entry below is the pitch for the thing the reader is
+     ACTUALLY doing; anything not listed falls back to the pitch above, which
+     is correct for the home screen where it was written. */
+  desk_term_h:{ar:"انتهى عملك؟ خلنا نعرف وش لك.",en:"Job ended? Let's work out where you stand."},
+  desk_term_p:{ar:"نمشي معك خطوة خطوة: وش صار، وش يقوله النظام، وكم المستحق بحسب الظاهر — وكل رقم ومعه مصدره.",
+               en:"Step by step: what happened, what the law says, and what is owed on the face of it — every figure with its source."},
+  desk_eos_h:{ar:"كم تستحق؟",en:"What are you owed?"},
+  desk_eos_p:{ar:"احسب مكافأة نهاية الخدمة ومستحقاتك على المادتين 84 و85. الحساب كله يصير على جهازك.",
+              en:"Work out your end-of-service award and what is owed, on Articles 84 and 85. All of it computed on your device."},
+  desk_rent_h:{ar:"خلاف مع المؤجّر؟",en:"A dispute with your landlord?"},
+  desk_rent_p:{ar:"نقرأ عقد الإيجار، ونوضّح البنود اللي تخص التأمين والزيادة والإخلاء، ونجهّز لك مطالبة مكتوبة.",
+               en:"We read the lease, explain the clauses on the deposit, increases and eviction, and prepare a written claim."},
+  desk_gig_h:{ar:"سلّمت وما استلمت؟",en:"Delivered, and not paid?"},
+  desk_gig_p:{ar:"نقرأ عقد العمل الحر، ونشوف وش يقوله عن السداد والتسليم، ونجهّز مطالبة تستند لنص عقدك.",
+              en:"We read the freelance contract, see what it says about payment and delivery, and prepare a claim resting on its own wording."},
+  desk_rights_h:{ar:"اعرف حقوقك قبل ما تحتاجها.",en:"Know your rights before you need them."},
+  desk_rights_p:{ar:"إجابات قصيرة عن نظام العمل السعودي، كل وحدة ومعها مصدرها — ونقول لك بصراحة متى ما تحققنا.",
+                 en:"Short answers on Saudi labour law, each with its source — and we say plainly when we have not verified one."},
   desk_sub:{ar:"وضوح يشرح عقود العمل والإيجار والعمل الحر بلغة بسيطة، وينبّهك للمخاطر، ويعطيك خلاصة واضحة.",
             en:"Wodouh explains employment, rental, and freelance contracts in plain language, flags the risks, and gives you a clear verdict."},
-  desk_meta:{ar:"نموذج تفاعلي — جرّبه بنفسك",en:"Interactive prototype — try it yourself"},
+  /* It said "interactive prototype" — written before launch and still there
+     after it, beside a product real people are using. Replaced with the thing
+     that is both true and the strongest reason to trust it. */
+  desk_meta:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
   paste_hint:{ar:"الصق نص العقد كاملًا — 40 حرفًا على الأقل.",en:"Paste the full contract text — 40 characters minimum."},
   pl_title:{ar:"الخطط والأسعار",en:"Plans & pricing"},
   pl_sub:{ar:"التقييم والتنبيهات مجانية دائمًا. ادفع فقط لما تحتاج مخرجات أو فريقًا.",
@@ -5670,8 +5743,10 @@ function applyLang(){
   document.documentElement.style.setProperty("--dir", lang==="ar" ? "-1" : "1");
   renderNoread();
   document.getElementById("offlineNotice").textContent = t("offline");
-  document.getElementById("deskTitle").textContent = t("desk_title");
-  document.getElementById("deskSub").textContent = t("desk_sub");
+  /* Through the same function the navigation uses, so a language toggle cannot
+     reset the aside to the home pitch while the reader is mid-flow. */
+  const active = document.querySelector(".screen.active");
+  renderDeskAside(active ? active.id.replace("screen-", "") : "home");
   document.getElementById("deskMeta").textContent = t("desk_meta");
   renderOnboard();
   renderMode();
@@ -5746,7 +5821,39 @@ function show(name, back){
   if (typeof renderTabs === "function") renderTabs();
   if (typeof renderAskEntry === "function") renderAskEntry();
   if (typeof renderSituations === "function") renderSituations();
+  if (typeof renderDeskAside === "function") renderDeskAside(name);
+  /* The frame widens only for a screen that asked for two columns, and narrows
+     again the moment the reader leaves it. Driven from here because show() is
+     the one place every navigation already passes through. */
+  const app = document.querySelector(".app");
+  if (app) app.classList.toggle("wide", el.classList.contains("dk-split"));
   if (typeof armReveals === "function") requestAnimationFrame(()=>armReveals(el));
+}
+
+/* WHICH PITCH BELONGS BESIDE THIS SCREEN.
+ *
+ * Keyed by screen first, then by journey, then the default. The termination
+ * flow is seven screens and they all want the same thing said, so they are
+ * matched by prefix rather than listed one by one — a screen added to that
+ * flow next year inherits the right aside without anyone remembering this.
+ *
+ * Only ever visible at ≥900px. On a phone this function does nothing the
+ * reader can see, which is why it is safe to call on every navigation.
+ */
+function deskAsideKeys(name){
+  if (/^term/.test(name)) return "desk_term";
+  if (name === "eos" || name === "case" || name === "casedoc") return "desk_eos";
+  if (name === "rights" || name === "ask") return "desk_rights";
+  if (journey === "rent") return "desk_rent";
+  if (journey === "gig") return "desk_gig";
+  return null;
+}
+function renderDeskAside(name){
+  const title = document.getElementById("deskTitle"), sub = document.getElementById("deskSub");
+  if (!title || !sub) return;
+  const k = deskAsideKeys(name);
+  title.textContent = t(k ? k + "_h" : "desk_title");
+  sub.textContent = t(k ? k + "_p" : "desk_sub");
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */
