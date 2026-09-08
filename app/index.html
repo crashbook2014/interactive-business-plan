@@ -3746,6 +3746,16 @@ const T = {
      same job, and needs no data to be true. */
   plan_pop:{ar:"نوصي به",en:"We recommend this"},
   copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
+  /* ON THE CASE DOCUMENTS ONLY, and deliberately not on either letter.
+     A case file is a working document: it goes to the reader, to a lawyer and
+     to the friendly-settlement filing, and saying how it was prepared is
+     useful there — it is a tool's output and should not be mistaken for a
+     lawyer's.
+     A letter is different. It is signed in the reader's own name and handed to
+     the other side, and our line at the bottom tells a landlord or an employer
+     that it came out of an app — which invites them to weigh it as software
+     rather than as the sender's own demand. It is also our branding on
+     someone else's correspondence, placed there by us and not by them. */
   lt_foot:{ar:"أُعدّ بمساعدة وضوح",en:"Prepared with Wodouh"},
   copied:{ar:"نُسخ ✓",en:"Copied ✓"},
   tr_title:{ar:"ذكّرني بمواعيد هذا العقد",en:"Track this contract's deadlines"},
@@ -6169,7 +6179,19 @@ function renderResult(reset){
      locked panel below. The moment a bigger number is worth more money, the
      score stops meaning anything, and the score is the entire product. */
   const full = reviewUnlocked();
-  const SEV = { bad:0, warn:1, ok:2 };
+  /* THE VOCABULARY THE CLAUSES ACTUALLY USE.
+     This read { bad:0, warn:1, ok:2 } — three words that appear nowhere in a
+     clause. Every severity in this app is red, amber or green, so SEV[c.s] was
+     undefined on all of them, fell through to ?? 9, and the sort below ranked
+     every clause equal: a no-op deciding THE SINGLE FLAG a free reader is
+     shown. What they got was whichever clause happened to be first in the
+     array.
+     It looked right only because two unrelated things kept it right — the
+     samples are authored red-first, and analyzePasted() sorts red/amber/green
+     before returning. Either could have changed without anyone looking at this
+     line, and the reader would have been shown a green clause as the one
+     finding on a contract with a red flag in it. */
+  const SEV = { red:0, amber:1, green:2 };
   /* Carry the TRUE index alongside each clause. letterSet and addBtnHtml are
      keyed by position in current.clauses, so handing the loop a sorted array's
      position would have added a different clause to the letter than the one
@@ -6185,11 +6207,15 @@ function renderResult(reset){
      of the person reading it. Only the order does. */
   const topic = disputeTopic();
   const rank = (x) => (topic && x.c.topic === topic ? -1 : 0);
+  /* Worst first in both views. The full list was ordered by dispute relevance
+     alone, so everything below the disputed clause sat in whatever order it
+     was authored in — which is no order at all to a reader scanning for what
+     to fix with a day to decide. Sorting is safe here because each entry
+     carries its true index alongside it; see the note above. */
+  const bySeverity = (a, b) => (rank(a) - rank(b)) || (SEV[a.c.s] ?? 9) - (SEV[b.c.s] ?? 9);
   const ordered = (full
-    ? current.clauses.map((c, i) => ({ c, i })).sort((a, b) => rank(a) - rank(b))
-    : current.clauses.map((c, i) => ({ c, i }))
-        .sort((a, b) => (rank(a) - rank(b)) || (SEV[a.c.s] ?? 9) - (SEV[b.c.s] ?? 9))
-        .slice(0, 1));
+    ? current.clauses.map((c, i) => ({ c, i })).sort(bySeverity)
+    : current.clauses.map((c, i) => ({ c, i })).sort(bySeverity).slice(0, 1));
   ordered.forEach(({ c, i: idx }, pos)=>{
     const div = document.createElement("div");
     div.className = "flag " + c.s + (topic && c.topic === topic ? " indispute" : "");
@@ -10124,7 +10150,9 @@ function renderTermLtr(){
   if (!term || !has("case")) return;
   renderTermTone();
   document.getElementById("termLtrBody").textContent = buildTermLtr();
-  document.getElementById("termLtrFoot").textContent = t("lt_foot");
+  /* NO FOOTER ON A LETTER. See the note by lt_foot: the case documents keep
+     their provenance, the letters do not. */
+  document.getElementById("termLtrFoot").textContent = "";
   document.getElementById("termLtrCopy").textContent = t("copy_btn");
   /* Rendered with textContent per item rather than as markup: these lines are
      copy, but the habit of building lists with innerHTML is how a translated
@@ -13182,7 +13210,7 @@ function renderLetter(){
   if (!current || !selected().length) return;
   document.getElementById("letterBody").textContent = letterText();
   document.getElementById("copyBtn").textContent = t("copy_btn");
-  document.getElementById("letterFoot").textContent = t("lt_foot");
+  document.getElementById("letterFoot").textContent = "";
   /* Sending guidance belongs to the demand letter only: proof of receipt and
      a forum to escalate to are dispute concerns. A negotiation letter goes to
      someone the reader is still hoping to work with. */

@@ -66,6 +66,43 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      `a rent dispute scores it identically (${JSON.stringify(scores.contract)} vs ${JSON.stringify(scores.rent)})`);
   ok(JSON.stringify(scores.contract) === JSON.stringify(scores.gig),
      `and so does a freelance dispute (${JSON.stringify(scores.gig)})`);
+  /* ---- SEVERITY ORDER, which decides the one flag a free reader is shown.
+   *
+   * This sort was dead. It read SEV[c.s] from a map keyed { bad, warn, ok }
+   * while every clause in the app is red, amber or green — so the lookup was
+   * undefined on all of them, every clause ranked equal, and the free scan
+   * showed whichever clause happened to sit first in the array.
+   *
+   * It passed inspection for as long as it did because two unrelated things
+   * kept it accidentally right: the samples are authored red-first, and
+   * analyzePasted() sorts before returning. So the test has to break that
+   * accident deliberately — a contract whose green clauses come first is the
+   * only shape that can tell a working sort from a dead one, and it is the
+   * shape no fixture had.
+   */
+  console.log("\n— the worst clause leads, whatever order it was written in");
+  const order = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    const worstOf = (clauses) => {
+      current = { score: 60, doc: "doc_emp",
+                  verdict: { ar: "x", en: "x" }, clauses };
+      show("result"); renderResult(true); renderClauses();
+      return (document.querySelector("#flags .flag") || {}).className || "";
+    };
+    const base = JSON.parse(JSON.stringify(SAMPLES.employment)).clauses;
+    return {
+      authored: worstOf(base),
+      /* the same contract, written down backwards */
+      reversed: worstOf(base.slice().reverse()),
+      /* and with the red clause buried in the middle */
+      shuffled: worstOf([base[3], base[4], base[0], base[1], base[2]].filter(Boolean)),
+    };
+  });
+  for (const [how, cls] of Object.entries(order)) {
+    ok(/\bred\b/.test(cls),
+       `${how} order still leads with the red clause (${cls.trim() || "none"})`);
+  }
+
   /* ---- relevance: the disputed clause leads, and says why it is there */
   for (const lang of ["ar", "en"]) {
     console.log(`\n— ${lang}: the clause the dispute is about comes first`);

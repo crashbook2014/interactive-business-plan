@@ -111,6 +111,34 @@ const DEADLINE = /fifteen days|خمسة عشر يومًا/;
   ok(!/التأمين/.test(claims.eviction),
      "and an eviction letter does not demand a deposit nobody mentioned");
 
+  /* ---- whose name is at the bottom.
+     A letter is signed by the reader and handed to the other side. Our line at
+     the foot of it told a landlord or an employer that it came out of an app,
+     which invites them to weigh it as software rather than as the sender's own
+     demand — and it is our branding on someone else's correspondence, put
+     there by us. The case documents keep it, because provenance is useful on a
+     working file that reaches a lawyer. */
+  console.log("\n— our name is not at the bottom of the reader's letter");
+  const feet = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("home"); pickSituation("rent");
+    current = SAMPLES.rental; show("result"); renderResult(true); renderClauses();
+    addAllPoints(); renderLetter(); show("letter");
+    const demand = (document.getElementById("letterFoot") || {}).textContent || "";
+    /* and the employer letter, which is built by a different path */
+    term = Object.assign(blankTerm(), { how: "employer", start: "2020-01-01",
+      end: "2026-01-01", wage: 10000, docs: ["d_contract"] });
+    renderTermLtr();
+    const employer = (document.getElementById("termLtrFoot") || {}).textContent || "";
+    renderTermDoc();
+    const caseDoc = (document.getElementById("termDocFoot") || {}).textContent || "";
+    return { demand, employer, caseDoc };
+  });
+  ok(feet.demand.trim() === "", `the demand letter carries no footer (${JSON.stringify(feet.demand)})`);
+  ok(feet.employer.trim() === "", `nor does the employer letter (${JSON.stringify(feet.employer)})`);
+  ok(feet.caseDoc.trim().length > 0,
+     `but the case file keeps its provenance (${feet.caseDoc.trim()})`);
+
   /* ---- the negotiation letter is untouched for a reader who has not signed */
   console.log("\n— before signing, the letter is still a negotiation");
   const neg = await p.evaluate(() => {

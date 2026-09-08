@@ -166,6 +166,23 @@ a theoretical one.
   shipped build, in both languages. Deleting the photo screen resolved it, and
   `test/copy-keys.test.js` now fails the build on any collision.
 
+- **The free scan showed the first clause, not the worst one** (Sept 2026) —
+  the sort that picks the single flag a free reader sees read its severities
+  from a map keyed `{bad, warn, ok}`, while every clause in the app is `red`,
+  `amber` or `green`. The lookup was undefined on all of them, every clause
+  ranked equal, and the sort did nothing. It stayed accidentally right only
+  because the samples are authored red-first and `analyzePasted()` sorts before
+  returning — either could have changed and a reader would have been shown a
+  green clause as the one finding on a contract with a red flag in it. Guarded
+  now with contracts written down backwards and shuffled.
+
+- **Our name is off the reader's letters** (Sept 2026) — «أُعدّ بمساعدة وضوح»
+  was printed on the employer letter and the demand letters, which are signed
+  in the reader's name and handed to the other side. It told a landlord or an
+  employer that the letter came out of an app, and it was our branding on
+  someone else's correspondence. The case documents keep it: provenance is
+  useful on a working file that reaches a lawyer.
+
 - **Email sign-in by one-time code** — no password path, by design.
 - **Google sign-in.**
 - **The sign-in gate** (Sept 2026) — an account is required for everything
