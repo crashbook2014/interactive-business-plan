@@ -2887,8 +2887,6 @@ function ensureFlags(){
   if (cached && Object.keys(cached).length){ flagValues = cached; applyFlags(); }
 
   flagPending = (async () => {
-    const ctl = typeof AbortController === "function" ? new AbortController() : null;
-    const timer = setTimeout(() => ctl && ctl.abort(), FLAG_TIMEOUT);
     try {
       /* The `apikey` header alone. Supabase resolves it to the anonymous role,
          and that is true of both the legacy JWT keys and the newer opaque
@@ -2898,11 +2896,13 @@ function ensureFlags(){
          for a key format that is not a JWT at all. Nobody is signed in on this
          path by definition — it is a public table. */
       const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
-      const res = await fetch(url, {
+      /* Two seconds, not thirty: this is a flag lookup behind a compiled
+         default that already holds, so waiting on it would delay the app to
+         learn something it can do without. */
+      const res = await fetchWithDeadline(url, {
         headers: { apikey: key },
-        signal: ctl ? ctl.signal : undefined,
         cache: "no-store",
-      });
+      }, FLAG_TIMEOUT);
       if (!res.ok) return false;
       const rows = await res.json();
       flagValues = flagShape(rows);
@@ -2914,7 +2914,7 @@ function ensureFlags(){
          compiled default already holds; there is nothing to tell the reader
          and nothing to retry in front of them. */
       return false;
-    } finally { clearTimeout(timer); }
+    }
   })();
   return flagPending;
 }
@@ -4420,6 +4420,14 @@ const T = {
   ai_busy:{ar:"الخدمة مزدحمة حاليًا. جرّب بعد دقيقة.",en:"The service is busy right now. Try again in a minute."},
   ai_failed:{ar:"ما قدرنا نكمل القراءة. تقييمك أعلاه ما تأثر.",
              en:"We couldn't complete the read. Your assessment above is unaffected."},
+  /* A DEADLINE IS NOT A DISCONNECTION, and telling the reader it is sends them
+     hunting for a fault on their end that is not there. This says the service
+     was slow, which is ours, and says the thing that matters either way: the
+     assessment they are looking at was never waiting on it. */
+  ai_timeout:{ar:"الخدمة تأخرت أكثر من اللازم، فأوقفنا الانتظار. تقييمك أعلاه محسوب على جهازك وما تأثر — جرّب مرة ثانية إذا تبي.",
+              en:"The service took too long, so we stopped waiting. Your assessment above is computed on your device and is unaffected — try again if you like."},
+  ask_timeout:{ar:"الخدمة تأخرت أكثر من اللازم، فأوقفنا الانتظار وما وصلك جواب. باقي وضوح كله شغّال على جهازك.",
+               en:"The service took too long, so we stopped waiting and no answer arrived. The rest of Wodouh keeps working on your device."},
   ai_offline:{ar:"ما فيه اتصال. تقييمك أعلاه محسوب على جهازك وما تأثر.",
               en:"No connection. Your assessment above was calculated on your device and is unaffected."},
   /* --- Article 87 exceptions */
@@ -8970,6 +8978,43 @@ function analyzeUrl(){
    same header, for the same reason, as the flagsUrl() fetch above. Without
    it every analyze call gets UNAUTHORIZED_NO_AUTH_HEADER before the function
    ever runs; proven directly against the deployed gateway this session. */
+/* EVERY REQUEST GETS A DEADLINE.
+ *
+ * A stalled connection does not reject. A phone that walks into a lift, or on
+ * to a captive-portal wifi that swallows the packet, leaves fetch() pending
+ * for as long as the page lives — so the three screens that wait on an answer
+ * showed a working state forever, with nothing to press and nothing said. The
+ * reader is left believing the app is thinking about their contract when
+ * nothing is happening at all, and the one most likely to sit through it is
+ * the one who most needs the answer.
+ *
+ * Two of the five call sites already did this correctly, each carrying its own
+ * copy of the same six lines. This is those six lines, once, so the three that
+ * did not do it cannot be fixed differently from the two that did.
+ *
+ * A deadline is deliberately NOT the same thing as being offline. Offline
+ * means try again when you have signal; a deadline hit means the service took
+ * too long, which is our problem rather than the reader's — telling them to
+ * check their connection would send them looking for a fault that is not
+ * there.
+ */
+/* `let`, not `const`, for the same reason FREE_NOW is: the suites need to be
+   able to shorten it. A test that proves a thirty-second deadline by waiting
+   thirty seconds is a test nobody runs. */
+let AI_TIMEOUT_MS = 30000;
+async function fetchWithDeadline(url, opts, ms){
+  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), ms || AI_TIMEOUT_MS) : null;
+  try {
+    return await fetch(url, Object.assign({}, opts, ctrl ? { signal: ctrl.signal } : {}));
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+/* Which of the two a caught exception was: AbortError is the deadline, and
+   anything else reaching here is the network. */
+function isTimeout(e){ return !!e && e.name === "AbortError"; }
+
 function analyzeHeaders(extra){
   const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
   return Object.assign({ "content-type": "application/json" }, key ? { apikey: key } : {}, extra || {});
@@ -9282,7 +9327,7 @@ async function askRun(){
     } else {
       askTrim = null;
     }
-    const res = await fetch(url, {
+    const res = await fetchWithDeadline(url, {
       method: "POST",
       headers: analyzeHeaders(),
       body: JSON.stringify(body)
@@ -9335,7 +9380,7 @@ async function askRun(){
       askText = "";   /* answered — now the box can empty */
     }
   } catch(e){
-    askError = "ask_offline";
+    askError = isTimeout(e) ? "ask_timeout" : "ask_offline";
   }
   askBusy = false;
   renderAsk();
@@ -9424,7 +9469,7 @@ async function aiRun(){
   aiTrim = trim.cut ? trim : null;
   aiBusy = true; aiError = null; renderAiPanel();
   try {
-    const res = await fetch(url, {
+    const res = await fetchWithDeadline(url, {
       method: "POST",
       headers: analyzeHeaders(),
       body: JSON.stringify({ kind: "contract", text: trim.text })
@@ -9447,7 +9492,7 @@ async function aiRun(){
       };
     }
   } catch(e){
-    aiError = "ai_offline";
+    aiError = isTimeout(e) ? "ai_timeout" : "ai_offline";
   }
   aiBusy = false;
   renderAiPanel();
@@ -9512,7 +9557,7 @@ async function crRun(){
   crTrim = crT.cut ? crT : null;
   crBusy = true; crError = null; crResult = null; renderCrPanel();
   try {
-    const res = await fetch(url, {
+    const res = await fetchWithDeadline(url, {
       method: "POST",
       headers: analyzeHeaders(),
       /* The track the reader chose, sent as context. A resident and a Saudi
@@ -9529,7 +9574,7 @@ async function crRun(){
       crResult = data;
     }
   } catch(e){
-    crError = "ai_offline";
+    crError = isTimeout(e) ? "ai_timeout" : "ai_offline";
   }
   crBusy = false;
   renderCrPanel();
@@ -9802,18 +9847,17 @@ async function aiReview(){
   if (!aiReviewOn() || !term) return;
   aiRvState = "working"; aiRvResult = null;
 
-  const ctrl = new AbortController();
-  /* The reader must never be stuck behind a network call to see their own
-     assessment. On timeout we render exactly what we would have rendered
-     offline, and say the pass did not finish. */
-  const timer = setTimeout(() => ctrl.abort(), AI_REVIEW_TIMEOUT_MS);
   try {
-    const res = await fetch(analyzeUrl(), {
+    /* The reader must never be stuck behind a network call to see their own
+       assessment. On a deadline we render exactly what we would have rendered
+       offline, and say the pass did not finish. Fifteen seconds rather than
+       the default thirty: the assessment is already on screen and this is an
+       extra opinion on top of it. */
+    const res = await fetchWithDeadline(analyzeUrl(), {
       method: "POST",
       headers: analyzeHeaders(),
-      signal: ctrl.signal,
       body: JSON.stringify({ kind: "review", assessment: reviewPayload() })
-    });
+    }, AI_REVIEW_TIMEOUT_MS);
     const data = await res.json().catch(() => null);
     if (!res.ok || !data || !Array.isArray(data.concerns)){
       aiRvState = res.status === 429 ? "busy" : "failed";
@@ -9832,9 +9876,8 @@ async function aiReview(){
       aiRvState = "done";
     }
   } catch(e){
-    aiRvState = e && e.name === "AbortError" ? "timeout" : "offline";
+    aiRvState = isTimeout(e) ? "timeout" : "offline";
   }
-  clearTimeout(timer);
 }
 
 /* What a concern is actually allowed to do. Returns the concern annotated with

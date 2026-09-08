@@ -49,6 +49,7 @@ const ORDER = [
   "contract-review.test.js",
   "termination.test.js",
   "claude-path.test.js",
+  "network-deadline.test.js",
   "ai-context.test.js",
   "duties-relevance.test.js",
   "demand-letter.test.js",
