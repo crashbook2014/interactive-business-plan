@@ -7,20 +7,21 @@
  * them runs at 390×844, so the desktop layout had never been rendered by
  * anything that looks at it.
  *
- * Three defects, all invisible to a phone-sized test:
+ * It said it twice. The first answer was a framed phone on a warm backdrop
+ * with a brand panel beside it, and this suite grew up asserting that frame's
+ * geometry — a 56px gap, a fixed height, no page scroll. Measured properly the
+ * frame was worse than the phone it imitated: the eight doors on home rendered
+ * at 199px on a 1440px laptop against 354px on a 390px phone, and the
+ * calculator's only button sat 32px below the bottom of a scroll box that
+ * gives no hint it scrolls.
  *
- *   1. `.app` inherits `margin: 0 auto` from the mobile rule. Inside the
- *      desktop flex body, an auto margin swallows the free space *before*
- *      justify-content runs — so the 56px gap rendered as 323px and shoved the
- *      brand panel to the far edge while the phone floated left of centre.
- *   2. The frame was a fixed-height scroll box at any window height. On a
- *      1280×720 laptop the home screen's 1329px was crushed into 660px.
- *   3. The frame kept 20px of padding under a bottom-stuck tab bar, so a strip
- *      of whatever you were scrolling showed through the gap between the bar
- *      and the rounded frame edge. It read as a rendering fault.
+ * So the desktop half of this suite now asserts a website rather than a
+ * device: no panel, a nav in the header, one readable column centred on the
+ * page, and a page that scrolls so nothing is ever trapped. The phone and
+ * tablet rows are untouched and are the regression signal for all of it.
  *
- * These assertions are geometric on purpose. "Looks fine" is not a test; a gap
- * that must equal 56 and margins that must match each other are.
+ * These assertions stay geometric on purpose. "Looks fine" is not a test;
+ * margins that must match each other are.
  */
 const { playwright, launchOpts, BASE, APP, signInStub, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
@@ -54,6 +55,10 @@ async function geometry(p){
     const app = document.querySelector(".app");
     const aside = document.querySelector(".desk-aside");
     const tab = document.getElementById("tabbar");
+    const bar = document.querySelector(".bar");
+    const col = document.querySelector(".screen.active");
+    const C = col ? (() => { const b2 = col.getBoundingClientRect();
+      return { l: Math.round(b2.left), r: Math.round(b2.right), w: Math.round(b2.width) }; })() : null;
     const asideShown = getComputedStyle(aside).display !== "none";
     const A = box(app), S = asideShown ? box(aside) : null;
     return {
@@ -66,8 +71,14 @@ async function geometry(p){
       hScroll: document.documentElement.scrollWidth > innerWidth + 1,
       pageScrolls: document.documentElement.scrollHeight > innerHeight + 1,
       appScrolls: app.scrollHeight > app.clientHeight + 1,
+      appOverflowY: getComputedStyle(app).overflowY,
       tabShown: tab && !tab.hidden,
       tabBottom: tab && !tab.hidden ? box(tab).b : null,
+      navCount: document.querySelectorAll("#tabbar").length,
+      navInHeader: !!(bar && tab && bar.contains(tab)),
+      colW: C ? C.w : null,
+      colLeft: C ? C.l : null,
+      colRight: C ? innerWidth - C.r : null,
     };
   });
 }
@@ -94,23 +105,22 @@ async function geometry(p){
        means something is wider than its container. */
     ok(!g.hScroll, "no horizontal page scroll");
 
-    ok(g.asideShown === v.desk,
-       `brand panel ${v.desk ? "shown" : "hidden"} as expected`);
+    /* The brand panel is retired at every width. It only ever existed to sit
+       beside a frame, and there is no frame. Its copy lives on as home's hero
+       — see desktop.test.js, which still asserts every line of it. */
+    ok(!g.asideShown, `brand panel retired (shown: ${g.asideShown})`);
 
     if (v.desk) {
-      /* The defect, stated as a number. 56px is what the CSS asks for; the
-         bug rendered 323. */
-      ok(near(g.gap, 56, 2), `frame and panel sit 56px apart (${g.gap})`);
+      /* The nav moved into the header. One element, moved — never two, which
+         would give a keyboard reader two sets of tab stops. */
+      ok(g.navCount === 1, `exactly one nav element (${g.navCount})`);
+      ok(g.navInHeader, "and on a laptop it is in the header, not stuck to the foot");
 
-      /* An auto margin here is the bug itself, so assert its absence directly
-         rather than only its symptom. */
-      ok(g.appMarginInline !== "auto" && g.appMarginInline !== "0px auto",
-         `the frame has no auto margin to swallow the gap (${g.appMarginInline})`);
-
-      /* Equal margins either side is what "centred" means, and it is the thing
-         the eye actually notices. */
-      ok(near(g.leftEdge, g.rightEdge, 2),
-         `the pair is centred (${g.leftEdge} left, ${g.rightEdge} right)`);
+      /* Centred is still the thing the eye notices; it is the reading column
+         that has to be centred now rather than a frame-and-panel pair. */
+      ok(near(g.colLeft, g.colRight, 2),
+         `the reading column is centred (${g.colLeft} left, ${g.colRight} right)`);
+      ok(g.colW <= 700, `and held to a readable measure (${g.colW}px)`);
     } else {
       ok(near(g.leftEdge, g.rightEdge, 2),
          `single column is centred (${g.leftEdge} / ${g.rightEdge})`);
@@ -127,22 +137,29 @@ async function geometry(p){
       ok(g.appScrolls || g.pageScrolls,
          "the home screen is reachable — something scrolls");
 
-    /* On a tall desktop the frame should be a fixed device, so the page itself
-       must not scroll. A framed phone that also scrolls the page wobbles under
-       a trackpad and looks unfinished. */
-    if (v.desk && v.h >= 900)
-      ok(!g.pageScrolls, "on a tall window the frame is fixed and the page does not scroll");
-
-    /* On a short desktop the opposite: the frame grows and the page scrolls,
-       rather than crushing 1329px of content into a 660px box. */
-    if (v.desk && v.h < 860)
-      ok(g.pageScrolls, "on a short window the page scrolls instead of trapping content");
+    /* THE FIXED HEIGHT IS GONE, and this is the assertion that would catch it
+       coming back. A desktop screen must never be a scroll box of its own:
+       that is what put the Calculate button 32px past an edge with no
+       affordance. The page scrolls, which every reader already knows how to
+       do. */
+    if (v.desk) {
+      /* The mechanism, not the symptom. appScrolls only fires when the content
+         happens to be taller than the box, so on a short screen the frame
+         could come back unnoticed — it did, when this guard was broken on
+         purpose. overflow-y is true whatever the content is doing. */
+      ok(g.appOverflowY === "visible",
+         `no inner scroll box on a laptop — the page scrolls, not a frame (overflow-y: ${g.appOverflowY})`);
+      ok(!g.appScrolls, "and nothing is trapped inside one");
+    }
 
     /* Scroll to the bottom and check nothing peeks below the tab bar. That
        strip of leftover content was the "clipped teal bar" on the home screen.
        Only meaningful where a frame edge is drawn — on a phone the same strip
        sits below the viewport and nobody ever sees it. */
-    const framed = v.framed !== false && v.w >= 600;
+    /* Only the tablet band still draws a frame edge with a bar stuck inside
+       it. On a laptop the nav is in the header and there is no edge for
+       anything to peek below. */
+    const framed = v.framed !== false && v.w >= 600 && !v.desk;
     if (g.tabShown && framed) {
       await p.evaluate(() => {
         const a = document.querySelector(".app");
@@ -201,9 +218,9 @@ async function geometry(p){
   await p.waitForTimeout(300);
   const en = await geometry(p);
   ok(await p.evaluate(() => document.documentElement.dir) === "ltr", "the document is LTR");
-  ok(near(en.gap, 56, 2), `the gap survives the direction flip (${en.gap})`);
-  ok(near(en.leftEdge, en.rightEdge, 2),
-     `still centred in LTR (${en.leftEdge} / ${en.rightEdge})`);
+  ok(near(en.colLeft, en.colRight, 2),
+     `the reading column survives the direction flip (${en.colLeft} / ${en.colRight})`);
+  ok(en.navInHeader, "and the nav is still in the header in LTR");
   ok(!en.hScroll, "no horizontal scroll in LTR");
   await p.close();
 

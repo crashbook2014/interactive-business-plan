@@ -234,96 +234,14 @@
          box-shadow:var(--e3),var(--edge);padding-bottom:0}
   }
 
-  /* Desktop: the phone column becomes a framed device on a warm backdrop,
-     with the brand promise alongside, so a laptop demo reads as intentional. */
-  .desk-aside{display:none}
-  @media (min-width:900px){
-    body{display:flex;align-items:center;justify-content:center;gap:56px;padding:40px}
-    /* margin:0 — NOT the inherited `margin:0 auto`. An auto margin on a flex
-       item swallows the free space before justify-content ever runs, so the
-       56px gap above rendered as 323px and shoved the panel to the far edge
-       while the phone floated left of centre. One word, and it was the whole
-       "desktop looks broken" complaint. */
-    /* padding-bottom:0, not 20px. The tab bar is sticky to the frame's bottom
-       edge; with padding under it, 20px of whatever you were scrolling showed
-       through the gap between the bar and the rounded frame edge — a teal
-       sliver of the primary button, which reads as a rendering fault rather
-       than as content continuing below. Flush, and it reads as a phone. */
-    .app{margin:0;min-height:auto;border-radius:38px;border:1px solid var(--line);
-         box-shadow:var(--e3),var(--edge);padding-bottom:0;flex:none}
-    .desk-aside{display:block;max-width:330px}
-    .desk-aside .mk{width:58px;height:58px;margin-bottom:18px}
-    .desk-aside h1{font-size:36px;color:var(--teal-ink);line-height:1.45;text-wrap:balance}
-    .desk-aside p{margin-top:12px;color:var(--ink-2);font-size:16.5px}
-    .desk-aside .meta{margin-top:20px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px}
-  }
 
-  /* TWO COLUMNS, BUT ONLY WHERE A SCREEN ASKS FOR THEM.
-   *
-   * Widening the frame for all thirty screens would stretch thirty linear
-   * forms across a laptop, which is worse than the phone column, not better.
-   * So a screen opts in with .dk-split and marks the child that belongs in the
-   * second column with data-col="2". Everything else keeps the 440px frame.
-   *
-   * RTL COMES FREE, AND IS STILL TESTED. Grid places columns along the inline
-   * axis, which follows `direction`, so column one lands on the right in
-   * Arabic with no second rule. Free is not the same as verified — see
-   * desktop.test.js.
-   *
-   * SOURCE ORDER IS UNTOUCHED. The second column is positioned, never moved,
-   * so tab order still runs down the form and #eosOut keeps the aria-live
-   * region it had. A reader on a screen reader hears the same app either way.
-   *
-   * 1100px, not 900: at 900 the frame plus the aside plus two usable columns
-   * do not fit, and the result is two cramped columns instead of one good one.
-   */
-  @media (min-width:1100px){
-    /* max-width:440px on the base .app rule caps this, so the cap moves with
-       it. 420px reserved for the aside plus the gaps, so a split screen never
-       pushes the aside off the side of the window. */
-    .app.wide{max-width:min(920px,calc(100vw - 420px));width:100%}
-    /* Any element can split, not only a screen — the result screen's two
-       halves live inside the score card rather than beside it. */
-    .dk-split{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
-    /* .screen.active{display:flex} is declared later in this file at equal
-       specificity and would otherwise win, leaving a split screen stacked. */
-    .screen.active.dk-split{display:grid}
-    /* Everything spans both columns by default — a header, a title, a
-       disclaimer — so a child added later cannot silently land in a column it
-       was not designed for. Only the two wrappers take a single column. */
-    .dk-split > *{grid-column:1/-1}
-    .dk-split > .dk-a{grid-column:1}
-    .dk-split > .dk-b{grid-column:2;align-self:start}
-    /* A DOCUMENT IS NOT HALF A SCREEN. An even split gave the letter 371px of
-       a 920px frame — 24px more than the phone column it replaced, for the one
-       thing a reader is most likely to have opened a laptop to read. The
-       controls beside it are a copy button and a short list, so they take the
-       third they need and the document takes the rest. */
-    .dk-split.dk-doc{grid-template-columns:1.9fr 1fr}
-    /* Sticky only where the left column is a form the reader is filling in and
-       the right one is the answer moving with it. On the result screen both
-       sides are read together and a sticky half would slide against the other. */
-    .screen.active.dk-split > .dk-b{position:sticky;top:0}
-  }
-
-  /* The frame only becomes a fixed-height scroll box when the window is tall
-     enough to hold a usable one. It used to do this at any height: on a
-     1280×720 or 1024×768 laptop the home screen's 1329px squeezed into a 660px
-     box, and "paste your contract text" — the primary action — sat behind the
-     tab bar and was clipped by the frame edge, inside a container that gives no
-     hint it scrolls. Below this height the frame grows and the *page* scrolls,
-     which every reader already knows how to do. */
-  @media (min-width:900px) and (min-height:860px){
-    body{align-items:center}
-    /* 100vh minus the body's own 40px top and bottom padding. 92vh was close
-       enough to look right and still left the page scrolling by 8px at
-       1440×900, which makes a "framed device" wobble under the trackpad. */
-    .app{height:min(880px,calc(100vh - 80px));overflow-y:auto}
-  }
-  @media (min-width:900px) and (max-height:859px){
-    body{align-items:flex-start}
-    .app{height:auto}
-  }
+  /* THE FIXED-HEIGHT FRAME IS GONE, and with it a live defect. It used to
+     become an 820px scroll box at 1440×900; the end-of-service form is 892px
+     tall, so the Calculate button — the only thing on the screen — sat 32px
+     below the frame's edge in a container that gives no hint it scrolls. The
+     same class of bug was fixed once before for 1280×720 laptops and came
+     back at a taller window because the cure was a height, not a page.
+     The page scrolls now, which every reader already knows how to do. */
 
   /* top bar */
   .bar{display:flex;align-items:center;justify-content:space-between;padding:18px 2px 10px}
@@ -1776,6 +1694,156 @@
    * time as someone noticed each symptom. This is the rule that makes an
    * eleventh unnecessary. */
   [hidden]{display:none !important}
+
+  /* ============================================================ DESKTOP
+   *
+   * LAST IN THE FILE ON PURPOSE. A media query adds no specificity, so every
+   * rule below was being overridden by the ordinary component rules further
+   * down the stylesheet — the nav's 1080px inset lost to `.bar{padding:...}`
+   * and the brand ended up flush against the window edge. The same trap is
+   * recorded above for `.screen.active{display:flex}`. This is an override
+   * layer and it belongs where an override layer goes: at the end.
+   */
+  /* DESKTOP: THE APP IS A WEBSITE, NOT A PHONE ON A BACKDROP.
+   *
+   * The framed-device treatment that used to live here was measurably worse
+   * than the phone it imitated. On a 1440px laptop the eight doors on home
+   * rendered at 199px each — 44% narrower than the 354px they get on a 390px
+   * phone — because .sit-grid switches to two columns at a *window* width of
+   * 600px while the frame stayed 440px. The headline stayed 24px. The
+   * calculator's primary button sat 32px below the frame's bottom edge, inside
+   * a fixed-height box that gives no hint it scrolls. Twenty-nine of the
+   * thirty-one screens were a 440px column at every width.
+   *
+   * So the frame, the backdrop and the brand aside are retired here and the
+   * app takes the desktop language the brand already owns. Every value below
+   * is lifted from the marketing site at ../index.html rather than invented:
+   * the 66px sticky nav (:219-233), the 1080px measure (:152), the clamp()
+   * type (:252). The two now read as one product because they are drawn from
+   * one set of numbers.
+   *
+   * BELOW 900px NOTHING CHANGES. The phone column and the framed card of the
+   * 600px band above are untouched, which is what the 25 suites asserting
+   * phone widths are for.
+   */
+  .desk-aside{display:none}
+  @media (min-width:900px){
+    /* The aside stays hidden here. Its copy is not lost — deskAsideKeys()
+       still chooses the right line, and home reads it as its own hero. */
+    body{display:block;padding:0;background:var(--sand)}
+    /* .app stops being a card in the middle of a page and becomes the page.
+       It keeps the sand and the grain, which are the brand's ground, and drops
+       every property that was drawing a device around them. */
+    .app{max-width:none;margin:0;min-height:100vh;padding:0 0 72px;
+         border:0;border-radius:0;box-shadow:none}
+
+    /* THE NAV. Full-bleed bar, content held to the same 1080px as the site.
+       padding-inline with max() rather than an inner wrapper element, because
+       the header's three children are already the row we want and adding a
+       div would put a second box between the brand and its own alignment. */
+    .bar{position:sticky;top:0;z-index:20;height:66px;padding:0;gap:20px;
+         padding-inline:max(22px,calc((100% - 1080px) / 2));
+         background:color-mix(in srgb, var(--sand) 86%, transparent);
+         backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    @supports not (backdrop-filter: blur(4px)){ .bar{background:var(--sand)} }
+    /* The scroll-condense belongs to a phone header that has room to shrink.
+       A 66px nav does not, and letting it fire made the bar jump on scroll. */
+    .bar.tight{padding-block:0}
+    .bar.tight .brand svg,.bar.tight .brand .name-ar{transform:none}
+    .brand svg{width:30px;height:30px}
+
+    /* The tab bar, moved into the header by JS — one element, one set of tab
+       stops — and drawn as nav links rather than as a row of phone tabs. */
+    /* margin-inline-start:auto groups the links with the language pill at the
+       far end, so the row reads brand … links · lang rather than leaving the
+       links stranded in the middle by space-between. It follows `direction`,
+       so the grouping mirrors in English without a second rule. */
+    .bar .tabbar{position:static;display:flex;gap:2px;padding:0;
+         margin:0;margin-inline-start:auto;
+         background:none;backdrop-filter:none;border:0}
+    .bar .tab{flex-direction:row;gap:8px;padding:8px 12px;min-height:44px;border-radius:10px}
+    .bar .tab svg{width:17px;height:17px}
+    /* 13px, not the marketing site's 13.5px. The app enforces a nine-step
+       type scale and 13.5 is not one of the steps — type-scale.test.js caught
+       the import. The site can afford a tenth size; a product with thirty-one
+       screens cannot. */
+    .bar .tab span{font-size:13px;max-width:none}
+    html[lang="ar"] .bar .tab span{font-size:15px}
+    .bar .tab:hover{color:var(--teal-ink)}
+    /* The sliding indicator measures offsetLeft, which is an offset from the
+       left edge of the offset parent — so it only lands correctly on an
+       element whose own left is pinned to 0. In the phone's grid it inherited
+       one; in this flex row its static position is after the last link, and
+       translateX(offsetLeft) pushed it off into the middle of the bar as a
+       pale rectangle under nothing. left:0 gives it the origin it assumes. */
+    .bar .tab-ind{top:11px;height:44px;left:0}
+
+    /* EVERY SCREEN GETS A READABLE COLUMN, NOT THE WHOLE PAGE. Most of the
+       thirty-one are single-purpose forms — a phone number, an intake, a
+       termination question — and an input stretched to 1080px is worse than
+       one at 440px, not better. Screens with genuine second-column content
+       opt out through .dk-split below. */
+    .screen{padding:0 22px}
+    .screen.active{width:100%;max-width:684px;margin-inline:auto}
+  }
+
+  /* TWO COLUMNS, BUT ONLY WHERE A SCREEN ASKS FOR THEM.
+   *
+   * Widening the frame for all thirty screens would stretch thirty linear
+   * forms across a laptop, which is worse than the phone column, not better.
+   * So a screen opts in with .dk-split and marks the child that belongs in the
+   * second column with data-col="2". Everything else keeps the 440px frame.
+   *
+   * RTL COMES FREE, AND IS STILL TESTED. Grid places columns along the inline
+   * axis, which follows `direction`, so column one lands on the right in
+   * Arabic with no second rule. Free is not the same as verified — see
+   * desktop.test.js.
+   *
+   * SOURCE ORDER IS UNTOUCHED. The second column is positioned, never moved,
+   * so tab order still runs down the form and #eosOut keeps the aria-live
+   * region it had. A reader on a screen reader hears the same app either way.
+   *
+   * 1100px, not 900: below that a split gives two columns narrower than the
+   * single one they replaced, which is the cramping this whole layout exists
+   * to end.
+   */
+  @media (min-width:1100px){
+    /* A split screen is the one kind allowed past the 684px reading column,
+       out to the same 1080px measure the nav and the marketing site use.
+       .wide rather than .dk-split, because the result screen's two halves live
+       inside its score card — the section itself carries no split class and
+       would otherwise stay at 684px while the card divided inside it. */
+    .screen.active.wide{max-width:1080px}
+    /* Any element can split, not only a screen — the result screen's two
+       halves live inside the score card rather than beside it.
+       :not(.screen) is load-bearing. This block now sits after
+       `.screen{display:none}`, and at equal specificity the later rule wins —
+       so a bare `.dk-split{display:grid}` un-hid the letter and the calculator
+       and drew them underneath whatever screen you were actually on. A screen
+       is shown by .active and by nothing else. */
+    .dk-split{grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
+    .dk-split:not(.screen){display:grid}
+    .screen.active.dk-split{display:grid}
+    /* Everything spans both columns by default — a header, a title, a
+       disclaimer — so a child added later cannot silently land in a column it
+       was not designed for. Only the two wrappers take a single column. */
+    .dk-split > *{grid-column:1/-1}
+    .dk-split > .dk-a{grid-column:1}
+    .dk-split > .dk-b{grid-column:2;align-self:start}
+    /* A DOCUMENT IS NOT HALF A SCREEN. An even split gave the letter 371px of
+       a 920px frame — 24px more than the phone column it replaced, for the one
+       thing a reader is most likely to have opened a laptop to read. The
+       controls beside it are a copy button and a short list, so they take the
+       third they need and the document takes the rest. */
+    .dk-split.dk-doc{grid-template-columns:1.9fr 1fr}
+    /* Sticky only where the left column is a form the reader is filling in and
+       the right one is the answer moving with it. On the result screen both
+       sides are read together and a sticky half would slide against the other.
+       top:88px, not 0 — the nav is sticky at 66px, so a column stuck to 0
+       slides underneath it and loses its first line behind the blur. */
+    .screen.active.dk-split > .dk-b{position:sticky;top:88px}
+  }
+
 </style>
 <script>
 /* ============================================================ THE CURTAIN
@@ -5851,15 +5919,16 @@ function show(name, back){
   if (typeof renderAskEntry === "function") renderAskEntry();
   if (typeof renderSituations === "function") renderSituations();
   if (typeof renderDeskAside === "function") renderDeskAside(name);
-  /* The frame widens only for a screen that asked for two columns, and narrows
-     again the moment the reader leaves it. Driven from here because show() is
-     the one place every navigation already passes through. */
-  const app = document.querySelector(".app");
-  /* The split is not always on the screen itself — the result screen's two
+  /* Only a screen that asked for two columns is let past the 684px reading
+     column, and it narrows again the moment the reader leaves it. Driven from
+     here because show() is the one place every navigation already passes
+     through.
+
+     The split is not always on the screen itself — the result screen's two
      halves are inside its score card. Asking only the section left that screen
-     splitting into two cramped columns inside a frame that never widened,
+     splitting into two cramped columns inside a container that never widened,
      which is worse than the single column it replaced. */
-  if (app) app.classList.toggle("wide",
+  el.classList.toggle("wide",
     el.classList.contains("dk-split") || !!el.querySelector(".dk-split"));
   if (typeof armReveals === "function") requestAnimationFrame(()=>armReveals(el));
 }
@@ -11581,11 +11650,41 @@ function visibleTabs(){
     .filter(x => !obDone || authAllow(x.id));
 }
 
+/* THE NAV IS ONE ELEMENT, MOVED — never two copies.
+ *
+ * On a phone it is a tab bar sitting at the bottom of .app; on a desktop it is
+ * the row of links inside the header. Rendering it twice and hiding one with
+ * CSS would give a keyboard reader two sets of tab stops for five
+ * destinations, and two renderers to keep in step. So the same <nav> is
+ * reparented when the breakpoint is crossed, and everything below it —
+ * visibleTabs(), the sign-in door, the deny-by-default allowlist — is
+ * untouched by the move.
+ *
+ * It is inserted BEFORE the language toggle so the row reads
+ * brand … links · lang, and so tab order runs brand, destinations, language
+ * rather than jumping over the links to reach it. */
+const DESK = matchMedia("(min-width:900px)");
+function placeTabs(){
+  const bar = document.getElementById("tabbar");
+  if (!bar) return;
+  const home = DESK.matches ? document.querySelector(".bar") : document.querySelector(".app");
+  if (!home || bar.parentElement === home) return;
+  if (DESK.matches) home.insertBefore(bar, document.getElementById("langToggle"));
+  else home.appendChild(bar);
+}
+DESK.addEventListener("change", ()=>{ placeTabs(); renderTabs(); });
+
 function renderTabs(){
   const bar = document.getElementById("tabbar");
   const active = document.querySelector(".screen.active");
   const cur = active ? active.id.replace("screen-","") : "home";
-  bar.hidden = !ROOTS.includes(cur);
+  placeTabs();
+  /* A WEBSITE DOES NOT LOSE ITS NAV THREE STEPS INTO A FLOW. On a phone the
+     bar belongs to the five root screens and would otherwise eat the bottom of
+     every form; in a header there is no such cost, so it stays. Still gated on
+     obDone, because during the tour there is no product to navigate yet and
+     visibleTabs() has not begun filtering by entitlement. */
+  bar.hidden = !ROOTS.includes(cur) && !(DESK.matches && obDone);
   if (bar.hidden) return;
   bar.innerHTML = visibleTabs().map(x=>
     `<button class="tab${x.id===cur?" on":""}" data-tab="${x.id}"${x.id===cur?' aria-current="page"':''}>
