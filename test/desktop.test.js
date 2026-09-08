@@ -142,6 +142,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
                  'show("result"); renderResult(true); renderClauses(); renderDuties()';
   const res = await at(1440, 900, RESULT);
   ok(res.sideBySide, "the verdict and the clause list sit side by side");
+  /* THE ASSERTION THAT WAS MISSING, and a screenshot found what it did not.
+     Two columns inside a frame that never widened is two 200px columns — worse
+     than the single 404px column it replaced. Splitting is only an improvement
+     if the frame grows with it, so every split screen is checked for both. */
+  ok(res.appW > 600,
+     `and the frame widened to hold them (${res.appW}px — 440 means it did not)`);
   ok(!res.overflow, "with no sideways overflow");
   const resNarrow = await at(1000, 800, RESULT);
   ok(!resNarrow.sideBySide, "and stack again below 1100px");

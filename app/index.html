@@ -5855,7 +5855,12 @@ function show(name, back){
      again the moment the reader leaves it. Driven from here because show() is
      the one place every navigation already passes through. */
   const app = document.querySelector(".app");
-  if (app) app.classList.toggle("wide", el.classList.contains("dk-split"));
+  /* The split is not always on the screen itself — the result screen's two
+     halves are inside its score card. Asking only the section left that screen
+     splitting into two cramped columns inside a frame that never widened,
+     which is worse than the single column it replaced. */
+  if (app) app.classList.toggle("wide",
+    el.classList.contains("dk-split") || !!el.querySelector(".dk-split"));
   if (typeof armReveals === "function") requestAnimationFrame(()=>armReveals(el));
 }
 
