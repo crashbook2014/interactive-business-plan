@@ -1641,6 +1641,8 @@
      wherever the column is a column, and a grid only where the page is a page,
      which is the desktop block at the end of this file. */
   .hm-hero{display:none}
+  /* Only ever drawn where the split gives it a column of its own to fill. */
+  .eos-pre{display:none}
   /* Accounts. Two buttons, brand-styled, nothing else competing. */
   .au-acts{display:flex;flex-direction:column;gap:11px;margin:20px 0 14px}
   .au-btn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;
@@ -1889,6 +1891,18 @@
        top:88px, not 0 — the nav is sticky at 66px, so a column stuck to 0
        slides underneath it and loses its first line behind the blur. */
     .screen.active.dk-split > .dk-b{position:sticky;top:88px}
+
+    /* The calculator's column before it has an answer in it. Quiet on
+       purpose: it must read as the method, never as a result, so it takes the
+       page's own ground rather than the raised card the figure gets. */
+    .eos-pre{display:block;border:1px solid var(--line);border-radius:var(--r-md);
+        padding:18px 18px 16px;background:color-mix(in srgb, var(--card) 55%, transparent)}
+    .eos-pre b{display:block;font-size:15px;color:var(--teal-ink);margin-bottom:10px}
+    .eos-pre ul{list-style:none;display:grid;gap:8px}
+    .eos-pre li{font-size:14px;color:var(--ink-2);padding-inline-start:14px;position:relative}
+    .eos-pre li::before{content:"";position:absolute;inset-inline-start:0;top:9px;
+        width:5px;height:5px;border-radius:50%;background:var(--teal)}
+    .eos-pre .src-line{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
   }
 
 </style>
@@ -2677,6 +2691,26 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          exactly what it always was — which is also why aria-live still
          announces from the right place. -->
     <div class="dk-b">
+      <!-- WHAT THE COLUMN HOLDS BEFORE THERE IS AN ANSWER IN IT.
+           #eosOut is empty until the reader presses Calculate, so splitting
+           this screen bought a 496px column of blank cream beside the form —
+           the emptiness the desktop layout exists to remove, reintroduced by
+           the fix for it. This is not filler: it is the rule the arithmetic
+           will use, in the app's own already-reviewed words (the same two
+           band labels the result itself prints, and the same citation), so a
+           reader can see what they are about to be told and on what basis
+           before they type a single date.
+           Desktop only, and only where the column actually exists — on a
+           phone this wrapper stacks under the Calculate button and the screen
+           was already complete without it. -->
+      <div class="eos-pre" id="eosPre">
+        <b data-t="eos_pre_h"></b>
+        <ul>
+          <li data-t="eos_b_first"></li>
+          <li data-t="eos_b_after"></li>
+        </ul>
+        <p class="src-line law" data-t="src_eos"></p>
+      </div>
       <div id="eosOut" aria-live="polite"></div>
       <p class="src-line law" id="eosSrc" data-t="src_eos" hidden></p>
     </div>
@@ -4983,6 +5017,10 @@ const T = {
   cnt_item_m:{ar:"{n} بندًا",en:"{n} items"},
   eos_yrs_join:{ar:"{y} و{m}",en:"{y}, {m}"},
   eos_yrs:{ar:"{y} سنة و{m} شهر",en:"{y} years, {m} months"},
+  /* The heading over the pre-result panel on a laptop. Deliberately a question
+     about method, not a promise about outcome — everything under it is copy
+     the app already ships and has already had reviewed. */
+  eos_pre_h:{ar:"على أي أساس يُحسب؟",en:"How this is worked out"},
   eos_b_first:{ar:"أول 5 سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
   eos_b_after:{ar:"ما بعد 5 سنوات — شهر عن كل سنة",en:"Beyond 5 years — one month per year"},
   eos_b_sub:{ar:"المجموع قبل التعديل",en:"Subtotal before adjustment"},
@@ -7828,13 +7866,18 @@ function calcEos(){
   const out = document.getElementById("eosOut");
   const eosSrc = document.getElementById("eosSrc");
   /* The citation belongs to a result, so it appears and disappears with one. */
-  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; return; }
+  const pre = document.getElementById("eosPre");
+  /* The method panel and the figure are the same slot: whichever is true right
+     now is the one on screen. Cleared inputs bring the method back rather than
+     leaving the column blank, which is the state this panel exists for. */
+  const showPre = (on) => { if (pre) pre.hidden = !on; };
+  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); return; }
   const a = new Date(sd), bDate = new Date(ed);
   const y = serviceYears(a, bDate);
   /* Written as !(y > 0) rather than y <= 0: NaN fails every comparison, so
      the old guard let an unparseable date through to the arithmetic and the
      reader saw "not a number" where a figure should be. */
-  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; return; }
+  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); return; }
   const parts = serviceParts(a, bDate);
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
@@ -7855,6 +7898,7 @@ function calcEos(){
   const row = (label, val, cls) =>
     `<div class="r${cls?" "+cls:""}"><span>${label}</span><b>${val}</b></div>`;
 
+  showPre(false);
   out.innerHTML =
     `<div class="eos-card">
        <div class="lbl">${t("eos_result")}</div>

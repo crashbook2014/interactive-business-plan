@@ -312,6 +312,58 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(notSplit.screenW <= 700,
      `and stays in the reading column while its neighbour widens (${notSplit.screenW}px)`);
 
+  /* THE EMPTY HALF, which the split itself created. #eosOut has nothing in it
+     until the reader presses Calculate, so widening this screen bought a 496px
+     column of blank cream beside the form — the same emptiness the desktop
+     layout exists to remove. */
+  console.log("\n— the calculator's second column is never blank");
+  const preState = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    /* Explicit, not inherited. An earlier section of this suite toggles the
+       language to prove the hero follows it, so anything after that runs in
+       English unless it says otherwise — which is how the Arabic assertion
+       below first failed on text that was perfectly correct. */
+    if (document.documentElement.lang !== "ar") toggleLang();
+    goTab("rights"); openEos();
+    const col = document.querySelector(".screen.active .dk-b").getBoundingClientRect();
+    const pre = document.getElementById("eosPre");
+    const before = { h: Math.round(col.height), shown: !pre.hidden,
+                     text: pre.textContent.replace(/\s+/g, " ").trim() };
+    document.getElementById("eosStart").value = "2019-01-01";
+    document.getElementById("eosEnd").value = "2025-01-01";
+    document.getElementById("eosWage").value = "10000";
+    calcEos();
+    const after = { preHidden: pre.hidden,
+                    hasFigure: !!document.getElementById("eosOut").textContent.trim() };
+    document.getElementById("eosWage").value = "";
+    calcEos();
+    return { before, after, preBack: !pre.hidden };
+  });
+  ok(preState.before.h > 40,
+     `it has something in it before a figure exists (${preState.before.h}px tall, was 0)`);
+  ok(preState.before.shown, "and what it holds is the method, not filler");
+  /* The words are the app's own, already-reviewed copy — the two band labels
+     the result itself prints — so this is also the check that they were not
+     quietly replaced with something new and unreviewed about the law. */
+  ok(/نصف شهر عن كل سنة/.test(preState.before.text) && /84/.test(preState.before.text),
+     "the rule and its articles, in the app's existing words");
+  ok(preState.after.hasFigure && preState.after.preHidden,
+     "it yields the slot the moment there is a real answer");
+  ok(preState.preBack,
+     "and comes back when the inputs are cleared, rather than leaving it blank again");
+
+  const preOnPhone = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await preOnPhone.goto(APP);
+  await preOnPhone.waitForFunction(() => typeof window.show === "function");
+  const phonePre = await preOnPhone.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); openEos();
+    return getComputedStyle(document.getElementById("eosPre")).display !== "none";
+  });
+  await preOnPhone.close();
+  ok(!phonePre,
+     "and it does not appear on a phone, where there is no column for it to fill");
+
   /* ---- the other two screens that asked for columns */
   console.log("\n— the result reads its verdict and its findings together");
   const RESULT = 'goTab("home"); pickSituation("rent"); current = SAMPLES.rental; ' +
