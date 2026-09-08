@@ -373,6 +373,54 @@ async function serveWithAiCsp(page) {
   ok(MARKERS.every(m => !ctxWire.includes(m)) && !/probation|competitor|Falcon/i.test(ctxWire),
      `and the case is dates, wage and contract type — no clause, no quote (${Object.keys(withCtx.ctx || {}).join(", ")})`);
 
+  /* ---- 3. THE THIRD TICK: the contract itself, on a question.
+   * The two assertions above are the promise this screen has always made —
+   * the question box does not carry the contract. That promise is now
+   * conditional rather than absolute, and the condition is a separate,
+   * explicitly ticked box. Which makes the important assertion the negative
+   * one: with the box untouched, the document must still not travel, even
+   * though it is sitting right there in the paste box and the code that would
+   * send it is one boolean away.
+   */
+  console.log("\n— the contract travels on a question ONLY when its own box is ticked");
+  sent.length = 0;
+  await p.evaluate(async () => {
+    lang = "en"; applyLang();
+    askConsent = false; askCtxConsent = false; askDocConsent = false;
+    askSpent = 0;
+    openAsk();
+    document.getElementById("askQ").value = "How much notice must I give?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    const agree = document.getElementById("askAgree");
+    agree.checked = true; agree.dispatchEvent(new Event("change"));
+    /* Deliberately NOT ticking the document box, with a contract in the box. */
+    await askRun();
+  });
+  const noDoc = sent[0] || {};
+  ok(noDoc.text === undefined,
+     `the contract does not travel while its box is untouched (text: ${typeof noDoc.text})`);
+  ok(MARKERS.every(m => !JSON.stringify(noDoc).includes(m)),
+     "and none of the document's contents ride along by another route");
+
+  sent.length = 0;
+  await p.evaluate(async () => {
+    askSpent = 0;
+    openAsk();
+    document.getElementById("askQ").value = "How much notice must I give?";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    const agree = document.getElementById("askAgree");
+    agree.checked = true; agree.dispatchEvent(new Event("change"));
+    const docBox = document.getElementById("askDocAgree");
+    docBox.checked = true; docBox.dispatchEvent(new Event("change"));
+    await askRun();
+  });
+  const withDoc = sent[0] || {};
+  ok(typeof withDoc.text === "string" && withDoc.text.length > 0,
+     `it travels when the box is ticked (${(withDoc.text || "").length} chars)`);
+  ok(MARKERS.every(m => (withDoc.text || "").includes(m)),
+     "and it is the whole document, not a summary of it");
+  ok(withDoc.kind === "ask", `still the ask mode (${withDoc.kind})`);
+
   await p.close();
   await b.close();
 

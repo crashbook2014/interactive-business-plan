@@ -614,6 +614,84 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   }
 }
 
+/* ---- THE CONTRACT TIER.
+ *
+ * The other two tiers are graded against the verified register. This one
+ * cannot be: the register says nothing about the reader's particular document.
+ * So it is graded against the document — which the server is holding anyway,
+ * because the reader just sent it — and every quote the answer stands on is
+ * checked for containment in it before the answer is allowed back out.
+ *
+ * That check is the entire tier. Without it "contract" would be a third name
+ * for "we did not check", attached to the answers a reader is most likely to
+ * act on, because they are about their own contract rather than the law in
+ * general.
+ *
+ * Note the direction of every failure below: refused, never demoted. A demoted
+ * contract answer would be an unverified answer that had just quoted the
+ * reader's own contract back at them, which is more convincing than an
+ * unverified answer and no better founded.
+ */
+console.log("\n— an answer from the reader's own contract");
+{
+  const DOC = [
+    "عقد عمل",
+    "المادة الخامسة: مدة الإشعار ثلاثون يومًا من الطرفين.",
+    "الراتب الشهري 10,000 ريال.",
+  ].join("\n");
+  const none = () => undefined;
+  const g = (o, doc = DOC) => gradeAnswer(Object.assign({ tier: "contract", cites: [] }, o), none, doc);
+
+  const good = g({ answer: "عقدك يذكر إشعارًا مدته ثلاثون يومًا من الطرفين.",
+                   quotes: ["مدة الإشعار ثلاثون يومًا من الطرفين"] });
+  ok(good.tier === "contract", `a quote that is really in the document is answered (${good.tier})`);
+  ok(good.quotes.length === 1, "and the span comes back with it, for the reader to check");
+  ok(good.cites.length === 0, "with no register rows, because it cited none");
+
+  const fake = g({ answer: "عقدك يذكر تسعين يومًا.",
+                   quotes: ["مدة الإشعار تسعون يومًا من الطرفين"] });
+  ok(fake.tier === "refused" && fake.reason === "quote",
+     `a quote that is NOT in the document refuses the answer (${fake.tier}/${fake.reason})`);
+
+  /* One invented quote among real ones poisons the whole answer. Keeping the
+     real ones would leave the reader holding something that looked fully
+     sourced, with the invention removed from the evidence and still argued in
+     the prose above it. */
+  const mixed = g({ answer: "عقدك يذكر إشعارًا وراتبًا.",
+                    quotes: ["مدة الإشعار ثلاثون يومًا من الطرفين", "بند لا وجود له في العقد إطلاقًا"] });
+  ok(mixed.tier === "refused",
+     `one fabricated quote among real ones refuses all of it (${mixed.tier})`);
+
+  const noQuote = g({ answer: "عقدك يقول ذلك.", quotes: [] });
+  ok(noQuote.tier === "refused" && noQuote.reason === "no_quote",
+     `an ungrounded claim about the document is refused (${noQuote.reason})`);
+
+  const noDoc = g({ answer: "عقدك يذكر ثلاثين يومًا.",
+                    quotes: ["مدة الإشعار ثلاثون يومًا من الطرفين"] }, "");
+  ok(noDoc.tier === "refused" && noDoc.reason === "no_document",
+     `the tier is impossible without a document to check against (${noDoc.reason})`);
+
+  /* Reading a figure back out of the contract is the product; producing one
+     that is not in it is the thing the whole app refuses to do. */
+  const money = g({ answer: "راتبك المذكور 10,000 ريال.",
+                    quotes: ["الراتب الشهري 10,000 ريال"] });
+  ok(money.tier === "contract", `a figure the contract states survives (${money.tier})`);
+  const badMoney = g({ answer: "راتبك 25,000 ريال.", quotes: ["الراتب الشهري 10,000 ريال"] });
+  ok(badMoney.tier === "refused" && badMoney.reason === "money",
+     `a figure the contract never states is refused (${badMoney.reason})`);
+
+  /* The reader's contract citing an article is not Wodouh verifying it. */
+  const art = g({ answer: "حسب المادة 74 من النظام.",
+                  quotes: ["مدة الإشعار ثلاثون يومًا من الطرفين"] });
+  ok(art.tier === "refused" && art.reason === "citation",
+     `an article number in this tier is refused (${art.reason})`);
+
+  /* A fragment short enough to appear by chance is not evidence of anything. */
+  const tiny = g({ answer: "عقدك عقد عمل.", quotes: ["عقد"] });
+  ok(tiny.tier === "refused",
+     `a quote too short to mean anything does not ground an answer (${tiny.tier})`);
+}
+
 console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nall grounded-answer checks passed");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

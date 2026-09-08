@@ -1167,6 +1167,12 @@
   .ask-src-h{font-size:12px !important;font-weight:700;margin-top:12px !important;
     text-transform:uppercase;letter-spacing:.04em}
   html[lang="ar"] .ask-src-h{text-transform:none;letter-spacing:0;font-weight:400}
+  /* Teal, like every other place the app is standing on something solid —
+     not the amber of the unverified tier. The quotes are the reader's own
+     words and are set apart as quotation, not as our prose. */
+  .ask-ans.contract .hd b{color:var(--teal-ink)}
+  .src-line.doc-q{font-style:italic;color:var(--ink-2);border-inline-start:2px solid var(--teal);
+      padding-inline-start:10px;margin:6px 0}
   .ask-unv{font-size:13px !important;margin-top:10px !important;color:var(--amber-ink) !important}
   .ask-ref{border-inline-start:3px solid var(--ink-2);margin-bottom:12px}
   /* Amber, matching every other "this is a limit of what we know" surface in
@@ -3436,8 +3442,8 @@ const T = {
                     en:"The three exceptions, and exactly what each one sends"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانة ثانية منفصلة داخل الشاشة نفسها، إذا علّمتها أرسلنا معه تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت — وإذا ما علّمتها ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، وما يُحفظ منها شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.\n\nوإذا كان عقدك صورة أو مسحًا ضوئيًا بلا نص نقدر نقرأه، وضوح ما يرفعه: يقول لك إنه ما قدر يقرأه ويطلب منك تلصق النص. قراءة العقود الممسوحة ضوئيًا لسا تحت التطوير.",
-                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. A second, separate tick box on that same screen adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation — leave it unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full.\n\nIf your contract is a photo or a scan with no text we can read, Wodouh does not upload it: it tells you it could not read it and asks you to paste the text instead. Reading scanned contracts is still being built."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانتان إضافيتان منفصلتان داخل الشاشة نفسها، كل وحدة مطفية إلا إذا شغّلتها أنت: الأولى ترسل تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت، والثانية ترسل نص عقدك نفسه — مو تفاصيل عنه، النص — عشان يجيك الجواب مقروءًا من عقدك ومعه المقاطع اللي قرأناها منه. وإذا ما علّمت ولا وحدة، ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، وما يُحفظ منها شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.\n\nوإذا كان عقدك صورة أو مسحًا ضوئيًا بلا نص نقدر نقرأه، وضوح ما يرفعه: يقول لك إنه ما قدر يقرأه ويطلب منك تلصق النص. قراءة العقود الممسوحة ضوئيًا لسا تحت التطوير.",
+                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. Two further tick boxes on that same screen, each separate and each off unless you turn it on, add more: one adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation; the other sends the text of your contract itself, so the answer can be read out of your own document and show you the lines it was read from. Leave both unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full.\n\nIf your contract is a photo or a scan with no text we can read, Wodouh does not upload it: it tells you it could not read it and asks you to paste the text instead. Reading scanned contracts is still being built."},
   /* The flag check, described exactly. It is added to the privacy screen only
      when a project is configured, because until then it never happens — and a
      privacy screen that lists something the build cannot do is as wrong as one
@@ -4353,6 +4359,20 @@ const T = {
 
   /* The two tiers, named on screen in the reader's own terms. */
   ask_tier_v:{ar:"جواب مبني على مصدر تحققنا منه",en:"Answered from a source we verified"},
+  ask_tier_c:{ar:"جواب من نص عقدك أنت",en:"Answered from your own contract"},
+  ask_doc_src_h:{ar:"وش قرأناه في عقدك:",en:"What we read in your contract:"},
+  /* The sentence that keeps this tier honest. A reader who asks "how much
+     notice do I get?" and is answered from their contract has learned what
+     they AGREED to, which is not the same as what they are OWED — and the gap
+     between those two is most of what this product exists to close. */
+  ask_doc_note:{ar:"هذا اللي مكتوب في عقدك — مو بالضرورة اللي يوجبه النظام. العقد ما يقدر يسقط حقًا نظاميًا، فإذا كان الفرق مهم لك، اسأل عن الحكم النظامي بسؤال منفصل.",
+                en:"This is what your contract says — not necessarily what the law requires. A contract cannot remove a statutory right, so if the difference matters to you, ask about the legal position as a separate question."},
+  ask_doc_h:{ar:"تبي نقرأ عقدك عشان نجاوب؟",en:"Want us to read your contract to answer?"},
+  ask_doc_b:{ar:"لو علّمت هنا، نرسل نص عقدك كامل مع السؤال — مو تفاصيل عنه، النص نفسه. الجواب يصير من عقدك أنت ومعه المقاطع اللي قرأناها منه، ويُتحقق أن كل مقطع موجود فعلًا في نصك قبل ما يرجع لك. ما نخزّن النص ولا نحتفظ فيه بعد الجواب.",
+             en:"Tick this and we send the full text of your contract with the question — not details about it, the text itself. The answer then comes from your contract, with the spans we read from it, and every span is checked against your text before it comes back. We do not store the text or keep it after the answer."},
+  ask_doc_agree:{ar:"أرسل نص عقدي مع السؤال",en:"Send my contract's text with the question"},
+  ask_doc_none:{ar:"ما فيه نص عقد على جهازك الحين — الصقه في «راجع» أول، وبعدها نقدر نجاوب منه.",
+                en:"There's no contract text on this device yet — paste one in Review first, and then we can answer from it."},
   ask_tier_u:{ar:"⚠ معلومة عامة — ما تحققنا منها",en:"⚠ General knowledge — not verified by us"},
   ask_unv_b:{ar:"هذا السؤال ما يغطيه أي مصدر تحققنا منه، فالجواب فوق معرفة عامة عن نظام العمل السعودي، وضوح ما راجعها ولا تحمل رقم مادة. لا تبني عليها قرارًا نهائيًا — استخدمها عشان تعرف وش تسأل عنه بعدين.",
              en:"No source we have verified covers this question, so the answer above is general knowledge about Saudi labour law. Wodouh has not checked it, and it carries no article number. Don't make a final decision on it — use it to know what to ask about next."},
@@ -9053,7 +9073,7 @@ function renderAiPanel(){
  */
 const ASK_PER_DAY = 5;
 let askUsed = { day:"", n:0 };
-let askConsent = false, askCtxConsent = false;
+let askConsent = false, askCtxConsent = false, askDocConsent = false, askTrim = null;
 let askBusy = false, askAnswer = null, askError = null, askText = "";
 
 function askAvailable(){ return aiAvailable(); }
@@ -9109,7 +9129,7 @@ function askCtx(){
 function renderAsk(){
   const host = document.getElementById("askBody");
   if (!host) return;
-  const left = askLeft(), ctx = askCtx();
+  const left = askLeft(), ctx = askCtx(), doc = aiSourceText();
 
   if (askBusy){
     host.innerHTML = `<div class="tm-sec"><p>${t("ask_busy")}</p></div>`;
@@ -9143,6 +9163,19 @@ function renderAsk(){
                 <span>${t("ask_ctx_agree")}</span></label>`
            : `<p class="tq-skip">${t("ask_ctx_none")}</p>`}
        </div>
+       <!-- THE THIRD TICK, and the one that sends the most. The case details
+            above are facts ABOUT the contract; this is the contract. Separate
+            because they are separable, and because a reader who is willing to
+            send dates and a wage has not thereby agreed to send the document
+            those came from. -->
+       <div class="ask-ctx">
+         <p><b>${t("ask_doc_h")}</b></p>
+         ${doc
+           ? `<p>${t("ask_doc_b")}</p>
+              <label class="ai-agree"><input type="checkbox" id="askDocAgree"${askDocConsent ? " checked" : ""}/>
+                <span>${t("ask_doc_agree")}</span></label>`
+           : `<p class="tq-skip">${t("ask_doc_none")}</p>`}
+       </div>
        <button class="ghost wide" id="askGo" disabled>${askAnswer ? t("ask_again") : t("ask_go")}</button>
        <p class="tq-skip">${left === 1 ? t("ask_left_one")
           : left === 2 ? t("ask_left_two")
@@ -9157,6 +9190,8 @@ function renderAsk(){
   box.onchange = () => { askConsent = box.checked; sync(); };
   q.oninput = () => { askText = q.value; sync(); };
   if (ctxBox) ctxBox.onchange = () => { askCtxConsent = ctxBox.checked; };
+  const docBox = document.getElementById("askDocAgree");
+  if (docBox) docBox.onchange = () => { askDocConsent = docBox.checked; };
   go.onclick = askRun;
   sync();
 }
@@ -9187,6 +9222,22 @@ function askAnswerHtml(a){
        ${a.cites.map(c => `<div class="src-line law">${c.article ? esc(artNum(c.article)) + " — " : ""}${esc(citeClaim(c))}</div>`).join("")}
      </div>`;
   }
+  /* GROUNDED IN THE READER'S OWN DOCUMENT, and shown with the words it was
+     grounded in. Every quote here was checked for containment in the text the
+     reader sent before it was allowed back out of the server, so these are
+     their own words returning to them — which is the whole difference between
+     an answer about their contract and an opinion about contracts. The line
+     underneath says what this tier is NOT: their document is not the law, and
+     a contract cannot contract out of one. */
+  if (a.tier === "contract"){
+    return `<div class="tm-sec ask-ans contract">
+       <div class="hd"><b>${t("ask_tier_c")}</b></div>
+       <p class="ask-body">${esc(a.answer)}</p>
+       ${(a.quotes || []).length ? `<p class="ask-src-h">${t("ask_doc_src_h")}</p>
+         ${a.quotes.map(q => `<div class="src-line doc-q">«${esc(q)}»</div>`).join("")}` : ""}
+       <p class="ask-unv">${t("ask_doc_note")}</p>
+     </div>`;
+  }
   return `<div class="tm-sec ask-ans unverified">
      <div class="hd"><b>${t("ask_tier_u")}</b></div>
      <p class="ask-body">${esc(a.answer)}</p>
@@ -9214,6 +9265,23 @@ async function askRun(){
     /* Sent only on an explicit, separate tick — and read fresh here rather
        than trusted from a flag set earlier in the session. */
     if (askCtxConsent && askCtx()) body.ctx = askCtx();
+    /* The document itself, on its own separate tick. Read fresh here for the
+       same reason the case details are: a flag set earlier in the session is
+       not consent given now. Truncated by the same cap the analysis uses, so
+       the reader is told when it happened rather than silently losing the end
+       of their contract. */
+    /* aiSourceText() is the existing answer to "what is the reader's contract"
+       — the paste box, which holds what they pasted and also what handleFile()
+       extracted from a PDF. A second definition of that would be a second
+       thing to keep true. A sample is never in that box, so a sample is never
+       sent here. */
+    if (askDocConsent && aiSourceText()){
+      const cut = aiCut(aiSourceText());
+      body.text = cut.text;
+      askTrim = cut.cut ? cut : null;
+    } else {
+      askTrim = null;
+    }
     const res = await fetch(url, {
       method: "POST",
       headers: analyzeHeaders(),

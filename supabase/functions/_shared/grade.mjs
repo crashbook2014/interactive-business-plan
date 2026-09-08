@@ -106,6 +106,31 @@ export function moneyIn(text){
   return [...out];
 }
 
+/* IS THIS QUOTE ACTUALLY IN THE READER'S CONTRACT?
+ *
+ * The whole contract tier rests on this function. An answer grounded in the
+ * reader's own document cannot be checked against the register — the register
+ * says nothing about their document — so it is checked against the document
+ * instead, which the server is holding anyway because the reader just sent it.
+ * A quote that is not in the contract is a fabrication, and it is exactly the
+ * failure this tier would otherwise invite: the model is being asked to speak
+ * about a specific text, which is also the easiest place to invent one.
+ *
+ * Whitespace is normalised on both sides because a PDF extraction breaks lines
+ * wherever the page did, and a quote that differs from the document only in
+ * where its spaces fell is the same quote. Nothing else is normalised: this is
+ * a containment test, not a similarity score, and the moment it starts
+ * accepting near-misses it stops being evidence.
+ */
+const flat = (s) => String(s || "").replace(/\s+/g, " ").trim();
+export function quoteInDoc(doc, quote){
+  const q = flat(quote);
+  /* A quote short enough to appear by accident proves nothing. Six characters
+     of Arabic is a preposition and a noun. */
+  if (q.length < 12) return false;
+  return flat(doc).includes(q);
+}
+
 /** JSDoc, not TypeScript — these files stay plain JavaScript so the Deno
    function and the Node suites run the same bytes. The annotations exist so
    `npm run typecheck` can see the shape of what crosses into analyze/index.ts;
@@ -114,14 +139,16 @@ export function moneyIn(text){
    the caller's `.map()` over it becomes an unchecked any.
 
    @typedef {{ id: string, article: string | null, claim: string, claim_ar: string }} Row
-   @typedef {{ tier: "verified"|"unverified"|"refused", answer: string, cites: Row[], reason?: string }} Graded */
+   @typedef {{ tier: "verified"|"unverified"|"contract"|"refused", answer: string, cites: Row[], quotes?: string[], reason?: string }} Graded */
 
 /**
  * @param {any} proposed the model's completion, untrusted
  * @param {(id: string) => Row | undefined} lookup resolves a citation id to a register row
+ * @param {string} [doc] the reader's contract, when they consented to send it —
+ *   the only thing a "contract"-tier answer can be graded against
  * @returns {Graded}
  */
-export function gradeAnswer(proposed, lookup){
+export function gradeAnswer(proposed, lookup, doc){
   const answer = String(proposed?.answer ?? "").slice(0, 1500).trim();
   if (!answer) return { tier: "refused", answer: "", cites: [], reason: "empty" };
 
@@ -133,6 +160,46 @@ export function gradeAnswer(proposed, lookup){
     .slice(0, 6);
 
   if (proposed?.tier === "refused") return { tier: "refused", answer, cites: [], reason: "model" };
+
+  /* ---- THE CONTRACT TIER.
+   * An answer about the reader's own document, graded against that document.
+   * Everything below is a containment test against text the server already
+   * holds, so this tier is exactly as checkable as "verified" is — it simply
+   * checks a different source. What it must never become is a third name for
+   * "we did not check": if any part of it fails, the answer is refused rather
+   * than demoted, because a demoted contract answer would be an unverified
+   * answer that had just quoted the reader's contract at them.
+   */
+  if (proposed?.tier === "contract") {
+    const refuse = (reason) => ({ tier: "refused", answer: "", cites: [], quotes: [], reason });
+    if (!doc) return refuse("no_document");
+
+    const asked = Array.isArray(proposed?.quotes) ? proposed.quotes : [];
+    const quotes = asked
+      .filter(q => typeof q === "string")
+      .map(q => q.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+    if (!quotes.length) return refuse("no_quote");
+    /* ONE fabricated quote refuses the whole answer. Keeping the real ones and
+       dropping the invented one would leave a reader holding an answer that
+       looked fully sourced, with the invented part silently removed from the
+       evidence but still argued in the prose. */
+    if (!quotes.every(q => quoteInDoc(doc, q))) return refuse("quote");
+
+    /* A figure is allowed only where the contract itself states it. This is
+       the same rule the contract review runs on its key terms: reading a
+       salary back is the product, calculating one is not. */
+    const inDoc = new Set(moneyIn(doc));
+    if (moneyIn(answer).some(n => !inDoc.has(n))) return refuse("money");
+
+    /* No article numbers here at all. This tier cites no register rows, so
+       there is nothing behind a number, and the reader's contract quoting an
+       article is not Wodouh verifying it. */
+    if (articlesIn(answer).length) return refuse("citation");
+
+    return { tier: "contract", answer, cites: [], quotes };
+  }
 
   /* A claim of "verified" with nothing real behind it is an unverified answer
      wearing the wrong label. Demote rather than trust. */
