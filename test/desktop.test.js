@@ -136,6 +136,40 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(notSplit.appW <= 460,
      `and keeps the 440px frame while its neighbour widens (${notSplit.appW}px)`);
 
+  /* ---- the other two screens that asked for columns */
+  console.log("\n— the result reads its verdict and its findings together");
+  const RESULT = 'goTab("home"); pickSituation("rent"); current = SAMPLES.rental; ' +
+                 'show("result"); renderResult(true); renderClauses(); renderDuties()';
+  const res = await at(1440, 900, RESULT);
+  ok(res.sideBySide, "the verdict and the clause list sit side by side");
+  ok(!res.overflow, "with no sideways overflow");
+  const resNarrow = await at(1000, 800, RESULT);
+  ok(!resNarrow.sideBySide, "and stack again below 1100px");
+
+  /* THE MEASURE, which is the whole reason the letter got a column of its own.
+     It rendered at 347px on a 1440px screen — 24px more than the phone it
+     replaced — for the document a reader is most likely to have opened a
+     laptop to read before sending it. */
+  console.log("\n— the letter is wide enough to proofread");
+  const LETTER = RESULT + '; addAllPoints(); renderLetter(); show("letter")';
+  const letterWide = await p.evaluate(async (f) => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    // eslint-disable-next-line no-eval
+    eval(f);
+    const body = document.getElementById("letterBody").getBoundingClientRect();
+    const scr = document.querySelector(".screen.active");
+    const a = scr.querySelector(".dk-a").getBoundingClientRect();
+    const c = scr.querySelector(".dk-b").getBoundingClientRect();
+    return { w: Math.round(body.width),
+             split: Math.abs(a.top - c.top) < 60 && Math.round(a.left) !== Math.round(c.left),
+             docIsWider: a.width > c.width };
+  }, LETTER);
+  ok(letterWide.split, "the document and its controls sit side by side");
+  ok(letterWide.w >= 450,
+     `and the document gets a readable measure (${letterWide.w}px, was 347)`);
+  ok(letterWide.docIsWider,
+     "with the document taking the larger column, not an even half");
+
   console.log("\n— and the columns follow the language, not a hardcoded side");
   const ar = await at(1440, 900, 'if (document.documentElement.lang !== "ar") toggleLang(); ' + EOS);
   const en = await at(1440, 900, 'if (document.documentElement.lang === "ar") toggleLang(); ' + EOS);

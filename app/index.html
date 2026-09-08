@@ -282,18 +282,28 @@
        it. 420px reserved for the aside plus the gaps, so a split screen never
        pushes the aside off the side of the window. */
     .app.wide{max-width:min(920px,calc(100vw - 420px));width:100%}
+    /* Any element can split, not only a screen — the result screen's two
+       halves live inside the score card rather than beside it. */
+    .dk-split{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
     /* .screen.active{display:flex} is declared later in this file at equal
        specificity and would otherwise win, leaving a split screen stacked. */
-    .screen.active.dk-split{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
+    .screen.active.dk-split{display:grid}
     /* Everything spans both columns by default — a header, a title, a
        disclaimer — so a child added later cannot silently land in a column it
        was not designed for. Only the two wrappers take a single column. */
-    .screen.active.dk-split > *{grid-column:1/-1}
-    .screen.active.dk-split > .dk-a{grid-column:1}
-    .screen.active.dk-split > .dk-b{grid-column:2}
-    /* The right column sits with the top of the left one rather than centred
-       against a form that grows as the reader fills it in. */
-    .screen.active.dk-split > .dk-b{align-self:start;position:sticky;top:0}
+    .dk-split > *{grid-column:1/-1}
+    .dk-split > .dk-a{grid-column:1}
+    .dk-split > .dk-b{grid-column:2;align-self:start}
+    /* A DOCUMENT IS NOT HALF A SCREEN. An even split gave the letter 371px of
+       a 920px frame — 24px more than the phone column it replaced, for the one
+       thing a reader is most likely to have opened a laptop to read. The
+       controls beside it are a copy button and a short list, so they take the
+       third they need and the document takes the rest. */
+    .dk-split.dk-doc{grid-template-columns:1.9fr 1fr}
+    /* Sticky only where the left column is a form the reader is filling in and
+       the right one is the answer moving with it. On the result screen both
+       sides are read together and a sticky half would slide against the other. */
+    .screen.active.dk-split > .dk-b{position:sticky;top:0}
   }
 
   /* The frame only becomes a fixed-height scroll box when the window is tall
@@ -2071,7 +2081,8 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   <section class="screen" id="screen-result">
     <h2 class="sr-only" data-t="res_head"></h2>
     <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
-    <div class="score-card">
+    <div class="score-card dk-split">
+      <div class="dk-a">
       <div class="decision" id="decision" aria-live="polite">
         <span class="dc-ic" id="dcIcon" aria-hidden="true"></span>
         <b class="dc-label" id="dcLabel"></b>
@@ -2102,6 +2113,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <b id="acTitle"></b>
         <span id="acBody"></span>
       </div>
+      </div>
+      <!-- WHAT WAS FOUND. On a laptop this sits beside the verdict rather than
+           a screen below it, so the score and the clauses that produced it are
+           read together — which is the whole reason a reader scrolls back up.
+           On a phone the wrapper is a plain div and the order is unchanged. -->
+      <div class="dk-b">
       <h3 class="sr-only" data-t="res_flags_h"></h3>
       <div class="flags" id="flags"></div>
       <!-- WHAT THE READER TOOK ON. Everything above this point answers "what
@@ -2129,6 +2146,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <span><b data-t="as_open"></b><span data-t="as_open_sub"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
+      </div>
     </div>
     <div class="escalate" id="escalate" hidden></div>
     <!-- Pre-signing AI read. Renders nothing at all unless ANALYZE_URL is
@@ -2179,14 +2197,24 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   </section>
 
   <!-- UNLOCKED LETTER -->
-  <section class="screen" id="screen-letter">
+  <section class="screen dk-split dk-doc" id="screen-letter">
     <button class="back" onclick="show('result',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_score"></span></button>
     <h2 class="section-title" data-t="lt_ready"></h2>
+    <!-- THE DOCUMENT GETS THE WIDTH. On a 1440px screen this rendered in a
+         347px column — about 46 characters a line — for a letter somebody is
+         proofreading before they send it to their landlord. It is also the
+         single thing a reader is most likely to be on a laptop FOR: reading it
+         once more, then copying it into an email. -->
+    <div class="dk-a">
     <div class="letter">
       <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
       <div class="body" id="letterBody"></div>
       <div class="letterfoot" id="letterFoot"></div>
     </div>
+    </div>
+    <!-- What to DO with it, beside the letter rather than under it: copy,
+         which claim it is about, and how to send it so receipt is provable. -->
+    <div class="dk-b">
     <div class="letter-actions">
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
@@ -2198,6 +2226,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="tm-sec ltr-send" id="ltrSendD" hidden>
       <b id="ltrSendDH"></b>
       <ul></ul>
+    </div>
     </div>
     <button class="track-tease" id="lawyerTease" hidden onclick="openDesk('letter')">
       <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg></span>
