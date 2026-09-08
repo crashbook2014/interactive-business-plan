@@ -1822,7 +1822,7 @@
        as a front page, and it costs nothing in RTL because centring has no
        side to get wrong. */
     .hm-hero{display:block;margin:38px 0 40px;text-align:center}
-    .hm-hero h1{font-size:36px;color:var(--teal-ink);line-height:1.4;text-wrap:balance}
+    .hm-hero .hm-hero-h{font-size:36px;color:var(--teal-ink);line-height:1.4;text-wrap:balance}
     .hm-hero p{margin:14px auto 0;color:var(--ink-2);font-size:19px;max-width:52ch}
     #screen-home .greet{text-align:center}
     #screen-home .hello,#screen-home .sub{text-align:center}
@@ -1834,11 +1834,17 @@
     /* THREE COLUMNS, AND A DOOR WIDER THAN IT IS ON A PHONE. That is the whole
        measure of whether this worked: 354px on a 390px phone was the number to
        beat, and two columns in a 440px frame gave 199px. */
-    /* TWO COLUMNS HERE, THREE ONLY WHERE THREE FIT. At 1024 three of them
-       could not shrink to the page — a grid item's min-width is auto, so the
-       cards' own content set a floor and pushed the whole section 6px past the
-       viewport on each side. Two columns at 1024 also gives a 484px door,
-       which is wider than three at 319px and wider than the phone. */
+    /* TWO COLUMNS, AT EVERY DESKTOP WIDTH, AND NEVER THREE.
+       Three was tried and it repeated the defect this whole layout exists to
+       end, one breakpoint further up: doors went from 506px to 333px the
+       moment the third column appeared at 1100, and three columns never got
+       above ~341px at any width — still under the 354px a 390px phone gives.
+       "More of them on screen" is not the same as "better", and a door that
+       shrinks when the screen grows is the bug, wherever it happens.
+       Two columns give 478px at 1024 and 506px from 1280 up: half again the
+       phone's, at every width, with no boundary where it gets worse.
+       On a 900px-tall laptop all eight are above the fold; on a 720px one the
+       last row needs a small scroll, which is what pages do. */
     #screen-home .sit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     /* min-width:0 on both, so content can never again decide how wide the
        page is. This is the actual cause; the column count is the taste. */
@@ -1876,9 +1882,6 @@
    * to end.
    */
   @media (min-width:1100px){
-    /* The third door column, at the width where three of them are still wider
-       than a phone's rather than merely more of them. */
-    #screen-home .sit-grid{grid-template-columns:repeat(3,1fr)}
     /* A split screen is the one kind allowed past the 684px reading column,
        out to the same 1080px measure the nav and the marketing site use.
        .wide rather than .dk-split, because the result screen's two halves live
@@ -2085,7 +2088,15 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          doors are already the whole screen and a hero would only push them
          under the fold. -->
     <div class="hm-hero">
-      <h1 id="hmHeroH"></h1>
+      <!-- A <p>, NOT an <h1>, and that is load-bearing rather than pedantry.
+           show() focuses the screen's first h1/h2 so a screen reader is told
+           it has arrived somewhere new. As an <h1> this line came first and
+           won that job — and it is display:none on a phone, where focusing it
+           is a silent no-op, so a phone reader changing tabs was left on the
+           PREVIOUS screen's heading and never told they had moved.
+           The screen's heading is the chooser question below; this is the
+           pitch above it. -->
+      <p class="hm-hero-h" id="hmHeroH"></p>
       <p id="hmHeroP"></p>
     </div>
     <h1 class="hello" data-t="sit_h"></h1>
@@ -6032,7 +6043,15 @@ function show(name, back){
   if (gestureNav) el.classList.add("gesture");
   el.style.transform = "";
   window.scrollTo(0,0);
-  const h = el.querySelector("h1,h2");
+  /* THE FIRST *VISIBLE* HEADING, not simply the first one. Focusing a
+     display:none element is a silent no-op, so a hidden heading here does not
+     fall through to the next candidate — it strands the reader on the heading
+     of the screen they just left, with nothing announced. That happened for
+     real: a desktop-only hero was added above this screen's own heading and
+     the phone stopped announcing navigation entirely, with all 36 suites
+     still green. offsetParent is null for anything display:none. */
+  const h = [...el.querySelectorAll("h1,h2")].find(x => x.offsetParent !== null)
+            || el.querySelector("h1,h2");
   if (h){ h.setAttribute("tabindex","-1"); h.focus({ preventScroll:true }); }
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();

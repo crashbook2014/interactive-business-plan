@@ -97,7 +97,19 @@ async function geometry(p){
     await p.evaluate(signInStub);
     await p.evaluate(paywallOn);
     await p.evaluate(() => { nat = "sa"; show("home"); });
-    await p.waitForTimeout(250);
+    /* SETTLED, not "probably settled". The screen entry animation runs for
+       --t-slow (360ms) and this waited 250, so roughly half the time the
+       geometry below was measured mid-transform. While .app was the thing
+       being measured that never showed — .app does not animate — but the
+       screen does, and a fraction of its 16px translate is enough to break a
+       2px centring tolerance at random. Waiting on the animations themselves
+       is deterministic; a bigger magic number is not. */
+    await p.evaluate(() => Promise.all(
+      document.querySelectorAll(".screen.active, .screen.active *").length
+        ? [...document.querySelector(".screen.active").getAnimations({ subtree: true })]
+            .map((a) => a.finished.catch(() => {}))
+        : []));
+    await p.waitForTimeout(60);
 
     const g = await geometry(p);
 

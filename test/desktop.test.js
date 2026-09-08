@@ -239,12 +239,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "and there is no hero on a phone, where it would only push them under the fold");
 
   const deskDoor = await doorAt(1440, 900);
-  ok(deskDoor.perRow === 3, `on a laptop they are three across (${deskDoor.perRow})`);
-  /* 199px was the bug and 354px is the phone. This is the number that says
-     whether the laptop is finally getting more than the phone rather than
-     less. */
-  ok(deskDoor.w >= 320,
-     `and a door is ${deskDoor.w}px — the defect drew it at 199px on this exact screen`);
+  ok(deskDoor.perRow === 2, `on a laptop they are two across (${deskDoor.perRow})`);
+  /* THE NUMBER THE WHOLE COMPLAINT COMES DOWN TO. 199px was the bug, 354px is
+     what a 390px phone gives, and a laptop must beat the phone rather than
+     merely beat the bug. Three columns cleared 320 but never cleared 354 at
+     any width, which is why they are not used. */
+  ok(deskDoor.w > 354,
+     `and a door is ${deskDoor.w}px — wider than the phone's 354px, where the defect drew 199px`);
   ok(deskDoor.allAbove,
      `with all ${deskDoor.n} of them reachable without scrolling`);
   ok(deskDoor.heroShown, "and a hero above them");
@@ -256,9 +257,17 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const smallLaptop = await doorAt(1024, 768);
   ok(smallLaptop.perRow === 2,
      `a 1024px laptop gets two doors across, not three squeezed (${smallLaptop.perRow})`);
-  ok(smallLaptop.w >= 400,
-     `at ${smallLaptop.w}px each — three across would draw them at 319px`);
+  ok(smallLaptop.w > 354,
+     `at ${smallLaptop.w}px each, still beating the phone — three across drew 319px here`);
   ok(!smallLaptop.overflow, "with no sideways overflow there either");
+
+  /* THE BOUNDARY WHERE A THIRD COLUMN USED TO APPEAR. A door must never get
+     smaller because the window got bigger — that is the defect in one
+     sentence, and it is worth asserting across the crossing rather than only
+     at convenient widths. */
+  const below = await doorAt(1099, 900), above = await doorAt(1100, 900);
+  ok(above.w >= below.w - 1,
+     `crossing 1100 does not shrink a door (${below.w}px -> ${above.w}px)`);
 
   /* THE TABLET BAND, which had the same defect and no one had looked. At 768px
      the window is over 600 so the two-column rule fired, inside a 440px frame:
@@ -321,6 +330,41 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!notSplit.hasCols, "a screen that did not opt in has no columns");
   ok(notSplit.screenW <= 700,
      `and stays in the reading column while its neighbour widens (${notSplit.screenW}px)`);
+
+  /* NAVIGATION MUST STILL BE ANNOUNCED, ON BOTH PLATFORMS.
+     show() focuses the new screen's first heading so a screen reader is told
+     it has arrived. Focusing a display:none element is a SILENT no-op, so the
+     moment a desktop-only heading was added above a screen's own one, the
+     phone stopped moving focus at all — a reader changing tabs was left on the
+     heading of the screen they had just left. Every suite stayed green. This
+     is the assertion that was missing. */
+  console.log("\n— arriving on a screen still moves focus into it, on both platforms");
+  for (const [w, h, label] of [[390, 844, "phone"], [1440, 900, "laptop"]]) {
+    const q = await b.newPage({ viewport: { width: w, height: h } });
+    await q.goto(APP);
+    await q.waitForFunction(() => typeof window.show === "function");
+    const moved = await q.evaluate(() => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      const out = {};
+      for (const dest of ["home", "rights", "future"]) {
+        goTab(dest === "home" ? "rights" : "home");   /* start somewhere else */
+        goTab(dest);
+        const a = document.activeElement;
+        const scr = document.getElementById("screen-" + dest);
+        out[dest] = { inside: scr.contains(a),
+                      visible: a.offsetParent !== null,
+                      what: a.tagName + "." + String(a.className).slice(0, 14) };
+      }
+      return out;
+    });
+    await q.close();
+    for (const dest of ["home", "rights", "future"]) {
+      ok(moved[dest].inside,
+         `${label}: arriving at ${dest} moves focus into it (${moved[dest].what})`);
+      ok(moved[dest].visible,
+         `${label}: and onto something actually on screen, not a hidden element`);
+    }
+  }
 
   /* THE SIDEWAYS FLASH, which only a mid-animation measurement can see.
      screen-lateral settles DOWN from scale(1.012). While a screen was a 440px
