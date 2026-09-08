@@ -250,6 +250,16 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(deskDoor.heroShown, "and a hero above them");
   ok(!deskDoor.overflow, "with no sideways overflow");
 
+  /* THE SMALL LAPTOP, where three columns fit only in the sense that they do
+     not overflow: they draw a 319px door, narrower than the 354px the phone
+     gets. Column count follows the room, not the breakpoint. */
+  const smallLaptop = await doorAt(1024, 768);
+  ok(smallLaptop.perRow === 2,
+     `a 1024px laptop gets two doors across, not three squeezed (${smallLaptop.perRow})`);
+  ok(smallLaptop.w >= 400,
+     `at ${smallLaptop.w}px each — three across would draw them at 319px`);
+  ok(!smallLaptop.overflow, "with no sideways overflow there either");
+
   /* THE TABLET BAND, which had the same defect and no one had looked. At 768px
      the window is over 600 so the two-column rule fired, inside a 440px frame:
      197px doors on a device with more room than a phone, not less. */
@@ -311,6 +321,29 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!notSplit.hasCols, "a screen that did not opt in has no columns");
   ok(notSplit.screenW <= 700,
      `and stays in the reading column while its neighbour widens (${notSplit.screenW}px)`);
+
+  /* THE SIDEWAYS FLASH, which only a mid-animation measurement can see.
+     screen-lateral settles DOWN from scale(1.012). While a screen was a 440px
+     column inside a wider window there was nowhere for 1.2% to go; now the
+     screen is the page, so at 1024 it became 1036 for the length of every tab
+     change and a horizontal scrollbar appeared and vanished each time. A
+     settled measurement says the layout is fine, and it is — which is exactly
+     why this one is taken while the animation is still running. */
+  console.log("\n— and no sideways flash while a screen is arriving");
+  const flash = await b.newPage({ viewport: { width: 1024, height: 768 } });
+  await flash.goto(APP);
+  await flash.waitForFunction(() => typeof window.show === "function");
+  const mid = await flash.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); goTab("home");
+    const de = document.documentElement;
+    const s = document.getElementById("screen-home").getBoundingClientRect();
+    return { over: de.scrollWidth - de.clientWidth,
+             w: Math.round(s.width), vw: de.clientWidth };
+  });
+  await flash.close();
+  ok(mid.over <= 0,
+     `nothing overhangs mid-transition at 1024 (${mid.w}px in ${mid.vw}px, ${mid.over}px over)`);
 
   /* THE EMPTY HALF, which the split itself created. #eosOut has nothing in it
      until the reader presses Calculate, so widening this screen bought a 496px
