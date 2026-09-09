@@ -5061,6 +5061,12 @@ const T = {
   eos_m_2:{ar:"شهرين",en:"2 months"},
   eos_m_p:{ar:"{n} أشهر",en:"{n} months"},
   eos_m_m:{ar:"{n} شهرًا",en:"{n} months"},
+  /* Days, because the money always counted them and the label never printed
+     them — see svcText(). Same four forms as the years and months above. */
+  eos_d_1:{ar:"يوم واحد",en:"1 day"},
+  eos_d_2:{ar:"يومين",en:"2 days"},
+  eos_d_p:{ar:"{n} أيام",en:"{n} days"},
+  eos_d_m:{ar:"{n} يومًا",en:"{n} days"},
   /* THE SAME FOUR SHAPES, FOR EVERY NOUN THE APP COUNTS.
      The years and months above read as Arabic; six other counts on the same
      screens did not — "2 شهرًا" where the dual belongs, "7 شهرًا" where the
@@ -6493,10 +6499,36 @@ function confidence(a){
    single plural, so the same four keys serve both languages. */
 /* A service duration, with both nouns inflected. Zero months is dropped
    entirely — "6 سنوات و0 شهر" says nothing that "6 سنوات" does not. */
-function svcText(y, m){
-  const yr = countNoun("eos_y", y);
-  if (!m) return yr;
-  return t("eos_yrs_join").replace("{y}", yr).replace("{m}", countNoun("eos_m", m));
+/* THE PERIOD THE MONEY WAS ACTUALLY COMPUTED ON, not a rounded version of it.
+ *
+ * serviceParts() returns {y, m, d} and serviceYears() spends all three —
+ * y + m/12 + d/365. This printed only the first two, so the days were computed
+ * and then thrown away at display time. On 1 Mar 2018 to 31 Aug 2026 that is
+ * 30 discarded days: the label read "8 years and 5 months" beside a total
+ * worth 8.4989 years, and on a 12,000 wage the two disagreed by 986 SAR.
+ *
+ * That is not a cosmetic gap, because this string is carried into the employer
+ * letter and the case file. A fired reader sends HR a document stating a period
+ * and a total; HR applies the letter's own stated rule to its own stated period,
+ * gets a different number, and has a free reason to reject the whole demand.
+ * The product's promise is that you never have to take its word for it — so the
+ * working has to survive being checked.
+ *
+ * The money is not touched. Exact days is the faithful reading of Article 84's
+ * "وبنسبة ما قضاه العامل من السنة" — pro rata on the period actually served —
+ * so the label was the lossy half, and the label is what changed.
+ *
+ * Zero parts are dropped rather than printed. "0 سنوات و5 أشهر" is wrong the
+ * way "0 years and 5 months" is; a person says "5 months".
+ */
+function svcText(y, m, d){
+  const said = [];
+  if (y) said.push(countNoun("eos_y", y));
+  if (m) said.push(countNoun("eos_m", m));
+  if (d) said.push(countNoun("eos_d", d));
+  if (!said.length) return countNoun("eos_y", y || 0);
+  return said.reduce((a, b) =>
+    t("eos_yrs_join").replace("{y}", a).replace("{m}", b));
 }
 
 function countNoun(stem, n){
@@ -8078,7 +8110,7 @@ function calcEos(){
   /* The only case where a subtotal is a different number from the total. */
   const eosAdjusted = factor !== 1;
 
-  const svc = svcText(parts.y, parts.m);
+  const svc = svcText(parts.y, parts.m, parts.d);
   const cur = t("eos_sar");
   const row = (label, val, cls) =>
     `<div class="r${cls?" "+cls:""}"><span>${label}</span><b>${val}</b></div>`;
@@ -8355,7 +8387,7 @@ function buildCaseDoc(){
   if (lang==="ar")
     return `${t("cf_facts")}\n`+
       `• بداية العمل: ${fmtD(d.start)}\n• نهاية العمل: ${fmtD(d.end)}\n`+
-      `• مدة الخدمة: ${svcText(d.parts.y, d.parts.m)}\n`+
+      `• مدة الخدمة: ${svcText(d.parts.y, d.parts.m, d.parts.d)}\n`+
       `• آخر أجر شهري: ${money(d.wage)} ${cur}\n• طريقة الإنهاء: ${t("eos_h_term")}\n\n`+
       `${t("cf_claim")}\n`+
       `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
@@ -8365,7 +8397,7 @@ function buildCaseDoc(){
       `${t("cf_ev")}\n${docs}\n\n${t("cf_ask")}\n${t("cf_ask_b")}`;
   return `${t("cf_facts")}\n`+
     `• Start date: ${fmtD(d.start)}\n• End date: ${fmtD(d.end)}\n`+
-    `• Length of service: ${svcText(d.parts.y, d.parts.m)}\n`+
+    `• Length of service: ${svcText(d.parts.y, d.parts.m, d.parts.d)}\n`+
     `• Last monthly wage: ${money(d.wage)} ${cur}\n• How it ended: ${t("eos_h_term")}\n\n`+
     `${t("cf_claim")}\n`+
     `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
@@ -8912,7 +8944,7 @@ const CERT_CLS = { confirmed:"ok", likely:"review", uncertain:"issue", na:"ok" }
    the sentence that makes it theirs. */
 function appliesText(l){
   const p = termParts(), cur = t("eos_sar");
-  const svc = svcText(p.y, p.m);
+  const svc = svcText(p.y, p.m, p.d);
   switch (l.key){
     case "tm_m_eos": {
       const h = termHow();
@@ -9409,7 +9441,7 @@ function renderTermResult(){
   document.getElementById("termHowFactors").innerHTML = [
     ["tm_hw_answers", t("tm_hw_answers_b").replace("{h}", t(termHow() ? termHow().label : "th_other"))],
     ["tm_hw_service", t("tm_hw_service_b")
-      .replace("{s}", svcText(termParts().y, termParts().m))],
+      .replace("{s}", svcText(termParts().y, termParts().m, termParts().d))],
     ["tm_hw_track", t(isNonSaudi() ? "tm_hw_track_nonsa" : "tm_hw_track_sa")],
     ["tm_hw_docs", t("tm_hw_docs_b")
       .replace("{n}", countNoun("cnt_doc", term.docs.length)).replace("{s}", t(ev.key))],
@@ -10490,7 +10522,7 @@ function termFacts(){
   return [
     `${t("tm_d_start")}: ${d(term.start)}`,
     `${t("tm_d_end")}: ${d(term.end)}`,
-    `${t("tm_d_service")}: ${svcText(p.y, p.m)}`,
+    `${t("tm_d_service")}: ${svcText(p.y, p.m, p.d)}`,
     `${t("tm_d_wage")}: ${termWage() ? money(termWage()) + " " + cur : t("tm_d_unknown")}`,
     `${t("tm_d_how")}: ${t(termHow() ? termHow().label : "th_other")}`,
     `${t("tm_d_ctype")}: ${t(termCtype() === "fixed" ? "tm_f_fixed" : termCtype() === "indef" ? "tm_f_indef" : "tm_d_unknown")}`,

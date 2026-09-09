@@ -562,6 +562,73 @@ async function art87Certainty(p){
   ok(svc.zeroM === "6 سنوات", `and zero months is dropped rather than printed (${svc.zeroM})`);
   ok(/11 سنة/.test(svc.many), `11+ takes the singular accusative (${svc.many})`);
 
+  /* THE LABEL MUST REPRODUCE THE TOTAL, because both are printed in the same
+     document and one of them is sent to an employer.
+     serviceParts() returns {y, m, d} and serviceYears() spends all three, but
+     svcText() printed only the first two — so the days were computed and then
+     dropped at display time. On 1 Mar 2018 to 31 Aug 2026 that is 30 days:
+     "8 years and 5 months" beside a total worth 8.4989 years, 986 SAR apart on
+     a 12,000 wage. HR applies the letter's own stated period to its own stated
+     rule, gets a different number, and has a free reason to reject the demand.
+     Asserted as the invariant rather than as a string: recompute the award
+     from the PRINTED period and require it to land on the figure shown. */
+  console.log("\n— and the printed period reproduces the figure beside it");
+  const agree = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); openEos();
+    eosHow = "term"; renderEos();
+    const out = [];
+    for (const [s, e, w] of [["2018-03-01", "2026-08-31", 12000],
+                             ["2020-01-01", "2020-06-30", 12000],
+                             ["2019-06-01", "2026-08-15", 14000],
+                             ["2015-01-01", "2020-01-01", 10000]]) {
+      document.getElementById("eosStart").value = s;
+      document.getElementById("eosEnd").value = e;
+      document.getElementById("eosWage").value = String(w);
+      calcEos();
+      const P = eosData.parts;
+      /* READ WHAT THE READER IS SHOWN, not what svcText() would return if
+         asked directly. The defect was a CALLER dropping the days, and a check
+         that recomputes the label itself passes straight through that — proved
+         by breaking it: removing the days from this very call site left the
+         first version of this guard green. So the period comes off the result
+         card, and off the case-file document that gets sent. */
+      const onScreen = document.querySelector("#eosOut .svc");
+      const printed = onScreen
+        ? onScreen.textContent.split(":").slice(1).join(":").trim()
+        : "(no service line rendered)";
+      /* Exactly the arithmetic the panel beside the form tells the reader to
+         do: half a month per year for the first five, one month after. */
+      const ly = P.y + P.m / 12 + P.d / 365;
+      const implied = Math.min(ly, 5) * 0.5 * w + Math.max(0, ly - 5) * w;
+      /* The same period, in the document the reader actually sends. */
+      const doc = buildCaseDoc();
+      const line = (doc.split("\n").find((l) => /مدة الخدمة/.test(l)) || "");
+      const inDoc = line.split(":").slice(1).join(":").trim();
+      out.push({ s, e, printed, inDoc, shown: Math.round(eosData.total),
+                 fromPrinted: Math.round(implied) });
+    }
+    return out;
+  });
+  for (const c of agree) {
+    ok(c.shown === c.fromPrinted,
+       `${c.s}→${c.e}: "${c.printed}" recomputes to ${c.fromPrinted}, and the screen says ${c.shown}`);
+    /* The letter and the case file carry this string to an employer. If the
+       screen and the document disagree, the document is the one that does
+       damage. */
+    ok(c.inDoc === c.printed,
+       `${c.s}→${c.e}: the case file states the same period as the screen ("${c.inDoc}")`);
+  }
+  /* The days must actually be printed when there are any — an implementation
+     that dropped them and rounded the money to match would satisfy the check
+     above while telling the reader a period they did not serve. */
+  ok(/يوم|أيام/.test(agree[0].printed),
+     `the days are named, not absorbed (${agree[0].printed})`);
+  /* And zero parts stay dropped. "0 سنوات و5 أشهر" is wrong the way
+     "0 years and 5 months" is; a person says "5 months". */
+  const zeroY = await p.evaluate(() => svcText(0, 5, 0));
+  ok(!/^0/.test(zeroY), `a period under a year does not open with zero years (${zeroY})`);
+
   /* One helper, every counted noun. The duration was fixed once and six other
      counts on the same screens kept formatting themselves by hand — "2 شهرًا"
      where the dual belongs, "7 شهرًا" where the plural does, "1 من الأوراق"
