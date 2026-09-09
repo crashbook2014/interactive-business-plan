@@ -91,6 +91,55 @@ export function articlesIn(text){
    year and IS meant as riyals slips through. Written naturally that amount is
    "SAR 2,025" or "2025 ريال", and both are caught above. */
 const YEARISH = /^(?:19|20)\d\d$/;
+
+/* AMOUNTS WRITTEN WITH A MULTIPLIER WORD, which the digit scan below cannot
+ * see at all.
+ *
+ * The module's guarantee is that every riyal figure in the output appears in
+ * the source. It was false for anything carrying a word: "1.2 million SAR",
+ * "500 thousand SAR", "half a million riyals", «خمسمائة ألف ريال» all returned
+ * NOTHING from moneyIn() and sailed through attestation. Two independent
+ * reasons — the currency-adjacency patterns need digits touching the currency,
+ * and the bare-number pass discards anything under four digits, so "1.2" and
+ * "500" were both invisible.
+ *
+ * Two cases, handled differently on purpose:
+ *
+ *   DIGITS + WORD ("1.2 million") resolve to a number. Both sides resolve the
+ *   same way, so a finding saying "1.2 million SAR" is attested by a contract
+ *   saying "1,200,000" and by one saying "1.2 million".
+ *
+ *   WORDS + WORD ("half a million", «خمسمائة ألف») cannot be resolved without
+ *   a number-word parser in two languages. They are matched as a PHRASE
+ *   instead, carrying the two words before the multiplier: the same wording in
+ *   the document attests it, and anything else refuses it. That is the
+ *   fail-closed direction, and it is deliberate — the cost is a true finding
+ *   dropped when the document words the same amount differently, which is a
+ *   worse experience and a better guarantee.
+ *
+ * Two words, not one: with one, "half a million" and "a million" both reduce
+ * to "a million" and a finding inventing the half would be attested by a
+ * document that never said it.
+ */
+const MULT_WORD = /(thousand|million|ألف|الف|آلاف|مليون|ملايين)(?![\p{L}\p{N}])/giu;
+const THOUSANDISH = /^(?:thousand|ألف|الف|آلاف)$/i;
+export function amountTokens(text){
+  const t = normNum(String(text ?? ""));
+  const out = new Set();
+  for (const m of t.matchAll(MULT_WORD)){
+    const before = t.slice(Math.max(0, m.index - 30), m.index);
+    const num = before.match(/([\d,]+(?:\.\d+)?)\s*$/);
+    if (num){
+      const v = Number(num[1].replace(/,/g, "")) * (THOUSANDISH.test(m[1]) ? 1e3 : 1e6);
+      if (Number.isFinite(v)) out.add(String(Math.round(v)));
+      continue;
+    }
+    const words = before.trim().split(/\s+/).filter(Boolean).slice(-2).join(" ");
+    out.add(("~" + words + " " + m[1]).toLowerCase().replace(/\s+/g, " ").trim());
+  }
+  return [...out];
+}
+
 export function moneyIn(text){
   const t = normNum(text);
   const out = new Set();
@@ -103,6 +152,7 @@ export function moneyIn(text){
     if (!raw.includes(",") && YEARISH.test(n)) continue;  /* a date, not an amount */
     out.add(n);
   }
+  for (const a of amountTokens(t)) out.add(a);
   return [...out];
 }
 

@@ -34,7 +34,7 @@
  *    against the register. In it → verified. Not in it → the reader sees the
  *    citation AND sees that nobody checked it.
  */
-import { articlesIn, moneyIn, normNum } from "./grade.mjs";
+import { articlesIn, amountTokens, moneyIn, normNum } from "./grade.mjs";
 
 const STR = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
@@ -84,6 +84,37 @@ const BANNED = [
   new RegExp("مخالف(?:ة|ًا)?" + AR_END),
   new RegExp("(?:باطل|لاغٍ|لاغي)" + AR_END),
   new RegExp("غير\\s+(?:قانوني|نظامي)"),
+
+  /* PROMISES OF AN OUTCOME, which nothing enforced.
+   *
+   * CR_SYSTEM rule 7 asks the model never to predict a result, and asking was
+   * the whole of it: "You are guaranteed to win this case at the labour court"
+   * and "You will certainly receive the full award" both survived grading
+   * intact and rendered to the reader verbatim. Rule 4 — never say illegal or
+   * void — was enforced here and held; rule 7 had a prompt and no filter, and
+   * a prompt is a request while a filter is a guarantee.
+   *
+   * The whole product is built on never stating a legal outcome. Every screen
+   * in the termination flow is written to avoid it, the score says out loud
+   * that it comes from Wodouh's methodology and not from a statute, and the
+   * assessment prints "what we could not judge". This is the ONE path where
+   * text influenced by a third party reaches the reader, and it was the one
+   * with no guard on the sentence the product most needs never to say.
+   *
+   * DROPPED, NOT REWRITTEN, and that is why these are here rather than in
+   * HEDGES: a promise has no honest hedged form. "You will probably win" is
+   * the same claim with a smaller number attached to it.
+   *
+   * "certainly", not "certain" — "certain clauses" is ordinary English and
+   * dropping a finding for it would cost far more than it buys. */
+  /\bguarantee(?:d|s|ing)?\b/i, /\bwill (?:definitely|certainly|surely)\b/i,
+  /\b(?:will|are going to) win\b/i, /\bcertainly\b/i, /\bdefinitely\b/i,
+  /\bassured of\b/i, /\bno doubt that\b/i,
+  new RegExp("مضمون(?:ة|ًا)?" + AR_END),
+  new RegExp("بالتأكيد" + AR_END),
+  new RegExp("(?:ستكسب|ستربح|ستفوز)" + AR_END),
+  new RegExp("حتم(?:ًا|اً|ا)" + AR_END),
+  new RegExp("قطع(?:ًا|اً|ا)" + AR_END),
 ];
 
 /* "questionable and questionable" is what two adjectives in one sentence
@@ -116,6 +147,12 @@ export function figuresIn(source) {
   for (const m of normNum(String(source ?? "")).matchAll(/\d[\d,]*(?:\.\d+)?/g)) {
     set.add(m[0].replace(/,/g, ""));
   }
+  /* The document is read the same way the finding is. Without this a contract
+     saying "1.2 million SAR" would refuse a finding quoting it back, because
+     the finding resolves to 1200000 and the raw scan above only ever saw
+     "1.2". Attestation has to compare like with like or it fails honest
+     findings while still passing invented ones. */
+  for (const a of amountTokens(source)) set.add(a);
   return set;
 }
 
