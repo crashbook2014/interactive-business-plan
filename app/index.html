@@ -3694,11 +3694,20 @@ const T = {
   fu_cat_emp_d:{ar:"مدعوم بالكامل: تحليل، ومبالغ، وحاسبة نهاية الخدمة، وخطابات.",
                 en:"Fully supported: analysis, amounts, the end-of-service calculator, and letters."},
   fu_cat_rent:{ar:"عقد إيجار",en:"Rental"},
-  fu_cat_rent_d:{ar:"مدعوم: تحليل البنود والتنبيهات وخطاب للمؤجّر.",
-                 en:"Supported: clause analysis, flags, and a letter to the landlord."},
+  /* "مدعوم" / "Supported" was doing the work of a sentence it could not back.
+     A pasted lease meets three GENERAL contract checks — a penalty clause,
+     one-sided termination, automatic renewal — and not one rule written for a
+     lease. It carries no article numbers either, because the rental register
+     holds three founder-confirmed rows and nothing that would source a clause
+     verdict. Employment gets seventeen rules and a citation each. Saying
+     "supported" of both put them on the same footing in the reader's head.
+     The standard for this is already in the file, two rows down on the
+     supplier line: say what is missing rather than imply it exists. */
+  fu_cat_rent_d:{ar:"يقرأ عقدك نفسه: فحوص عامة للبنود، وخطاب مطالبة للمؤجّر. لكن ما عندنا قواعد مكتوبة للإيجار ولا مواد نظامية نستند لها هنا — اللي نقوله قراءة لنص عقدك، مو لأنظمة الإيجار.",
+                 en:"Reads your contract itself: general clause checks, and a demand letter to the landlord. But we have no rules written for leases and no article numbers behind them here — what we say is a reading of your contract's words, not of rental law."},
   fu_cat_free:{ar:"عقد عمل حر",en:"Freelance"},
-  fu_cat_free_d:{ar:"مدعوم: تحليل البنود والتنبيهات وخطاب للعميل.",
-                 en:"Supported: clause analysis, flags, and a letter to the client."},
+  fu_cat_free_d:{ar:"يقرأ عقدك نفسه: فحوص عامة للبنود، وخطاب مطالبة للعميل. لكن ما عندنا قواعد مكتوبة للعمل الحر ولا مواد نظامية نستند لها هنا — اللي نقوله قراءة لنص عقدك، مو لأنظمة العمل الحر.",
+                 en:"Reads your contract itself: general clause checks, and a demand letter to the client. But we have no rules written for freelance work and no article numbers behind them here — what we say is a reading of your contract's words, not of freelance law."},
   fu_cat_supp:{ar:"عقد توريد",en:"Supplier"},
   fu_cat_supp_d:{ar:"ما زال ما بدأ. نقوله عشان تعرف وش ناقص، لا عشان نوحي إنه موجود.",
                  en:"Not started. Listed so you know what's missing, not to imply it exists."},

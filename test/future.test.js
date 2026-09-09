@@ -176,6 +176,56 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(narrow.wrapped === false, `and no tab label wraps to a second line (bar ${narrow.barHeight}px)`);
   await small.close();
 
+  /* WHAT A CONTRACT TYPE CLAIMS MUST MATCH WHAT THE ENGINE HOLDS FOR IT.
+     The rental and freelance rows both read "مدعوم" / "Supported: clause
+     analysis, flags, and a letter" — the same word the employment row uses,
+     which has seventeen rules and a verified article citation per clause. A
+     pasted lease meets three GENERAL contract checks and not one rule written
+     for a lease, and carries no article number at all, because the rental
+     register holds three founder-confirmed rows and nothing that would source
+     a clause verdict. The word put them on the same footing in the reader's
+     head. The standard is already in the file on the supplier row: say what is
+     missing rather than imply it exists. */
+  console.log("\n— a contract type claims only what the engine holds for it");
+  const claims = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await claims.goto(APP);
+  await claims.waitForFunction(() => typeof window.show === "function");
+  const cap = await claims.evaluate(() => {
+    const forDomain = (d) => RULES.filter((r) =>
+      !d ? true : (Array.isArray(r.dom) && r.dom.includes(d))).length;
+    const say = (k, l) => { if (lang !== l) toggleLang(); return t(k); };
+    const out = { employmentRules: forDomain(null),
+                  rentRules: forDomain("rent"), gigRules: forDomain("gig"), copy: {} };
+    for (const l of ["ar", "en"]) {
+      out.copy[l] = { rent: say("fu_cat_rent_d", l), free: say("fu_cat_free_d", l),
+                      emp: say("fu_cat_emp_d", l), supp: say("fu_cat_supp_d", l) };
+    }
+    return out;
+  });
+  await claims.close();
+
+  /* The premise. If someone writes real rental rules this assertion should
+     fail, and the copy above should then be rewritten to say so. */
+  ok(cap.rentRules < cap.employmentRules && cap.gigRules < cap.employmentRules,
+     `rental (${cap.rentRules}) and freelance (${cap.gigRules}) hold fewer rules than employment (${cap.employmentRules})`);
+
+  for (const l of ["ar", "en"]) {
+    const c = cap.copy[l];
+    ok(!/^\s*(مدعوم|Supported)/.test(c.rent),
+       `${l}: the rental row does not open by calling itself supported`);
+    ok(!/^\s*(مدعوم|Supported)/.test(c.free),
+       `${l}: nor the freelance row`);
+    /* And it must name the limit, not merely avoid the word. */
+    const names = l === "ar" ? /ما عندنا قواعد|ولا مواد نظامية/ : /no rules written|no article numbers/i;
+    ok(names.test(c.rent), `${l}: the rental row names what is missing`);
+    ok(names.test(c.free), `${l}: the freelance row names what is missing`);
+    /* Employment may still say it, because it can back it. */
+    ok(/مدعوم|supported/i.test(c.emp),
+       `${l}: employment still claims support, which it can back`);
+    ok(c.rent !== c.emp && c.free !== c.emp,
+       `${l}: and the three do not read as the same promise`);
+  }
+
   await b.close();
   if (FAIL.length) {
     console.log(`\n${FAIL.length} FAILURES`);
