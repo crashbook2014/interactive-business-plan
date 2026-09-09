@@ -57,6 +57,7 @@ const ORDER = [
   "ai-context.test.js",
   "duties-relevance.test.js",
   "demand-letter.test.js",
+  "letter-voice.test.js",
   "termination-ui.test.js",
   "scenarios.test.js",
 ];
