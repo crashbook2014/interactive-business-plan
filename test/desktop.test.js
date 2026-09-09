@@ -65,6 +65,32 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      `a terminated reader is not told "before you sign" (${term.h})`);
   ok(term.h !== home.h, "and gets something written for them instead");
 
+  /* THE STATE THIS WAS SUPPOSED TO GUARD, WHICH IT NEVER ENTERED.
+     The assertion above leaves the reader on #screen-term, where
+     deskAsideKeys() matches on the SCREEN NAME and returns desk_term whatever
+     the journey is — so it passed without ever exercising the branch that
+     matters. The hero lives on #screen-home, and the defect is a reader who
+     came through a post-signature door and then taps the Review tab: the
+     journey is "term" but the screen is "home", and only rent and gig were
+     steered on journey. They were told, in 36px type, to read their contract
+     before signing it. Assert it where the reader actually is, and assert the
+     element is on screen while doing it. */
+  for (const door of ["term", "resign", "owed"]) {
+    const back = await p.evaluate((d) => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      if (document.documentElement.lang !== "ar") toggleLang();
+      goTab("home"); pickSituation(d); goTab("home");
+      const el = document.getElementById("hmHeroH");
+      return { text: el.textContent, journey,
+               onHome: document.getElementById("screen-home").classList.contains("active"),
+               visible: el.offsetParent !== null };
+    }, door);
+    ok(back.onHome && back.visible,
+       `${door}: the hero is actually on screen when this is measured`);
+    ok(!/قبل ما توقّع/.test(back.text),
+       `${door}: returning to home does not tell them to read before signing (${back.text})`);
+  }
+
   const eos = await asideOn('goTab("rights"); openEos()');
   ok(!/قبل ما توقّع/.test(eos.h), `nor does someone at the calculator (${eos.h})`);
   ok(eos.h !== home.h && eos.h !== term.h, "with its own line again");
@@ -330,6 +356,66 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!notSplit.hasCols, "a screen that did not opt in has no columns");
   ok(notSplit.screenW <= 700,
      `and stays in the reading column while its neighbour widens (${notSplit.screenW}px)`);
+
+  /* DIRECTION AND POSITION, WHICH NOTHING IN 37 SUITES LOOKED AT.
+     Both defects below were live at every width in every language since the
+     file's first commit, and both are invisible to a test that reads state
+     rather than pixels — the class of blind spot that also let a hidden <h1>
+     swallow the focus target. */
+  console.log("\n— the back arrow points back, in both directions");
+  for (const [lang, wantMirror] of [["ar", true], ["en", false]]) {
+    const q = await b.newPage({ viewport: { width: 390, height: 844 } });
+    await q.goto(APP);
+    await q.waitForFunction(() => typeof window.show === "function");
+    const bk = await q.evaluate((l) => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      if (document.documentElement.lang !== l) toggleLang();
+      goTab("rights"); openEos();
+      const el = document.querySelector("#screen-eos .back .bk");
+      const btn = document.querySelector("#screen-eos .back");
+      return { dir: document.documentElement.dir,
+               transform: getComputedStyle(el).transform,
+               btnAtStart: document.documentElement.dir === "rtl"
+                 ? btn.getBoundingClientRect().right > window.innerWidth / 2
+                 : btn.getBoundingClientRect().left < window.innerWidth / 2 };
+    }, lang);
+    await q.close();
+    /* The glyph is a left-pointing chevron. LTR back sits at the left and must
+       point left, so it takes NO mirror; RTL back sits at the right and must
+       point right, so it takes one. It had them exactly the wrong way round. */
+    const mirrored = bk.transform !== "none";
+    ok(mirrored === wantMirror,
+       `${lang}: the chevron ${wantMirror ? "is mirrored" : "is not mirrored"} (${bk.transform})`);
+    ok(bk.btnAtStart, `${lang}: and the button sits at the reading edge`);
+  }
+
+  console.log("\n— the current-tab pill lands on the current tab, on both platforms");
+  for (const [w, lang] of [[390, "ar"], [390, "en"], [1440, "ar"], [1440, "en"]]) {
+    const q = await b.newPage({ viewport: { width: w, height: 844 } });
+    await q.goto(APP);
+    await q.waitForFunction(() => typeof window.show === "function");
+    await q.evaluate((l) => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      if (document.documentElement.lang !== l) toggleLang();
+      goTab("account");
+    }, lang);
+    await q.waitForTimeout(450);
+    const pill = await q.evaluate(() => {
+      const on = document.querySelector("#tabbar .tab.on");
+      const ind = document.querySelector("#tabbar .tab-ind");
+      if (!on || !ind) return { missing: true };
+      const a = on.getBoundingClientRect(), i = ind.getBoundingClientRect();
+      return { dx: Math.round(i.left - a.left), vw: window.innerWidth,
+               outside: i.left >= window.innerWidth || i.right <= 0 };
+    });
+    await q.close();
+    ok(!pill.missing, `${w} ${lang}: the pill exists`);
+    /* 318px away, under a different tab, on a 390px Arabic phone — the primary
+       reader on the primary platform, with no current-tab marker at all. */
+    ok(Math.abs(pill.dx) <= 2,
+       `${w} ${lang}: and sits on the tab it marks (${pill.dx}px away)`);
+    ok(!pill.outside, `${w} ${lang}: not off the side of the screen`);
+  }
 
   /* NAVIGATION MUST STILL BE ANNOUNCED, ON BOTH PLATFORMS.
      show() focuses the new screen's first heading so a screen reader is told

@@ -359,7 +359,14 @@
   /* result */
   .back[hidden]{display:none}
   .back{display:flex;align-items:center;gap:6px;color:var(--teal);font-size:14px;font-weight:700;padding:10px 2px;min-height:44px;align-self:flex-start}
-  html[dir="ltr"] .back .bk{transform:scaleX(-1)}
+  /* THE MIRROR BELONGS TO RTL, NOT LTR, AND IT HAD THEM THE WRONG WAY ROUND.
+     The glyph is a left-pointing ‹. In English, back sits at the left edge and
+     must point left — so it needs NO transform, and it was being flipped to
+     point right, away from where it goes. In Arabic, back sits at the right
+     edge and must point right, which is the flip — and it was getting none.
+     Every .back control in the app, on both languages and every screen, was
+     an arrow pointing forward on a button that goes back. */
+  html[dir="rtl"] .back .bk{transform:scaleX(-1)}
   .score-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:26px 20px 20px;text-align:center;box-shadow:var(--e2),var(--edge);--band:var(--teal)}
   /* The score is the emotional centre of the app, so it carries the verdict's
      colour rather than a constant brand teal. */
@@ -783,7 +790,18 @@
 
   /* Sliding tab indicator */
   .tabbar{position:sticky}
-  .tab-ind{position:absolute;top:6px;height:calc(100% - 12px - env(safe-area-inset-bottom));
+  /* left:0 IS LOAD-BEARING, AND ITS ABSENCE WAS INVISIBLE IN ENGLISH.
+     moveTabIndicator() positions this with translateX(on.offsetLeft), which is
+     an offset from the LEFT edge — so the element must start there. With no
+     inset its static position resolves at the end of the row, which in an RTL
+     grid is the right edge, and the translate then pushed it further right:
+     measured 318px away from the tab it marks on a 390px Arabic phone, under a
+     different tab entirely. English was correct by luck, because there the end
+     of the row and offset zero are the same place.
+     The desktop block found this and set left:0 under .bar only, fixing the
+     symptom one breakpoint up and leaving Arabic-on-a-phone — the primary
+     reader on the primary platform — with no current-tab pill at all. */
+  .tab-ind{position:absolute;left:0;top:6px;height:calc(100% - 12px - env(safe-area-inset-bottom));
       border-radius:var(--r-md);background:var(--teal-soft);z-index:-1;
       transition:transform var(--t) var(--ease-spring), width var(--t) var(--ease-spring);
       pointer-events:none}
@@ -2741,6 +2759,16 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <ul>
           <li data-t="eos_b_first"></li>
           <li data-t="eos_b_after"></li>
+          <!-- THE HALF OF ARTICLE 85 THAT WAS CITED BUT NOT SHOWN. The two
+               lines above are Article 84 and the citation under them names 84
+               AND 85 — but 85 is the resignation reduction, and none of it was
+               on screen. A reader who resigned after three years did the
+               arithmetic this panel gives them, expected one and a half
+               months, and got a third of it. Under two years the panel
+               promised half a month per year and the calculator returned zero.
+               Shown only on the resignation path, because on the other two the
+               panel above is the whole rule and this would be noise. -->
+          <li id="eosPreResign" data-t="eos_pre_resign" hidden></li>
         </ul>
         <p class="src-line law" data-t="src_eos"></p>
       </div>
@@ -5054,6 +5082,11 @@ const T = {
      about method, not a promise about outcome — everything under it is copy
      the app already ships and has already had reviewed. */
   eos_pre_h:{ar:"على أي أساس يُحسب؟",en:"How this is worked out"},
+  /* Copied verbatim from the resignation row already shipped in the rights
+     library, so the reduction reaches this panel in wording that has already
+     been reviewed rather than in something newly written about the law. */
+  eos_pre_resign:{ar:"وإذا استقلت: أقل من سنتين لا شيء، ومن سنتين إلى خمس الثلث، ومن خمس إلى عشر الثلثان، وعشر فأكثر المكافأة كاملة.",
+                  en:"If you resigned: under two years, nothing. Two to five, one third. Five to ten, two thirds. Ten or more, the full award."},
   eos_b_first:{ar:"أول 5 سنوات — نصف شهر عن كل سنة",en:"First 5 years — half a month per year"},
   eos_b_after:{ar:"ما بعد 5 سنوات — شهر عن كل سنة",en:"Beyond 5 years — one month per year"},
   eos_b_sub:{ar:"المجموع قبل التعديل",en:"Subtotal before adjustment"},
@@ -5431,7 +5464,7 @@ const SAMPLES = {
 /* -------------------------------------------- heuristics for pasted text */
 const RULES = [
   { re:/(non[- ]?compete|non[- ]?competition|عدم\s*(?:ال)?منافسة|حظر\s*(?:ال)?منافسة|(?:عدم|لا\s*يجوز|يُحظر|يحظر|يمتنع)[^.\n]{0,70}(?:منافس|منافِس|جهة\s*منافسة|شركة\s*منافسة)|الالتحاق[^.\n]{0,40}منافس)/i, s:"red",
-    t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
+    dom:["gig"], t:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
     p:{ar:"وجدنا بند عدم منافسة. لازم يكون مكتوبًا ومحدد المدة والمنطقة ونوع النشاط — وسنتان من نهاية العلاقة حد أعلى، ما يرتفع بالاتفاق.",
        en:"We found a non-compete. It must be written and define its duration, area and type of activity — and two years from the end of the relationship is a maximum, not a norm."},
     a:{ar:"اطلب تضييق النطاق والمدة، أو حذفه إن لم يمس أسرار العمل.",
@@ -5439,7 +5472,7 @@ const RULES = [
     r:{ar:"الشرط الفضفاض لا يُنفَّذ تلقائيًا — النظام يشترط أن يكون مكتوبًا ومحدد المدة والمكان ونوع النشاط، وسنتان حد أعلى لا يُتجاوز بالاتفاق.",
        en:"An open-ended clause isn't automatically enforceable — it must be written and limited in duration, area and type of activity, and two years is a ceiling that agreement cannot raise."} },
   { re:/(penalt|liquidated damages|شرط\s*جزائي|غرام)/i, s:"red",
-    t:{ar:"الشرط الجزائي",en:"Penalty clause"},
+    dom:["rent","gig"], t:{ar:"الشرط الجزائي",en:"Penalty clause"},
     p:{ar:"يوجد شرط جزائي أو غرامة. اقرأ المبلغ ومتى يُطبق — وتأكد أنه متبادل لا عليك وحدك.",
        en:"There's a penalty clause. Read the amount and trigger — and make sure it cuts both ways, not just against you."},
     a:{ar:"اطلب سقفًا معقولًا للغرامة وجعلها متبادلة بين الطرفين.",
@@ -5452,7 +5485,7 @@ const RULES = [
        ordinary and lawful, and calling it one-sided is the false positive this
        guard exists to stop. */
     unless:/لأي\s*من\s*(?:ال)?طرفين|لكلا\s*(?:ال)?طرفين|للطرفين|أي\s*من\s*(?:ال)?طرفين|كل\s*من\s*(?:ال)?طرفين|either\s*part(?:y|ies)|both\s*parties|each\s*party|mutual/i,
-    t:{ar:"إنهاء العقد من طرف واحد",en:"One-sided termination"},
+    dom:["rent","gig"], t:{ar:"إنهاء العقد من طرف واحد",en:"One-sided termination"},
     src:{ar:"نظام العمل السعودي — المادة 80",en:"Saudi Labor Law — Article 80"},
     p:{ar:"يبدو أن أحد الأطراف يستطيع إنهاء العقد في أي وقت أو دون سبب. غالبًا هذا الحق غير متبادل.",
        en:"One party appears able to terminate at any time or without cause. Often this right isn't mutual."},
@@ -5477,7 +5510,7 @@ const RULES = [
     r:{ar:"يمكن الاتفاق على إعفائك من باقي المدة عند الاستقالة — اطلبه كتابيًا.",
        en:"The remainder can be waived by agreement when you resign — get it in writing."} },
   { re:/(auto[- ]?renew|renew.{0,15}automatic|(?:تجديد|تتجدد|يتجدد|يُجدد|تُجدد)\s*(?:ال)?تلقائي|تجدد\s*تلقائ)/i, s:"amber",
-    t:{ar:"التجديد التلقائي",en:"Auto-renewal"},
+    dom:["rent","gig"], t:{ar:"التجديد التلقائي",en:"Auto-renewal"},
     p:{ar:"العقد يتجدد تلقائيًا. لا بأس بذلك إذا كانت مهلة الاعتراض واضحة ومعقولة.",
        en:"The contract auto-renews. That's fine if the opt-out window is clear and reasonable."},
     a:{ar:"سجّل موعد الاعتراض في تقويمك واطلب تذكيرًا كتابيًا قبله.",
@@ -5485,7 +5518,7 @@ const RULES = [
     r:{ar:"إن فات الموعد فالتجديد سارٍ — لكن أرسل إشعارك مبكرًا للدورة القادمة من الآن.",
        en:"If the window passed, the renewal stands — but send your notice early for the next cycle now."} },
   { re:/(intellectual\s*property|ملكية\s*فكرية|جميع\s*(الأعمال|الحقوق))/i, s:"amber",
-    t:{ar:"الملكية الفكرية",en:"Intellectual property"},
+    dom:["gig"], t:{ar:"الملكية الفكرية",en:"Intellectual property"},
     p:{ar:"يوجد بند ملكية فكرية. تأكد أنه محصور في مخرجات هذا الاتفاق ولا يشمل أعمالك السابقة.",
        en:"There's an IP clause. Make sure it's limited to this agreement's deliverables, not your past work."},
     a:{ar:"احصر النقل في مخرجات المشروع فقط.",en:"Limit the transfer to project deliverables only."},
@@ -5880,7 +5913,44 @@ function tidyQuote(sc){
   return (sp > QUOTE_MAX * 0.6 ? cut.slice(0, sp) : cut).trim() + "…";
 }
 
-function analyzePasted(text){
+/* WHICH BODY OF LAW THIS TEXT BELONGS TO.
+ *
+ * Every one of the seventeen RULES is an employment heuristic and every
+ * citation they carry is the Saudi Labour Law — Articles 37, 40, 53, 75, 77,
+ * 80, 107, 109 and the executive regulation. There is not one rental or
+ * freelance rule in the file.
+ *
+ * The door the reader came through used to be thrown away here, so a
+ * residential lease pasted after choosing "I have a dispute with my landlord"
+ * was read by all seventeen: it came back flagging a SALARY clause, and
+ * citing "Saudi Labour Law - Article 80" at the landlord's termination clause.
+ * Article 80 is about an employer dismissing an employee without award or
+ * notice. It has nothing to say to a landlord, and a tenant could carry that
+ * citation into a real dispute.
+ *
+ * So a rule now declares the other domains it belongs in, and outside
+ * employment it must both be declared AND lose its citation - the register at
+ * docs/legal-sources.md is labour-only, so there is no verified source behind
+ * a claim about a lease. The standing rule applies at full force: a claim
+ * carries a verified source or it carries no article number at all.
+ */
+/* The two non-employment doors, named explicitly rather than inferred.
+ *
+ * `journey` carries whichever situation the reader picked — contract, resign,
+ * term, owed, unsure, ask, rent, gig — so "is this employment?" cannot be
+ * asked as "is it the employment one". The first version of this asked for
+ * dom === "job", a value nothing ever sets, and every employment contract
+ * pasted through the main door came back with no clauses at all and routed to
+ * "we could not read this". Listing the exceptions fails safe: a door added
+ * later is employment until someone says otherwise, which is what the rules
+ * already are. */
+const NON_EMPLOYMENT = ["rent", "gig"];
+function ruleInDomain(rule, dom){
+  if (!NON_EMPLOYMENT.includes(dom)) return true;
+  return Array.isArray(rule.dom) && rule.dom.includes(dom);
+}
+
+function analyzePasted(text, dom){
   const clauses = [];
   /* Carry the whole rule through, minus its matcher. Copying a hand-picked
      subset silently dropped `src` (so pasted contracts cited nothing) and
@@ -5899,9 +5969,14 @@ function analyzePasted(text){
   const alt = normAr(text);
   for (const rule of RULES){
     if (!forTrack(rule)) continue;
+    if (!ruleInDomain(rule, dom)) continue;
     const fired = ruleFires(rule, text, alt);
     if (!fired.hit) continue;
-    const { re, unless, _reN, _reG, _reGN, _unN, ...rest } = rule;
+    const { re, unless, _reN, _reG, _reGN, _unN, dom:_d, ...rest } = rule;
+    /* Outside employment the citation goes with it. The rule may still be
+       worth raising - a penalty clause is a penalty clause - but the article
+       number behind it is labour law and does not reach this contract. */
+    if (NON_EMPLOYMENT.includes(dom)) delete rest.src;
     /* A plain string, not the bilingual {ar,en} the samples carry: this is the
        reader's own sentence and it exists in exactly one language — theirs. */
     const q = fired.quote ? tidyQuote(fired.quote) : null;
@@ -6087,8 +6162,20 @@ function deskAsideKeys(name){
   if (/^term/.test(name)) return "desk_term";
   if (name === "eos" || name === "case" || name === "casedoc") return "desk_eos";
   if (name === "rights" || name === "ask") return "desk_rights";
+  /* EVERY DOOR, NOT JUST THE TWO THAT WERE ADDED LAST.
+     Only rent and gig were steered here, so a reader who came through "my job
+     ended", "I'm thinking of resigning" or "what am I owed" fell through to
+     the default — and since the hero became home's front page, that default
+     greets them in 36px type with "read your contract BEFORE YOU SIGN". They
+     were fired. It is the same defect 71ce2d0 fixed on the intake headline,
+     reintroduced one screen earlier and four times the size.
+     Listed by door rather than by a catch-all, because which pitch a
+     situation gets is a copy decision and a door added later should fail
+     loudly here rather than silently inherit the pre-signature one. */
   if (journey === "rent") return "desk_rent";
   if (journey === "gig") return "desk_gig";
+  if (journey === "term" || journey === "resign") return "desk_term";
+  if (journey === "owed") return "desk_eos";
   return null;
 }
 function renderDeskAside(name){
@@ -6257,7 +6344,7 @@ function analyze(kind){
     return;
   }
   const pastedText = kind==="pasted" ? document.getElementById("pasteBox").value : null;
-  const result = kind==="pasted" ? analyzePasted(pastedText) : SAMPLES[kind];
+  const result = kind==="pasted" ? analyzePasted(pastedText, journey) : SAMPLES[kind];
   if (!result){                      /* nothing recognised — never fake a score */
     current = null;
     runLoading(()=>{ buzz(12); show("noread"); });
@@ -7739,6 +7826,11 @@ function renderEos(){
   const fld = document.getElementById("eosTermFld");
   if (fld) fld.hidden = !(contractIsFixed() && eosHow === "term");
 
+  /* The method panel follows the same answer the form does — it is beside the
+     inputs, so it has to say what applies to the reader's own selection. */
+  const preR = document.getElementById("eosPreResign");
+  if (preR) preR.hidden = eosHow !== "resign";
+
   /* Article 87's exceptions, asked the way the assessment asks them. */
   const excFld = document.getElementById("eosExcFld");
   if (excFld) excFld.hidden = eosHow !== "resign";
@@ -7912,13 +8004,27 @@ function calcEos(){
      now is the one on screen. Cleared inputs bring the method back rather than
      leaving the column blank, which is the state this panel exists for. */
   const showPre = (on) => { if (pre) pre.hidden = !on; };
-  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); return; }
+  /* CLEARING THE SCREEN MUST ALSO CLEAR THE ANSWER. These two guards used to
+     empty the output and return, leaving eosData holding the previous
+     assessment — and eosData is what the case file is built from.
+     The reader's path: compute 25,000 as "employer ended it", delete the wage
+     (the column empties, so the app is telling them there is no result), then
+     switch to "I resigned" — which does not recalculate, because that button
+     only recalculates when the output box is non-empty. Open the case file and
+     it says 25,000 award PLUS 25,000 compensation for termination without
+     valid reason, 50,000 total, on a wage they deleted, for a termination they
+     just said did not happen. Someone who resigned cannot claim Article 77 at
+     all, and that document is headed "ready for settlement or a lawyer".
+     A cleared screen now means a cleared claim: the case file refuses and
+     sends them back to the calculator rather than answering from memory. */
+  const forget = () => { eosData = null; caseSig = null; };
+  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); forget(); return; }
   const a = new Date(sd), bDate = new Date(ed);
   const y = serviceYears(a, bDate);
   /* Written as !(y > 0) rather than y <= 0: NaN fails every comparison, so
      the old guard let an unparseable date through to the arithmetic and the
      reader saw "not a number" where a figure should be. */
-  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); return; }
+  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); forget(); return; }
   const parts = serviceParts(a, bDate);
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
