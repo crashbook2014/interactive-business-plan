@@ -166,6 +166,80 @@ const JOB = [
   ok(!panel.term.shown && !panel.expiry.shown,
      "and it is not shown where it does not apply");
 
+  /* ---- THE RENTAL PATH STATES NO LAW IT CANNOT SOURCE.
+     Four of five rental clauses carried no citation while asserting outcomes:
+     eviction "is contestable", major faults "usually remain the landlord's".
+     The employment path cites an article per clause; the newest door was
+     running on opinion. The rental register in docs/legal-sources.md has three
+     rows, so those are the only rental claims the app may make. */
+  console.log("\n— the rental sample claims only what the rental register holds");
+  const rent = await p.evaluate(() => {
+    const S = SAMPLES.rental, all = JSON.stringify(S);
+    return { all,
+             srcs: S.clauses.filter((c) => c.src).map((c) => c.src.ar),
+             n: S.clauses.length };
+  });
+  ok(!/المادة\s*\d|Article\s*\d/.test(rent.all),
+     "no article number appears anywhere on the rental path");
+  ok(!/نظام العمل/.test(rent.all),
+     "and the Labour Law is never named on a lease");
+  /* The exact sentences that were being asserted without a source. */
+  for (const claim of ["قابل للاعتراض", "عادة على المالك", "مهما اتسعت"]) {
+    ok(!rent.all.includes(claim),
+       `no unsourced legal outcome: "${claim}"`);
+  }
+  /* Every citation that IS there must be one the rental register can back. */
+  const ALLOWED = ["شبكة إيجار", "الهيئة العامة للعقار"];
+  ok(rent.srcs.every((x) => ALLOWED.some((a) => x.includes(a))),
+     `every rental citation is a registered rental source (${rent.srcs.join(" / ") || "none"})`);
+  /* The freeze is the one rental claim with a verified row, and the advice
+     changed when it arrived: it used to coach a Riyadh tenant to negotiate a
+     smaller version of an increase that is frozen. */
+  const inc = await p.evaluate(() =>
+    SAMPLES.rental.clauses.find((c) => c.topic === "increase"));
+  ok(!!inc.src, "the annual-increase clause carries its source");
+  ok(/النطاق العمراني/.test(inc.a.ar) && !/فاوض على 5/.test(inc.a.ar),
+     "and the advice asks about the freeze before it talks about a percentage");
+
+  /* ---- HOME IS REACHABLE WITHOUT AN ACCOUNT, and the doors behind it are not.
+     obFinish() sends every reader who completes the tour to home, and home was
+     gated — so a stranger got five onboarding slides and then a wall asking for
+     Google, Apple or their email, having been shown nothing at all. */
+  console.log("\n— a stranger who finishes the tour lands on the product");
+  const stranger = await p.evaluate(() => {
+    nat = "sa"; authUser = null; obDone = false;
+    obFinish();
+    const landed = document.querySelector(".screen.active").id;
+    const doors = [...document.querySelectorAll("#situations .sit-card")]
+      .filter((c) => !c.hidden).length;
+    pickSituation("contract");                    /* a door that needs an account */
+    const gated = document.querySelector(".screen.active").id;
+    goTab("home"); pickSituation("owed");         /* one that does not */
+    const free = document.querySelector(".screen.active").id;
+    return { landed, doors, gated, free };
+  });
+  ok(stranger.landed === "screen-home",
+     `the tour ends on the front page, not a sign-in wall (${stranger.landed})`);
+  ok(stranger.doors >= 7, `with the doors on it (${stranger.doors})`);
+  ok(stranger.gated === "screen-signin",
+     "a door that reads a contract still asks for an account, at the moment it is chosen");
+  ok(stranger.free === "screen-eos",
+     "and the calculator still opens without one");
+
+  const hatch = await p.evaluate(() => {
+    nat = "sa"; authUser = null; obDone = true;
+    openSignin("home");
+    const f = document.getElementById("auFree");
+    const cs = getComputedStyle(f);
+    const bordered = cs.borderTopStyle !== "none" && parseFloat(cs.borderTopWidth) > 0;
+    f.click();
+    return { bordered, landed: document.querySelector(".screen.active").id };
+  });
+  ok(hatch.landed === "screen-home",
+     `the "no account" way out lands on the product too (${hatch.landed})`);
+  ok(hatch.bordered,
+     "and reads as a control rather than as fine print under three buttons");
+
   await b.close();
   if (FAIL.length) {
     console.log(`\n${FAIL.length} FAILURES`);

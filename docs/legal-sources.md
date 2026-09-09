@@ -49,7 +49,33 @@ never with a Labor Law article number, because it is a different statute.
 | Saudi Labor Law — Royal Decree M/51 (23/8/1426H), amended in force 19 Feb 2025 | Employment, leave, end of service, notice, disputes | [laws.boe.gov.sa](https://laws.boe.gov.sa/), official PDF at [hrsd.gov.sa](https://www.hrsd.gov.sa/sites/default/files/2023-02/Labor.pdf) |
 | Ministry of Human Resources and Social Development | Official text, regulations, implementing guides | [hrsd.gov.sa](https://www.hrsd.gov.sa/) |
 | Ejar network | Residential lease registration and tenancy | [ejar.sa](https://www.ejar.sa/) |
+| Real Estate General Authority (REGA) | Rental regulation, the Riyadh rent freeze, landlord/tenant enforcement | [rega.gov.sa](https://rega.gov.sa/) |
 | Ministry of Justice — labour courts | Settlement and litigation route | [moj.gov.sa](https://www.moj.gov.sa/) |
+
+## Rental — a much smaller register, and it says so
+
+The employment register below is the product's spine. Rental has three rows and
+no more, and nothing in the app may state a rental legal outcome that is not
+one of them.
+
+**These rows carry `✅ founder-confirmed`, not `✅ verified`, and the difference
+is deliberate.** `✅ verified` is the token that builds
+`supabase/functions/_shared/corpus.json` — the labour-law register the ask
+path grades every answer against. A rental claim cannot be graded against
+labour law and must never enter that corpus, so it does not carry the token
+that would put it there. It also states its own provenance honestly: recorded
+on the founder's confirmation, with source links this environment could not
+reach. That is the file's own "two kinds of origin, never blurred" rule
+applied to a second body of law. Everything else on the rental path is Wodouh's reading of the
+contract in front of the reader — the contract's own words, what they oblige,
+and what to document — which needs no article number because it makes no claim
+about the law.
+
+| Claim | Arabic | Source | Status | Provenance |
+|---|---|---|---|---|
+| **Riyadh rent freeze.** Rents on residential and commercial leases inside Riyadh's urban boundary are fixed for five years at the value in effect on 25 September 2025, with automatic renewal on the same terms, enforced by REGA | تجميد الإيجارات داخل النطاق العمراني لمدينة الرياض لمدة خمس سنوات عند قيمتها في 25 سبتمبر 2025، مع التجديد التلقائي بالشروط نفسها، وتنفذه الهيئة العامة للعقار | REGA / Council of Ministers decision, Sept 2025 | ✅ founder-confirmed | Recorded on the founder's own confirmation that this is verified. The links in the row above could not be reached from the build environment, so a reviewer should confirm the citation URL before this row is relied on in anything sent to a third party. |
+| A residential lease is registered on the Ejar network, which is the tenant's documentary record of its terms | يُسجَّل عقد الإيجار السكني في شبكة إيجار، وهو سند المستأجر في إثبات شروط العقد | Ejar | ✅ founder-confirmed | Already in use on the rental sample's registration clause. |
+| Rental disputes are handled by the rental dispute route rather than the labour courts; **no Labour Law article applies to a lease** | نزاعات الإيجار لها مسارها الخاص، ولا تنطبق مواد نظام العمل على عقد الإيجار | — (the absence is the claim) | ✅ founder-confirmed | Enforced in code: `ruleInDomain()` in `app/index.html` strips every employment citation outside the employment doors, and `test/domain-citations.test.js` fails if one returns. |
 
 ## Claim register
 

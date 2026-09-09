@@ -139,7 +139,13 @@ const STUB = (apple) => {
         show(id);
         const landed = (document.querySelector(".screen.active") || {}).id;
         if (landed === "screen-" + id) opened.push(id);
-        else if (landed !== "screen-signin") elsewhere.push(id + "→" + landed);
+        /* Landing anywhere the reader is ALLOWED is not a hole — the result
+           and clause screens bounce to home when no contract is loaded, which
+           is that guard working, and home is now open. The hole would be a
+           gated screen opening, which `opened` above is what checks. */
+        else if (landed !== "screen-signin"
+                 && !AUTH_FREE.includes(landed.replace("screen-", "")))
+          elsewhere.push(id + "→" + landed);
       }
       return { ids, opened, elsewhere };
     });
@@ -152,7 +158,14 @@ const STUB = (apple) => {
        anyone and asks for nothing. A SIXTH name appearing here is a hole, not
        a feature — this list is written out in full precisely so that widening
        the gate is a deliberate edit to a test rather than a side effect. */
-    const EXPECTED_OPEN = ["eos", "future", "onboard", "rights", "signin"];
+    /* SIX now, and home is the deliberate edit this comment asks for. It is a
+       chooser: it holds nothing about anyone, asks for nothing and does
+       nothing, which is the same argument the roadmap screen is open on. It
+       was gated, and obFinish() sends every reader who finishes the tour to
+       it — so a stranger got five slides and then a wall demanding Google,
+       Apple or their email, having been shown nothing. Every door BEHIND it
+       is still gated, which is what the rest of this walk proves. */
+    const EXPECTED_OPEN = ["eos", "future", "home", "onboard", "rights", "signin"];
     ok(JSON.stringify([...walk.opened].sort()) === JSON.stringify(EXPECTED_OPEN),
        `only the tour, the door, the calculator, the rights library and the roadmap open (${walk.opened.join(", ") || "none"})`);
     ok(walk.elsewhere.length === 0,
@@ -317,20 +330,29 @@ const STUB = (apple) => {
     const label = el.textContent;
     el.click();
     const landed = (document.querySelector(".screen.active") || {}).id;
-    /* Both halves of the promise, driven: the library is where the link goes,
-       and the calculator must be reachable onward from it without signing in. */
-    const onward = [...document.querySelectorAll("#screen-rights button")]
-      .find(x => /openEos/.test(x.getAttribute("onclick") || ""));
-    if (onward) onward.click();
-    return { vis, landed, label,
-             tabbar: !document.getElementById("tabbar").hidden,
-             calc: (document.querySelector(".screen.active") || {}).id };
+    /* Both halves of the promise, driven from wherever the control lands: the
+       calculator and the rights library must both open with no session. It
+       used to go to the library because home was gated and the library was
+       the nearest root screen — so the one reader who declined an account was
+       answered with a sub-page instead of the product. It goes to home now,
+       and the promise is asserted by reaching both surfaces FROM there rather
+       than by requiring one particular destination. */
+    const doors = [...document.querySelectorAll("#situations .sit-card")];
+    const toCalc = doors.find(x => /pickSituation\('owed'\)/.test(x.getAttribute("onclick") || ""));
+    if (toCalc) toCalc.click();
+    const calc = (document.querySelector(".screen.active") || {}).id;
+    goTab("rights");
+    const lib = (document.querySelector(".screen.active") || {}).id;
+    return { vis, landed, label, calc, lib,
+             tabbar: !document.getElementById("tabbar").hidden };
   });
   ok(escape.vis === true, "a control that does not ask for an identity is present");
-  ok(escape.landed === "screen-rights",
-     `and it actually reaches the rights library with no session (${escape.landed})`);
+  ok(escape.landed === "screen-home",
+     `and it reaches the product itself, not a sub-page of it (${escape.landed})`);
   ok(escape.calc === "screen-eos",
-     `and the calculator is reachable onward from there (${escape.calc})`);
+     `with the calculator one press away and no session (${escape.calc})`);
+  ok(escape.lib === "screen-rights",
+     `and the rights library too (${escape.lib})`);
   ok(/calculator|الحاسبة/i.test(escape.label) && /rights|الحقوق/i.test(escape.label),
      "naming the same two surfaces the subtitle above it promises");
 

@@ -1693,9 +1693,16 @@
   /* Deliberately not styled as a fourth sign-in button: it is the one control
      here that does NOT ask for an identity, and it should not read as another
      row in the same list. Full width and 44px tall so it is a real target. */
-  .au-free{display:block;width:100%;min-height:44px;margin:14px 0 2px;padding:10px 12px;
-           background:none;border:none;color:var(--teal);font-size:14px;font-weight:700;
-           text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:center}
+  /* A BORDERED CONTROL, not underlined text. It is the only way past this
+     screen for someone who does not want an account, and as a grey underlined
+     line under three solid buttons and a divider it read as fine print — on a
+     phone it sat below the fold. It stays visually quieter than the sign-in
+     buttons, because it is the second choice and not the first, but it is
+     unmistakably a thing you can press. */
+  .au-free{display:block;width:100%;min-height:48px;margin:16px 0 2px;padding:12px;
+           background:none;border:1.5px solid var(--teal);border-radius:var(--r-md);
+           color:var(--teal);font-size:14px;font-weight:700;cursor:pointer;text-align:center}
+  .au-free:hover{background:var(--teal-soft)}
   html[lang="ar"] .au-free{font-size:15px;font-weight:400}
   .au-what{margin-top:18px}
   .au-err{margin-top:12px;font-size:13px;color:var(--red-ink)}
@@ -2578,12 +2585,15 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          would put three more locked doors in front of someone who has just
          declined the first one. One link, to the thing the sentence above it
          names. -->
-    <!-- To the rights library, not straight to the calculator, because the
-         library is a ROOT screen: it brings the tab bar with it, and it carries
-         the "كم أستحق؟" card that opens the calculator. Landing on the
-         calculator instead would satisfy half of the sentence above and strand
-         the reader on a screen with no tab bar and one way back — to here. -->
-    <button class="au-free" id="auFree" type="button" onclick="goTab('rights')"></button>
+    <!-- To HOME, which is now open. It used to go to the rights library
+         because home was gated and the library was the nearest root screen
+         that brought the tab bar with it — so the one reader who declined the
+         account was answered with a sub-page instead of the product. Home is
+         the chooser: it carries the calculator and the library the sentence
+         above names, plus every other door, and it is where the tour lands
+         anyone who did sign in. Same destination for both, which is the
+         point. -->
+    <button class="au-free" id="auFree" type="button" onclick="goTab('home')"></button>
     <div class="tm-sec au-what">
       <p><b data-t="au_what"></b></p>
       <p data-t="au_what_b"></p>
@@ -5363,7 +5373,7 @@ const SAMPLES = {
     ]},
   rental: { score:74, doc:"doc_rent",
     verdict:{ar:"عقد جيد — بس بند الإخلاء يحتاج وقفة.",en:"A decent lease — but the eviction clause needs a closer look."},
-    vs:{ar:"عقد جيد — لكن بند الإخلاء قابل للاعتراض إذا استُخدم ضدك.",en:"A decent lease — but the eviction clause is contestable if used against you."},
+    vs:{ar:"عقد جيد — لكن بند الإخلاء هو اللي تحتاج توثّقه إذا استُخدم ضدك.",en:"A decent lease — but the eviction clause is the one to document if it's used against you."},
     clauses:[
       { s:"red", topic:"eviction",
         t:{ar:"إنهاء العقد من طرف واحد",en:"Unilateral termination"},
@@ -5373,28 +5383,41 @@ const SAMPLES = {
            en:"The landlord can ask you to leave within one week, for no reason — and you don't get the same right. That's clearly one-sided."},
         a:{ar:"اطلب حذف البند أو جعله متبادلًا بإشعار 60 يومًا للطرفين.",
            en:"Ask to remove it, or make it mutual with 60 days' notice for both sides."},
-        r:{ar:"الإخلاء بإرادة المؤجر وحده ودون سبب نظامي وإشعار معقول قابل للاعتراض. عقدك المسجّل في إيجار هو سندك — لا تُخلِ بناءً على رسالة شفهية.",
-           en:"Eviction at the landlord's sole will, with no lawful reason and no reasonable notice, is contestable. Your Ejar-registered contract is your proof — don't vacate on a verbal message."} },
+        /* "is contestable" was a legal outcome with nothing behind it — the
+           rental register has three rows and none of them says that. What is
+           left is what we can stand behind: the contract's own words, the Ejar
+           record, and where to take it. */
+        r:{ar:"عقدك المسجّل في إيجار هو سندك، وفيه المدة والشروط اللي وقّعتوا عليها. لا تُخلِ بناءً على رسالة شفهية ولا واتساب — اطلب الإشعار مكتوبًا، واحتفظ بنسخة العقد، وارفع الخلاف عبر مسار المنازعات الإيجارية.",
+           en:"Your Ejar-registered contract is your record: it holds the term and the conditions you both signed. Don't vacate on a verbal message or a WhatsApp — ask for the notice in writing, keep your copy of the contract, and take the dispute through the rental disputes route."} },
+      /* THE ONE RENTAL CLAUSE WITH A VERIFIED SOURCE BEHIND IT, and the advice
+         changed when the source arrived. This used to read "negotiate 5%" —
+         coaching a Riyadh tenant to accept a smaller version of an increase
+         that is frozen. Registered under Rental in docs/legal-sources.md. */
       { s:"amber", topic:"increase",
+        src:{ar:"الهيئة العامة للعقار — تجميد إيجارات الرياض",
+             en:"REGA — Riyadh rent freeze"},
         t:{ar:"الزيادة السنوية",en:"Annual rent increase"},
         q:{ar:"تُزاد الأجرة السنوية بنسبة 10٪ عند كل تجديد.",
            en:"The annual rent shall increase by 10% upon each renewal."},
-        p:{ar:"زيادة تلقائية 10٪ كل سنة أعلى من المعتاد في أغلب الأحياء.",
-           en:"An automatic 10% yearly increase is higher than typical in most neighborhoods."},
-        a:{ar:"فاوض على 5٪ أو اربط الزيادة بمؤشر إيجار المنطقة.",
-           en:"Negotiate 5%, or tie increases to the area's rental index."},
-        r:{ar:"الزيادة المتفق عليها سارية لهذه المدة، لكن التجديد فرصتك: أشعر قبل نافذة عدم التجديد وفاوض أو انتقل.",
-           en:"The agreed increase stands for this term, but renewal is your opening: give notice before the non-renewal window and either negotiate or move."} },
+        p:{ar:"زيادة تلقائية 10٪ عند كل تجديد. وإذا كانت العين داخل النطاق العمراني للرياض، فالإيجارات مجمّدة خمس سنوات عند قيمتها في 25 سبتمبر 2025 — يعني البند نفسه قد لا يكون قابلًا للتطبيق أصلًا.",
+           en:"An automatic 10% increase at each renewal. If the property is inside Riyadh's urban boundary, rents are frozen for five years at their value on 25 September 2025 — so the clause itself may not be applicable at all."},
+        a:{ar:"تأكد أولًا: هل العين داخل النطاق العمراني للرياض؟ إذا نعم، الزيادة مجمّدة ولا تتفاوض على نسبة. وإذا لا، اربط الزيادة بمؤشر إيجار المنطقة بدل نسبة ثابتة.",
+           en:"Check first: is the property inside Riyadh's urban boundary? If so, the increase is frozen and there is no percentage to negotiate. If not, tie increases to the area's rental index rather than a fixed rate."},
+        r:{ar:"إذا كانت العين داخل النطاق العمراني للرياض، فالتجميد يشمل التجديد التلقائي بالشروط نفسها — راجع الهيئة العامة للعقار قبل ما تقبل أي زيادة. وإذا كانت خارجه، التجديد هو فرصتك: أشعر قبل نافذة عدم التجديد وفاوض أو انتقل.",
+           en:"If the property is inside Riyadh's urban boundary, the freeze covers automatic renewal on the same terms — check with REGA before accepting any increase. If it is outside, renewal is your opening: give notice before the non-renewal window and either negotiate or move."} },
       { s:"amber", topic:"maintenance", duty:true,
         t:{ar:"الصيانة",en:"Maintenance"},
         q:{ar:"يتحمل المستأجر جميع أعمال الصيانة الدورية والطارئة للعين المؤجرة.",
            en:"The tenant bears all routine and emergency maintenance of the leased premises."},
-        p:{ar:"«جميع» تشمل الأعطال الكبيرة مثل التكييف المركزي والسباكة الرئيسية — وهذي عادة على المالك.",
-           en:"'All' includes major failures like central AC and main plumbing — usually the landlord's responsibility."},
+        p:{ar:"«جميع» كلمة واسعة: بصيغتها هذي تشمل الأعطال الكبيرة مثل التكييف المركزي والسباكة الرئيسية، مو بس الصيانة البسيطة.",
+           en:"'All' is a wide word: as written it covers major failures like central AC and main plumbing, not just routine upkeep."},
         a:{ar:"اطلب تحديدها: الصيانة البسيطة عليك، والإنشائية والكبيرة على المالك.",
            en:"Ask to split it: minor upkeep on you, structural and major repairs on the landlord."},
-        r:{ar:"الأعطال الإنشائية الكبرى تبقى عادة على المالك مهما اتسعت الصيغة. وثّق العطل بالصور وراسله كتابيًا قبل أي إصلاح على حسابك.",
-           en:"Major structural failures usually remain the landlord's however broadly it's worded. Photograph the fault and write to them before paying for any repair yourself."} },
+        /* "usually remain the landlord's" was a claim about the law with no
+           row behind it. Documenting the fault and writing before you spend is
+           true whoever ends up paying, and it is what protects the reader. */
+        r:{ar:"وثّق العطل بالصور والتاريخ، وراسل المؤجر كتابيًا قبل أي إصلاح على حسابك. اللي تدفعه بدون مراسلة صعب تسترده لاحقًا.",
+           en:"Photograph the fault with the date, and write to the landlord before paying for any repair yourself. What you spend without a written exchange is hard to recover later."} },
       { s:"green", topic:"deposit",
         t:{ar:"التأمين (العربون)",en:"Security deposit"},
         q:{ar:"يسترد المستأجر مبلغ التأمين كاملًا خلال أربعة عشر يومًا من الإخلاء بعد المعاينة.",
@@ -7212,7 +7235,22 @@ function signedIn(){ return !!authUser; }
  * show() directly, and anything in this file can. A gate in the wrappers would
  * be a gate around the front door of a building with open windows.
  */
-const AUTH_FREE = ["onboard", "signin", "eos", "rights", "future"];
+/* HOME IS OPEN, on exactly the argument the roadmap screen is open on.
+ *
+ * It was gated, and obFinish() sends every reader who completes the tour to
+ * it — so a stranger on a laptop got five onboarding slides and then a wall
+ * asking for Google, Apple or their email, having been shown nothing. The
+ * front page rebuilt in 25eeb60, the eight doors, the whole pitch: none of it
+ * existed for anyone without an account.
+ *
+ * Home holds nothing about anyone, asks for nothing, and does nothing. It is
+ * a chooser. Every door behind it that reads a contract, writes, spends or
+ * remembers is still gated in show(), so the reader who picks one is asked
+ * for an account at the moment they chose something — which is the
+ * navigation-intent rule working as intended, rather than a toll gate in
+ * front of the menu.
+ */
+const AUTH_FREE = ["onboard", "signin", "home", "eos", "rights", "future"];
 function authAllow(name){
   /* AN UNCONFIGURED BUILD IS NOT GATED, and this is the one exception to "no
      exceptions". With no Supabase project there is no account to be had, so
@@ -8083,6 +8121,25 @@ function calcEos(){
     (card || out).appendChild(warn);
   }
   eosSrc.hidden = false;
+
+  /* BRING THE ANSWER TO THE READER, on the platform where it does not arrive
+     on its own. On a 390×844 phone the result renders at y=786 and the riyal
+     figure lands at 839–880 — five pixels of it above the fold. The reader
+     fills the form, taps احسب, sees the form it just filled, and concludes
+     the button is broken. It is the single interaction that matters most to
+     the reader this product is for, on the device they actually have.
+     Conditional rather than unconditional: on a laptop the figure is already
+     in the column beside the form, and yanking the page to it would be a
+     jolt with no purpose. So this asks whether the answer is visible, not
+     which platform it is on — which also means it keeps working if either
+     layout moves. */
+  requestAnimationFrame(()=>{
+    const r = out.getBoundingClientRect();
+    if (r.top >= 0 && r.bottom <= window.innerHeight) return;
+    if (r.top >= 0 && r.top < window.innerHeight * 0.5) return;
+    out.scrollIntoView({ block:"start", behavior: REDUCED.matches ? "auto" : "smooth" });
+  });
+
   /* applyLang() repaints every [data-t] node and then re-runs calcEos(), so
      this override survives a language toggle rather than being reverted by it. */
   eosSrc.textContent = t(exc ? "src_eos_87" : "src_eos");

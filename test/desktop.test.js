@@ -357,6 +357,56 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(notSplit.screenW <= 700,
      `and stays in the reading column while its neighbour widens (${notSplit.screenW}px)`);
 
+  /* THE ANSWER MUST REACH THE READER ON THE DEVICE THEY HAVE.
+     On a 390x844 phone the result renders at y=786 and the riyal figure lands
+     at 839-880 — five pixels above the fold. The reader fills the form, taps
+     the button, sees the form again, and concludes it is broken. It is the
+     single interaction that matters most to the reader this product is for. */
+  console.log("\n— pressing Calculate on a phone actually shows the figure");
+  const calc = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await calc.goto(APP);
+  await calc.waitForFunction(() => typeof window.show === "function");
+  await calc.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); openEos();
+    document.getElementById("eosStart").value = "2018-03-01";
+    document.getElementById("eosEnd").value = "2026-08-31";
+    document.getElementById("eosWage").value = "12000";
+    calcEos();
+  });
+  await calc.waitForTimeout(1200);
+  const shown = await calc.evaluate(() => {
+    const amt = document.querySelector("#eosOut .amt");
+    if (!amt) return { missing: true };
+    const r = amt.getBoundingClientRect();
+    return { top: Math.round(r.top), bottom: Math.round(r.bottom),
+             vh: window.innerHeight, text: amt.textContent.trim(),
+             visible: r.top >= 0 && r.bottom <= window.innerHeight };
+  });
+  await calc.close();
+  ok(!shown.missing, "the figure was produced");
+  ok(shown.visible,
+     `and it is on screen without scrolling for it (${shown.top}-${shown.bottom} of ${shown.vh})`);
+
+  /* And the laptop must NOT jump: there the figure is already in the column
+     beside the form, and yanking the page to it would be a jolt with no
+     purpose. The rule is "is it visible", not "which platform is this". */
+  const noJump = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  await noJump.goto(APP);
+  await noJump.waitForFunction(() => typeof window.show === "function");
+  await noJump.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); openEos();
+    document.getElementById("eosStart").value = "2018-03-01";
+    document.getElementById("eosEnd").value = "2026-08-31";
+    document.getElementById("eosWage").value = "12000";
+    calcEos();
+  });
+  await noJump.waitForTimeout(1000);
+  const jump = await noJump.evaluate(() => ({ y: Math.round(window.scrollY) }));
+  await noJump.close();
+  ok(jump.y === 0, `the laptop does not scroll for an answer already in view (${jump.y}px)`);
+
   /* DIRECTION AND POSITION, WHICH NOTHING IN 37 SUITES LOOKED AT.
      Both defects below were live at every width in every language since the
      file's first commit, and both are invisible to a test that reads state
