@@ -1955,6 +1955,65 @@
     .eos-pre .src-line{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
   }
 
+  /* ============================================================ PRINT
+   *
+   * The letter and the case file are the two things a reader opens a laptop
+   * FOR — proofreading before sending, handing a lawyer a case file, putting a
+   * demand in an envelope. Until now the only way either of them left the
+   * browser was copyLetter(), a clipboard string. That is phone behaviour:
+   * paste it into WhatsApp. Somebody who has just decided to show this to a
+   * lawyer reaches for print, and there were no print rules in this file at
+   * all, so they got the nav, the tab bar, the buttons and a warm sand
+   * backdrop across the page.
+   *
+   * ALLOWLIST, NOT DENYLIST. Everything is hidden and the document is put
+   * back, rather than naming the chrome to remove — a denylist would silently
+   * start printing the next control anybody adds to these screens.
+   * `visibility` rather than `display` so the document keeps its own layout
+   * instead of being reflowed by having its ancestors collapse.
+   */
+  @media print{
+    /* Ink is expensive and a tinted page reads as a screenshot rather than as
+       a document. print-color-adjust is deliberately NOT set: let the browser
+       drop our backgrounds. */
+    @page{ margin:18mm }
+    html,body{background:#fff !important}
+    /* THE SCREEN'S ENTRY ANIMATION CARRIES A TRANSFORM, and an element with
+       one is a containing block for absolutely-positioned descendants — so the
+       document below anchored to the 440px phone column instead of to the
+       page, and printed as a 402px strip down the middle of A4. Nobody wants
+       a slide-in on paper either. */
+    .screen.active{animation:none}
+    /* Belt and braces, not the mechanism: with the animation off the document
+       already anchors to the page rather than to this column, and everything
+       here is hidden ink anyway. Kept because a print engine that treats
+       visibility differently from the emulator should still not paint a 440px
+       bordered card with a grain texture behind the letter. Removing it breaks
+       no assertion — that was checked. */
+    .app{max-width:none;width:auto;padding:0;border:0;box-shadow:none}
+    body *{visibility:hidden}
+    .screen.active .letter,.screen.active .letter *{visibility:visible}
+    /* Lifted to the top of the sheet so the page does not open with the empty
+       space the hidden chrome used to occupy. */
+    .screen.active .letter{position:absolute;top:0;inset-inline-start:0;width:100%;
+        border:0;border-radius:0;box-shadow:none;background:#fff;padding:0}
+    .letter .body{font-size:12pt;line-height:1.9;color:#000}
+    /* A page break through the middle of a demand is a document that looks
+       mishandled before it is read. */
+    .letter .body,.letterfoot{break-inside:avoid}
+
+    /* OUR NAME COMES OFF THE READER'S CORRESPONDENCE, on paper for the same
+       reason it already comes off on screen — see the note by lt_foot. A case
+       file is the reader's own working paper and saying how it was prepared is
+       useful there; a letter is signed in their name and handed to the other
+       side, and a Wodouh letterhead on it tells a landlord or an employer that
+       it came out of an app, which invites them to weigh it as software rather
+       than as the sender's own demand. The footer was already dropped from the
+       letters; the letterhead was not, and on paper it becomes part of the
+       document rather than chrome around it. */
+    #screen-letter .letterhead,#screen-termltr .letterhead{display:none}
+  }
+
 </style>
 <script>
 /* ============================================================ THE CURTAIN
@@ -2418,6 +2477,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="dk-b">
     <div class="letter-actions">
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
+      <button class="ghost" id="printLetter" onclick="printDoc()" data-t="print_btn"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
     <div class="tm-sec" id="dmClaim" hidden>
@@ -2813,6 +2873,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="caseCopyBtn" onclick="copyCase()"></button>
+      <button class="ghost" id="printCase" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <div class="escalate" id="caseEscalate" hidden></div>
     <p class="disclaimer" data-t="eos_verify"></p>
@@ -2905,6 +2966,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="termDocCopy" onclick="copyTermDoc()"></button>
+      <button class="ghost" id="printTermDoc" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <p class="disclaimer" data-t="tm_r_disclaim"></p>
   </section>
@@ -2922,6 +2984,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="termLtrCopy" onclick="copyTermLtr()"></button>
+      <button class="ghost" id="printTermLtr" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <!-- WHAT TO DO WITH IT. Deliberately on the screen and not inside the
          letter: the letter is copied and sent, and instructions to the sender
@@ -4065,6 +4128,11 @@ const T = {
      same job, and needs no data to be true. */
   plan_pop:{ar:"نوصي به",en:"We recommend this"},
   copy_btn:{ar:"انسخ الخطاب",en:"Copy letter"},
+  /* "or save as PDF" because that is what the browser's print dialog offers,
+     and PDF is what a reader actually wants to send a lawyer. Naming only
+     "print" would hide the more useful half behind a word that sounds like it
+     needs a printer. */
+  print_btn:{ar:"اطبع أو احفظ PDF",en:"Print or save as PDF"},
   /* ON THE CASE DOCUMENTS ONLY, and deliberately not on either letter.
      A case file is a working document: it goes to the reader, to a lawyer and
      to the friendly-settlement filing, and saying how it was prepared is
@@ -10614,6 +10682,12 @@ function copyTermDoc(){ copyInto("termDocCopy", "termDocBody", "cf_copy"); }
 function copyTermLtr(){ copyInto("termLtrCopy", "termLtrBody", "copy_btn"); }
 
 /* One clipboard path for both, so the "copied" feedback cannot drift. */
+/* One handler for all four documents. The print stylesheet decides WHAT gets
+   inked from whichever screen is active, so this needs to know nothing about
+   which document it is — and a reader who reaches print through the browser's
+   own menu gets exactly the same page. */
+function printDoc(){ window.print(); }
+
 function copyInto(btnId, bodyId, restoreKey){
   const btn = document.getElementById(btnId);
   const done = () => {

@@ -37,6 +37,7 @@ const ORDER = [
   "future.test.js",
   "nav-intent.test.js",
   "desktop.test.js",
+  "print.test.js",
   "domain-citations.test.js",
   "layout.test.js",
   "surfaces.test.js",
