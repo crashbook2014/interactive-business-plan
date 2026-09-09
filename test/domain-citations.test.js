@@ -136,6 +136,80 @@ const JOB = [
   ok(stale.landed === "screen-eos",
      `so the case file refuses and sends them back (landed on ${stale.landed})`);
 
+  /* THE OTHER HALF OF THE SAME DEFECT, AND THE ONE THAT WAS LEFT LIVE.
+     The guard above covers a reader who presses Calculate again. Nothing
+     listened to the inputs themselves, so only that button ever recalculated —
+     a reader who computed a figure and then changed the start date and cleared
+     the wage still had the old figure on screen, beside an empty wage box,
+     above a service line describing the period they had just replaced, and
+     next to a date echo that HAD updated. The screen confirmed the inputs
+     changed and kept the answer contradicting them, and eosData kept the claim
+     behind it. Driven by editing ONLY — Calculate is never pressed again. */
+  console.log("\n— and editing an input retires the answer it produced");
+  const edited = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("rights"); openEos();
+    /* Explicit, not inherited. The assertion above leaves eosHow on "resign",
+       so this read 8,333 — the same award with Article 85's one-third applied.
+       Correct arithmetic, wrong premise for what is being tested here. */
+    eosHow = "term"; renderEos();
+    const set = (id, v) => {
+      const el = document.getElementById(id);
+      el.value = v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    set("eosStart", "2015-01-01"); set("eosEnd", "2020-01-01"); set("eosWage", "10000");
+    calcEos();
+    const before = { total: eosData && Math.round(eosData.total),
+                     shown: !!document.getElementById("eosOut").innerHTML };
+    /* One field, one event, no button. */
+    set("eosStart", "2023-01-01");
+    const after = { shown: !!document.getElementById("eosOut").innerHTML,
+                    data: eosData,
+                    method: !document.getElementById("eosPre").hidden };
+    openRightsCase();
+    return { before, after, landed: document.querySelector(".screen.active").id };
+  });
+  ok(edited.before.total === 25000 && edited.before.shown,
+     `a figure was on screen first (${edited.before.total})`);
+  ok(!edited.after.shown,
+     "changing a date clears the figure it produced, without pressing Calculate");
+  ok(edited.after.data === null, "and the claim behind it");
+  ok(edited.after.method,
+     "with the method panel back in the column rather than a blank half");
+  ok(edited.landed === "screen-eos",
+     `so the case file refuses on this path too (landed on ${edited.landed})`);
+
+  /* IT CLEARS, IT DOES NOT RECALCULATE, and this is the assertion that says so.
+     Recomputing per keystroke prints a figure from a half-typed wage: type
+     "10000" and the screen shows an award for 1 riyal, then 10, then 100, each
+     one a wrong riyal figure presented as the answer. The first version of
+     this check missed it — it edited a date into an invalid range, so
+     recalculating happened to clear too and the guard passed while the wrong
+     behaviour was in place. */
+  const midType = await p.evaluate(() => {
+    goTab("rights"); openEos();
+    eosHow = "term"; renderEos();
+    const set = (id, v) => {
+      const el = document.getElementById(id);
+      el.value = v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    set("eosStart", "2015-01-01"); set("eosEnd", "2020-01-01"); set("eosWage", "10000");
+    calcEos();
+    const had = !!document.getElementById("eosOut").innerHTML;
+    /* One keystroke into retyping the wage: still a VALID number, just not the
+       one they mean. Every date is still valid, so nothing else forces a
+       clear — only the decision not to recalculate does. */
+    set("eosWage", "1");
+    return { had, shown: !!document.getElementById("eosOut").innerHTML,
+             data: eosData };
+  });
+  ok(midType.had, "a figure was on screen before the reader started retyping");
+  ok(!midType.shown,
+     "a half-typed wage produces no figure at all, rather than an award for 1 riyal");
+  ok(midType.data === null, "and no claim either");
+
   /* ---- THE METHOD PANEL MUST MATCH THE ANSWER THE READER SELECTED.
      It states Article 84 and cites 84 AND 85, but 85 is the resignation
      reduction and none of it was shown. A reader resigning after three years

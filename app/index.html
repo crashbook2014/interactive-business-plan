@@ -6281,14 +6281,13 @@ function calcEos(){
      all, and that document is headed "ready for settlement or a lawyer".
      A cleared screen now means a cleared claim: the case file refuses and
      sends them back to the calculator rather than answering from memory. */
-  const forget = () => { eosData = null; caseSig = null; };
-  if (!sd || !ed || !wage || wage <= 0){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); forget(); return; }
+  if (!sd || !ed || !wage || wage <= 0){ clearEosResult(); return; }
   const a = new Date(sd), bDate = new Date(ed);
   const y = serviceYears(a, bDate);
   /* Written as !(y > 0) rather than y <= 0: NaN fails every comparison, so
      the old guard let an unparseable date through to the arithmetic and the
      reader saw "not a number" where a figure should be. */
-  if (!(y > 0)){ out.innerHTML = ""; eosSrc.hidden = true; showPre(true); forget(); return; }
+  if (!(y > 0)){ clearEosResult(); return; }
   const parts = serviceParts(a, bDate);
 
   const first = Math.min(y, 5), after = Math.max(0, y - 5);
@@ -6824,8 +6823,53 @@ function echoDate(input){
 function echoAllDates(root){
   (root || document).querySelectorAll('input[type="date"]').forEach(echoDate);
 }
+
+/* THERE IS NO ANSWER RIGHT NOW, said in one place.
+ *
+ * Used by calcEos()'s guards and by the input listener below, because a figure
+ * on screen and a claim in eosData are the same statement made twice and must
+ * go together. The case file is built from eosData, so leaving it behind is
+ * how a reader ends up carrying a superseded claim into a settlement meeting.
+ */
+function clearEosResult(){
+  const out = document.getElementById("eosOut");
+  const src = document.getElementById("eosSrc");
+  const pre = document.getElementById("eosPre");
+  if (out) out.innerHTML = "";
+  if (src) src.hidden = true;
+  if (pre) pre.hidden = false;      /* the method comes back into the column */
+  eosData = null; caseSig = null;
+}
+
+const EOS_INPUTS = ["eosStart", "eosEnd", "eosWage", "eosTermEnd"];
+
 document.addEventListener("input", (e) => {
-  if (e.target && e.target.type === "date") echoDate(e.target);
+  if (!e.target) return;
+  if (e.target.type === "date") echoDate(e.target);
+
+  /* EDITING AN INPUT RETIRES THE ANSWER IT PRODUCED.
+   *
+   * Nothing listened here, so only the Calculate button ever recalculated. A
+   * reader who computed 29,961 and then changed the start date and cleared the
+   * wage still had 29,961 on screen — beside an empty wage box, above a
+   * service line describing the period they had just replaced, and next to a
+   * date echo that HAD updated. The screen actively confirmed the inputs
+   * changed and kept the answer that contradicted them.
+   *
+   * The desktop split made it sharper rather than milder: on a phone the
+   * figure was below the fold while you typed, and it now sits 28px from the
+   * wage box you just emptied.
+   *
+   * It CLEARS rather than recalculates. Recomputing per keystroke would print
+   * a figure from a half-typed wage — a wrong riyal number, which is the thing
+   * this app must never do — and the reader presses Calculate when they are
+   * ready. The method panel returns in its place, so the column says what will
+   * be worked out rather than going blank.
+   */
+  if (EOS_INPUTS.includes(e.target.id)) {
+    const out = document.getElementById("eosOut");
+    if (out && out.innerHTML) clearEosResult();
+  }
 });
 
 function dateFld(id, label, val, hint){
