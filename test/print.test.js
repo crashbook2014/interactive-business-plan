@@ -27,7 +27,8 @@ const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
-const SRC = fs.readFileSync(path.join(__dirname, "..", "app", "index.html"), "utf8");
+const SRC = ["app.css", "desktop.css"]
+  .map((f) => fs.readFileSync(path.join(__dirname, "..", "app", f), "utf8")).join("\n");
 
 /* Reaches each of the four documents through the app rather than by setting
    state, so a route that stops producing a document fails here too. */

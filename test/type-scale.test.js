@@ -21,7 +21,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
 const SCALE = [10.5, 12, 13, 14, 15, 16.5, 19, 24, 36];
 
-const src = fs.readFileSync(path.join(__dirname, "..", "app", "index.html"), "utf8");
+/* Both stylesheets: the desktop layer declares sizes of its own (the nav link
+   label is one) and reading only the base file would let a tenth step in
+   through the door this suite exists to hold shut. */
+const src = ["app.css", "desktop.css"]
+  .map((f) => fs.readFileSync(path.join(__dirname, "..", "app", f), "utf8")).join("\n");
 const found = new Map();
 for (const m of src.matchAll(/font-size:\s*([0-9.]+)px/g)) {
   const v = Number(m[1]);

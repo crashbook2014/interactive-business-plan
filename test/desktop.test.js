@@ -122,6 +122,40 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!/before you sign/i.test(switched.after),
      `and still speaks to the reader's situation after the switch (${switched.after})`);
 
+  /* ---- THE LOAD ORDER, WHICH IS NOW THE MECHANISM.
+     The desktop rules only win by coming later — a media query adds no
+     specificity. While they lived mid-stylesheet they lost to the ordinary
+     component rules below them and the nav's 1080px inset lost to
+     `.bar{padding:...}`, printing the brand flush against the window edge.
+     Moving them to the end of the file fixed it and left the fix resting on a
+     comment asking the next person not to move them back; a separate file
+     linked last cannot be moved back by accident. Asserted two ways: the link
+     order in the document, and the rule actually winning in the browser. */
+  console.log("— the desktop layer is linked after the base one, and wins");
+  const order = await p.evaluate(() => {
+    const hrefs = [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .map((l) => l.getAttribute("href"));
+    const sheets = [...document.styleSheets].map((s) => (s.href || "inline").split("/").pop());
+    return { hrefs, sheets };
+  });
+  const iBase = order.sheets.indexOf("app.css");
+  const iDesk = order.sheets.indexOf("desktop.css");
+  ok(iBase !== -1 && iDesk !== -1,
+     `both stylesheets are loaded (${order.sheets.join(", ")})`);
+  ok(iDesk > iBase,
+     `and the desktop layer comes second (${order.sheets.join(" then ")})`);
+  /* The symptom the order exists to prevent, measured rather than inferred:
+     the nav's content held to the 1080px measure instead of the window edge. */
+  const inset = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("home");
+    const brand = document.querySelector(".brand").getBoundingClientRect();
+    return { edge: Math.round(Math.min(brand.left, window.innerWidth - brand.right)),
+             vw: window.innerWidth };
+  });
+  ok(inset.edge > 100,
+     `the nav keeps its 1080px inset rather than sitting on the window edge (${inset.edge}px at ${inset.vw})`);
+
   /* ---- THE SHELL ITSELF. */
   console.log("\n— the nav is one element, in the header on a laptop");
   const navAt = async (w, h, fn) => {

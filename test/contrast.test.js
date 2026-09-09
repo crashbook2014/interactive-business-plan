@@ -85,13 +85,21 @@ function rootBlocks(src){
   return out;
 }
 
-const app = fs.readFileSync(R("app", "index.html"), "utf8");
+/* The palette lives in app/app.css since the stylesheet was split out of the
+   HTML. Reading index.html still "worked" after that move: rootBlocks() found
+   nothing, themes came out empty, and every AA assertion below ran zero times
+   and reported success. A suite that measures nothing is worse than no suite,
+   so the block count is asserted before anything is measured. */
+const app = ["app.css", "desktop.css"]
+  .map((f) => fs.readFileSync(R("app", f), "utf8")).join("\n");
 const blocks = rootBlocks(app);
 const base = { light: {}, dark: {} };
 for (const b of blocks) Object.assign(base[b.dark ? "dark" : "light"], b.tok);
 /* An override block declares only what it changes, so each is measured on top
    of its own theme's base rather than on its own — a block that redefines
    --sand alone still has to clear AA against the --ink it inherits. */
+ok(blocks.length >= 2,
+   `the palette was found at all — ${blocks.length} :root blocks (0 means this suite is measuring nothing)`);
 const themes = {};
 for (const b of blocks) {
   themes[`${b.dark ? "dark" : "light"} ${b.sel}`] =

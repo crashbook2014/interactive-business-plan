@@ -1,0 +1,290 @@
+/* Wodouh — the desktop and print layer.
+ *
+ * LINKED AFTER app.css, AND THAT IS THE MECHANISM, NOT A PREFERENCE.
+ *
+ * A media query adds no specificity. While these rules lived in the middle of
+ * one stylesheet they lost to the ordinary component rules below them — the
+ * nav's 1080px inset lost to `.bar{padding:...}` and the brand printed flush
+ * against the window edge. Moving them to the end of that file fixed it and
+ * left the fix resting on a comment asking the next person not to move them
+ * back. A separate file, linked last, cannot be moved back by accident.
+ *
+ * Everything here is an OVERRIDE of something in app.css. If a rule in this
+ * file does not need to beat one there, it belongs there instead.
+ */
+
+  /* DESKTOP: THE APP IS A WEBSITE, NOT A PHONE ON A BACKDROP.
+   *
+   * The framed-device treatment that used to live here was measurably worse
+   * than the phone it imitated. On a 1440px laptop the eight doors on home
+   * rendered at 199px each — 44% narrower than the 354px they get on a 390px
+   * phone — because .sit-grid switches to two columns at a *window* width of
+   * 600px while the frame stayed 440px. The headline stayed 24px. The
+   * calculator's primary button sat 32px below the frame's bottom edge, inside
+   * a fixed-height box that gives no hint it scrolls. Twenty-nine of the
+   * thirty-one screens were a 440px column at every width.
+   *
+   * So the frame, the backdrop and the brand aside are retired here and the
+   * app takes the desktop language the brand already owns. Every value below
+   * is lifted from the marketing site at ../index.html rather than invented:
+   * the 66px sticky nav (:219-233), the 1080px measure (:152), the clamp()
+   * type (:252). The two now read as one product because they are drawn from
+   * one set of numbers.
+   *
+   * BELOW 900px NOTHING CHANGES. The phone column and the framed card of the
+   * 600px band above are untouched, which is what the 25 suites asserting
+   * phone widths are for.
+   */
+  .desk-aside{display:none}
+  @media (min-width:900px){
+    /* The aside stays hidden here. Its copy is not lost — deskAsideKeys()
+       still chooses the right line, and home reads it as its own hero. */
+    body{display:block;padding:0;background:var(--sand)}
+    /* .app stops being a card in the middle of a page and becomes the page.
+       It keeps the sand and the grain, which are the brand's ground, and drops
+       every property that was drawing a device around them. */
+    .app{max-width:none;margin:0;min-height:100vh;padding:0 0 72px;
+         border:0;border-radius:0;box-shadow:none}
+
+    /* THE NAV. Full-bleed bar, content held to the same 1080px as the site.
+       padding-inline with max() rather than an inner wrapper element, because
+       the header's three children are already the row we want and adding a
+       div would put a second box between the brand and its own alignment. */
+    .bar{position:sticky;top:0;z-index:20;height:66px;padding:0;gap:20px;
+         padding-inline:max(22px,calc((100% - 1080px) / 2));
+         background:color-mix(in srgb, var(--sand) 86%, transparent);
+         backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    @supports not (backdrop-filter: blur(4px)){ .bar{background:var(--sand)} }
+    /* The scroll-condense belongs to a phone header that has room to shrink.
+       A 66px nav does not, and letting it fire made the bar jump on scroll. */
+    .bar.tight{padding-block:0}
+    .bar.tight .brand svg,.bar.tight .brand .name-ar{transform:none}
+    .brand svg{width:30px;height:30px}
+
+    /* The tab bar, moved into the header by JS — one element, one set of tab
+       stops — and drawn as nav links rather than as a row of phone tabs. */
+    /* margin-inline-start:auto groups the links with the language pill at the
+       far end, so the row reads brand … links · lang rather than leaving the
+       links stranded in the middle by space-between. It follows `direction`,
+       so the grouping mirrors in English without a second rule. */
+    .bar .tabbar{position:static;display:flex;gap:2px;padding:0;
+         margin:0;margin-inline-start:auto;
+         background:none;backdrop-filter:none;border:0}
+    .bar .tab{flex-direction:row;gap:8px;padding:8px 12px;min-height:44px;border-radius:10px}
+    .bar .tab svg{width:17px;height:17px}
+    /* 13px, not the marketing site's 13.5px. The app enforces a nine-step
+       type scale and 13.5 is not one of the steps — type-scale.test.js caught
+       the import. The site can afford a tenth size; a product with thirty-one
+       screens cannot. */
+    .bar .tab span{font-size:13px;max-width:none}
+    html[lang="ar"] .bar .tab span{font-size:15px}
+    .bar .tab:hover{color:var(--teal-ink)}
+    /* The sliding indicator measures offsetLeft, which is an offset from the
+       left edge of the offset parent — so it only lands correctly on an
+       element whose own left is pinned to 0. In the phone's grid it inherited
+       one; in this flex row its static position is after the last link, and
+       translateX(offsetLeft) pushed it off into the middle of the bar as a
+       pale rectangle under nothing. left:0 gives it the origin it assumes. */
+    .bar .tab-ind{top:11px;height:44px;left:0}
+
+    /* EVERY SCREEN GETS A READABLE COLUMN, NOT THE WHOLE PAGE. Most of the
+       thirty-one are single-purpose forms — a phone number, an intake, a
+       termination question — and an input stretched to 1080px is worse than
+       one at 440px, not better. Screens with genuine second-column content
+       opt out through .dk-split below. */
+    /* THE SIDEWAYS FLASH ON EVERY TAB CHANGE. screen-lateral settles DOWN from
+       scale(1.012), which was invisible while a screen was a 440px column
+       inside a wider window — there was nowhere for 1.2% to go. Now the screen
+       is the page, so 1024px became 1036px for the length of the animation and
+       a horizontal scrollbar appeared and vanished on every lateral move.
+       Settling up from .988 is the same gesture and cannot overflow; it is
+       also what screen-in already does. The phone keeps the original, because
+       there it never had the defect. */
+    @keyframes screen-lateral-desk{from{opacity:0;transform:scale(.988)}to{opacity:1;transform:none}}
+    .screen.active.lateral{animation-name:screen-lateral-desk}
+    .screen{padding:0 22px}
+    .screen.active{width:100%;max-width:684px;margin-inline:auto}
+    /* Home opts out of the reading column: it is a chooser, and eight doors
+       want the page. A class on the section rather than an id, so the next
+       screen that is a chooser rather than a form can say so too. */
+    .screen.active.dk-wide{max-width:1080px}
+
+    /* HOME AS A FRONT PAGE.
+       The hero is the retired brand panel's own typography, moved — 36px and
+       19px, both already on the app's nine-step scale. It is deliberately not
+       the marketing site's 54px: adding a tenth step to the scale is a
+       decision with a cost, and the app's front door does not need one to
+       carry a page this wide. */
+    /* CENTRED, and that is a decision rather than a default. Left at the
+       reading edge the hero left the whole other half of a 1080px page empty
+       beside a single line of type — the same lopsidedness this layout exists
+       to remove, in a smaller form. Centred over a three-column grid it reads
+       as a front page, and it costs nothing in RTL because centring has no
+       side to get wrong. */
+    .hm-hero{display:block;margin:38px 0 40px;text-align:center}
+    .hm-hero .hm-hero-h{font-size:36px;color:var(--teal-ink);line-height:1.4;text-wrap:balance}
+    .hm-hero p{margin:14px auto 0;color:var(--ink-2);font-size:19px;max-width:52ch}
+    #screen-home .greet{text-align:center}
+    #screen-home .hello,#screen-home .sub{text-align:center}
+    /* With the pitch above it, the chooser question is a section heading over
+       the doors rather than the first thing on the page. */
+    #screen-home .hello{font-size:19px;margin:0 2px 4px}
+    #screen-home .greet{margin-top:30px}
+
+    /* THREE COLUMNS, AND A DOOR WIDER THAN IT IS ON A PHONE. That is the whole
+       measure of whether this worked: 354px on a 390px phone was the number to
+       beat, and two columns in a 440px frame gave 199px. */
+    /* TWO COLUMNS, AT EVERY DESKTOP WIDTH, AND NEVER THREE.
+       Three was tried and it repeated the defect this whole layout exists to
+       end, one breakpoint further up: doors went from 506px to 333px the
+       moment the third column appeared at 1100, and three columns never got
+       above ~341px at any width — still under the 354px a 390px phone gives.
+       "More of them on screen" is not the same as "better", and a door that
+       shrinks when the screen grows is the bug, wherever it happens.
+       Two columns give 478px at 1024 and 506px from 1280 up: half again the
+       phone's, at every width, with no boundary where it gets worse.
+       On a 900px-tall laptop all eight are above the fold; on a 720px one the
+       last row needs a small scroll, which is what pages do. */
+    #screen-home .sit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    /* min-width:0 on both, so content can never again decide how wide the
+       page is. This is the actual cause; the column count is the taste. */
+    #screen-home .sit-grid > *{min-width:0}
+    .screen.active{min-width:0}
+    #screen-home .sit-card{align-items:flex-start;padding:16px 16px 15px}
+    #screen-home .sit-card .ic{margin-top:1px}
+    /* The chevron is a phone affordance — a row you swipe into. On a card in a
+       grid the whole card is the target and the arrow only adds noise. */
+    #screen-home .sit-card .go{display:none}
+    /* Saved contracts sit under the doors, not in a column beside them: a
+       reader who has never used the app has none, and a blank right-hand rail
+       is exactly the mistake this layout exists to undo. */
+    #screen-home .mc-list{grid-template-columns:repeat(2,1fr);gap:12px}
+  }
+
+  /* TWO COLUMNS, BUT ONLY WHERE A SCREEN ASKS FOR THEM.
+   *
+   * Widening the frame for all thirty screens would stretch thirty linear
+   * forms across a laptop, which is worse than the phone column, not better.
+   * So a screen opts in with .dk-split and marks the child that belongs in the
+   * second column with data-col="2". Everything else keeps the 440px frame.
+   *
+   * RTL COMES FREE, AND IS STILL TESTED. Grid places columns along the inline
+   * axis, which follows `direction`, so column one lands on the right in
+   * Arabic with no second rule. Free is not the same as verified — see
+   * desktop.test.js.
+   *
+   * SOURCE ORDER IS UNTOUCHED. The second column is positioned, never moved,
+   * so tab order still runs down the form and #eosOut keeps the aria-live
+   * region it had. A reader on a screen reader hears the same app either way.
+   *
+   * 1100px, not 900: below that a split gives two columns narrower than the
+   * single one they replaced, which is the cramping this whole layout exists
+   * to end.
+   */
+  @media (min-width:1100px){
+    /* A split screen is the one kind allowed past the 684px reading column,
+       out to the same 1080px measure the nav and the marketing site use.
+       .wide rather than .dk-split, because the result screen's two halves live
+       inside its score card — the section itself carries no split class and
+       would otherwise stay at 684px while the card divided inside it. */
+    .screen.active.wide{max-width:1080px}
+    /* Any element can split, not only a screen — the result screen's two
+       halves live inside the score card rather than beside it.
+       :not(.screen) is load-bearing. This block now sits after
+       `.screen{display:none}`, and at equal specificity the later rule wins —
+       so a bare `.dk-split{display:grid}` un-hid the letter and the calculator
+       and drew them underneath whatever screen you were actually on. A screen
+       is shown by .active and by nothing else. */
+    .dk-split{grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
+    .dk-split:not(.screen){display:grid}
+    .screen.active.dk-split{display:grid}
+    /* Everything spans both columns by default — a header, a title, a
+       disclaimer — so a child added later cannot silently land in a column it
+       was not designed for. Only the two wrappers take a single column. */
+    .dk-split > *{grid-column:1/-1}
+    .dk-split > .dk-a{grid-column:1}
+    .dk-split > .dk-b{grid-column:2;align-self:start}
+    /* A DOCUMENT IS NOT HALF A SCREEN. An even split gave the letter 371px of
+       a 920px frame — 24px more than the phone column it replaced, for the one
+       thing a reader is most likely to have opened a laptop to read. The
+       controls beside it are a copy button and a short list, so they take the
+       third they need and the document takes the rest. */
+    .dk-split.dk-doc{grid-template-columns:1.9fr 1fr}
+    /* Sticky only where the left column is a form the reader is filling in and
+       the right one is the answer moving with it. On the result screen both
+       sides are read together and a sticky half would slide against the other.
+       top:88px, not 0 — the nav is sticky at 66px, so a column stuck to 0
+       slides underneath it and loses its first line behind the blur. */
+    .screen.active.dk-split > .dk-b{position:sticky;top:88px}
+
+    /* The calculator's column before it has an answer in it. Quiet on
+       purpose: it must read as the method, never as a result, so it takes the
+       page's own ground rather than the raised card the figure gets. */
+    .eos-pre{display:block;border:1px solid var(--line);border-radius:var(--r-md);
+        padding:18px 18px 16px;background:color-mix(in srgb, var(--card) 55%, transparent)}
+    .eos-pre b{display:block;font-size:15px;color:var(--teal-ink);margin-bottom:10px}
+    .eos-pre ul{list-style:none;display:grid;gap:8px}
+    .eos-pre li{font-size:14px;color:var(--ink-2);padding-inline-start:14px;position:relative}
+    .eos-pre li::before{content:"";position:absolute;inset-inline-start:0;top:9px;
+        width:5px;height:5px;border-radius:50%;background:var(--teal)}
+    .eos-pre .src-line{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+  }
+
+  /* ============================================================ PRINT
+   *
+   * The letter and the case file are the two things a reader opens a laptop
+   * FOR — proofreading before sending, handing a lawyer a case file, putting a
+   * demand in an envelope. Until now the only way either of them left the
+   * browser was copyLetter(), a clipboard string. That is phone behaviour:
+   * paste it into WhatsApp. Somebody who has just decided to show this to a
+   * lawyer reaches for print, and there were no print rules in this file at
+   * all, so they got the nav, the tab bar, the buttons and a warm sand
+   * backdrop across the page.
+   *
+   * ALLOWLIST, NOT DENYLIST. Everything is hidden and the document is put
+   * back, rather than naming the chrome to remove — a denylist would silently
+   * start printing the next control anybody adds to these screens.
+   * `visibility` rather than `display` so the document keeps its own layout
+   * instead of being reflowed by having its ancestors collapse.
+   */
+  @media print{
+    /* Ink is expensive and a tinted page reads as a screenshot rather than as
+       a document. print-color-adjust is deliberately NOT set: let the browser
+       drop our backgrounds. */
+    @page{ margin:18mm }
+    html,body{background:#fff !important}
+    /* THE SCREEN'S ENTRY ANIMATION CARRIES A TRANSFORM, and an element with
+       one is a containing block for absolutely-positioned descendants — so the
+       document below anchored to the 440px phone column instead of to the
+       page, and printed as a 402px strip down the middle of A4. Nobody wants
+       a slide-in on paper either. */
+    .screen.active{animation:none}
+    /* Belt and braces, not the mechanism: with the animation off the document
+       already anchors to the page rather than to this column, and everything
+       here is hidden ink anyway. Kept because a print engine that treats
+       visibility differently from the emulator should still not paint a 440px
+       bordered card with a grain texture behind the letter. Removing it breaks
+       no assertion — that was checked. */
+    .app{max-width:none;width:auto;padding:0;border:0;box-shadow:none}
+    body *{visibility:hidden}
+    .screen.active .letter,.screen.active .letter *{visibility:visible}
+    /* Lifted to the top of the sheet so the page does not open with the empty
+       space the hidden chrome used to occupy. */
+    .screen.active .letter{position:absolute;top:0;inset-inline-start:0;width:100%;
+        border:0;border-radius:0;box-shadow:none;background:#fff;padding:0}
+    .letter .body{font-size:12pt;line-height:1.9;color:#000}
+    /* A page break through the middle of a demand is a document that looks
+       mishandled before it is read. */
+    .letter .body,.letterfoot{break-inside:avoid}
+
+    /* OUR NAME COMES OFF THE READER'S CORRESPONDENCE, on paper for the same
+       reason it already comes off on screen — see the note by lt_foot. A case
+       file is the reader's own working paper and saying how it was prepared is
+       useful there; a letter is signed in their name and handed to the other
+       side, and a Wodouh letterhead on it tells a landlord or an employer that
+       it came out of an app, which invites them to weigh it as software rather
+       than as the sender's own demand. The footer was already dropped from the
+       letters; the letterhead was not, and on paper it becomes part of the
+       document rather than chrome around it. */
+    #screen-letter .letterhead,#screen-termltr .letterhead{display:none}
+  }

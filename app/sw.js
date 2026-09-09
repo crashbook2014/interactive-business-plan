@@ -46,13 +46,18 @@
  * Bump CACHE on any change to the shell. The old cache is deleted on activate,
  * so a reader never holds two builds at once.
  */
-const CACHE = "wodouh-shell-v1";
+const CACHE = "wodouh-shell-v2";
 
 /* Everything needed to open the app with the network off. Relative, so the
    same file works at /app/ today and at the domain root later. */
 const SHELL = [
   "./",
   "./index.html",
+  /* The stylesheet is two files now, and BOTH are the shell. A cached page
+     with no CSS is not a degraded app, it is an unreadable one — and the
+     desktop layer is a separate request precisely so it always loads last. */
+  "./app.css",
+  "./desktop.css",
   "./auth.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
