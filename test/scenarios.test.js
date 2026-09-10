@@ -307,8 +307,19 @@ const SCENARIOS = [
        `${L}: an ordinary resignation is still reduced (${r.none.total})`);
     ok(/87/.test(r.birth.src) && !/87/.test(r.none.src),
        `${L}: the citation names Article 87 only when the figure relied on it`);
-    ok(r.birth.out.length > r.none.out.length && /87/.test(r.birth.out),
-       `${L}: and the reader is told why the reduction is absent`);
+    /* SUBSTANCE, NOT LENGTH. This compared the two outputs by character count,
+       as a proxy for "the exception case carries an extra explanation". The
+       proxy broke the moment the ORDINARY case got an explanation too — the
+       Article 85 bands now print beside the reduced figure, because a bare
+       "معامل الاستقالة 1/3" is a fraction and not a reason. Both cases explain
+       themselves now, so the length race says nothing; what matters is that
+       each says the right thing. */
+    ok(/87/.test(r.birth.out),
+       `${L}: the reader is told why the reduction is absent`);
+    ok(!/87/.test(r.none.out),
+       `${L}: and an ordinary resignation is not told an exception applied`);
+    ok(r.none.out.length > 0 && r.none.out !== r.birth.out,
+       `${L}: the two outcomes do not read identically`);
     if (L === "ar") ok(r.dir === "rtl", "ar: the screen is still right-to-left");
   }
 

@@ -1607,7 +1607,19 @@
      the product, 44% narrower on the bigger screen. The doors are one per row
      wherever the column is a column, and a grid only where the page is a page,
      which is the desktop block at the end of this file. */
-  .hm-hero{display:none}
+  /* THE PHONE READER GETS TOLD WHAT THIS IS, TOO.
+     This was display:none below 900px on the reasoning that a hero would push
+     the doors under the fold. Measured, that was wrong about the cost: the
+     desktop hero is ~250px, but set at phone scale it is 81px and takes one
+     door off the first screenful — 6 of 8 become 5 on a 390x844. So a
+     signed-out stranger on a phone, who is most of this market and all of its
+     distressed readers, was landing on a greeting and eight identically
+     weighted cards with no statement anywhere of what Wodouh is or who it is
+     for. Eighty-one pixels is a cheap price for the sentence that answers it.
+     19px and 14px are both on the nine-step scale; desktop.css raises them. */
+  .hm-hero{display:block;margin:10px 0 14px;text-align:center}
+  .hm-hero .hm-hero-h{font-size:19px;color:var(--teal-ink);line-height:1.45;text-wrap:balance}
+  .hm-hero p{margin-top:8px;color:var(--ink-2);font-size:14px}
   /* Only ever drawn where the split gives it a column of its own to fill. */
   .eos-pre{display:none}
   /* Accounts. Two buttons, brand-styled, nothing else competing. */

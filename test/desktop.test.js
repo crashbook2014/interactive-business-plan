@@ -295,8 +295,19 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   const phoneDoor = await doorAt(390, 844);
   ok(phoneDoor.perRow === 1, `on a phone the doors are one per row (${phoneDoor.perRow})`);
-  ok(!phoneDoor.heroShown,
-     "and there is no hero on a phone, where it would only push them under the fold");
+  /* REVERSED, DELIBERATELY, AND THE OLD REASONING WAS MEASURABLY WRONG.
+     This asserted the hero was absent on a phone, on the argument that it would
+     push the doors under the fold. Measured: the desktop hero is ~250px, but at
+     phone scale it is 81px and costs ONE door off the first screenful — six of
+     eight become five on a 390x844. Meanwhile a signed-out stranger on a phone,
+     who is most of this market and all of its distressed readers, was landing
+     on a greeting and eight identically weighted cards with no statement
+     anywhere of what Wodouh is. */
+  ok(phoneDoor.heroShown,
+     "a phone reader is told what this is, too — 81px for the sentence that says so");
+
+  ok(phoneDoor.n >= 7 && phoneDoor.w > 320,
+     `and the doors are still full width beneath it (${phoneDoor.n} doors at ${phoneDoor.w}px)`);
 
   const deskDoor = await doorAt(1440, 900);
   ok(deskDoor.perRow === 2, `on a laptop they are two across (${deskDoor.perRow})`);

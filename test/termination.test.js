@@ -562,6 +562,47 @@ async function art87Certainty(p){
   ok(svc.zeroM === "6 سنوات", `and zero months is dropped rather than printed (${svc.zeroM})`);
   ok(/11 سنة/.test(svc.many), `11+ takes the singular accusative (${svc.many})`);
 
+  /* THE ARTICLE 85 REDUCTION MUST BE EXPLAINED WHERE IT IS APPLIED, and the
+     Article 87 question must not be answered on the reader's behalf.
+     Two compounding failures for someone considering resignation. No exception
+     chip was selected, so pressing Calculate silently assumed an ordinary
+     resignation — a reader who left under force majeure, which keeps the FULL
+     award under Article 87, was shown a third of what they may be owed with
+     nothing on screen suggesting the question had mattered. And the bands that
+     justify the cut lived only in the desktop method panel, which is hidden
+     below 1100px AND yields to the figure the moment one exists — so the
+     explanation vanished exactly when the cut appeared, and on a phone was
+     never shown at all. A bare "معامل الاستقالة 1/3" is a fraction, not a
+     reason. */
+  console.log("\n— a reduced gratuity says why, at every width");
+  for (const w of [390, 1000, 1440]) {
+    const q = await b.newPage({ viewport: { width: w, height: 900 } });
+    await q.goto(APP);
+    await q.waitForFunction(() => typeof window.show === "function");
+    const r = await q.evaluate(() => {
+      nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+      if (document.documentElement.lang !== "ar") toggleLang();
+      goTab("rights"); openEos();
+      eosHow = "resign"; renderEos();
+      const chosen = [...document.querySelectorAll("#eosExc button")]
+        .filter((c) => c.className.includes("on")).map((c) => c.textContent.trim());
+      document.getElementById("eosStart").value = "2021-01-01";
+      document.getElementById("eosEnd").value = "2025-01-01";
+      document.getElementById("eosWage").value = "10000";
+      calcEos();
+      const out = document.getElementById("eosOut").innerText.replace(/\s+/g, " ");
+      return { chosen, total: Math.round(eosData.total),
+               showsFactor: /معامل الاستقالة/.test(out),
+               explains: /أقل من سنتين/.test(out) && /الثلث/.test(out) };
+    });
+    await q.close();
+    /* The default is an ANSWER, visibly given, not an assumption quietly made. */
+    ok(r.chosen.length === 1,
+       `${w}: the Article 87 question is answered on screen, not assumed (${r.chosen.join("") || "nothing selected"})`);
+    ok(r.showsFactor && r.explains,
+       `${w}: the reduction that cut ${r.total} out of 20,000 is explained beside it`);
+  }
+
   /* THE LABEL MUST REPRODUCE THE TOTAL, because both are printed in the same
      document and one of them is sent to an employer.
      serviceParts() returns {y, m, d} and serviceYears() spends all three, but

@@ -101,6 +101,38 @@ const JOB = [
   ok(leaked.every((t) => !rentTitles.includes(t)),
      `none of the ${leaked.length} employment-only rules appear on the lease`);
 
+  /* ---- A TENANT IS NOT ASKED AN EMPLOYMENT-LAW QUESTION ABOUT THEIR FLAT.
+     needsTrack() raises a gate reading "نظام العمل يفرّق بين السعودي والمقيم
+     في نوع العقد ومدة الإشعار والتعويض", offering the resident "الجواز،
+     الإقامة، الرسوم، نقل الكفالة، وتذكرة العودة" — Labour Law, all of it — and
+     it fired when a tenant asked us to read their lease. It changes nothing
+     there either: forTrack() filters on a rule's `nat`, and after
+     ruleInDomain() a lease meets only the three general rules, none of which
+     carries one. A question whose answer cannot alter the output is a toll. */
+  console.log("\n— the track question is asked about work, and only about work");
+  const gates = await p.evaluate(() => {
+    obDone = true; authUser = { id: "t", email: "t@t.t" };
+    const out = {};
+    for (const [door, sample] of [["contract", "employment"], ["rent", "rental"], ["gig", "freelance"]]) {
+      nat = null; natGate = false;
+      goTab("home"); pickSituation(door);
+      analyze(sample);
+      out[door] = document.querySelector(".screen.active").id;
+    }
+    /* The two other callers are employment surfaces and must still gate. */
+    nat = null; journey = null; natGate = false; openTerm();
+    out.termination = document.querySelector(".screen.active").id;
+    nat = null; journey = null; natGate = false; openCase();
+    out.caseFile = document.querySelector(".screen.active").id;
+    return out;
+  });
+  ok(gates.contract === "screen-onboard",
+     `an employment contract still asks (${gates.contract})`);
+  ok(gates.termination === "screen-onboard" && gates.caseFile === "screen-onboard",
+     `and so do the termination and case-file paths (${gates.termination}, ${gates.caseFile})`);
+  ok(gates.rent !== "screen-onboard" && gates.gig !== "screen-onboard",
+     `a lease and a freelance agreement are read without it (${gates.rent}, ${gates.gig})`);
+
   /* ---- THE CASE FILE MUST STATE THE ENDING THE READER CHOSE, AND CLAIM ONLY
      WHAT THAT ENDING CAN CLAIM.
      buildCaseDoc() printed t("eos_h_term") — "Employer ended it" — whatever
