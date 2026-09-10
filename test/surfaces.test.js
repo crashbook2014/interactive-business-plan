@@ -630,6 +630,62 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     }
   }
 
+  /* ---- NOR BY WORDS ALONE. SEVERITY HAS A SIZE.
+   *
+   * The block above fixed the naming: every row states its severity in words,
+   * so a reader who cannot separate red from green still learns which is
+   * which. That is the right guarantee for someone READING the list. It does
+   * nothing for someone SCANNING it, which is what a person does with eight
+   * flags and a contract to sign tonight — and by that measure every row was
+   * identical: 13px of padding, a 15px title and a 26px dot, whether it said
+   * "pause before signing" or "you're fine".
+   *
+   * So weight is asserted too, and asserted as RENDERED GEOMETRY rather than
+   * as a class name: what matters is that the important one is visibly bigger,
+   * not which selector achieved it.
+   *
+   * BOTH LANGUAGES, because the first version of this shipped an Arabic ladder
+   * that collapsed — it set green to 15px, which is what amber already was, so
+   * Arabic had two steps where English had three. Nothing but the measurement
+   * showed it.
+   */
+  console.log("\n— and severity has a weight, not only a word");
+  for (const L of ["en", "ar"]) {
+    const size = await p.evaluate((l) => {
+      lang = l; applyLang(); nat = "sa";
+      owned = { review: "plan_review", letter: null, case: null };
+      current = SAMPLES.employment; current.srcText = null;
+      /* show(), not just renderResult(). An inactive screen is display:none,
+         so every geometry read comes back 0 — the font sizes still compute
+         because they need no layout, which is how the first version of this
+         reported a passing three-step ladder above three zero-height rows. */
+      journey = "contract"; renderResult(); show("result");
+      const of = (sev) => {
+        const f = document.querySelector("#flags .flag." + sev);
+        if (!f) return null;
+        const btn = f.querySelector("button"), h = f.querySelector("h4");
+        const dot = f.querySelector(".dot");
+        return { h: Math.round(btn.getBoundingClientRect().height),
+                 fs: parseFloat(getComputedStyle(h).fontSize),
+                 dot: Math.round(dot.getBoundingClientRect().width) };
+      };
+      return { red: of("red"), amber: of("amber"), green: of("green") };
+    }, L);
+    const say = (x) => x ? `${x.h}px/${x.fs}px/dot ${x.dot}` : "absent";
+    ok(size.red && size.amber && size.green,
+       `${L}: the sample renders all three severities (red ${say(size.red)}, amber ${say(size.amber)}, green ${say(size.green)})`);
+    if (!(size.red && size.amber && size.green)) continue;
+    ok(size.red.fs > size.amber.fs && size.amber.fs > size.green.fs,
+       `${L}: the title size is a three-step ladder, not two (${size.red.fs} > ${size.amber.fs} > ${size.green.fs})`);
+    ok(size.red.h > size.amber.h && size.amber.h > size.green.h,
+       `${L}: and the row heights follow it (${size.red.h} > ${size.amber.h} > ${size.green.h})`);
+    ok(size.red.dot > size.green.dot,
+       `${L}: the severity dot is larger on the one that matters (${size.red.dot} vs ${size.green.dot})`);
+    /* Visible at a glance, not merely different to a measuring tape. */
+    ok(size.red.h - size.green.h >= 8,
+       `${L}: and the difference is legible rather than nominal (${size.red.h - size.green.h}px)`);
+  }
+
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all surface checks passed"));
   await b.close();

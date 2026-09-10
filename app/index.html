@@ -12357,7 +12357,11 @@ function renderPaywall(){
   wrap.innerHTML = "";
   activePlans().forEach((pl,i)=>{
     const b = document.createElement("button");
-    b.className = "plan" + (i===pwPlan ? " sel" : "");
+    /* `.rec` carries the recommendation into the CSS, where it can be given
+       real weight. Before this the recommendation existed only as a small
+       amber badge on a card identical to its neighbours — an opinion stated
+       in the smallest type on the screen. */
+    b.className = "plan" + (i===pwPlan ? " sel" : "") + (pl.pop && !pl.soon ? " rec" : "");
     const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>

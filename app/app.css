@@ -427,6 +427,41 @@
   .flag .dot svg{width:13px;height:13px}
   .flag .ttl{flex:1;min-width:0}
   .flag h4{font-size:15px;color:var(--ink);line-height:1.45}
+
+  /* SEVERITY IS THE INFORMATION, SO SEVERITY GETS THE SIZE.
+   *
+   * Every flag was the identical row — 13px padding, a 15px title, a 26px dot
+   * — whether it said "pause before signing" or "you're fine". On the one
+   * screen whose entire job is to rank what matters, ranking was carried by
+   * hue alone, and hue is the channel roughly one man in twelve reads badly
+   * and nobody reads well in sunlight. The severity word added under each
+   * title fixed the naming; it did not fix the WEIGHT, which is what a reader
+   * scanning rather than reading actually uses.
+   *
+   * Three steps, all from the existing type scale: red gets 16.5px and a
+   * larger dot, amber stays the 15px midpoint, green drops to 14px and tucks
+   * in. The difference is deliberately legible at a glance and small enough
+   * that a list of eight does not look like eight different components.
+   *
+   * NOT applied to the doors on home. Those are equal by a measured decision
+   * — they drew 199px on a laptop against 354px on a phone until two equal
+   * columns fixed it — and equal is correct there, because a situation is not
+   * more or less severe than another situation. */
+  .flag.red>button{padding:16px 15px}
+  .flag.red h4{font-size:16.5px;line-height:1.4}
+  .flag.red .dot{width:30px;height:30px}
+  .flag.red .dot svg{width:15px;height:15px}
+  .flag.green>button{padding:11px 15px}
+  .flag.green h4{font-size:14px}
+  .flag.green .dot{width:23px;height:23px}
+  .flag.green .dot svg{width:12px;height:12px}
+  /* ONE LADDER FOR BOTH LANGUAGES — 14 / 15 / 16.5. The first version bumped
+     Arabic a step on the theory that Arabic reads smaller at the same size,
+     and it put green at 15px, which is what amber already is: the Arabic
+     ladder collapsed to two steps and only the measurement showed it. The
+     padding and the dot carry weight of their own, so the same three sizes
+     give a legible three-step ladder in both directions without a second set
+     of rules to keep in step. */
   .flag .chev{flex:none;color:var(--ink-2);display:flex;transition:transform .2s ease}
   .flag .chev svg{width:15px;height:15px}
   html[dir="rtl"] .flag .chev{transform:scaleX(-1)}
@@ -531,6 +566,19 @@
   .plans{display:grid;gap:10px;margin-top:14px}
   .plan{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);padding:13px 15px;text-align:start;transition:border-color .15s}
   .plan.sel{border-color:var(--teal);background:var(--teal-soft)}
+  /* THE RECOMMENDATION IS AN OPINION WE ARE WILLING TO STATE, so it is stated
+     at a size someone can see. It was a 12px amber badge on a card identical
+     to the two beside it, which is the visual weight of a footnote for the
+     one line on the screen that is actually advice.
+     Size and border, not colour: .sel already owns the teal treatment, and
+     two things competing for "this one" would be worse than none. A reader
+     who wants a different plan still sees three plans. */
+  .plan.rec{padding:17px 15px;border-width:2px;border-color:var(--teal-ink)}
+  .plan.rec b{font-size:16.5px}
+  html[lang="ar"] .plan.rec b{font-size:19px}
+  .plan.rec .price{font-size:19px}
+  /* Selected wins the border back — the reader's own choice outranks ours. */
+  .plan.rec.sel{border-color:var(--teal)}
   .plan .radio{flex:none;width:20px;height:20px;border-radius:99px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
   .plan.sel .radio{border-color:var(--teal)}
   .plan.sel .radio::after{content:"";width:10px;height:10px;border-radius:99px;background:var(--teal)}
