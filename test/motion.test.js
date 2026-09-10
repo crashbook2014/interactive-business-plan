@@ -359,6 +359,72 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      `a reader who asked for reduced motion gets no drift here either (${stillFlat})`);
   await p2.close(); await p3.close();
 
+  /* ---- A QUANTITY IS NEVER BRIEFLY WRONG.
+   *
+   * Every other assertion in this suite protects motion. This one protects a
+   * NUMBER from it, and it belongs here because the defect was motion doing
+   * exactly what it was written to do.
+   *
+   * The riyal total used to ease from 0 to the computed figure over 700ms and
+   * the score from 0 over 1100ms. A screenshot taken 600ms after the result
+   * appeared showed «40,503» above a breakdown reading 30,000 + 10,526 =
+   * 40,526 — indistinguishable from an arithmetic bug, and it cost a real
+   * investigation to clear. On this product the screenshot is the artifact:
+   * that figure is what a reader sends to a spouse, a lawyer, or the employer
+   * they are about to sit across from.
+   *
+   * SAMPLED THROUGH THE WINDOW, NOT AT THE END. Reading the value after the
+   * animation would pass against the old code too, which is the whole reason
+   * nothing caught this. So the number is read on every frame for a second and
+   * every sample must equal the final value — a guard that only bites if some
+   * frame disagrees, which is precisely the defect.
+   */
+  console.log("\n— a figure arrives at its value rather than counting up to it");
+  const p4 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await p4.goto(APP);
+  await p4.waitForFunction(() => typeof window.show === "function");
+  const rolled = await p4.evaluate(async () => {
+    const watch = (read) => new Promise((done) => {
+      const seen = [];
+      const t0 = performance.now();
+      (function tick(){
+        seen.push(read());
+        if (performance.now() - t0 < 1400) requestAnimationFrame(tick);
+        else done(seen);
+      })();
+    });
+    const out = {};
+
+    nat = "sa"; obDone = true; authUser = { id: "t" }; goTab("eos");
+    const set = (id, v) => { const e = document.getElementById(id); e.value = v;
+      e.dispatchEvent(new Event("input", { bubbles: true })); };
+    set("eosStart", "2020-03-15"); set("eosEnd", "2026-01-31"); set("eosWage", "12000");
+    calcEos();
+    out.money = await watch(() => {
+      const el = document.querySelector("#eosOut .amt");
+      return el ? el.textContent.replace(/[^\d]/g, "") : "";
+    });
+
+    journey = "contract"; current = SAMPLES.employment;
+    renderResult(false); animateRing();
+    out.score = await watch(() => document.getElementById("scoreNum").textContent);
+    out.target = String(SAMPLES.employment.score);
+    return out;
+  });
+
+  const distinct = (a) => [...new Set(a.filter((x) => x !== ""))];
+  const moneyVals = distinct(rolled.money);
+  ok(rolled.money.length > 20,
+     `the riyal figure was sampled across the animation window (${rolled.money.length} frames)`);
+  ok(moneyVals.length === 1,
+     `and never showed a value other than its total (${moneyVals.join(", ")})`);
+  const scoreVals = distinct(rolled.score);
+  ok(rolled.score.length > 20,
+     `the score was sampled the same way (${rolled.score.length} frames)`);
+  ok(scoreVals.length === 1 && scoreVals[0] === rolled.target,
+     `and read ${rolled.target} on every frame (${scoreVals.join(", ")})`);
+  await p4.close();
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\ngestures commit on flick or distance, keep their motion continuous, and never fight reduced motion");
   process.exit(FAIL.length ? 1 : 0);

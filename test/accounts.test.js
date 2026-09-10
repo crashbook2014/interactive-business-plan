@@ -962,6 +962,113 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   }
 }
 
+/* ---- THE CONTROL THAT TESTS THE PROMISE.
+ *
+ * Every privacy sentence in this app is a claim that the reader's contract
+ * stays on their device. There was no delete anywhere in the product, so the
+ * one thing a cautious reader reaches for to check that claim did not exist —
+ * and the thing that DID exist, "delete my account", cleared a row on a server
+ * while leaving eight contract titles and scores in this browser. On a shared
+ * or handed-on phone that is the copy that mattered, and the label promised
+ * both.
+ *
+ * ASSERTED BY READING THE STORAGE BACK, not by trusting the function to have
+ * run. A wipe that clears the variables and leaves the JSON is the exact
+ * failure this exists to catch, and it looks identical on screen.
+ */
+{
+  console.log("\n— erasing the device actually empties it");
+  const b5 = await chromium.launch(launchOpts());
+  const p5 = await b5.newPage({ viewport: { width: 390, height: 844 } });
+  await p5.goto(APP);
+  await p5.waitForFunction(() => typeof window.wipeDevice === "function");
+  p5.on("dialog", (d) => d.accept());
+  const wiped = await p5.evaluate(async () => {
+    authUser = { id: "u" }; obDone = true; nat = "sa"; lang = "ar";
+    myContracts = [{ doc: "doc_emp", score: 68, at: Date.now(), signed: false },
+                   { doc: "doc_rent", score: 52, at: Date.now(), signed: true }];
+    TRACKED.push({ doc: "doc_emp", events: [{ d: 90, k: "info",
+      t: { ar: "x", en: "x" }, n: { ar: "y", en: "y" } }] });
+    term = Object.assign(blankTerm(), { how: "employer", start: "2020-01-01" });
+    owned.review = "plan_review";
+    saveState();
+    goTab("account"); renderWipe();
+    const before = {
+      note: document.getElementById("wipeWhat").textContent,
+      disabled: document.querySelector(".acc-wipe .danger").disabled,
+      raw: localStorage.getItem(STORE) || "",
+    };
+    wipeDeviceNow();
+    await new Promise((r) => setTimeout(r, 300));
+    /* The whole payload as text, so anything left behind is caught whatever
+       key it hides under — a per-field checklist only ever covers the fields
+       whoever wrote it remembered. */
+    const raw = localStorage.getItem(STORE) || "";
+    goTab("account"); renderWipe();
+    return {
+      before, raw,
+      note: document.getElementById("wipeWhat").textContent,
+      disabled: document.querySelector(".acc-wipe .danger").disabled,
+      contracts: myContracts.length, tracked: TRACKED.length,
+      term, nat, current, obDone,
+      owned: owned.review,
+      /* Survives a reload, rather than being restored by the next save. */
+      reread: (loadState(), myContracts.length + TRACKED.length),
+    };
+  });
+  await b5.close();
+
+  ok(/عقدان/.test(wiped.before.note) && /تقييم/.test(wiped.before.note),
+     `the control names what it will take, not "all your data" (${wiped.before.note})`);
+  ok(wiped.before.disabled === false, "and is live while there is something to take");
+  ok(wiped.before.raw.includes("doc_emp"),
+     "the contracts really were in storage before the wipe");
+  ok(!/doc_emp|doc_rent|2020-01-01|plan_review/.test(wiped.raw),
+     `nothing of the reader survives in storage (${wiped.raw.slice(0, 120)})`);
+  ok(wiped.contracts === 0 && wiped.tracked === 0 && wiped.term === null,
+     `and nothing survives in memory either (${wiped.contracts}, ${wiped.tracked})`);
+  ok(wiped.nat === null && wiped.current === null && wiped.owned === null,
+     "including the track, the loaded contract and what was owned");
+  ok(wiped.reread === 0,
+     `and a reload does not bring it back (${wiped.reread} items)`);
+  /* The tour is NOT the reader's data, and replaying it at someone who has
+     just erased their contracts would read as the app not having listened. */
+  ok(wiped.obDone === true,
+     "the tour is not replayed at them — it was never their data");
+  ok(wiped.disabled === true && wiped.note.length > 0,
+     `and the control now says there is nothing left, rather than offering again (${wiped.note})`);
+
+  /* AND WHEN THE WRITE ITSELF FAILS, which is not hypothetical: Safari in
+     private mode and a full quota both throw on setItem. wipeDevice() removes
+     the key BEFORE clearing anything, so the durable copy is already gone by
+     the time a failing save could leave the old payload in place. Without that
+     ordering the reader presses "erase everything", every screen goes blank,
+     and their contracts are still on the device — the worst version of this,
+     because it looks like it worked. */
+  const b6 = await chromium.launch(launchOpts());
+  const p6 = await b6.newPage({ viewport: { width: 390, height: 844 } });
+  await p6.goto(APP);
+  await p6.waitForFunction(() => typeof window.wipeDevice === "function");
+  const brokenSave = await p6.evaluate(() => {
+    authUser = { id: "u" }; obDone = true; nat = "sa";
+    myContracts = [{ doc: "doc_emp", score: 68, at: Date.now(), signed: false }];
+    saveState();
+    const had = (localStorage.getItem(STORE) || "").includes("doc_emp");
+    const real = Storage.prototype.setItem;
+    Storage.prototype.setItem = () => { throw new Error("QuotaExceededError"); };
+    let threw = null;
+    try { wipeDevice(); } catch (e) { threw = String(e && e.message || e); }
+    Storage.prototype.setItem = real;
+    return { had, threw, left: localStorage.getItem(STORE) };
+  });
+  await b6.close();
+  ok(brokenSave.had, "the contract was in storage before this one too");
+  ok(brokenSave.threw === null,
+     `a storage that refuses writes does not make the erase throw (${brokenSave.threw})`);
+  ok(!brokenSave.left,
+     `and the reader's data is gone anyway, because the key is removed first (${String(brokenSave.left).slice(0, 80)})`);
+}
+
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nan account is required and honestly explained, consent is never assumed, and the contract never leaves");
   process.exit(FAIL.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

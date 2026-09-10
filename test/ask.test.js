@@ -299,11 +299,27 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   await p0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   await p0.goto(APP);
   await p0.waitForFunction(() => typeof window.show === "function");
+  /* ON HOME, WHICH IS NOW THE ONLY PLACE THE DOOR EXISTS. It used to have a
+     twin on the Rights screen and this read that one; the twin is gone,
+     because asking a question has nothing to do with having signed something
+     and that screen is scoped to readers who have. The property is unchanged
+     and is what actually matters — in a build that cannot answer, no question
+     door is on screen anywhere — so it is now asserted across BOTH screens
+     rather than on the one that happened to be checked. */
   const shipped = await p0.evaluate(() => {
-    show("rights");
-    return { hidden: document.getElementById("askEntry").hidden, avail: askAvailable() };
+    const doors = [];
+    for (const s of ["home", "rights"]) {
+      show(s);
+      doors.push(...[...document.querySelectorAll("#screen-" + s + " button")]
+        .filter((b) => /openAsk\(|pickSituation\('ask'\)/.test(b.getAttribute("onclick") || ""))
+        .map((b) => ({ screen: s, shown: b.offsetParent !== null })));
+    }
+    return { doors, open: doors.filter((d) => d.shown).length, avail: askAvailable() };
   });
-  ok(shipped.hidden === true, "with ANALYZE_URL forced empty, the ask entry does not exist for a reader");
+  ok(shipped.doors.length >= 1,
+     `the question door is in the markup to be hidden (${shipped.doors.length} found)`);
+  ok(shipped.open === 0,
+     `with ANALYZE_URL forced empty, no question door is on screen anywhere (${shipped.open} open)`);
   ok(shipped.avail === false, "and the app knows it cannot answer");
   ok(off.length === 0, `and the page makes no off-origin request${off.length ? ": " + off.join(", ") : ""}`);
   await p0.close();
@@ -349,8 +365,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   const opened = await p.evaluate(() => {
     lang = "en"; applyLang(); nat = "sa";
     term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01", end:"2026-01-01", wage:10000 });
-    show("rights");
-    const entry = document.getElementById("askEntry").hidden;
+    /* Home, for the same reason as above: the Rights-screen twin is gone. */
+    show("home"); renderSituations();
+    const entry = document.getElementById("sitAsk").hidden;
     openAsk();
     document.getElementById("askQ").value = "When is my final settlement due?";
     document.getElementById("askQ").dispatchEvent(new Event("input"));

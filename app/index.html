@@ -560,6 +560,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="dk-b">
     <div class="letter-actions">
       <button class="ghost" id="copyBtn" onclick="copyLetter()"></button>
+      <button class="ghost send" id="shareLetter" onclick="shareDoc('letterBody')" data-t="share_btn"></button>
       <button class="ghost" id="printLetter" onclick="printDoc()" data-t="print_btn"></button>
       <button class="primary" onclick="show('clauses')" data-t="cta_clauses"></button>
     </div>
@@ -618,13 +619,19 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <span><b data-t="r_know"></b><span data-t="r_know_d"></span></span>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
     </button>
-    <!-- Hidden unless an endpoint is configured. The build on disk has none,
-         so this button does not exist for anyone reading the shipped app. -->
-    <button class="assist-entry" id="askEntry" hidden onclick="openAsk()">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18h.01"/><path d="M9.5 8.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><circle cx="12" cy="12" r="9"/></svg></span>
-      <span><b data-t="r_ask"></b><span data-t="r_ask_d"></span></span>
-      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-    </button>
+    <!-- "ASK A QUESTION" IS NOT HERE, AND THE OTHER THREE ARE, WHICH IS THE
+         WHOLE OF THIS CHANGE.
+         This screen was called a duplicate of home. Measured against its own
+         subtitle — «وقّعت بالفعل، أو انتهى عقدك؟» — three of its four entries
+         earn their place: the calculator, the signed-contract review and the
+         case file are all things you reach for AFTER signing, and home routes
+         by situation rather than by tense, so the same destination arrived at
+         from a different question is not a duplicate.
+         Asking a question is the one that failed that test. It has nothing to
+         do with having signed, it is a door on home already, and its id is
+         shown or hidden by renderSituations() alone, so a build without an
+         endpoint still shows no question door anywhere. -->
+    <!-- (the ask entry lives on home) -->
     <button class="assist-entry" onclick="openRightsCase()">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
       <span><b data-t="r_case"></b><span data-t="r_case_d"></span></span>
@@ -842,6 +849,22 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
            badge — none of those exist to state. -->
       <p class="legal-id" data-t="acc_identity"></p>
     </div>
+    <!-- THE CONTROL THAT TESTS THE PROMISE ABOVE.
+         Everything this app says about privacy is a claim that the reader's
+         contract stays on their device. There was no way to act on that: no
+         delete anywhere in the product, so the one thing a cautious reader
+         reaches for to check the claim did not exist. Deleting the ACCOUNT
+         existed and is a different thing — it clears a row on a server while
+         leaving eight contract titles and scores in this browser, which on a
+         shared or handed-on phone is the version that matters.
+         Placed directly under the promise rather than in a settings list,
+         because it is the answer to the paragraph above it. -->
+    <div class="acc-sec acc-wipe">
+      <h3 data-t="wipe_h"></h3>
+      <p data-t="wipe_b"></p>
+      <p class="wipe-what" id="wipeWhat"></p>
+      <button class="ghost danger" type="button" onclick="wipeDeviceNow()" data-t="wipe_cta"></button>
+    </div>
     <div class="acc-sec">
       <h3 data-t="acc_how"></h3>
       <p data-t="acc_how_b"></p>
@@ -956,6 +979,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="caseCopyBtn" onclick="copyCase()"></button>
+      <button class="ghost send" id="shareCase" onclick="shareDoc('caseBody')" data-t="share_btn"></button>
       <button class="ghost" id="printCase" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <div class="escalate" id="caseEscalate" hidden></div>
@@ -1049,6 +1073,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="termDocCopy" onclick="copyTermDoc()"></button>
+      <button class="ghost send" id="shareTermDoc" onclick="shareDoc('termDocBody')" data-t="share_btn"></button>
       <button class="ghost" id="printTermDoc" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <p class="disclaimer" data-t="tm_r_disclaim"></p>
@@ -1067,6 +1092,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <div class="letter-actions">
       <button class="ghost" id="termLtrCopy" onclick="copyTermLtr()"></button>
+      <button class="ghost send" id="shareTermLtr" onclick="shareDoc('termLtrBody')" data-t="share_btn"></button>
       <button class="ghost" id="printTermLtr" onclick="printDoc()" data-t="print_btn"></button>
     </div>
     <!-- WHAT TO DO WITH IT. Deliberately on the screen and not inside the
@@ -1456,7 +1482,37 @@ const T = {
   au_what_b:{ar:"نتيجة التقييم وخطاباتك وتذكيراتك. ما نحفظ نص عقدك ولا ملفه — هذي ما تطلع من جهازك أصلًا.",
              en:"Your assessment result, your letters and your reminders. Not your contract's text or file — those never leave your device in the first place."},
   au_out:{ar:"تسجيل الخروج",en:"Sign out"},
-  au_del:{ar:"احذف حسابي وكل بياناتي",en:"Delete my account and all my data"},
+  /* NAMES WHAT GOES, RATHER THAN SAYING "ALL DATA". A reader deciding whether
+     to press this is deciding about specific things they can picture — the
+     contracts they had read, the dates they are being reminded of, the
+     assessment they half-finished. "All your data" is the phrasing of a
+     product that would rather you did not think about it. */
+  wipe_h:{ar:"امسح كل شيء من هذا الجهاز",en:"Erase everything on this device"},
+  wipe_b:{ar:"نقرأ عقدك على جهازك وما نخزّنه عندنا — ومعناها إن اللي محفوظ محفوظ هنا، في هذا المتصفح. من هنا تمسحه بنفسك، بدون ما تسألنا.",
+          en:"We read your contract on your device and don't store it — which means what's kept is kept here, in this browser. This erases it yourself, without asking us."},
+  wipe_none:{ar:"ما فيه شيء محفوظ على هذا الجهاز الحين.",en:"Nothing is saved on this device right now."},
+  /* Counted, in the reader's own terms, through countNoun() — the same four
+     Arabic forms every other counted noun in this file uses. */
+  wipe_c_1:{ar:"عقد واحد قرأناه",en:"1 contract you had read"},
+  wipe_c_2:{ar:"عقدان قرأناهما",en:"2 contracts you had read"},
+  wipe_c_p:{ar:"{n} عقود قرأناها",en:"{n} contracts you had read"},
+  wipe_c_m:{ar:"{n} عقدًا قرأناها",en:"{n} contracts you had read"},
+  wipe_t_1:{ar:"عقد واحد متابَع بمواعيده",en:"1 tracked contract and its dates"},
+  wipe_t_2:{ar:"عقدان متابَعان بمواعيدهما",en:"2 tracked contracts and their dates"},
+  wipe_t_p:{ar:"{n} عقود متابَعة بمواعيدها",en:"{n} tracked contracts and their dates"},
+  wipe_t_m:{ar:"{n} عقدًا متابَعًا بمواعيدها",en:"{n} tracked contracts and their dates"},
+  wipe_c_term:{ar:"تقييم إنهاء عقد بدأته",en:"a termination assessment you started"},
+  wipe_c_nat:{ar:"إجابتك عن السعودي/المقيم",en:"your Saudi/resident answer"},
+  wipe_will:{ar:"يُمسح: {list}.",en:"This erases: {list}."},
+  wipe_cta:{ar:"امسح كل شيء",en:"Erase everything"},
+  wipe_sure:{ar:"يُمسح من هذا الجهاز نهائيًا وما يرجع. متأكد؟",
+             en:"Erased from this device for good, with no way back. Sure?"},
+  wipe_done:{ar:"تم المسح. هذا الجهاز ما عاد فيه شيء منك.",en:"Erased. Nothing of yours is left on this device."},
+  /* THE ACCOUNT AND THE DEVICE ARE TWO DIFFERENT PLACES, and this used to name
+     only one of them while promising both. It said "delete my account and all
+     my data" and cleared the server row, leaving the contract history sitting
+     in this browser — the copy claimed a reach the code did not have. */
+  au_del:{ar:"احذف حسابي، وامسح هذا الجهاز",en:"Delete my account and erase this device"},
   au_del_sure:{ar:"يُحذف نهائيًا وما يرجع. متأكد؟",en:"Permanently deleted, with no way back. Sure?"},
   au_err:{ar:"ما ضبط تسجيل الدخول. جرّب مرة ثانية.",en:"Sign-in didn't work. Try again."},
   /* Said when the project itself refuses the provider, which is a different
@@ -2266,6 +2322,14 @@ const T = {
      "print" would hide the more useful half behind a word that sounds like it
      needs a printer. */
   print_btn:{ar:"اطبع أو احفظ PDF",en:"Print or save as PDF"},
+  /* "Send" rather than "Share", because the reader is not sharing a page with
+     an audience — they are sending their own letter to one other person. The
+     label names no destination: on a phone this opens the OS share sheet and
+     the reader picks, and naming WhatsApp on a button that might open Mail
+     would be wrong about what is going to happen. */
+  share_btn:{ar:"أرسله",en:"Send it"},
+  share_long:{ar:"المستند أطول من إن نرسله بهذي الطريقة — انسخه وألصقه، عشان يوصل كامل.",
+              en:"This document is too long to send this way — copy it and paste it, so it arrives whole."},
   /* ON THE CASE DOCUMENTS ONLY, and deliberately not on either letter.
      A case file is a working document: it goes to the reader, to a lawyer and
      to the friendly-settlement filing, and saying how it was prepared is
@@ -4041,6 +4105,94 @@ function looksLikeContract(text){
   return { ok: hit.length >= 2, signals: hit };
 }
 
+/* WHAT KIND OF DOCUMENT IS THIS? ASKED OF THE DOCUMENT, NOT THE READER.
+ *
+ * The door the reader picked says what they think their situation is. It does
+ * not say what they pasted. Those came apart the moment the upload row went on
+ * home: it opens the employment journey, the way the card it replaced did, so
+ * a lease pasted through it was read by the employment heuristics and cited
+ * the Labour Law at a landlord.
+ *
+ * Asking the reader to classify their own document first would be the
+ * situation chooser again, one screen further in — and they are the person
+ * least able to answer it, since knowing which law applies is what they came
+ * for.
+ *
+ * WHICH WAY THIS FAILS, STATED BEFORE THE PATTERNS. A citation is only
+ * defensible on an employment contract, because docs/legal-sources.md is
+ * labour-only. So the classifier's job is not to be clever; it is to be sure
+ * before it lets a citation through. Three outcomes:
+ *
+ *   "job"           the register applies. Requires clear evidence.
+ *   "rent" / "gig"  read with the general rules, cite nothing.
+ *   null            we could not tell — same treatment as above. Not a
+ *                   failure state, just the honest one.
+ *
+ * A misfire costs a reader their article numbers, which is a paragraph they
+ * can still act on. The other direction costs a tenant a labour-law citation
+ * they might carry into a real dispute. Those are not comparable, so the bar
+ * sits where the cheap mistake is.
+ *
+ * FAMILIES, NOT A WORD COUNT. Each entry is a distinct thing a document of
+ * that kind says about itself — what it calls itself, what it calls the two
+ * sides, what it calls the money, and the terms only that kind has. Counting
+ * families rather than matches means a lease that says «المؤجر» eleven times
+ * scores it once, so repetition cannot outvote substance.
+ */
+/* FOUR FAMILIES PER DOMAIN, AND EACH ONE CARRIES BOTH LANGUAGES.
+ *
+ * The first version gave Arabic four families and English one catch-all, so an
+ * English document could score at most 1 and never cleared the bar of 2. Both
+ * English fixtures came back unknown — an employment contract that says
+ * "Employment Contract", "Employee", "salary" and "probation" in its first
+ * four lines, classified as "we cannot tell". Arabic-first does not mean
+ * English-second: the families are what a document says about ITSELF, and a
+ * document says those things in whatever language it was written in.
+ *
+ * The four are the same questions in every domain: what it calls itself, what
+ * it calls the two sides, what it calls the money, and the terms only that
+ * kind of document has. */
+const DOMAIN_SIGNALS = {
+  job: [
+    /عقد\s*عمل|اتفاقي(?:ة|ه)\s*(?:عمل|توظيف)|توظيف|employment\s*(?:contract|agreement)|contract\s*of\s*employment|offer\s*letter/i,
+    /صاحب\s*(?:ال)?عمل|رب\s*(?:ال)?عمل|(?:ال)?موظف|(?:ال)?عامل\b|بوظيفة|(?:ال)?وظيفة|\bemployer\b|\bemployee\b|job\s*title/i,
+    /(?:ال)?راتب|(?:ال)?أجر\s*(?:ال)?شهري|(?:ال)?مرتب|\bsalary\b|\bwages?\b|remuneration/i,
+    /فترة\s*(?:ال)?تجربة|(?:ال)?دوام|ساعات\s*(?:ال)?عمل|(?:ال)?إجازة\s*(?:ال)?سنوية|مكافأة\s*نهاية\s*(?:ال)?خدمة|نظام\s*(?:ال)?عمل|probation|annual\s*leave|working\s*hours|end\s*of\s*service/i,
+  ],
+  rent: [
+    /عقد\s*(?:ال)?إيجار|(?:ال)?إيجار\b|عقد\s*(?:ال)?ايجار|lease\s*agreement|\blease\b|tenancy/i,
+    /(?:ال)?مؤجر|(?:ال)?مستأجر|\blandlord\b|\btenant\b|\blessor\b|\blessee\b/i,
+    /(?:ال)?أجرة\b|(?:ال)?قيمة\s*(?:ال)?إيجاري(?:ة|ه)|annual\s*rent|monthly\s*rent|\brent\s*(?:is|of|payable)/i,
+    /(?:ال)?عين\s*(?:ال)?مؤجرة|(?:ال)?وحدة\s*(?:ال)?سكني(?:ة|ه)|(?:ال)?مأجور|\bpremises\b|the\s*property\b|\bthe\s*unit\b/i,
+  ],
+  gig: [
+    /عمل\s*حر|(?:ال)?مستقل\b|(?:عقد|اتفاقي(?:ة|ه))\s*(?:تقديم\s*)?خدمات|freelance|services\s*agreement|independent\s*contractor/i,
+    /(?:ال)?مورد\b|(?:ال)?مقدم\s*(?:ال)?خدمة|(?:ال)?عميل\b|\bthe\s*client\b|\bcontractor\b|\bsupplier\b/i,
+    /(?:ال)?أتعاب|(?:ال)?دفعة\s*(?:ال)?مقدمة|\bfees?\s*(?:of|is|are|payable)|\bretainer\b|\bmilestone\s*payment/i,
+    /(?:ال)?مخرجات|نطاق\s*(?:ال)?عمل|(?:ال)?تسليمات|deliverables?|scope\s*of\s*work|statement\s*of\s*work/i,
+  ],
+};
+
+/* Two families, and strictly ahead of the runner-up. Two because one word can
+   appear in a document of any kind — an employment contract can mention a
+   client, a lease can mention a party's work — while two independent things a
+   document says about ITSELF is not a coincidence at the lengths real
+   contracts run to. Strictly ahead because a document that scores equally as
+   two kinds is a document we cannot tell about, and a tie broken by the order
+   of an object's keys would be a guess wearing a rule's clothes. */
+function docDomain(text){
+  const raw = String(text || ""), alt = normAr(raw);
+  const score = {};
+  for (const dom of Object.keys(DOMAIN_SIGNALS)){
+    score[dom] = DOMAIN_SIGNALS[dom]
+      .filter((re) => re.test(raw) || re.test(alt)).length;
+  }
+  const ranked = Object.keys(score).sort((a, b) => score[b] - score[a]);
+  const [top, next] = ranked;
+  if (score[top] < 2 || score[top] === score[next]) return null;
+  return top;
+}
+
 /* The same rule, compiled against normalised Arabic. Built once per rule and
    cached on the rule itself, because rebuilding seventeen RegExps on every
    analysis is work with a known answer. */
@@ -4258,8 +4410,33 @@ const NON_EMPLOYMENT = ["rent", "gig"];
  * source or it carries no article number at all — including when we do not yet
  * know what kind of document we are reading. */
 const EMPLOYMENT = ["contract", "resign", "term", "owed", "unsure", "ask"];
+
+/* JOURNEYS ARE NOT DOMAINS, AND CONFLATING THEM HAS NOW COST THREE BUGS.
+ *
+ * `journey` is which door the reader pressed — contract, resign, term, owed,
+ * unsure, ask, rent, gig. A DOMAIN is what kind of document is being read —
+ * job, rent, gig. Six of the journeys mean the same one domain, and the
+ * codebase has been asking domain questions of journey values throughout.
+ *
+ * The three, because the pattern is the point rather than any one of them:
+ *   1. `dom === "job"` — a value nothing set, so every employment contract
+ *      through the main door came back with no clauses at all.
+ *   2. `!NON_EMPLOYMENT.includes(dom)` — true for null, so an unrouted lease
+ *      was read as employment and cited Article 80 at a landlord.
+ *   3. docDomain() returning "job" into a list of JOURNEY names, so a
+ *      correctly classified employment contract lost every citation. Caught by
+ *      measurement rather than by reading, which is the third time.
+ *
+ * So the conversion happens once, here, and everything downstream speaks
+ * domains only. A journey that names no domain — there is no such journey
+ * today — converts to null, which is the unknown case and already safe. */
+function doorDomain(journey){
+  if (EMPLOYMENT.includes(journey)) return "job";
+  return NON_EMPLOYMENT.includes(journey) ? journey : null;
+}
+
 function ruleInDomain(rule, dom){
-  if (EMPLOYMENT.includes(dom)) return true;
+  if (dom === "job") return true;
   /* A NAMED non-employment door asks for the rules declared for IT. An unknown
      document asks for the rules that are not employment-specific at all — the
      five that declare a `dom` list, which is the same thing as saying "this
@@ -4274,8 +4451,30 @@ function ruleInDomain(rule, dom){
   return NON_EMPLOYMENT.includes(dom) ? rule.dom.includes(dom) : true;
 }
 
-function analyzePasted(text, dom){
+function analyzePasted(text, door){
   const clauses = [];
+  /* THE DOCUMENT DECIDES, AND THE DOOR IS THE FALLBACK.
+   *
+   * `door` is the situation the reader picked. It is a statement about them,
+   * not about the file, and the two came apart the moment the upload row went
+   * on home: it opens the employment journey, so a lease pasted through it was
+   * read by the employment heuristics and cited the Labour Law at a landlord.
+   *
+   * Reading the document itself is also simply the better answer to the
+   * question. The register is labour-only, so the thing that licenses a
+   * citation is "this is an employment contract" — a fact about the document.
+   * The reader's situation was never evidence for it.
+   *
+   * WHEN THE TWO DISAGREE, THE DOCUMENT WINS, both ways round. A lease through
+   * the contract door is a lease and loses the citations. An employment
+   * contract through the landlord door is an employment contract and keeps
+   * them: they are correct about it, whatever the reader believed when they
+   * chose.
+   *
+   * The door is used only when the document cannot be classified — and even
+   * then it can only narrow, never license, because an unknown door is already
+   * treated as unknown by ruleInDomain(). */
+  const dom = docDomain(text) || doorDomain(door);
   /* Carry the whole rule through, minus its matcher. Copying a hand-picked
      subset silently dropped `src` (so pasted contracts cited nothing) and
      `r` (so signed-mode readers got negotiation advice instead of their
@@ -4302,7 +4501,7 @@ function analyzePasted(text, dom){
        number behind it is labour law and does not reach this contract.
        Asked as "is this employment", not "is this one of the two exceptions",
        so an unrouted document loses the citation too - see EMPLOYMENT. */
-    if (!EMPLOYMENT.includes(dom)) delete rest.src;
+    if (dom !== "job") delete rest.src;
     /* A plain string, not the bilingual {ar,en} the samples carry: this is the
        reader's own sentence and it exists in exactly one language — theirs. */
     const q = fired.quote ? tidyQuote(fired.quote) : null;
@@ -4382,6 +4581,7 @@ function applyLang(){
   renderMode();
   renderHomeReminders();
   renderTabs(); renderMyContracts(); renderLib(); renderNat(); renderTimely();
+  renderWipe();
   renderFuture();
   renderPrivacyCopy();
   renderSigninCopy();
@@ -4457,7 +4657,6 @@ function show(name, back){
   if (name==="result") animateRing();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
-  if (typeof renderAskEntry === "function") renderAskEntry();
   if (typeof renderSituations === "function") renderSituations();
   if (typeof renderDeskAside === "function") renderDeskAside(name);
   /* Only a screen that asked for two columns is let past the 684px reading
@@ -4548,8 +4747,18 @@ function needsTrack(resume){
      It also changes nothing there: forTrack() filters on a rule's `nat`, and
      after ruleInDomain() a lease meets only the three general rules, none of
      which carries one. Asking a question whose answer cannot alter the output
-     is a toll, not a clarification. */
-  if (NON_EMPLOYMENT.includes(journey)) return false;
+     is a toll, not a clarification.
+
+     ASKED OF THE DOCUMENT WHERE THERE IS ONE, for the same reason the
+     citations are: the door is a statement about the reader. A lease pasted
+     through the contract door — which is what the upload row on home opens —
+     would otherwise still be met with an employment-law question about an
+     apartment, and the answer still could not change a line of the output.
+     The journey remains the fallback, so nothing changes for a reader who has
+     not pasted anything yet. */
+  const box = document.getElementById("pasteBox");
+  const dom = (box && docDomain(box.value)) || doorDomain(journey);
+  if (dom && dom !== "job") return false;
   pendingAfterTrack = resume || null;
   /* NAT_CARD is no longer in OB, so there is no index to move to — natGate
      alone selects it, and obIndex is left where the reader left it. */
@@ -5154,18 +5363,16 @@ function setRing(score){
 
 function animateRing(){
   const target = current.score;
-  /* Under reduced motion the number arrives at once; the value is identical. */
+  /* THE ARC SWEEPS; THE NUMBER DOES NOT COUNT.
+     The number used to ease from 0 to the score over 1100ms — longer than the
+     money figure did, and wrong for the same reason: a score out of 100 is a
+     quantity a reader can screenshot and quote, and for most of that second it
+     was not the score. See rollTo() for where this was found.
+     The ring keeps its motion, because an arc filling up cannot be mistaken
+     for a value that is smaller than it is. setRing() paints both, so landing
+     the number is simply not overwriting it afterwards. */
   if (REDUCED.matches){ setRing(target); return; }
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    setRing(target);
-    const numEl = document.getElementById("scoreNum");
-    const t0 = performance.now();
-    (function tick(now){
-      const k = Math.min(1,(now-t0)/1100);
-      numEl.textContent = String(Math.round(target * (1-Math.pow(1-k,3))));
-      if (k<1) requestAnimationFrame(tick);
-    })(t0);
-  }));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ setRing(target); }));
 }
 
 /* --------------------------------------- end of service + termination ----
@@ -6032,15 +6239,27 @@ function skipPhone(){
   WodouhAuth.skipPhone().catch(() => {}).then(() => show(authBack, 1));
 }
 
-function signOutNow(){
-  WodouhAuth.signOut().then(() => { authUser = null; renderAccount(); });
-}
+/* THE SECOND signOutNow() IS GONE. There were two definitions of it in this
+   file and the later one won, so this copy had been dead for as long as both
+   existed — and it was the one that did NOT re-render the auth box correctly.
+   Deleting the shadowed twin rather than the survivor, since the survivor is
+   what has actually been running.
 
+   deleteAccountNow() now erases the device too, because its own label promises
+   that and did not do it: it cleared the server row while leaving eight
+   contract titles and scores in this browser. On a shared or handed-on phone
+   that is the copy that mattered. The order is deliberate — the local wipe
+   runs whatever the server says, since a failed network call must not leave a
+   reader who asked for deletion with their contracts still on screen. */
 function deleteAccountNow(){
   if (!confirm(t("au_del_sure"))) return;
-  WodouhAuth.deleteAccount()
-    .then(() => { authUser = null; renderAccount(); })
-    .catch(() => {});
+  Promise.resolve(WodouhAuth.deleteAccount()).catch(() => {}).then(() => {
+    authUser = null;
+    wipeDevice();
+    applyLang();
+    goTab("home");
+    toast(t("wipe_done"));
+  });
 }
 
 /* Local work moving to a server is asked about, never assumed. The prompt only
@@ -6205,8 +6424,10 @@ function pickSituation(which){
   }
 }
 
-/* The question card only exists in a build that can answer, exactly like its
-   twin on the Rights screen. */
+/* The question card only exists in a build that can answer. It no longer has a
+   twin on the Rights screen — asking a question has nothing to do with having
+   signed something, which is what that screen is scoped to — so this is now
+   the only place the door is shown or hidden. */
 function renderSituations(){
   const a = document.getElementById("sitAsk");
   if (a) a.hidden = !(typeof askAvailable === "function" && askAvailable());
@@ -8161,11 +8382,12 @@ function askSpend(){
   saveState();
 }
 
-/* The entry only exists in a build that can actually answer. */
-function renderAskEntry(){
-  const b = document.getElementById("askEntry");
-  if (b) b.hidden = !askAvailable();
-}
+/* renderAskEntry() IS GONE. It hid the Rights-screen twin of the home question
+   door, and that button no longer exists — asking a question has nothing to do
+   with having signed something, which is what that screen is scoped to. A
+   function guarding an element that is not there is the dead code this file
+   keeps finding in itself; the guarantee it enforced now lives entirely in
+   renderSituations(), which is the only place the door exists. */
 
 function openAsk(){
   /* Unreachable rather than merely unadvertised, the same rule openSignin()
@@ -10184,17 +10406,32 @@ function initIntake(){
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
 const COARSE  = window.matchMedia("(pointer: coarse)");
 
-/* Numbers arrive by counting, the way the score already does. */
+/* A FIGURE ARRIVES AT ITS VALUE. IT DOES NOT COUNT UP TO IT.
+ *
+ * This used to ease the number from 0 to the total over 700ms, the way the
+ * score ring did, and it was a borrowed consumer-app pleasure applied to the
+ * one number in this product that must never be wrong for a moment.
+ *
+ * FOUND BY ACCIDENT, WHICH IS THE POINT. A screenshot taken 600ms after the
+ * result appeared showed «40,503» as the headline above a breakdown reading
+ * 30,000 + 10,526 = 40,526. It looked exactly like an arithmetic bug and cost
+ * a real investigation to clear. If it can fool the person who wrote it, with
+ * the source open, it can fool a reader.
+ *
+ * And on THIS product a screenshot is not incidental — it is the artifact.
+ * This figure is what someone sends to a spouse, a lawyer, or the employer
+ * they are about to sit across from. A primary money figure that is briefly
+ * and plausibly wrong, on a screen built to be captured, is a bad trade for
+ * 700ms of polish.
+ *
+ * The motion is not gone, only moved off the number: the ring still sweeps
+ * (see animateRing), because an arc cannot be misread as a quantity. Kept as a
+ * function rather than inlined so the call sites keep their formatter and so
+ * this reasoning has somewhere to live.
+ */
 function rollTo(el, value, fmt){
   if (!el) return;
-  const done = () => { el.textContent = fmt(value); };
-  if (REDUCED.matches || !value) return done();
-  const t0 = performance.now(), dur = 700;
-  (function tick(now){
-    const k = Math.min(1, (now - t0) / dur);
-    el.textContent = fmt(Math.round(value * (1 - Math.pow(1 - k, 3))));
-    if (k < 1) requestAnimationFrame(tick); else done();
-  })(t0);
+  el.textContent = fmt(value);
 }
 
 /* Reveal-on-scroll. Elements start visible in markup; JS opts them in, so a
@@ -10786,6 +11023,81 @@ function loadState(){
     myContracts = []; TRACKED.length = 0; nat = null; timelyOff = false; installOff = false; usedCodes = [];
   }
 }
+/* WHAT IS ON THIS DEVICE, IN THE READER'S WORDS.
+ *
+ * Named rather than totalled, because a reader deciding whether to press
+ * "erase everything" is deciding about things they can picture — the contracts
+ * they had read, the dates they are being reminded of, the assessment they
+ * half-finished. "All your data" is how a product phrases this when it would
+ * rather you did not think about it. */
+function wipeSummary(){
+  const parts = [];
+  if (myContracts.length) parts.push(countNoun("wipe_c", myContracts.length));
+  if (TRACKED.length) parts.push(countNoun("wipe_t", TRACKED.length));
+  if (term && term.start) parts.push(t("wipe_c_term"));
+  if (nat) parts.push(t("wipe_c_nat"));
+  return parts;
+}
+
+/* ERASE THIS DEVICE. The whole of it, not the parts a reader would name.
+ *
+ * localStorage first and unconditionally: if anything below throws, the
+ * durable copy is already gone, which is the half that outlives the tab. The
+ * in-memory state is then reset to what a first visit has, so the app does not
+ * keep rendering from variables whose backing store no longer exists — a
+ * screen still showing a contract after "erased" would make a liar of the
+ * button, whatever the storage says.
+ *
+ * `obDone` is deliberately KEPT true. It is not the reader's data; it records
+ * that the tour has been seen, and replaying five — now one — onboarding cards
+ * at someone who has just erased their contracts would read as the app not
+ * having listened. Nothing about them survives it. */
+function wipeDevice(){
+  try { localStorage.removeItem(STORE); } catch(e){}
+  myContracts = [];
+  TRACKED.length = 0;
+  term = null; termStep = 0;
+  current = null; journey = null; signedMode = false;
+  eosData = null; caseSig = null; caseDocs = new Set(); leaveDays = 0;
+  nat = null;
+  owned = { review:null, letter:null, case:null };
+  packUntil = 0; packLeft = 0;
+  scanUsed = { month:"", n:0 };
+  askUsed = { day:"", n:0 };
+  usedCodes = [];
+  timelyOff = false; installOff = false;
+  migAsked = false;
+  /* obDone is not reset — see above. Written back so the erase survives a
+     reload rather than being undone by the next incidental save. */
+  saveState();
+}
+
+/* The button says what it will take, and disables itself when there is nothing
+   to take — an "erase everything" that erases nothing is a control that lies
+   about the state of the device as surely as a missing one lies about the
+   promise. */
+function renderWipe(){
+  const el = document.getElementById("wipeWhat");
+  const btn = document.querySelector(".acc-wipe .danger");
+  if (!el) return;
+  const parts = wipeSummary();
+  el.textContent = parts.length
+    ? t("wipe_will").replace("{list}", parts.join(lang === "ar" ? "، " : ", "))
+    : t("wipe_none");
+  if (btn) btn.disabled = parts.length === 0;
+}
+
+function wipeDeviceNow(){
+  if (!confirm(t("wipe_sure"))) return;
+  wipeDevice();
+  /* applyLang() is this app's full re-render — it is what the language toggle
+     uses, so every screen redraws from state rather than only the ones this
+     function happens to think of. */
+  applyLang();
+  goTab("home");
+  toast(t("wipe_done"));
+}
+
 function recordContract(){
   if (!current) return;
   myContracts.unshift({ doc:current.doc, score:current.score, at:Date.now(), signed:signedMode });
@@ -12384,6 +12696,46 @@ function copyDeskRequest(){
                      setTimeout(()=>{ btn.textContent = t("ld_copy"); }, 1600); };
   if (navigator.clipboard) navigator.clipboard.writeText(buildDeskRequest()).then(done, done);
   else done();
+}
+
+/* SENDING IT, WHICH IS WHAT THE DOCUMENT IS FOR.
+ *
+ * This app could print a letter and copy it to the clipboard, and could put
+ * the deadlines in a calendar. It could not send anything — in a market where
+ * WhatsApp is where the contract arrived and where the letter is going. The
+ * reader's next step after "here is your letter" was to leave and retype it.
+ *
+ * TWO PATHS, AND THE FIRST IS BETTER. navigator.share hands the text to the
+ * OS share sheet, so the reader picks the app and nothing here names a
+ * destination or learns which one they chose. Where it does not exist —
+ * desktop browsers, mostly — wa.me is the fallback, and it puts the text in a
+ * URL, so it is only offered under the length below.
+ *
+ * NOTHING IS SENT BY WODOUH. Both paths hand the text to something the reader
+ * chose, at the moment they pressed a button; no request leaves this app, and
+ * connect-src would refuse one if it tried. That distinction is the whole
+ * privacy story of this product and it survives here intact.
+ *
+ * WHY A LIMIT RATHER THAN A TRUNCATION. A URL that is too long is dropped or
+ * cut by the receiving app, and a legal document that arrives with its last
+ * paragraph missing is worse than one that did not arrive: the reader has
+ * already sent it and has no reason to check. So past the limit the fallback
+ * says to copy it instead, which always works. The share sheet has no such
+ * limit and is never gated on length. */
+const WA_MAX = 1800;
+function shareDoc(id, resetKey){
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.textContent.trim();
+  if (!text) return;
+  if (navigator.share){
+    /* No `url`: this is the reader's own document, not a page to promote, and
+       adding one would put a Wodouh link inside their letter to an employer. */
+    Promise.resolve(navigator.share({ text })).catch(() => {});
+    return;
+  }
+  if (text.length > WA_MAX){ toast(t("share_long")); return; }
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
 }
 
 function copyLetter(){

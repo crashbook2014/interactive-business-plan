@@ -933,6 +933,18 @@
   .acc-sec h3{font-size:15px;color:var(--teal-ink);margin-bottom:8px}
   .acc-sec p{font-size:14px;color:var(--ink-2);line-height:1.8;margin-bottom:8px;
     white-space:pre-line}
+  /* The erase control. Amber rather than red: this is the reader acting on
+     their own data, deliberately, and painting it as danger would frame their
+     own privacy decision as a mistake they are about to make. The confirm()
+     is where the weight belongs. */
+  .acc-wipe .wipe-what{font-size:13px;color:var(--ink);font-weight:700;margin-bottom:12px}
+  html[lang="ar"] .acc-wipe .wipe-what{font-weight:400}
+  .acc-sec .ghost.danger{color:var(--amber);border-color:var(--amber)}
+  .acc-sec .ghost.danger:disabled{opacity:.45;cursor:default;
+    color:var(--ink-2);border-color:var(--line)}
+  /* The send button sits with copy and print, not above them: it is one more
+     way out of the document, not a call to action on the reader's own letter. */
+  .ghost.send{color:var(--teal-ink)}
   /* Same fold as the rights library, so the gesture is one the reader has
      already learnt somewhere else in this app. */
   .acc-fold{border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);

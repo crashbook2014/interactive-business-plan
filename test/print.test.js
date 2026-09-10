@@ -158,6 +158,57 @@ const ROUTES = {
   ok(wiring.found.every((f) => /PDF/i.test(f.label)),
      "and says PDF, not only print");
 
+  /* ---- AND IT CAN BE SENT, WHICH IS WHAT THE DOCUMENT IS FOR.
+   *
+   * This app could print a letter and copy it, and could put deadlines in a
+   * calendar. It could not send anything — in a market where WhatsApp is where
+   * the contract arrived and where the letter is going. The reader's next step
+   * after "here is your letter" was to leave the app and retype it.
+   *
+   * WHAT THIS ASSERTS IS THE PROMISE, NOT THE PLUMBING. Sending must hand the
+   * text to something the READER chose, and must never become Wodouh
+   * transmitting their contract: no request leaves the app, and connect-src
+   * would refuse one anyway. So the guard watches for a request and for the
+   * document reaching navigator.share intact — including the last line, since
+   * a legal document that arrives with its final paragraph missing is worse
+   * than one that did not arrive.
+   */
+  console.log("\n— the document can be sent, and Wodouh is not what sends it");
+  for (const route of ["letter", "casedoc"]) {
+    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const off = [];
+    p.on("request", (r) => { if (!/^http:\/\/(127\.|localhost)/.test(r.url())) off.push(r.url()); });
+    await p.goto(APP);
+    await p.waitForFunction(() => typeof window.show === "function");
+    await p.evaluate(() => { nat = "sa"; obDone = true; authUser = { id: "t" }; });
+    // eslint-disable-next-line no-eval
+    await p.evaluate((r) => { eval(r); }, ROUTES[route]);
+    const r = await p.evaluate(() => {
+      navigator.share = (d) => { window.__shared = d; return Promise.resolve(); };
+      const scr = document.querySelector(".screen.active");
+      const btn = scr.querySelector("button.send");
+      if (!btn) return { missing: true };
+      const body = scr.querySelector(".body") || scr.querySelector(".letter");
+      const full = body.textContent.trim();
+      btn.click();
+      const d = window.__shared || {};
+      return { missing: false, label: btn.textContent.trim(),
+               shown: btn.offsetParent !== null,
+               sent: d.text || "", full,
+               /* A URL here would put a Wodouh link inside a reader's letter
+                  to their employer. */
+               carriedUrl: !!d.url };
+    });
+    ok(!r.missing && r.shown, `${route}: there is a send control on the document`);
+    ok(!!r.label, `${route}: and it is labelled ("${r.label}")`);
+    ok(r.sent === r.full && r.full.length > 100,
+       `${route}: the whole document reaches the share sheet (${r.sent.length} of ${r.full.length} chars)`);
+    ok(!r.carriedUrl, `${route}: and nothing of ours is attached to it`);
+    ok(off.length === 0,
+       `${route}: sending it made no request of its own${off.length ? ": " + off.join(", ") : ""}`);
+    await p.close();
+  }
+
   await b.close();
   if (FAIL.length) {
     console.log(`\n${FAIL.length} FAILURES`);

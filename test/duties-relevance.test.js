@@ -38,12 +38,25 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      SAMPLES object — a hardcoded constant — and so compared a literal with
      itself: introducing a journey term into the scoring loop produced zero
      failures. The samples cannot answer this question; only the scorer can. */
+  /* THE PROBE IS A LEASE THAT A RENTAL RULE ACTUALLY FIRES ON, and both halves
+     of that sentence are corrections.
+     It was a lease whose only flaggable clause was an employment-shaped
+     non-compete, and it was being READ AS EMPLOYMENT — measured on the commit
+     before this one, through the contract door it came back with three clauses
+     citing «نظام العمل السعودي — المادة 75» on a document titled «عقد إيجار».
+     The probe for "the door cannot change the score" was itself an instance of
+     the door changing what law applied.
+     A penalty clause and an auto-renewal are added so it is recognised AS a
+     lease — those two rules declare themselves general — which is what lets
+     this block measure a real score rather than a null. */
   const CONTRACT = [
     "عقد إيجار",
     "البند الأول: يلتزم المستأجر بعدم العمل في أي نشاط مشابه لمدة سنتين.",
     "البند الثاني: مدة الإشعار شهر واحد من الطرفين.",
     "البند الثالث: يتحمل المستأجر جميع أعمال الصيانة الدورية والطارئة.",
-    "البند الرابع: تُزاد الأجرة السنوية بنسبة 10% عند كل تجديد."
+    "البند الرابع: تُزاد الأجرة السنوية بنسبة 10% عند كل تجديد.",
+    "البند الخامس: يتجدد هذا العقد تلقائيًا ما لم يخطر أحد الطرفين الآخر.",
+    "البند السادس: في حال تأخر المستأجر عن السداد يلتزم بغرامة قدرها عشرة آلاف ريال عن كل شهر تأخير."
   ].join("\n");
   const scores = await p.evaluate((txt) => {
     nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
@@ -51,7 +64,13 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     for (const j of ["contract", "rent", "gig"]) {
       goTab("home"); pickSituation(j);
       if (j === "rent") setRentClaim("deposit");
-      const a = analyzePasted(txt);
+      /* THE DOOR IS PASSED, which it was not. This called analyzePasted(txt)
+         with one argument, so every iteration analysed with dom === undefined
+         and the three "different doors" were the same call three times. It
+         compared a literal with itself, which is the exact defect the comment
+         above records about the SAMPLES version — the same mistake, one layer
+         further in. */
+      const a = analyzePasted(txt, j);
       out[j] = a && {
         score: a.score,
         reds: a.clauses.filter(c => c.s === "red").length,

@@ -121,12 +121,85 @@ const JOB = [
    * the first attempt at this returned zero clauses for every unrouted
    * document, which is the `dom === "job"` defect arrived at from the other
    * direction, so the count is asserted as well as the citations. */
-  console.log("\n— a document with no door yet is read, and cites nothing");
+  /* ---- THE DOCUMENT DECIDES, NOT THE DOOR.
+   *
+   * The door is a statement about the READER. It stopped matching the file the
+   * moment the upload row went on home: that row opens the employment journey,
+   * the way the card it replaced did, so a lease pasted through it was read by
+   * the employment heuristics and cited the Labour Law at a landlord. Fixing
+   * that by asking the reader what kind of document they had would be the
+   * situation chooser again, one screen further in, put to the person least
+   * able to answer — knowing which law applies is what they came for.
+   *
+   * WHICH WAY IT MUST FAIL. A citation is only defensible on an employment
+   * contract, because the register is labour-only. A misfire towards "unknown"
+   * costs a reader their article numbers, which is a paragraph they can still
+   * act on. A misfire towards "employment" hands a tenant a labour-law
+   * citation they might carry into a real dispute. Those are not comparable,
+   * so both directions are asserted separately below rather than as one
+   * accuracy number.
+   *
+   * ASSERTED THROUGH EVERY DOOR, which is the actual claim: the same document
+   * gets the same reading whichever situation the reader picked, including the
+   * door that contradicts it.
+   */
+  console.log("\n— the same document reads the same way through every door");
+  const DOORS = ["contract", "term", "resign", "owed", "unsure", "rent", "gig", null];
+  for (const [name, text, cites] of [["an employment contract", JOB, true],
+                                     ["a lease", LEASE, false]]) {
+    const seen = [];
+    for (const door of DOORS) seen.push(await read(text, door));
+    const counts = [...new Set(seen.map((x) => x.n))];
+    const srcs = [...new Set(seen.map((x) => x.srcs.length))];
+    ok(counts.length === 1,
+       `${name}: the same clauses through all ${DOORS.length} doors (${counts.join("/")})`);
+    ok(srcs.length === 1,
+       `${name}: and the same citations (${srcs.join("/")})`);
+    ok(cites ? srcs[0] >= 3 : srcs[0] === 0,
+       cites
+         ? `${name}: keeps its article numbers even through the landlord door (${srcs[0]})`
+         : `${name}: carries none even through the contract door, which is where this broke (${srcs[0]})`);
+  }
+  /* And the classifier itself, on the two shapes that matter most: the plainly
+     written contract with none of the legal register, and English. Both were
+     wrong in the first version — English scored at most 1 because it had one
+     catch-all family against Arabic's four, so an employment contract saying
+     "Employment Contract", "Employee", "salary" and "probation" in its first
+     four lines came back "we cannot tell". */
+  const kinds = await p.evaluate(() => ({
+    plain: docDomain("اتفاقية توظيف\nيعمل الطرف الثاني بوظيفة محاسب.\n"
+      + "يستحق الطرف الثاني مبلغ ثمانية آلاف ريال في نهاية كل شهر ميلادي.\nالدوام الرسمي من الثامنة صباحاً."),
+    english: docDomain("EMPLOYMENT CONTRACT\nThe Employee shall serve as Site Engineer.\n"
+      + "Monthly salary: SAR 10,000. Probation period: 90 days.\nAnnual leave: 21 days."),
+    leaseEn: docDomain("RESIDENTIAL LEASE AGREEMENT\nThe Landlord leases the premises to the Tenant.\n"
+      + "Annual rent: SAR 65,000. The Tenant maintains the property."),
+    prose: docDomain("القطط حيوانات أليفة تحب اللعب والنوم في الشمس طوال اليوم."),
+  }));
+  ok(kinds.plain === "job",
+     `a plainly written contract with none of the legal register is still employment (${kinds.plain})`);
+  ok(kinds.english === "job", `and so is an English one (${kinds.english})`);
+  ok(kinds.leaseEn === "rent", `an English lease is a lease (${kinds.leaseEn})`);
+  ok(kinds.prose === null,
+     `and prose about cats is nothing at all, rather than the first guess (${kinds.prose})`);
+
+  console.log("\n— a document with no door yet is read on its own evidence");
   const strayJob = await read(JOB, null);
   ok(!strayJob.nulled && strayJob.n >= 1,
      `an unrouted employment contract is still read rather than refused (${strayJob.n} clauses)`);
-  ok(strayJob.srcs.length === 0,
-     `and carries no article number, because no door has said it is employment (${strayJob.srcs.join(" / ") || "none"})`);
+  /* REVERSED, AND THE REVERSAL IS THE IMPROVEMENT. This asserted that an
+     unrouted employment contract carries NO article number, on the reasoning
+     that no door had said it was employment. That was right while the door was
+     the only evidence there was: with none, we did not know.
+     The document is now read for itself, and it says what it is — «عقد عمل»,
+     «صاحب العمل», «الراتب», «فترة التجربة». The register applies because THAT
+     is true, not because a reader pressed something, so the citations are
+     correct here and withholding them would be the app knowing an answer and
+     declining to give it.
+     The half that mattered is untouched and sits directly below: an unrouted
+     LEASE still carries nothing, which is the direction the whole scoping
+     rule exists to protect. */
+  ok(strayJob.srcs.length >= 3,
+     `and keeps its article numbers, because the document itself says it is employment (${strayJob.srcs.length})`);
   const strayLease = await read(LEASE, null);
   ok(!strayLease.nulled && strayLease.n >= 1,
      `an unrouted lease is read too (${strayLease.n} clauses)`);
