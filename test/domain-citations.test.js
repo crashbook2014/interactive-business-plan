@@ -101,6 +101,84 @@ const JOB = [
   ok(leaked.every((t) => !rentTitles.includes(t)),
      `none of the ${leaked.length} employment-only rules appear on the lease`);
 
+  /* ---- THE CASE FILE MUST STATE THE ENDING THE READER CHOSE, AND CLAIM ONLY
+     WHAT THAT ENDING CAN CLAIM.
+     buildCaseDoc() printed t("eos_h_term") — "Employer ended it" — whatever
+     the reader selected, and compEstimate() read only the wage and the years.
+     So someone who told the app they RESIGNED saw a correct 44,658 on the
+     calculator and then a claim document demanding 93,151: the award plus
+     48,493 of Article 77 compensation for a termination they had just said did
+     not happen, over a line asserting their employer ended it. Twice what they
+     are owed, in a document headed "ready for settlement or a lawyer".
+     Article 77 is a remedy for being terminated. A resigner cannot claim it. */
+  console.log("\n— the claim document matches the ending the reader chose");
+  const endings = await p.evaluate(() => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    if (document.documentElement.lang !== "ar") toggleLang();
+    const out = {};
+    for (const how of ["term", "resign", "expiry"]) {
+      goTab("rights"); openEos();
+      eosHow = how; renderEos();
+      document.getElementById("eosStart").value = "2018-01-01";
+      document.getElementById("eosEnd").value = "2026-01-31";
+      document.getElementById("eosWage").value = "12000";
+      calcEos();
+      const screenTotal = Math.round(eosData.total);
+      openRightsCase();
+      const doc = buildCaseDoc();
+      const line = (l) => (doc.split("\n").find((x) => x.includes(l)) || "").trim();
+      out[how] = { screenTotal, comp: Math.round(compEstimate()),
+                   howLine: line("طريقة الإنهاء"),
+                   claimTotal: Math.round(claimTotal()),
+                   onScreenComp: /تعويض الإنهاء/.test(
+                     document.getElementById("caseClaim").innerText) };
+    }
+    return out;
+  });
+  for (const [how, r] of Object.entries(endings)) {
+    const expect = { term: "إنهاء من صاحب العمل", resign: "استقالة",
+                     expiry: "انتهاء مدة العقد" }[how];
+    ok(r.howLine.includes(expect),
+       `${how}: the document says how it ended, truthfully ("${r.howLine}")`);
+  }
+  ok(endings.resign.comp === 0 && endings.expiry.comp === 0,
+     `no Article 77 compensation for a resigner or an expiry (${endings.resign.comp}, ${endings.expiry.comp})`);
+  ok(endings.term.comp > 0,
+     `and it is still claimed where it can arise (${endings.term.comp})`);
+  ok(!endings.resign.onScreenComp && !endings.expiry.onScreenComp,
+     "the screen omits the row entirely rather than printing a zero against it");
+  /* The screen and the document are one claim stated twice; they must agree. */
+  for (const [how, r] of Object.entries(endings)) {
+    ok(r.claimTotal === r.screenTotal + r.comp,
+       `${how}: the claim total is the award plus what that ending allows (${r.claimTotal})`);
+  }
+
+  /* ---- ANSWERING THE NATIONALITY QUESTION MUST NOT PUT LABOUR LAW BACK ON A
+     LEASE. setNat() re-analyses a pasted contract, because which rules apply is
+     exactly what changed — but it called analyzePasted() without the door. With
+     dom undefined every employment rule runs and the citation strip never
+     fires, so a tenant who answered a question the app INSISTS on got a Salary
+     clause in their lease and Article 80 — an employer dismissing an employee —
+     cited at their landlord. The same defect 5c5ac20 fixed, through the one
+     call site it missed, and invisible to a suite that never re-analysed. */
+  console.log("\n— and it survives the track question, which re-reads the contract");
+  const reread = await p.evaluate((txt) => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    goTab("home"); pickSituation("rent");
+    current = analyzePasted(txt, journey);
+    current.srcText = txt;
+    const before = current.clauses.filter((c) => c.src).length;
+    setNat("nonsa");
+    const after = current.clauses.filter((c) => c.src).length;
+    return { before, after,
+             titles: current.clauses.map((c) => c.t.ar || c.t).join(" | "),
+             srcs: current.clauses.filter((c) => c.src).map((c) => c.src.ar || c.src) };
+  }, LEASE);
+  ok(reread.before === 0 && reread.after === 0,
+     `changing the track leaves the lease with no citation (${reread.srcs.join(" / ") || "none"})`);
+  ok(!/الراتب/.test(reread.titles),
+     `and no salary clause appears in a lease (${reread.titles})`);
+
   /* ---- THE CASE FILE MUST NOT ANSWER FROM MEMORY.
      calcEos() used to empty the screen and return without clearing eosData,
      and eosData is what the case file is built from. The reader's path:

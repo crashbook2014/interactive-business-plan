@@ -5066,6 +5066,15 @@ function eosExc87Applies(){
   return eosExc87 === "force" || eosExc87 === "marriage" || eosExc87 === "birth";
 }
 
+/* THE ENDING THE READER CHOSE, NOT THE ONE THE DOCUMENT ASSUMED. buildCaseDoc()
+   printed t("eos_h_term") — "Employer ended it" — whatever the reader had
+   selected, so a resigner's own claim document asserted a fact about their
+   termination that they had told the app was untrue. */
+function howLabel(id){
+  const m = EOS_HOW.find(o => o.id === id);
+  return m ? m.label : "eos_h_term";
+}
+
 const EOS_HOW = [
   { id:"term",   label:"eos_h_term" },
   { id:"resign", label:"eos_h_resign" },
@@ -6495,6 +6504,15 @@ function openCase(){
    Both branches floor at two months' wages. */
 function compEstimate(){
   if (!eosData) return 0;
+  /* ARTICLE 77 IS A REMEDY FOR BEING TERMINATED, so a reader who told us they
+     resigned — or whose fixed term simply ran out — cannot claim it at all.
+     This read only the wage and the years, so it produced a compensation
+     figure for all three endings: a resigner saw the correct 44,658 on the
+     calculator and then a case file demanding 93,151, of which 48,493 was
+     compensation for a termination they had just said did not happen. Twice
+     what they are owed, in a document headed "ready for settlement or a
+     lawyer". */
+  if (eosData.how !== "term") return 0;
   return compFor(eosData.wage, eosData.years,
                  contractIsFixed() ? "fixed" : "indef", remainingTermMonths());
 }
@@ -6535,8 +6553,13 @@ function renderCase(){
     `<div class="claim-card">
        <h4>${t("cf_claim")}</h4>
        ${row(t("cf_eos"), eosData.total)}
-       ${row(t("cf_comp"), compEstimate())}
-       <p class="mini">${t(compBasisKey())}</p>
+       ${/* ABSENT, NOT ZERO, where it cannot arise. Article 77 compensation is
+            a remedy for being terminated; printing "0 SAR" against it on a
+            resigner's screen raises a question the row then does not answer,
+            and invites them to go looking for the money it implies exists. */
+         eosData.how === "term"
+           ? row(t("cf_comp"), compEstimate()) + `<p class="mini">${t(compBasisKey())}</p>`
+           : ""}
        ${termLooksImplausible() ? `<p class="mini warn">${t("cf_term_odd")}</p>` : ""}
        <div class="leave-in">
          <span>${t("cf_leave_q")}</span>
@@ -6581,7 +6604,7 @@ function buildCaseDoc(){
     return `${t("cf_facts")}\n`+
       `• بداية العمل: ${fmtD(d.start)}\n• نهاية العمل: ${fmtD(d.end)}\n`+
       `• مدة الخدمة: ${svcText(d.parts.y, d.parts.m, d.parts.d)}\n`+
-      `• آخر أجر شهري: ${money(d.wage)} ${cur}\n• طريقة الإنهاء: ${t("eos_h_term")}\n\n`+
+      `• آخر أجر شهري: ${money(d.wage)} ${cur}\n• طريقة الإنهاء: ${t(howLabel(d.how))}\n\n`+
       `${t("cf_claim")}\n`+
       `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
       `• ${t("cf_comp")}: ${money(compEstimate())} ${cur}\n`+
@@ -6591,7 +6614,7 @@ function buildCaseDoc(){
   return `${t("cf_facts")}\n`+
     `• Start date: ${fmtD(d.start)}\n• End date: ${fmtD(d.end)}\n`+
     `• Length of service: ${svcText(d.parts.y, d.parts.m, d.parts.d)}\n`+
-    `• Last monthly wage: ${money(d.wage)} ${cur}\n• How it ended: ${t("eos_h_term")}\n\n`+
+    `• Last monthly wage: ${money(d.wage)} ${cur}\n• How it ended: ${t(howLabel(d.how))}\n\n`+
     `${t("cf_claim")}\n`+
     `• ${t("cf_eos")}: ${money(d.total)} ${cur}\n`+
     `• ${t("cf_comp")}: ${money(compEstimate())} ${cur}\n`+
@@ -10811,7 +10834,13 @@ function setNat(v){
        what changed. A sample keeps its authored clauses and is only
        re-framed. */
     if (current.srcText){
-      const again = analyzePasted(current.srcText);
+      /* WITH THE DOOR, like every other call. Without it `dom` is undefined,
+         ruleInDomain() lets all seventeen employment rules run, and the
+         citation strip never fires — so answering the nationality question,
+         which this app insists on, put "نظام العمل السعودي — المادة 80" back
+         onto a residential lease along with a Salary clause. The same defect
+         5c5ac20 fixed, through the one call site it missed. */
+      const again = analyzePasted(current.srcText, journey);
       if (again){ current.clauses = again.clauses; current.score = again.score; }
     }
     renderResult(false); renderClauses(); renderTease(); syncAddButtons();
