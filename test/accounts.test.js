@@ -288,12 +288,23 @@ const STUB = (apple) => {
      gate was then narrowed to leave the calculator and the rights library
      open, so the screen names those two by name — which is a true claim again,
      and a more useful one than either absolute. */
+  /* REWRITTEN A THIRD TIME, and this turn is the one that should have been
+     obvious: the gate moved off the first read and these lines kept asserting
+     the OLD free set — "calculator and rights library" — so the suite was
+     green while the sign-in wall undersold the product on the one screen
+     where being believed decides the outcome. An assertion that names the
+     free surfaces by hand goes stale exactly when the copy does, in the same
+     direction, for the same reason. So the third thing named is the one the
+     gate actually opened: reading a contract. If the free set moves again,
+     this is meant to break. */
   ok(/without an account|بدون حساب/i.test(screen.text),
-     "the screen still names what works without an account, because two things do");
+     "the screen still names what works without an account, because three things do");
   ok(/calculator|الحاسبة/i.test(screen.text) && /rights|الحقوق/i.test(screen.text),
-     "and names them specifically rather than claiming the whole app is open");
-  ok(/the rest needs one|الباقي يلزمه حساب/i.test(screen.text),
-     "while saying plainly that the rest needs an account");
+     "and names the calculator and the rights library");
+  ok(/reading your contract|قراءة عقدك/i.test(screen.text),
+     "and reading a contract — the thing the gate was moved off, which the copy had gone on withholding");
+  ok(/next scan|فحصك الجاي/i.test(screen.text) && /keeps your work|يحفظ شغلك/i.test(screen.text),
+     "and says what an account is FOR in terms of what it gives, not what it withholds");
   ok(/reach you|نوصلك/i.test(screen.text),
      "and gives the actual reason rather than a euphemism");
 
@@ -337,8 +348,8 @@ const STUB = (apple) => {
        : `and the deck is a single card, so there is no earlier one to check (${seam.cards})`);
   ok(seam.onGate === false,
      "and not on the nationality gate, which no sign-in screen follows");
-  ok(/calculator|الحاسبة/i.test(seam.text) && /rights|الحقوق/i.test(seam.text),
-     "it names the two surfaces that need no account");
+  ok(/read your contract|اقرأ عقدك/i.test(seam.text) && /numbers|احسب/i.test(seam.text),
+     "it names reading a contract and the calculator as needing no account");
   ok(/free|مجاني/i.test(seam.text), "says the account itself is free");
   ok(/reach you|نوصلك/i.test(seam.text),
      "and gives the same reason the sign-in screen gives, in the same words");
@@ -388,8 +399,12 @@ const STUB = (apple) => {
      `with the calculator one press away and no session (${escape.calc})`);
   ok(escape.lib === "screen-rights",
      `and the rights library too (${escape.lib})`);
-  ok(/calculator|الحاسبة/i.test(escape.label) && /rights|الحقوق/i.test(escape.label),
-     "naming the same two surfaces the subtitle above it promises");
+  /* The button no longer lists surfaces: the free set outgrew what fits on a
+     button, and a partial list on a button is a claim that the rest is gated.
+     What it must still do is say the way out needs no account, and land on
+     the product — both asserted above. */
+  ok(/without an account|بدون حساب/i.test(escape.label),
+     `and the way out says it needs no account, without listing a subset of what is free ("${escape.label}")`);
 
   const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));

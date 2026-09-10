@@ -1470,8 +1470,15 @@ const T = {
      now" than by a reason to trust us that they have no way to check yet. The
      reason for the door follows, in plain words rather than a euphemism about
      personalisation. See docs/pricing.md for the argument on both sides. */
-  au_sub:{ar:"الحاسبة ودليل الحقوق يشتغلون بدون حساب — جرّبهم أول. الباقي يلزمه حساب: عشان نقدر نوصلك ونساعدك إذا احتجت، ونحفظ شغلك لو غيّرت جهازك. ونص عقدك يُقرأ على جهازك وما نخزّنه عندنا.",
-          en:"The calculator and the rights library work without an account — try those first. The rest needs one: so we can reach you and help if you need it, and so your work is still here if you change phone. The text of your contract is still read on your device and still isn't stored by us."},
+  /* THE FREE SET GREW AND THIS SENTENCE DID NOT. When the gate moved off the
+     first read, three strings kept naming "the calculator and the rights
+     library" as the whole of what works without an account — on the sign-in
+     wall, on its escape hatch, and in the onboarding note. Reading a contract
+     was free by then and the conversion screen was underselling it, which is
+     the opposite of the usual lie and still a lie, told on the one screen
+     where being believed decides the outcome. */
+  au_sub:{ar:"قراءة عقدك، والحاسبة، ودليل الحقوق — كلها بدون حساب. الحساب يحفظ شغلك لو غيّرت جهازك، ويعطيك فحصك الجاي، ويخلّينا نقدر نوصلك لو احتجت مساعدة. ونص عقدك يُقرأ على جهازك وما نخزّنه عندنا.",
+          en:"Reading your contract, the calculator and the rights library all work without an account. An account keeps your work if you change phone, gets you your next scan, and means we can reach you if you need help. The text of your contract is still read on your device and still isn't stored by us."},
   au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
   au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
   /* Hidden when the reader arrived here BECAUSE they asked to scan: offering
@@ -1547,10 +1554,12 @@ const T = {
      they check that the door they want is on its way, rather than leaving them
      to conclude this app is not for them. The button cannot be pressed, so it
      cannot fail. */
-  /* Names the two surfaces the subtitle above already named, so the link is
-     visibly the door to the thing just promised rather than a general escape. */
-  au_free:{ar:"جرّب الحاسبة ودليل الحقوق بدون حساب",
-           en:"Try the calculator and rights library — no account"},
+  /* No longer names surfaces, because the list of what works without an
+     account grew past what fits on a button and a partial list is a claim the
+     rest is gated. The subtitle above carries the full list; this is the door
+     to it. */
+  au_free:{ar:"كمّل بدون حساب",
+           en:"Continue without an account"},
   /* Only rendered while FREE_NOW. Says what is true now and what is true
      later, because a reader who plans around "free" and is charged next month
      was misled by the omission rather than by the sentence. */
@@ -1670,8 +1679,8 @@ const T = {
      two taps apart — here, and on the sign-in screen it warns them about. Two
      different phrasings of one rule reads as two rules, and being told the
      terms twice in different words is its own reason to distrust a thing. */
-  ob_note_auth:{ar:"الحاسبة ودليل الحقوق بدون حساب. والباقي يلزمه حساب مجاني — عشان نقدر نوصلك ونساعدك.",
-                en:"The calculator and the rights library need no account. The rest needs a free one, so we can reach you and help."},
+  ob_note_auth:{ar:"اقرأ عقدك واحسب مستحقاتك بدون حساب. الحفظ والخطابات تلزمها حساب مجاني — عشان نقدر نوصلك ونساعدك.",
+                en:"Read your contract and run the numbers with no account. Saving and letters need a free one, so we can reach you and help."},
   greet_m:{ar:"صباح الخير",en:"Good morning"},
   greet_a:{ar:"مساء الخير",en:"Good afternoon"},
   greet_e:{ar:"مساء الخير",en:"Good evening"},
