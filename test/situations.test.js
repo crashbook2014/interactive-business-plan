@@ -29,7 +29,15 @@ const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
-const SITUATIONS = ["contract", "resign", "term", "owed", "rent", "gig", "ask", "unsure"];
+/* "contract" IS NOT A sit_ CARD ANY MORE, and that is the change rather than a
+   gap. It ran pickSituation('contract') from the eighth-of-a-screen it shared
+   with seven situations; the same call now sits on the upload row above the
+   chooser, in the action voice, because a reader holding the document does not
+   need to file themselves under a situation first.
+   This suite's guarantee is unchanged and is asserted immediately below: the
+   upload box is still reachable, and reachable from the control that names it.
+   Only the control moved. */
+const SITUATIONS = ["resign", "term", "owed", "rent", "gig", "ask", "unsure"];
 
 (async () => {
   const b = await chromium.launch(launchOpts());
@@ -53,6 +61,28 @@ const SITUATIONS = ["contract", "resign", "term", "owed", "rent", "gig", "ask", 
     const empty = labels.filter(l => !l.title.trim() || !l.sub.trim());
     ok(empty.length === 0,
        `${lang}: all ${SITUATIONS.length} doors are labelled${empty.length ? " — blank: " + empty.map(e => e.k).join(", ") : ""}`);
+
+    /* THE EIGHTH DOOR, WHICH IS NOW A ROW. Same guarantee, new control: it is
+       labelled in both languages, it is on screen, and it opens the workspace
+       the old card opened. Asserted in the same loop so it cannot be labelled
+       in one language and blank in the other, which is the failure this whole
+       block exists to catch. */
+    const up = await p.evaluate(() => {
+      show("home");
+      const el = document.querySelector(".hm-up");
+      if (!el) return { missing: true };
+      const bEl = el.querySelector("b"), sEl = el.querySelector(".tx span");
+      const shown = el.offsetParent !== null;
+      el.click();
+      return { missing: false, shown,
+               title: (bEl || {}).textContent || "", sub: (sEl || {}).textContent || "",
+               landed: document.querySelector(".screen.active").id };
+    });
+    ok(!up.missing && up.shown, `${lang}: the upload row is on the front page`);
+    ok(up.title.trim() && up.sub.trim(),
+       `${lang}: and it is labelled ("${up.title.trim()}" / "${up.sub.trim()}")`);
+    ok(up.landed === "screen-intake",
+       `${lang}: and it opens the workspace the contract card used to (${up.landed})`);
   }
 
   /* The gap this whole screen exists to close. */

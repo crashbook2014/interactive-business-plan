@@ -28,7 +28,7 @@
  * The Supabase calls are stubbed. What is under test is this app's behaviour,
  * not Supabase's.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, SHOWN_SRC, paywallOn } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -165,9 +165,25 @@ const STUB = (apple) => {
        it — so a stranger got five slides and then a wall demanding Google,
        Apple or their email, having been shown nothing. Every door BEHIND it
        is still gated, which is what the rest of this walk proves. */
-    const EXPECTED_OPEN = ["eos", "future", "home", "onboard", "rights", "signin"];
+    /* NINE now, and the reading path is the deliberate edit this comment asks
+       for. The gate used to stand in front of the FIRST scan: the calculator
+       opened to anyone and reading a contract — the thing the product is for —
+       demanded an account before it would do anything, so the cheapest output
+       was free and the best one was walled.
+       `intake`, `loading` and `noread` are that path, and they hold nothing
+       about anyone: a box, a spinner, and "we could not read that". `result`
+       and `clauses` are on the allowlist too and are deliberately NOT in this
+       list — with no contract loaded they bounce to home, which is their own
+       guard working, and they are reachable only by a reader who has just put
+       a contract in.
+       What is still gated is everything that KEEPS or SPENDS something: the
+       letter, the case file, the timeline, the assistant, the account. And a
+       SECOND scan in the same month, which is scanGate()'s business rather
+       than this walk's. A TENTH name here is still a hole. */
+    const EXPECTED_OPEN = ["eos", "future", "home", "intake", "loading",
+                           "noread", "onboard", "rights", "signin"];
     ok(JSON.stringify([...walk.opened].sort()) === JSON.stringify(EXPECTED_OPEN),
-       `only the tour, the door, the calculator, the rights library and the roadmap open (${walk.opened.join(", ") || "none"})`);
+       `only the tour, the door, the reading path, the calculator, the rights library and the roadmap open (${walk.opened.join(", ") || "none"})`);
     ok(walk.elsewhere.length === 0,
        `and every other screen lands on the door, not somewhere else${walk.elsewhere.length ? ": " + walk.elsewhere.join(", ") : ""}`);
 
@@ -297,11 +313,30 @@ const STUB = (apple) => {
     obIndex = OB.length - 1; natGate = false;
     renderOnboard();
     const n = document.getElementById("obNote");
-    return { text: n.textContent, shown: !n.hidden,
-             onFirst: (obIndex = 0, renderOnboard(), !document.getElementById("obNote").hidden) };
+    const out = { text: n.textContent, shown: !n.hidden, cards: OB.length };
+    /* Only meaningful while there is an earlier card to be absent from. The
+       deck is one card now; this comes back on its own if it ever grows. */
+    out.onFirst = OB.length > 1
+      ? (obIndex = 0, renderOnboard(), !document.getElementById("obNote").hidden)
+      : null;
+    /* THE OTHER PLACE WITH NO DOOR COMING, and the one that is still live:
+       the nationality gate. A reader reaches it mid-journey with a contract
+       already in hand, and no sign-in screen follows it — so the note would be
+       answering a question nobody asked. This is the same property the
+       earlier-cards assertion was protecting, at the instance that still
+       exists. */
+    natGate = true; renderOnboard();
+    out.onGate = !document.getElementById("obNote").hidden;
+    natGate = false; obIndex = OB.length - 1; renderOnboard();
+    return out;
   });
   ok(seam.shown === true, "the note is shown on the last card, beside the button it qualifies");
-  ok(seam.onFirst === false, "and not on the earlier cards, where there is no door coming");
+  ok(seam.cards > 1 ? seam.onFirst === false : seam.onFirst === null,
+     seam.cards > 1
+       ? "and not on the earlier cards, where there is no door coming"
+       : `and the deck is a single card, so there is no earlier one to check (${seam.cards})`);
+  ok(seam.onGate === false,
+     "and not on the nationality gate, which no sign-in screen follows");
   ok(/calculator|الحاسبة/i.test(seam.text) && /rights|الحقوق/i.test(seam.text),
      "it names the two surfaces that need no account");
   ok(/free|مجاني/i.test(seam.text), "says the account itself is free");
@@ -612,6 +647,67 @@ const STUB = (apple) => {
   ok(/الأرقام اللي كتبتها/.test(words),
      "and names what does leave, in the same breath");
 
+  /* ---- THE FIRST READ RUNS WITHOUT AN ACCOUNT. THE SECOND ASKS.
+   *
+   * The allowlist walk above proves the intake SCREEN opens signed out. That
+   * is not the same claim as the scan RUNNING, because the gate that mattered
+   * was never in show() — it is scanGate(), inside analyze(), and it stopped
+   * every signed-out reader before a single clause was read. A reader could
+   * reach the box, paste their contract, press the button and be sent to a
+   * sign-in wall, which is the version of this the screen walk cannot see.
+   *
+   * Measured here end to end instead: paste, analyse, and assert a result
+   * exists for somebody with no session at all. Then do it again and assert
+   * they are asked — because the free allowance is monthly and a monthly
+   * allowance has to count against someone, which is the reason the copy on
+   * that screen gives.
+   *
+   * paywallOn() because the shipped build ships FREE_NOW and nothing is
+   * counted at all under it. Without this the whole block passes while
+   * measuring a build where the question does not arise — the first version of
+   * this guard did exactly that and reported a free second scan as success. */
+  console.log("\n— the first contract is read without an account; the second asks for one");
+  const p3 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await p3.goto(APP);
+  await p3.waitForFunction(() => typeof window.show === "function");
+  await p3.evaluate(paywallOn);
+  const JOB3 = [
+    "عقد عمل بين صاحب العمل والموظف.",
+    "الراتب الشهري الأساسي عشرة آلاف ريال يدفع نهاية كل شهر.",
+    "فترة التجربة ستة أشهر قابلة للتمديد.",
+    "يحق لصاحب العمل إنهاء العقد في أي وقت دون إبداء الأسباب.",
+    "مدة الإشعار خمسة عشر يومًا من الموظف وثلاثون يومًا من الشركة.",
+    "الإجازة السنوية خمسة عشر يومًا في السنة.",
+  ].join("\n");
+  const scan = await p3.evaluate(async (txt) => {
+    authUser = null; nat = "sa"; obDone = true;
+    if (typeof WodouhAuth !== "undefined") WodouhAuth.user = () => null;
+    const go = async () => {
+      goTab("home"); pickSituation("contract");
+      document.getElementById("pasteBox").value = txt;
+      pasteChanged(); analyze("pasted");
+      await new Promise((r) => setTimeout(r, 2600));
+      return document.querySelector(".screen.active").id;
+    };
+    const first = await go();
+    const got = { first, score: current && current.score,
+                  clauses: current && current.clauses.length, left: scansLeft() };
+    got.second = await go();
+    got.signedIn = signedIn();
+    return got;
+  }, JOB3);
+  await p3.close();
+
+  ok(scan.signedIn === false, "the reader has no session throughout");
+  ok(scan.first === "screen-result",
+     `a signed-out reader reaches their result (${scan.first})`);
+  ok(scan.score > 0 && scan.clauses > 0,
+     `with a real reading behind it, not an empty screen (${scan.score}/100, ${scan.clauses} clauses)`);
+  ok(scan.left === 0,
+     `and the free allowance is actually spent, not merely offered (${scan.left} left)`);
+  ok(scan.second === "screen-signin",
+     `while the second scan in the same month asks for an account (${scan.second})`);
+
   await b.close();
 /* ==================================== the door, not just the room behind it
    openSignin() existed with ZERO CALLERS. The sign-in screen was complete in
@@ -803,19 +899,67 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
    asked a reader who had known this app for ninety seconds to paste an
    employment contract. It is the objection every one of them has and none
    of them types. It is also the one claim that must be stated in the app's
-   conditional form, since a scanned contract is uploaded with consent. */
+   conditional form, since a scanned contract is uploaded with consent.
+
+   ASSERTED ON THE PATH, NOT IN A SLICE OF THE SOURCE. This read the text
+   between `const OB = [` and the sample-data marker and looked for the words
+   in it — which tested where a string was DECLARED rather than whether a
+   reader ever sees it. When the onboarding deck went from five cards to one
+   and the privacy line moved onto the upload row and the paste box, the
+   property got STRONGER and this assertion failed, which is the wrong way
+   round: a guard should fail when the reader loses something, not when a
+   sentence changes address.
+
+   So it now walks the actual path a first-time reader takes to the paste box —
+   the tour, home, intake — in both languages, and asks whether the claim is on
+   screen by computed style before the box will take a contract. Where it is
+   said is the app's business; that it is said, in front of the reader, before
+   the ask, is this suite's. */
 {
-  console.log("\n— onboarding says where the contract is read, before asking for one");
-  const fs2 = require("node:fs"), path2 = require("node:path");
-  const src = fs2.readFileSync(path2.join(__dirname, "..", "app", "index.html"), "utf8");
-  const ob = src.slice(src.indexOf("const OB = ["), src.indexOf("--------------------------------------------------------- sample data"));
-  ok(ob.length > 200, "the onboarding deck is readable");
-  ok(/على جهازك/.test(ob) && /on your device/i.test(ob),
-     "a card states that the contract is read on the reader's own device, in both languages");
-  ok(/بموافقتك/.test(ob) && /your consent/i.test(ob),
-     "and states the consent exception rather than an absolute promise it cannot keep");
-  ok(!/never leaves|لا يغادر/.test(ob),
-     "onboarding does not make the absolute claim the app itself stopped making");
+  console.log("\n— the reader is told where the contract is read, before it is asked for");
+  const b2 = await chromium.launch(launchOpts());
+  const p2 = await b2.newPage({ viewport: { width: 390, height: 844 } });
+  await p2.goto(APP);
+  await p2.waitForFunction(() => typeof window.show === "function");
+  const seen = await p2.evaluate((shownSrc) => {
+    const shown = eval(shownSrc);
+    /* Leaf text nodes only, and only ones actually painted. */
+    const vis = (id) => [...document.getElementById(id).querySelectorAll("*")]
+      .filter((e) => !e.children.length && e.textContent.trim() && e.offsetParent !== null && shown(e))
+      .map((e) => e.textContent.trim()).join(" ");
+    const out = {};
+    for (const l of ["ar", "en"]) {
+      if (lang !== l) toggleLang();
+      authUser = null; nat = "sa"; obDone = false;
+      show("onboard"); renderOnboard();
+      const tour = vis("screen-onboard");
+      obDone = true; goTab("home");
+      const home = vis("screen-home");
+      pickSituation("contract");
+      const intake = vis("screen-intake");
+      out[l] = { tour, home, intake, before: tour + " " + home, all: tour + " " + home + " " + intake };
+    }
+    return out;
+  }, SHOWN_SRC);
+  await b2.close();
+
+  const DEVICE = { ar: /على جهازك/, en: /on your device/i };
+  const CONSENT = { ar: /بموافقتك/, en: /your consent/i };
+  const ABSOLUTE = /never leaves|لا يغادر/;
+  for (const l of ["ar", "en"]) {
+    const s = seen[l];
+    ok(s.home.length > 100 && s.intake.length > 100,
+       `${l}: the path to the paste box renders (${s.home.length}, ${s.intake.length} chars)`);
+    /* BEFORE the box exists, not merely somewhere in the app. */
+    ok(DEVICE[l].test(s.before),
+       `${l}: the reader is told the contract is read on their own device before a contract is asked for`);
+    /* The conditional form has to be within reach of the box itself, since
+       that is the screen where the exception can actually be triggered. */
+    ok(CONSENT[l].test(s.intake),
+       `${l}: and the consent exception is stated on the screen that takes the contract`);
+    ok(!ABSOLUTE.test(s.all),
+       `${l}: and nowhere on that path is the absolute claim the app itself stopped making`);
+  }
 }
 
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nan account is required and honestly explained, consent is never assumed, and the contract never leaves");

@@ -36,6 +36,23 @@ const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
+/* THE DOOR EVERY FIXTURE IN THIS FILE CAME THROUGH.
+ *
+ * Passed explicitly at every call, where it used to be omitted. This suite is
+ * about whether the clause PATTERNS fire — every fixture below is an
+ * employment contract — and it was relying on analyzePasted's second argument
+ * defaulting to "employment" when absent.
+ *
+ * That default was a bug rather than a convenience. `journey` is null until a
+ * door is picked and the file-drop handler is bound to the whole app, so an
+ * unrouted lease was read as employment and came back citing Article 80 at a
+ * landlord's termination clause. The rule now reads "is this employment",
+ * which means an OMITTED domain is unknown rather than assumed, and both real
+ * call sites in the app pass it explicitly. So does this file now: the domain
+ * these fixtures belong to is a fact about them, not something to leave to a
+ * default. domain-citations.test.js owns the scoping question itself. */
+const DOOR = "contract";
+
 /* Written the way a Saudi employment contract is written — definite articles
    attached, numbers spelled out, no keyword helpfully isolated. */
 const FORMAL = `عقد عمل
@@ -75,10 +92,12 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.analyzePasted === "function");
   await p.evaluate((t) => { window.FORMAL_T = t; }, FORMAL);
+  /* Into the page, since every call below runs inside p.evaluate. */
+  await p.evaluate((d) => { window.DOOR = d; }, DOOR);
 
   const run = (text, track) => p.evaluate(([txt, tr]) => {
     nat = tr;
-    const res = analyzePasted(txt);
+    const res = analyzePasted(txt, DOOR);
     return {
       matched: res ? res.clauses.length : 0,
       score: res ? res.score : null,
@@ -113,7 +132,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
     const withAl = head + "البند الخامس: الإجازة السنوية إحدى وعشرون يوماً مدفوعة الأجر.";
     const without = head + "البند الخامس: إجازة سنوية إحدى وعشرون يوماً مدفوعة الأجر.";
     nat = "sa";
-    const a = analyzePasted(withAl), c = analyzePasted(without);
+    const a = analyzePasted(withAl, DOOR), c = analyzePasted(without, DOOR);
     return { withAl: a ? a.clauses.length : 0, without: c ? c.clauses.length : 0 };
   });
   ok(leave.without > 0, "the un-prefixed form matches, as it always did");
@@ -123,7 +142,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   const renew = await p.evaluate(() => {
     nat = "sa";
     /* Contracts write the VERB "تتجدد", not the noun "تجديد". */
-    const r = analyzePasted("عقد عمل\nأبرم هذا العقد بين الطرف الأول والطرف الثاني.\nالبند الثاني: مدة العقد سنة واحدة وتتجدد تلقائياً ما لم يشعر أحد الطرفين.");
+    const r = analyzePasted("عقد عمل\nأبرم هذا العقد بين الطرف الأول والطرف الثاني.\nالبند الثاني: مدة العقد سنة واحدة وتتجدد تلقائياً ما لم يشعر أحد الطرفين.", DOOR);
     return r ? r.clauses.map(c => (c.t && c.t.ar) || "?") : [];
   });
   ok(renew.some(x => /تجديد|تلقائ/.test(x)),
@@ -137,7 +156,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
 
   const empty = await p.evaluate(() => {
     nat = "sa";
-    return ["", "   ", "عقد", "hello"].map(t => (analyzePasted(t) ? "matched" : "null")).join(",");
+    return ["", "   ", "عقد", "hello"].map(t => (analyzePasted(t, DOOR) ? "matched" : "null")).join(",");
   });
   ok(empty === "null,null,null,null",
      `empty and one-word input still returns null (${empty})`);
@@ -147,7 +166,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   const display = await p.evaluate(() => {
     const original = "الإجازة السنوية إحدى وعشرون يوماً";
     nat = "sa";
-    analyzePasted(original);
+    analyzePasted(original, DOOR);
     document.getElementById("pasteBox").value = original;
     return { box: document.getElementById("pasteBox").value,
              normalised: normAr(original) };
@@ -223,7 +242,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   const HEAD = "عقد عمل\nأبرم هذا العقد بين شركة الأفق ويشار إليها بالطرف الأول، وبين أحمد ويشار إليه بالطرف الثاني.\n";
   const oneSided = (txt) => p.evaluate((t) => {
     nat = "sa";
-    const r = analyzePasted(t);
+    const r = analyzePasted(t, DOOR);
     return r ? r.clauses.some(c => /طرف واحد/.test((c.t && c.t.ar) || "")) : null;
   }, txt);
 
@@ -242,14 +261,14 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   console.log("\n— the Arabic reader gets the same analysis as the English one");
   const nc = await p.evaluate((t) => {
     nat = "sa";
-    const r = analyzePasted(t);
+    const r = analyzePasted(t, DOOR);
     return r ? r.clauses.some(c => /منافس/.test((c.t && c.t.ar) || "")) : false;
   }, HEAD + "البند التاسع: يلتزم الطرف الثاني بعدم العمل لدى أي جهة منافسة داخل المملكة لمدة سنتين بعد انتهاء العقد.");
   ok(nc === true,
      "a non-compete written the way contracts write it is caught, not only the term of art عدم المنافسة");
 
   const tracks = await p.evaluate((t) => {
-    const names = (n) => { nat = n; const r = analyzePasted(t); return r ? r.clauses.length : 0; };
+    const names = (n) => { nat = n; const r = analyzePasted(t, DOOR); return r ? r.clauses.length : 0; };
     return { sa: names("sa"), nonsa: names("nonsa") };
   }, FORMAL);
   ok(tracks.nonsa >= tracks.sa,
@@ -278,6 +297,12 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
       configured: () => true, user: () => ({ id: "test-user" }),
       apiCount: () => Promise.resolve(0),
       api: () => Promise.resolve(null) });
+    /* Through a door, the way a reader arrives. analyze() reads `journey`,
+       and an unrouted document is deliberately read with the general rules
+       only — see domain-citations.test.js. These fixtures are employment
+       contracts and the assertions below are about what the SCREEN does with
+       a match, not about domain scoping. */
+    journey = DOOR;
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
@@ -305,7 +330,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
       configured: () => true, user: () => ({ id: "test-user" }),
       apiCount: () => Promise.resolve(0),
       api: () => Promise.resolve(null) });
-    nat = "sa"; analyze("employment");
+    nat = "sa"; journey = DOOR; analyze("employment");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
     return { quotes: host.querySelectorAll(".quote").length,
@@ -322,6 +347,12 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
       configured: () => true, user: () => ({ id: "test-user" }),
       apiCount: () => Promise.resolve(0),
       api: () => Promise.resolve(null) });
+    /* Through a door, the way a reader arrives. analyze() reads `journey`,
+       and an unrouted document is deliberately read with the general rules
+       only — see domain-citations.test.js. These fixtures are employment
+       contracts and the assertions below are about what the SCREEN does with
+       a match, not about domain scoping. */
+    journey = DOOR;
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const host = document.getElementById("flags");
@@ -347,7 +378,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   /* A full stop between digits is a decimal point, not a sentence end. */
   const decimal = await p.evaluate((txt) => {
     nat = "sa";
-    const r = analyzePasted(txt);
+    const r = analyzePasted(txt, DOOR);
     return r ? r.clauses.map(c => c.q).filter(Boolean) : [];
   }, HEAD_Q + "البند الثالث: الراتب الشهري 10.500 ريال سعودي شاملاً البدلات.");
   ok(decimal.some(q => /10\.500/.test(q)),
@@ -373,6 +404,12 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
       configured: () => true, user: () => ({ id: "test-user" }),
       apiCount: () => Promise.resolve(0),
       api: () => Promise.resolve(null) });
+    /* Through a door, the way a reader arrives. analyze() reads `journey`,
+       and an unrouted document is deliberately read with the general rules
+       only — see domain-citations.test.js. These fixtures are employment
+       contracts and the assertions below are about what the SCREEN does with
+       a match, not about domain scoping. */
+    journey = DOOR;
     pasteChanged(); analyze("pasted");
     await new Promise(r => setTimeout(r, 2800));
     const conf = document.getElementById("dcConf");
@@ -423,7 +460,7 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
       configured: () => true, user: () => ({ id: "test-user" }),
       apiCount: () => Promise.resolve(0),
       api: () => Promise.resolve(null) });
-    nat = "sa"; analyze("employment");
+    nat = "sa"; journey = DOOR; analyze("employment");
     await new Promise(r => setTimeout(r, 2800));
     return document.getElementById("dcConf").dataset.level;
   });

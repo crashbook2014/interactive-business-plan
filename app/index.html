@@ -229,6 +229,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          Hidden below 900px: on a phone the greeting, the question and the
          doors are already the whole screen and a hero would only push them
          under the fold. -->
+    <!-- THE LANDING HEADER: the pitch and the primary action. Stacked on a
+         phone, side by side from 900px — which is both the better shape for a
+         page and the reason all seven doors still clear the fold on a 900px-
+         tall laptop, an assertion desktop.test.js makes and this wrapper is
+         what keeps true. -->
+    <div class="hm-top">
     <div class="hm-hero">
       <!-- A <p>, NOT an <h1>, and that is load-bearing rather than pedantry.
            show() focuses the screen's first h1/h2 so a screen reader is told
@@ -241,15 +247,34 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <p class="hm-hero-h" id="hmHeroH"></p>
       <p id="hmHeroP"></p>
     </div>
+    <!-- DOOR ONE, WITH AN AFFORDANCE. Deliberately a row and not a drop zone:
+         see hm_up in the copy for the recorded decision this is built to keep
+         true. It opens the same intake screen door one opens, so there is no
+         second textarea and nothing to keep in sync — the only new thing on
+         this screen is that a reader holding the document can see that
+         Wodouh wants it. -->
+    <div class="hm-cta">
+    <button class="hm-up" type="button" onclick="pickSituation('contract')">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <span class="tx"><b data-t="hm_up"></b><span data-t="hm_up_d"></span></span>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+    </button>
+    <p class="hm-up-note"><span data-t="hm_up_free"></span> <span data-t="hm_up_priv"></span></p>
+    </div>
+    </div>
     <h1 class="hello" data-t="sit_h"></h1>
     <p class="sub" data-t="sit_sub"></p>
     <div class="sit" id="situations">
       <div class="sit-grid">
-      <button class="sit-card" onclick="pickSituation('contract')">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg></span>
-        <span><b data-t="sit_contract"></b><span data-t="sit_contract_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-      </button>
+      <!-- "I received a contract" IS NOT HERE ANY MORE, and that is the point
+           of the row above rather than an omission. It ran pickSituation
+           ('contract') — the identical call, to the identical screen, eighty
+           pixels below a control that now says the same thing in the action
+           voice. One destination, one door: the same rule this screen already
+           applies to the termination card, which used to be duplicated further
+           down under a different name. The reader who has not signed yet is
+           not stranded — the intake screen they land on opens with the signed
+           question, correctable in one tap. -->
       <button class="sit-card" onclick="pickSituation('resign')">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5v16h-5"/><path d="M11 8l-4 4 4 4"/><path d="M7 12h9"/></svg></span>
         <span><b data-t="sit_resign"></b><span data-t="sit_resign_d"></span></span>
@@ -1384,20 +1409,27 @@ const T = {
      not claim there is work to keep. The subtitle underneath then says what
      is free without one. */
   au_title_gate:{ar:"سوِّ حسابك المجاني",en:"Create your free account"},
-  /* THE HEADLINE THAT DESCRIBED THE WRONG MOMENT.
-     The reader has just pasted their contract and pressed analyse. What
-     happens next is that they are stopped — and the screen said "Save your
-     work", which describes something they are not doing and have nothing yet
-     to do it to. The body copy underneath was already honest about the reason;
-     the headline contradicted it.
+  /* THE HEADLINE THAT DESCRIBED THE WRONG MOMENT — TWICE, AND THE SECOND TIME
+     IS THIS EDIT.
+     It first said "Save your work" to a reader who had just pressed analyse
+     and had nothing yet to save. That was replaced with "Create your free
+     account to see your results", which was true while the gate stood in front
+     of the FIRST scan: the contract had been read on the device and the result
+     was genuinely waiting behind the wall.
 
-     "Create your free account to see your results" is what is actually
-     happening, and it says the result exists — which it does: the contract has
-     been read on their device before this screen appears. */
-  au_title_scan:{ar:"سوِّ حسابك المجاني عشان تشوف النتيجة",
-                 en:"Create your free account to see your results"},
-  au_sub_scan:{ar:"أول فحص لعقدك مجاني. الحساب يخلّي النتيجة محفوظة لك، ويخلّي حد الفحص المجاني الشهري يُحسب على أحد، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
-               en:"Your first contract scan is free. An account keeps that result available to you, lets the one-free-scan-a-month limit be counted against somebody, and means we can reach you if you need help. The text of your contract is read on your device, and we don't store it."},
+     The gate has since moved. The first scan runs signed out and the reader
+     has already SEEN their result; the only way to reach this screen through
+     the scan door now is to ask for a SECOND one in the same month. So "to see
+     your results" describes something they did five minutes ago, and telling
+     someone they must sign up to see what is already on their screen is the
+     kind of small lie that costs more than the signup is worth.
+
+     What is actually happening is that the free monthly allowance is spent.
+     That is what it says. */
+  au_title_scan:{ar:"استخدمت فحصك المجاني هذا الشهر",
+                 en:"You've used your free scan this month"},
+  au_sub_scan:{ar:"فحص واحد بالشهر مجانًا بدون حساب. الحساب يعطيك فحصك الجاي، ويحفظ اللي قرأناه لك، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
+               en:"One scan a month is free with no account. An account gets you your next one, keeps what we've already read for you, and means we can reach you if you need help. The text of your contract is read on your device, and we don't store it."},
   /* NARROWED THREE TIMES, and the history is kept rather than tidied away,
      because each step changed a promise the previous one made.
      It first said the app "works without an account AND ALWAYS WILL". When the
@@ -1523,6 +1555,31 @@ const T = {
      Two independent reviews found this same gap from opposite directions.
      These six are the moments people actually arrive in. */
   sit_h:{ar:"وش اللي جابك لوضوح؟",en:"What brings you to Wodouh?"},
+  /* THE UPLOAD ROW, AND WHY IT IS A ROW RATHER THAN A HERO.
+   *
+   * The note above records a decision that still stands: an upload box as the
+   * WHOLE front door asks "do you have a contract file?", and the reader whose
+   * job just ended answers no and leaves. Two reviews found that from opposite
+   * directions. Nothing here reopens it — the eight doors keep the screen.
+   *
+   * What it fixes is narrower and real: a reader who DOES have the document in
+   * their hand had to find it behind door one of eight, described in the first
+   * person as a situation rather than as an action. For them the document is
+   * the fastest route to value in the product, and it was the eighth-of-a-
+   * screen route.
+   *
+   * So: one compact row above the chooser, sized so the greeting, the row, the
+   * question and the first doors still share the fold on a 390px phone — the
+   * measurement that keeps the recorded decision true. It is door one with an
+   * affordance, not a new front page. */
+  hm_up:{ar:"عندك نسخة العقد؟",en:"Have the contract with you?"},
+  hm_up_d:{ar:"ارفعه أو الصقه ونقرأه لك الحين",en:"Upload or paste it and we'll read it now"},
+  /* Rescued from the onboarding cards, and closer to the decision than they
+     were there: the money boundary and the privacy answer now sit on the
+     control that asks for the document, not on a slide seen once before the
+     reader had a document to give. */
+  hm_up_free:{ar:"الفحص والتقييم مجانًا",en:"The scan and the score are free"},
+  hm_up_priv:{ar:"ويُقرأ على جهازك",en:"and it's read on your device"},
   /* Both are written as the reader would say it, in the tense they are
      actually in: the contract is signed, the thing has already gone wrong. */
   sit_rent:{ar:"عندي خلاف مع المؤجّر",en:"I have a dispute with my landlord"},
@@ -3357,7 +3414,35 @@ const T = {
               en:"Our legal content is reviewed by a licensed Saudi lawyer. It is general legal information with its source — not legal advice on your situation. For a dispute of your own, see a lawyer."}
 };
 
-/* ---------------------------------------------------------- onboarding */
+/* ---------------------------------------------------------- onboarding
+ *
+ * ONE CARD, WHERE THERE WERE FIVE.
+ *
+ * Walked as a stranger on a phone: five full screens stood between opening
+ * the app and seeing anything it does, and the fifth was a QUESTION — so the
+ * reader answered a form about themselves before Wodouh had shown them a
+ * single thing. For a product someone reaches two or three times in their
+ * working life, that is the whole funnel spent on preamble.
+ *
+ * WHAT THE OTHER FOUR CARDS SAID IS NOT DELETED. Two of them were decoration
+ * and two were load-bearing, and the load-bearing pair did not belong in a
+ * carousel in the first place:
+ *
+ *   - red / amber / green — the output explains itself the moment it appears.
+ *     Dropped.
+ *   - "the scan and the score are free; the full review is paid" — this is
+ *     here because a reader once learned the review was paid only AFTER
+ *     pasting a contract. It now sits ON the upload box, where the decision
+ *     to paste is actually made.
+ *   - "your contract is read on your device" — the objection every reader has
+ *     and none of them types. Also moved to the upload box, which is the exact
+ *     moment the objection occurs rather than ninety seconds before it.
+ *   - the nationality question — see NAT_CARD below.
+ *
+ * Both moved lines are therefore closer to the decision they inform, not
+ * merely fewer. A slide seen once and forgotten is worth less than a sentence
+ * sitting beside the button.
+ */
 const OB = [
   { title:{ar:"نقرأ عقدك كاملًا",en:"We read your whole contract"},
     sub:{ar:"عقد عمل، إيجار، أو عمل حر — الصقه ونشرحه لك بندًا بندًا بلغة تفهمها.",
@@ -3368,55 +3453,24 @@ const OB = [
       <circle cx="76" cy="76" r="21" stroke="var(--teal)" stroke-width="6.5" fill="var(--sand)"/>
       <path d="M67 77l6.5 6.5 12-13.5" stroke="var(--teal)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M92 92l13 13" stroke="var(--teal)" stroke-width="7.5" stroke-linecap="round"/>
-    </svg>` },
-  { title:{ar:"ننبّهك قبل ما تتفاجأ",en:"We flag what matters"},
-    sub:{ar:"أحمر يعني انتبه، أصفر يعني فاوض، وأخضر يعني مطمئن — كل تنبيه معه «وش تسوي؟».",
-         en:"Red means pause, amber means negotiate, green means relax — and every flag comes with a 'what to do' tip."},
-    art:`<svg viewBox="0 0 120 120" fill="none">
-      <rect x="14" y="14" width="92" height="26" rx="13" fill="var(--red-bg)"/>
-      <circle cx="30" cy="27" r="8.5" fill="var(--red)"/><path d="M30 23.5v4.5M30 30.6v.4" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M48 27h44" stroke="var(--red)" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
-      <rect x="14" y="47" width="92" height="26" rx="13" fill="var(--amber-bg)"/>
-      <circle cx="30" cy="60" r="8.5" fill="var(--amber)"/><path d="M30 56.5v4M30 63.6v.4" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M48 60h34" stroke="var(--amber)" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
-      <rect x="14" y="80" width="92" height="26" rx="13" fill="var(--green-bg)"/>
-      <circle cx="30" cy="93" r="8.5" fill="var(--green)"/><path d="M26.5 93.5l2.4 2.4 4.6-5.2" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M48 93h40" stroke="var(--green)" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
-    </svg>` },
-  { title:{ar:"خلاصة واضحة قبل التوقيع",en:"A clear verdict before you sign"},
-    /* "نصيحة"/"advice" removed for this card's own output — disclaimer says
-       Wodouh gives information, not advice, and this sentence used to call
-       its own score "honest advice" one clause before disclaiming exactly
-       that. Also states the free/paid boundary, which onboarding never did —
-       the first time a reader learned the review was paid was after pasting
-       a contract (scan_lock_t), not before. */
-    sub:{ar:"تقييم من 100 وخلاصة صريحة — نساعدك تفهم وتقرر، وما نغني عن الاستشارة القانونية عند الحاجة. الفحص والتقييم مجانًا؛ المراجعة الكاملة مدفوعة.",
-         en:"A score out of 100 and a straight verdict — we help you understand and decide. We don't replace legal advice when you need it. The scan and the score are free; the full review is paid."},
-    art:`<svg viewBox="0 0 120 120" fill="none">
-      <circle cx="60" cy="60" r="44" stroke="var(--line)" stroke-width="9"/>
-      <path d="M60 16a44 44 0 1 1-31.1 12.9" stroke="var(--teal)" stroke-width="9" stroke-linecap="round"/>
-      <path d="M42 61l12 12 24-27" stroke="var(--teal)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>` },
-  /* THE STRONGEST THING THIS PRODUCT CAN SAY, AND IT WAS BURIED.
-     "Your contract is read on your device" was four taps deep in Account,
-     while the reader was being asked to paste an employment contract into an
-     app they had known for ninety seconds. It is the objection every one of
-     them has and none of them types. Stated in the app's conditional form —
-     the same one `privacy_line_ai` uses — because the absolute version stops
-     being true the moment a scanned contract needs uploading. */
-  { title:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
-    sub:{ar:"نقرأ النص داخل التطبيق، وما نخزّنه عندنا ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية وما تصير إلا بموافقتك، وكلها تُرسل نصًّا لا ملفًا.",
-         en:"We read the text inside the app, and we don't store it or share it. The only exceptions are optional, happen only with your consent, and all of them send text rather than a file."},
-    art:`<svg viewBox="0 0 120 120" fill="none">
-      <rect x="30" y="10" width="60" height="100" rx="13" stroke="var(--teal-ink)" stroke-width="6"/>
-      <path d="M52 18h16" stroke="var(--teal-ink)" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
-      <rect x="44" y="55" width="32" height="26" rx="6" fill="var(--sand)" stroke="var(--teal)" stroke-width="6"/>
-      <path d="M51 55v-7a9 9 0 0 1 18 0v7" stroke="var(--teal)" stroke-width="6" stroke-linecap="round"/>
-      <path d="M60 65v6" stroke="var(--teal)" stroke-width="5.5" stroke-linecap="round"/>
-    </svg>` },
-  /* Asked last, so the reader knows what Wodouh does before being asked
-     anything about themselves. It is the only card that requires an answer:
-     the two tracks genuinely differ in law, so there is no honest default. */
+    </svg>` }
+];
+
+/* THE NATIONALITY QUESTION, WHICH IS NO LONGER A SLIDE.
+ *
+ * It was the last card of the tour and the only one that demanded an answer,
+ * which put a form about the reader in front of a product they had not seen.
+ * It was never load-bearing there: renderObPick() left Next enabled, so it
+ * could always be walked past, and the guarantee that nobody is shown the
+ * wrong law lives in needsTrack() — which asks at the moment the two tracks
+ * actually diverge, with a contract already on screen to make the question
+ * mean something.
+ *
+ * So it keeps the job it was already doing and loses the one it was doing
+ * badly. It stays a card rather than becoming a screen because the gate still
+ * renders through renderOnboard(); it is simply no longer in OB, and
+ * OB.length no longer counts it. */
+const NAT_CARD =
   { title:{ar:"وش ينطبق عليك؟",en:"Which applies to you?"},
     sub:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض. اختر عشان نعطيك الصح — تقدر تغيّره أي وقت.",
          en:"The labour law treats Saudis and residents differently on contract type, notice, and compensation. Pick one so we show you the right rules — you can change it any time."},
@@ -3425,8 +3479,8 @@ const OB = [
       <circle cx="60" cy="60" r="40" stroke="var(--teal-ink)" stroke-width="6"/>
       <path d="M60 20c-11 12-16 26-16 40s5 28 16 40c11-12 16-26 16-40s-5-28-16-40z" stroke="var(--teal)" stroke-width="5"/>
       <path d="M22 60h76" stroke="var(--teal)" stroke-width="5"/>
-    </svg>` }
-];
+    </svg>` };
+
 
 /* --------------------------------------------------------- sample data */
 /* Each clause: t (title), q (contract quote), p (plain explanation), a (advice), s (status) */
@@ -4178,9 +4232,46 @@ function tidyQuote(sc){
  * later is employment until someone says otherwise, which is what the rules
  * already are. */
 const NON_EMPLOYMENT = ["rent", "gig"];
+
+/* THE DOORS THAT ARE EMPLOYMENT, NAMED — because "not one of the two
+ * exceptions" was not the same question as "employment", and the gap between
+ * them was reachable.
+ *
+ * `journey` is null until the reader picks a door, and the file-drop handler
+ * is bound to `.app` rather than to the intake screen — so a lease dropped
+ * anywhere before choosing a door was analysed with dom === null, fell through
+ * `!NON_EMPLOYMENT.includes(null)`, and came back citing «نظام العمل السعودي
+ * — المادة 80» against the landlord's termination clause. Measured, not
+ * supposed: 4 clauses and that citation, against 3 and none for the same lease
+ * through the rental door.
+ *
+ * That is precisely the defect the domain scoping was built to prevent,
+ * surviving in the one state nobody had a door for. Listing the exceptions
+ * fails safe against a NEW DOOR — a door added later is employment until
+ * someone says otherwise, which is what the rules already are — but it fails
+ * open against NO DOOR AT ALL, because "we have not been told" is not the same
+ * claim as "we have been told it is employment".
+ *
+ * So both lists are named and anything in neither is unknown, and unknown is
+ * treated exactly as non-employment is: a rule fires only if it declares
+ * itself general, and it carries no article number. A claim carries a verified
+ * source or it carries no article number at all — including when we do not yet
+ * know what kind of document we are reading. */
+const EMPLOYMENT = ["contract", "resign", "term", "owed", "unsure", "ask"];
 function ruleInDomain(rule, dom){
-  if (!NON_EMPLOYMENT.includes(dom)) return true;
-  return Array.isArray(rule.dom) && rule.dom.includes(dom);
+  if (EMPLOYMENT.includes(dom)) return true;
+  /* A NAMED non-employment door asks for the rules declared for IT. An unknown
+     document asks for the rules that are not employment-specific at all — the
+     five that declare a `dom` list, which is the same thing as saying "this
+     one is a problem in any contract": a penalty clause, one-sided
+     termination, auto-renewal, a non-compete, an IP assignment.
+     Requiring `includes(dom)` here instead would match nothing, and the first
+     version of this fix did exactly that: every unrouted document came back
+     with zero clauses and routed to "we could not read this", which is the
+     same defect as the `dom === "job"` one recorded above, arrived at from the
+     opposite direction. Failing closed has to mean saying less, not nothing. */
+  if (!Array.isArray(rule.dom)) return false;
+  return NON_EMPLOYMENT.includes(dom) ? rule.dom.includes(dom) : true;
 }
 
 function analyzePasted(text, dom){
@@ -4208,8 +4299,10 @@ function analyzePasted(text, dom){
     const { re, unless, _reN, _reG, _reGN, _unN, dom:_d, ...rest } = rule;
     /* Outside employment the citation goes with it. The rule may still be
        worth raising - a penalty clause is a penalty clause - but the article
-       number behind it is labour law and does not reach this contract. */
-    if (NON_EMPLOYMENT.includes(dom)) delete rest.src;
+       number behind it is labour law and does not reach this contract.
+       Asked as "is this employment", not "is this one of the two exceptions",
+       so an unrouted document loses the citation too - see EMPLOYMENT. */
+    if (!EMPLOYMENT.includes(dom)) delete rest.src;
     /* A plain string, not the bilingual {ar,en} the samples carry: this is the
        reader's own sentence and it exists in exactly one language — theirs. */
     const q = fired.quote ? tidyQuote(fired.quote) : null;
@@ -4458,7 +4551,8 @@ function needsTrack(resume){
      is a toll, not a clarification. */
   if (NON_EMPLOYMENT.includes(journey)) return false;
   pendingAfterTrack = resume || null;
-  obIndex = OB.findIndex(o => o.pick);
+  /* NAT_CARD is no longer in OB, so there is no index to move to — natGate
+     alone selects it, and obIndex is left where the reader left it. */
   natGate = true;
   renderOnboard();
   show("onboard");
@@ -4512,18 +4606,21 @@ function renderObPick(slide){
 }
 
 function renderOnboard(){
-  const s = OB[obIndex];
+  /* Two callers, two cards. The tour reads OB; the nationality gate reads
+     NAT_CARD, which is no longer one of OB's entries. */
+  const last = obIndex === OB.length - 1;
+  const s = natGate ? NAT_CARD : OB[obIndex];
   document.getElementById("obArt").innerHTML = s.art;
   document.getElementById("obTitle").textContent = s.title[lang];
   document.getElementById("obSub").textContent = s.sub[lang];
   document.getElementById("obSkip").textContent = t("ob_skip");
-  document.getElementById("obNext").textContent = obIndex === OB.length-1 ? t("ob_start") : t("ob_next");
-  document.getElementById("obSkip").style.visibility = obIndex === OB.length-1 ? "hidden" : "visible";
+  document.getElementById("obNext").textContent = last ? t("ob_start") : t("ob_next");
+  document.getElementById("obSkip").style.visibility = last ? "hidden" : "visible";
   /* Only on the last card, and never on the nationality gate, where there is
      no sign-in screen coming next and the note would be answering a question
      nobody asked. */
   const note = document.getElementById("obNote");
-  note.hidden = natGate || obIndex !== OB.length-1;
+  note.hidden = natGate || !last;
   note.textContent = t("ob_note_auth");
   /* Reached as a gate rather than as a tour: the dots and the advance button
      would both be lying about where the reader is, so neither appears. The
@@ -4537,6 +4634,9 @@ function renderOnboard(){
   renderObPick(s);
   const dots = document.getElementById("obDots");
   dots.innerHTML = "";
+  /* A one-card tour has nowhere to page to, and a single dot is a control that
+     does nothing. It comes back on its own if OB ever grows again. */
+  dots.hidden = natGate || OB.length < 2;
   OB.forEach((_,i)=>{
     const d = document.createElement("button");
     if (i===obIndex) d.className = "on";
@@ -5514,7 +5614,38 @@ function signedIn(){ return !!authUser; }
  * navigation-intent rule working as intended, rather than a toll gate in
  * front of the menu.
  */
-const AUTH_FREE = ["onboard", "signin", "home", "eos", "rights", "future"];
+/* THE FIRST READ IS OPEN. THE THINGS THAT KEEP IT ARE NOT.
+ *
+ * The gate was in the wrong place, and the shape of the mistake was visible in
+ * one measurement: the CALCULATOR opened to anyone, and reading a contract —
+ * the thing this product is for, and the thing that would convince anyone it
+ * is worth paying for — asked for an account before it would do anything. The
+ * cheapest output was free and the best one was walled. A stranger who came to
+ * find out whether Wodouh could read their contract had to open an account to
+ * find out.
+ *
+ * So `intake`, `loading`, `result`, `clauses` and `noread` join the list. A
+ * reader pastes a contract and gets the scan, the score and the clause list
+ * with no account at all — which is also the only honest version of the claim
+ * this app already makes on that screen, that the text is read on the device.
+ * If it never leaves, there is nothing an account is needed to protect.
+ *
+ * WHAT STILL NEEDS ONE, and why each is a different answer rather than the
+ * same wall moved:
+ *   - a SECOND scan, because the free allowance is monthly and a monthly
+ *     allowance has to count against someone. This is what au_sub_scan already
+ *     told the reader; scanGate() now enforces it in that order instead of
+ *     asking first and explaining later.
+ *   - SAVING, the letter, the case file, the assistant, the timeline — every
+ *     one of them either keeps something for the reader or spends something.
+ *     They are gated because they are, not because reading is.
+ *
+ * The allowlist shape is unchanged and deliberately so: a screen added next
+ * year is still gated because it is new. This adds five names to it after
+ * walking each one, not a rule that lets screens through.
+ */
+const AUTH_FREE = ["onboard", "signin", "home", "eos", "rights", "future",
+                   "intake", "loading", "result", "clauses", "noread"];
 function authAllow(name){
   /* AN UNCONFIGURED BUILD IS NOT GATED, and this is the one exception to "no
      exceptions". With no Supabase project there is no account to be had, so
@@ -11718,7 +11849,17 @@ function useScan(){
 function scanGate(kind){
   if (!authOn()) return true;
   if (reviewUnlocked()) return true;
-  if (!WodouhAuth.user()){
+  /* THE FIRST SCAN NO LONGER ASKS. It used to stop every signed-out reader
+     here, before a single clause had been read, which made "an account so the
+     monthly limit counts against someone" an explanation nobody had a reason
+     to believe yet. Now the allowance is spent first and the account is asked
+     for when the reason for it has actually arrived — the same
+     navigation-intent rule the doors follow, applied to the allowance.
+     A signed-out reader who is out of scans reaches SIGN-IN rather than the
+     paywall, because signing in is what gets them their next free scan; being
+     shown a price for something they have not been refused yet would be a
+     different product's move. */
+  if (scansLeft() <= 0 && !WodouhAuth.user()){
     pendingNav = { kind: "scan", payload: kind };
     authWant = "scan";
     openSignin("home");

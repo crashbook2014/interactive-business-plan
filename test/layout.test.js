@@ -356,19 +356,48 @@ async function geometry(p){
       for (const L of ["en", "ar"]) {
         const worst = await pg.evaluate(l => {
           lang = l; applyLang();
-          let out = { off: [], n: 0 };
-          for (let i = 0; i < OB.length; i++) {
-            obIndex = i; natGate = false; renderOnboard();
+          let out = { off: [], n: 0, deck: OB.length };
+          const measure = (label) => {
             out.n++;
-            const btn = document.getElementById("obNext").getBoundingClientRect();
+            const btn = document.getElementById("obNext");
+            const br = btn.hidden ? null : btn.getBoundingClientRect();
             const note = document.getElementById("obNote");
             const nr = note.hidden ? null : note.getBoundingClientRect();
-            if (btn.bottom > innerHeight + 1 || btn.top < 0) out.off.push("button@" + i);
-            if (nr && (nr.bottom > innerHeight + 1 || nr.top < 0)) out.off.push("note@" + i);
+            if (br && (br.bottom > innerHeight + 1 || br.top < 0)) out.off.push("button@" + label);
+            if (nr && (nr.bottom > innerHeight + 1 || nr.top < 0)) out.off.push("note@" + label);
+            /* The gate has no advance button; what must stay reachable there is
+               the choice itself, which is the only way out of that screen. */
+            const pick = document.getElementById("obPick");
+            if (pick && !pick.hidden) {
+              const pr = pick.getBoundingClientRect();
+              if (pr.bottom > innerHeight + 1 || pr.top < 0) out.off.push("pick@" + label);
+            }
+          };
+          for (let i = 0; i < OB.length; i++) {
+            obIndex = i; natGate = false; renderOnboard();
+            measure(i);
           }
+          /* THE NATIONALITY CARD IS NOT IN OB ANY MORE and would otherwise have
+             slipped out of this walk entirely — it is the one card a reader is
+             sent to mid-journey, and the one whose footer is a pair of choices
+             rather than a button. It is measured because it is still a card the
+             reader meets, not because of where it is declared. */
+          natGate = true; renderOnboard();
+          measure("gate");
+          natGate = false; obIndex = 0; renderOnboard();
+          /* A pager for a deck with nowhere to page to is a control that does
+             nothing. One dot is not a progress indicator, it is a dot. */
+          const dots = document.getElementById("obDots");
+          out.dotsShown = !dots.hidden;
+          out.dotCount = dots.children.length;
           return out;
         }, L);
-        ok(worst.n === 5, `${vp.width}x${vp.height} ${L}: all ${worst.n} cards rendered`);
+        ok(worst.deck > 1 ? worst.dotsShown : !worst.dotsShown,
+           worst.deck > 1
+             ? `${vp.width}x${vp.height} ${L}: a multi-card deck shows its pager (${worst.dotCount} dots)`
+             : `${vp.width}x${vp.height} ${L}: a one-card deck shows no pager, since there is nowhere to page to`);
+        ok(worst.n === worst.deck + 1,
+           `${vp.width}x${vp.height} ${L}: all ${worst.deck} deck cards and the gate rendered (${worst.n})`);
         ok(worst.off.length === 0,
            `${vp.width}x${vp.height} ${L}: footer stays on screen (${worst.off.join(", ") || "every card"})`);
       }

@@ -566,8 +566,22 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
       lang = "en"; applyLang(); authWant = null; openSignin("account");
       return { scanEn, scanAr, saveEn: read() };
     });
-    ok(/results/i.test(r.scanEn) && !/save your work/i.test(r.scanEn),
-       `blocking a scan, it says a result is waiting (${r.scanEn})`);
+    /* WHAT THE MOMENT IS HAS CHANGED, SO WHAT THE HEADLINE MUST SAY HAS TOO.
+       This asserted the headline promises a RESULT — right while the gate
+       stood in front of the first scan: the contract had been read on the
+       device and the result was genuinely waiting behind the wall.
+       The gate has moved. The first scan runs signed out and the reader has
+       already seen their result; the only way here through the scan door now
+       is asking for a SECOND one in the same month. "Sign up to see your
+       results" would describe something they did five minutes ago, and telling
+       someone to sign up for what is already on their screen is a small lie
+       that costs more than the signup is worth. What is true is that the free
+       monthly allowance is spent, so that is what is asserted — and "save your
+       work" is still wrong here, for the reason it always was. */
+    ok(/free scan|this month/i.test(r.scanEn) && !/save your work/i.test(r.scanEn),
+       `blocking a second scan, it says the free allowance is spent (${r.scanEn})`);
+    ok(!/see your results?/i.test(r.scanEn),
+       "and does not offer to show them a result they have already been shown");
     ok(r.scanAr && r.scanAr !== r.scanEn && !/Save your work/i.test(r.scanAr),
        `and survives a language switch in Arabic (${r.scanAr})`);
     ok(/save/i.test(r.saveEn),

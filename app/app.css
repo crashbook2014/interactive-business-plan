@@ -1623,6 +1623,27 @@
   .hm-hero{display:block;margin:10px 0 14px;text-align:center}
   .hm-hero .hm-hero-h{font-size:19px;color:var(--teal-ink);line-height:1.45;text-wrap:balance}
   .hm-hero p{margin-top:8px;color:var(--ink-2);font-size:14px}
+  /* THE UPLOAD ROW. Same height as a door on purpose: it earns its place at
+     the top of the screen by being FIRST and by being the only teal thing on
+     it, not by being taller. Making it a drop zone would have cost roughly
+     three doors of fold, which is the trade the situation chooser was built to
+     avoid — see hm_up in the copy. */
+  .hm-up{display:flex;align-items:center;gap:12px;width:100%;background:var(--teal);
+    border:1px solid var(--teal);border-radius:var(--r-md);padding:13px 14px;text-align:start;
+    box-shadow:var(--e1);cursor:pointer;min-height:60px;color:var(--on-teal)}
+  .hm-up .ic{flex:none;width:34px;height:34px;border-radius:var(--r-sm);
+    background:color-mix(in srgb, var(--on-teal) 16%, transparent);
+    display:flex;align-items:center;justify-content:center;color:var(--on-teal)}
+  .hm-up .ic svg{width:19px;height:19px}
+  .hm-up b{display:block;font-size:15px;color:var(--on-teal)}
+  .hm-up .tx span{font-size:13px;color:var(--on-teal);opacity:.86;line-height:1.5}
+  .hm-up .go{margin-inline-start:auto;color:var(--on-teal);display:flex}
+  .hm-up:active{transform:scale(.985);box-shadow:var(--e1)}
+  /* The money boundary and the privacy answer, rescued from two deleted
+     onboarding cards. Quiet by design — they answer objections rather than
+     make a claim, and a reader who is not asking should be able to skim past
+     them to the doors. */
+  .hm-up-note{margin:7px 2px 16px;font-size:12px;color:var(--ink-2);line-height:1.5}
   /* Only ever drawn where the split gives it a column of its own to fill. */
   .eos-pre{display:none}
   /* Accounts. Two buttons, brand-styled, nothing else competing. */

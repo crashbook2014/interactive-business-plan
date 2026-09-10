@@ -145,6 +145,16 @@
        phone's, at every width, with no boundary where it gets worse.
        On a 900px-tall laptop all eight are above the fold; on a 720px one the
        last row needs a small scroll, which is what pages do. */
+    /* THE LANDING HEADER: pitch on one side, the primary action on the other.
+       Stacked on a phone; two columns here, which is what a front page looks
+       like and also what buys back the vertical space the upload row costs.
+       Measured at 1440x900: stacked, the last row of doors fell 41px below the
+       fold and desktop.test.js said so. Side by side, the header is one row
+       instead of three and every door clears it with room to spare. */
+    .hm-top{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;
+      margin:26px 0 30px}
+    .hm-top .hm-hero{margin:0;text-align:start}
+    .hm-top .hm-up-note{margin:9px 2px 0}
     #screen-home .sit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     /* min-width:0 on both, so content can never again decide how wide the
        page is. This is the actual cause; the column count is the taste. */
@@ -155,6 +165,9 @@
     /* The chevron is a phone affordance — a row you swipe into. On a card in a
        grid the whole card is the target and the arrow only adds noise. */
     #screen-home .sit-card .go{display:none}
+    /* The upload row is a card in the same grid of attention, so it loses the
+       chevron for the same reason the doors do. */
+    .hm-up .go{display:none}
     /* Saved contracts sit under the doors, not in a column beside them: a
        reader who has never used the app has none, and a blank right-hand rail
        is exactly the mistake this layout exists to undo. */

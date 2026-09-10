@@ -80,9 +80,15 @@ const JOB = [
 
   /* ---- THE HALF THAT MUST NOT MOVE. Every employment door, by name. */
   console.log("\n— and every employment door still gets the full register");
-  const base = await read(JOB, undefined);
+  /* THE BASELINE IS A NAMED DOOR NOW, and that change is the point rather than
+     a tidy-up. It used to be `undefined` — "no door set" — used as a
+     convenient default to compare the five employment doors against. The
+     comparison it was making is still made below and still matters; what was
+     wrong was the thing it quietly asserted along the way, that an unrouted
+     document is employment. See the unrouted block that follows. */
+  const base = await read(JOB, "contract");
   ok(!base.nulled && base.n >= 5,
-     `an employment contract with no door set is read in full (${base.n} clauses)`);
+     `an employment contract through the contract door is read in full (${base.n} clauses)`);
   ok(base.srcs.length >= 3,
      `and keeps its citations (${base.srcs.length})`);
 
@@ -90,8 +96,52 @@ const JOB = [
     const r = await read(JOB, door);
     ok(!r.nulled, `${door}: still reads an employment contract`);
     ok(r.n === base.n && r.srcs.length === base.srcs.length,
-       `${door}: identical to the default — ${r.n} clauses, ${r.srcs.length} cited`);
+       `${door}: identical to the baseline — ${r.n} clauses, ${r.srcs.length} cited`);
   }
+
+  /* ---- NO DOOR AT ALL, WHICH IS NOT THE SAME CLAIM AS "EMPLOYMENT".
+   *
+   * `journey` is null until a door is picked, and the file-drop handler is
+   * bound to `.app` rather than to the intake screen — so a contract dropped
+   * anywhere before a door is chosen was analysed with dom === null. That fell
+   * through `!NON_EMPLOYMENT.includes(null)` and was read as employment.
+   *
+   * Measured on the same lease this file already uses: 4 clauses carrying
+   * «نظام العمل السعودي — المادة 80» against the landlord's termination
+   * clause, versus 3 and no citation through the rental door. Article 80 is
+   * about an employer dismissing an employee without award or notice. It is
+   * the exact defect the first half of this suite exists to prevent, surviving
+   * in the one state that had no door to test.
+   *
+   * The rule now reads "is this employment", not "is this one of the two
+   * exceptions". An unknown document is read — the general rules still fire,
+   * because a penalty clause is a penalty clause — and carries no article
+   * number, which is the standing rule applied to the case of not yet knowing
+   * what we are reading. Failing closed has to mean saying LESS, not nothing:
+   * the first attempt at this returned zero clauses for every unrouted
+   * document, which is the `dom === "job"` defect arrived at from the other
+   * direction, so the count is asserted as well as the citations. */
+  console.log("\n— a document with no door yet is read, and cites nothing");
+  const strayJob = await read(JOB, null);
+  ok(!strayJob.nulled && strayJob.n >= 1,
+     `an unrouted employment contract is still read rather than refused (${strayJob.n} clauses)`);
+  ok(strayJob.srcs.length === 0,
+     `and carries no article number, because no door has said it is employment (${strayJob.srcs.join(" / ") || "none"})`);
+  const strayLease = await read(LEASE, null);
+  ok(!strayLease.nulled && strayLease.n >= 1,
+     `an unrouted lease is read too (${strayLease.n} clauses)`);
+  ok(strayLease.srcs.length === 0,
+     `and this is the one that mattered — no labour citation on a lease (${strayLease.srcs.join(" / ") || "none"})`);
+  ok(!/المادة 80/.test(strayLease.srcs.join(" ")),
+     "in particular not Article 80, which is what it used to say");
+  ok(!/الراتب/.test(strayLease.titles),
+     `and no salary clause is found in it (${strayLease.titles})`);
+  /* undefined and null are the same state to a reader and must be to the code:
+     `journey` is null, but a caller that simply omits the argument is the same
+     "we were not told". */
+  const strayUndef = await read(LEASE, undefined);
+  ok(strayUndef.srcs.length === 0,
+     `and an omitted argument is the same as an absent one (${strayUndef.srcs.join(" / ") || "none"})`);
 
   /* A rule that has not declared a domain must never leak into one. */
   console.log("\n— an undeclared rule cannot leak into a domain it was not written for");
@@ -396,19 +446,39 @@ const JOB = [
     const landed = document.querySelector(".screen.active").id;
     const doors = [...document.querySelectorAll("#situations .sit-card")]
       .filter((c) => !c.hidden).length;
-    pickSituation("contract");                    /* a door that needs an account */
-    const gated = document.querySelector(".screen.active").id;
-    goTab("home"); pickSituation("owed");         /* one that does not */
+    /* Read while home is the ACTIVE screen. offsetParent is null for anything
+       inside an inactive one, so asking after the navigation below would
+       measure the screen having been left, not the row being absent. */
+    const upEl = document.querySelector(".hm-up");
+    const upShown = !!upEl && upEl.offsetParent !== null;
+    pickSituation("contract");                    /* the reading path */
+    const reading = document.querySelector(".screen.active").id;
+    goTab("home"); pickSituation("owed");         /* the calculator */
     const free = document.querySelector(".screen.active").id;
-    return { landed, doors, gated, free };
+    /* And one that keeps something, which is where the gate lives now. */
+    show("timeline");
+    const kept = document.querySelector(".screen.active").id;
+    return { landed, doors, reading, free, kept, upShown };
   });
   ok(stranger.landed === "screen-home",
      `the tour ends on the front page, not a sign-in wall (${stranger.landed})`);
-  ok(stranger.doors >= 7, `with the doors on it (${stranger.doors})`);
-  ok(stranger.gated === "screen-signin",
-     "a door that reads a contract still asks for an account, at the moment it is chosen");
+  ok(stranger.doors >= 6, `with the doors on it (${stranger.doors})`);
+  ok(stranger.upShown,
+     "and the upload row above them, so a reader holding the contract can see Wodouh wants it");
+  /* REVERSED, DELIBERATELY. This asserted that the contract door reaches
+     sign-in — which was true, and was the thing worth changing: the calculator
+     opened to anyone while READING A CONTRACT, the thing the product is for,
+     demanded an account before it would do anything. The cheapest output was
+     free and the best one was walled, so a stranger had to open an account to
+     find out whether Wodouh could read their contract at all.
+     The gate did not disappear; it moved to the things that KEEP or SPEND
+     something, which is what the third assertion below now checks. */
+  ok(stranger.reading === "screen-intake",
+     `reading a contract opens without an account (${stranger.reading})`);
   ok(stranger.free === "screen-eos",
      "and the calculator still opens without one");
+  ok(stranger.kept === "screen-signin",
+     `while a screen that KEEPS something still asks, which is where the gate went (${stranger.kept})`);
 
   const hatch = await p.evaluate(() => {
     nat = "sa"; authUser = null; obDone = true;
