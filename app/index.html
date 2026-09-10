@@ -1205,6 +1205,30 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   </div>
 </div>
 
+<!-- THE ONLY DIALOG IN THE APP, and it exists for the only two actions that
+     cannot be undone: erasing the device and deleting the account.
+     Both used the browser's own confirm(), which cannot be themed, ignores the
+     page's direction — an Arabic reader got LTR chrome with its buttons in the
+     wrong order — and looks like a browser warning rather than like this
+     product asking a question. On the highest-stakes screen in a product whose
+     whole proposition is trust, that is the one place the framing broke.
+     A NATIVE <dialog> with showModal(), not a hand-rolled overlay: the modal
+     state gives the focus trap, the inert background, Esc-to-cancel and the
+     top layer for free, and every one of those is something a div gets wrong.
+     Outside .app on purpose — showModal() puts it in the top layer anyway, and
+     nesting it inside a transformed ancestor is how a "fixed" overlay ends up
+     anchored to a 440px column. -->
+<dialog class="dlg" id="confirmDlg" aria-labelledby="dlgTitle" aria-describedby="dlgBody">
+  <h2 id="dlgTitle"></h2>
+  <p id="dlgBody"></p>
+  <div class="dlg-acts">
+    <!-- Cancel first in the DOM, so it is the first tab stop and the one
+         autofocus lands on. The destructive button is never the default. -->
+    <button class="ghost" id="dlgNo" autofocus></button>
+    <button class="primary danger" id="dlgYes"></button>
+  </div>
+</dialog>
+
 <!-- Accounts. Same-origin, so the CSP stays `script-src 'self'` — the reason
      this file talks to Supabase over plain fetch instead of importing an SDK
      from a CDN. It does nothing at all until SUPABASE_URL is configured. -->
@@ -1521,6 +1545,11 @@ const T = {
      in this browser — the copy claimed a reach the code did not have. */
   au_del:{ar:"احذف حسابي، وامسح هذا الجهاز",en:"Delete my account and erase this device"},
   au_del_sure:{ar:"يُحذف نهائيًا وما يرجع. متأكد؟",en:"Permanently deleted, with no way back. Sure?"},
+  au_del_go:{ar:"احذف الحساب",en:"Delete account"},
+  /* THE WAY OUT IS NAMED AND IS THE DEFAULT. On a question whose yes cannot be
+     undone, the safe answer is the one that should be one keystroke away and
+     the one the focus lands on. */
+  dlg_cancel:{ar:"إلغاء",en:"Cancel"},
   au_err:{ar:"ما ضبط تسجيل الدخول. جرّب مرة ثانية.",en:"Sign-in didn't work. Try again."},
   /* Said when the project itself refuses the provider, which is a different
      thing from a sign-in that failed. "Try again" would be false advice: no
@@ -6286,9 +6315,11 @@ function skipPhone(){
    that is the copy that mattered. The order is deliberate — the local wipe
    runs whatever the server says, since a failed network call must not leave a
    reader who asked for deletion with their contracts still on screen. */
-function deleteAccountNow(){
-  if (!confirm(t("au_del_sure"))) return;
-  Promise.resolve(WodouhAuth.deleteAccount()).catch(() => {}).then(() => {
+async function deleteAccountNow(){
+  const go = await askConfirm({ title: t("au_del"), body: t("au_del_sure"),
+                                confirm: t("au_del_go") });
+  if (!go) return;
+  return Promise.resolve(WodouhAuth.deleteAccount()).catch(() => {}).then(() => {
     authUser = null;
     wipeDevice();
     applyLang();
@@ -11197,8 +11228,52 @@ function renderWipe(){
   if (btn) btn.disabled = parts.length === 0;
 }
 
-function wipeDeviceNow(){
-  if (!confirm(t("wipe_sure"))) return;
+/* ASK BEFORE SOMETHING IRREVERSIBLE, in this app's own voice.
+ *
+ * Returns a promise for the answer, so the call sites read the way the
+ * confirm() they replace did. Everything hard about a modal — trapping focus,
+ * making the rest of the page inert, Esc, the top layer — is showModal()'s
+ * job, not ours; this only fills in the words and reports the answer.
+ *
+ * FOCUS IS RESTORED BY HAND. The spec says the dialog returns it to whatever
+ * was focused when it opened, and browsers have been inconsistent about that
+ * for years. Remembering it costs two lines and a reader who dismisses the
+ * dialog with Esc lands back on the button they came from either way.
+ *
+ * NO-DIALOG FALLBACK. If <dialog> is missing or showModal throws — an old
+ * browser, a hardened one — this falls back to confirm(), because the wrong
+ * answer here is "the erase button silently stopped working". A prettier
+ * question is not worth a broken one. */
+function askConfirm(o){
+  const dlg = document.getElementById("confirmDlg");
+  if (!dlg || typeof dlg.showModal !== "function") return Promise.resolve(confirm(o.body));
+  const was = document.activeElement;
+  document.getElementById("dlgTitle").textContent = o.title;
+  document.getElementById("dlgBody").textContent = o.body;
+  document.getElementById("dlgYes").textContent = o.confirm;
+  document.getElementById("dlgNo").textContent = t("dlg_cancel");
+  return new Promise((done) => {
+    let answer = false;
+    const yes = document.getElementById("dlgYes");
+    const no = document.getElementById("dlgNo");
+    const finish = () => {
+      yes.onclick = null; no.onclick = null; dlg.onclose = null;
+      if (was && was.focus) try { was.focus(); } catch(e){}
+      done(answer);
+    };
+    yes.onclick = () => { answer = true; dlg.close(); };
+    no.onclick = () => { dlg.close(); };
+    /* Covers Esc and any other close the browser performs, so `answer` stays
+       false unless the destructive button was actually pressed. */
+    dlg.onclose = finish;
+    try { dlg.showModal(); } catch(e){ finish(); }
+  });
+}
+
+async function wipeDeviceNow(){
+  const go = await askConfirm({ title: t("wipe_h"), body: t("wipe_sure"),
+                                confirm: t("wipe_cta") });
+  if (!go) return;
   wipeDevice();
   /* applyLang() is this app's full re-render — it is what the language toggle
      uses, so every screen redraws from state rather than only the ones this

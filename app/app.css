@@ -909,6 +909,53 @@
       font-size:14px;box-shadow:var(--e3);z-index:40;display:flex;align-items:center;gap:9px;
       animation:toast-in var(--t-slow) var(--ease-spring) both}
   .toast svg{width:16px;height:16px}
+
+  /* THE CONFIRM DIALOG. The only one in the app, for the only two actions that
+     cannot be undone.
+     A scrim that BLURS as well as tints, because the point is not decoration:
+     it takes the page out of focus so the question is the only readable thing
+     on screen, which is what a question you cannot take back deserves. The
+     tint is the brand's own --page rather than black, so the app reads as
+     having dimmed itself rather than as having something dropped on top of it.
+     backdrop-filter is progressive — where it is unsupported the tint alone
+     still separates the layers, so nothing depends on it. */
+  .dlg::backdrop{background:color-mix(in srgb, var(--page) 62%, transparent);
+      backdrop-filter:blur(6px) saturate(.85)}
+  /* margin:auto explicitly. The UA centres a modal dialog through `margin:auto`
+     against `inset:0`, and it only holds while both are the browser's own —
+     setting any of the box properties here dropped it to the top edge, where
+     it read as a notification bar rather than as a question. The inline
+     padding is a floor, so the panel never touches the edge of a small
+     screen. */
+  .dlg{border:0;padding:0;background:none;color:var(--ink);
+      inset:0;margin:auto;width:min(400px, calc(100vw - 36px));max-height:calc(100vh - 48px)}
+  .dlg[open]{display:block}
+  .dlg::backdrop{animation:dlg-fade var(--t-fast) var(--ease-out) both}
+  .dlg[open]{animation:dlg-rise var(--t) var(--ease-spring) both}
+  @keyframes dlg-fade{from{opacity:0}to{opacity:1}}
+  @keyframes dlg-rise{from{opacity:0;transform:translateY(12px) scale(.97)}
+                      to{opacity:1;transform:none}}
+  /* The panel itself, inside the dialog box so the animation above can move it
+     without fighting the centring the dialog element does. */
+  .dlg h2,.dlg p,.dlg .dlg-acts{background:var(--card);margin:0;padding:0 22px}
+  .dlg h2{font-size:19px;color:var(--ink);padding-top:22px;line-height:1.5;
+      border-radius:var(--r-xl) var(--r-xl) 0 0}
+  .dlg p{font-size:15px;color:var(--ink-2);line-height:1.75;padding-top:10px}
+  .dlg-acts{display:flex;flex-direction:column;gap:9px;padding-top:18px;
+      padding-bottom:20px;border-radius:0 0 var(--r-xl) var(--r-xl);
+      box-shadow:var(--e3)}
+  /* Stacked, not side by side: at 400px two buttons in a row give each about
+     170px, and «امسح كل شيء من هذا الجهاز» does not fit in 170px without
+     wrapping to two lines at a smaller size. A column also puts the safe
+     answer where a thumb rests. */
+  .dlg-acts button{width:100%;min-height:50px;font-size:15px}
+  html[lang="ar"] .dlg-acts button{font-size:16.5px}
+  /* Destructive, and coloured like it — but still a real button rather than a
+     dimmed one: --on-teal on --red is the same pairing the red flag dot uses
+     and clears AA. The safe answer is the ghost, which is the quieter of the
+     two without being harder to read. */
+  .dlg .primary.danger{background:var(--red);color:var(--on-teal);box-shadow:none}
+  .dlg .ghost{border-color:var(--line);color:var(--ink)}
   .toast.out{animation:toast-out var(--t) var(--ease-out) forwards}
   @keyframes toast-in{from{opacity:0;transform:translateY(20px) scale(.94)}to{opacity:1;transform:none}}
   @keyframes toast-out{to{opacity:0;transform:translateY(12px) scale(.97)}}

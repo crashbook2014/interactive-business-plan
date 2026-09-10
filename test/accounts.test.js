@@ -997,7 +997,13 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   const p5 = await b5.newPage({ viewport: { width: 390, height: 844 } });
   await p5.goto(APP);
   await p5.waitForFunction(() => typeof window.wipeDevice === "function");
-  p5.on("dialog", (d) => d.accept());
+  /* Kept, and it must now stay silent: this used to be how the wipe got past
+     the browser's confirm(). The question is the app's own dialog since, so
+     the block below presses its confirm button instead — and if a native
+     confirm ever comes back, this handler is what keeps the run from hanging
+     while the assertions record that it did. */
+  let nativeAsked = 0;
+  p5.on("dialog", (d) => { nativeAsked++; d.accept(); });
   const wiped = await p5.evaluate(async () => {
     authUser = { id: "u" }; obDone = true; nat = "sa"; lang = "ar";
     myContracts = [{ doc: "doc_emp", score: 68, at: Date.now(), signed: false },
@@ -1013,7 +1019,12 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
       disabled: document.querySelector(".acc-wipe .danger").disabled,
       raw: localStorage.getItem(STORE) || "",
     };
+    /* Through the dialog, the way a reader answers it — not by calling
+       wipeDevice() directly, which would prove the erase works while proving
+       nothing about the question in front of it. */
     wipeDeviceNow();
+    await new Promise((r) => setTimeout(r, 80));
+    document.getElementById("dlgYes").click();
     await new Promise((r) => setTimeout(r, 300));
     /* The whole payload as text, so anything left behind is caught whatever
        key it hides under — a per-field checklist only ever covers the fields
@@ -1033,6 +1044,8 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   });
   await b5.close();
 
+  ok(nativeAsked === 0,
+     `the erase is not gated by a browser confirm any more (${nativeAsked} native dialogs)`);
   ok(/عقدان/.test(wiped.before.note) && /تقييم/.test(wiped.before.note),
      `the control names what it will take, not "all your data" (${wiped.before.note})`);
   ok(wiped.before.disabled === false, "and is live while there is something to take");
@@ -1082,6 +1095,103 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
      `a storage that refuses writes does not make the erase throw (${brokenSave.threw})`);
   ok(!brokenSave.left,
      `and the reader's data is gone anyway, because the key is removed first (${String(brokenSave.left).slice(0, 80)})`);
+
+  /* ---- AND IT ASKS FIRST, IN THIS APP'S OWN VOICE.
+   *
+   * Both irreversible actions were gated by the browser's confirm(): unthemed,
+   * LTR whatever the page direction, and looking like a browser warning rather
+   * than like this product asking a question — on the one screen where the
+   * whole proposition is that the reader can trust us with the thing they are
+   * about to destroy.
+   *
+   * WHAT IS ASSERTED IS THE SAFETY, NOT THE STYLING. A prettier question that
+   * loses an answer is worse than an ugly one. So: the safe answer holds
+   * initial focus, Esc cancels and nothing is erased, focus returns to the
+   * control that opened it, and confirming still does the whole job. The scrim
+   * is checked too, because "blurred and tinted" is the request and an
+   * unstyled ::backdrop would satisfy every behavioural assertion above it.
+   */
+  console.log("\n— the irreversible questions are asked by the app, not by the browser");
+  const b7 = await chromium.launch(launchOpts());
+  for (const L of ["ar", "en"]) {
+    const p7 = await b7.newPage({ viewport: { width: 390, height: 844 } });
+    p7.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
+    await p7.goto(APP);
+    await p7.waitForFunction(() => typeof window.askConfirm === "function");
+    /* If a native confirm() ever appears, it blocks until dismissed — so this
+       both keeps the run alive and records that the old path came back. */
+    let native = 0;
+    p7.on("dialog", (d) => { native++; d.dismiss(); });
+
+    const opened = await p7.evaluate((l) => {
+      if ((document.documentElement.lang === "ar") !== (l === "ar")) toggleLang();
+      authUser = { id: "u" }; obDone = true; nat = "sa";
+      myContracts = [{ doc: "doc_emp", score: 68, at: Date.now(), signed: false }];
+      saveState(); goTab("account"); renderWipe();
+      const trigger = document.querySelector(".acc-wipe .danger");
+      trigger.focus(); trigger.click();
+      const d = document.getElementById("confirmDlg");
+      const cs = getComputedStyle(d);
+      return { open: !!d.open, dir: cs.direction,
+               focused: (document.activeElement || {}).id,
+               title: document.getElementById("dlgTitle").textContent,
+               yes: document.getElementById("dlgYes").textContent,
+               no: document.getElementById("dlgNo").textContent };
+    }, L);
+    ok(opened.open, `${L}: pressing erase opens the app's own dialog`);
+    ok(native === 0, `${L}: and no browser confirm is used (${native})`);
+    ok(opened.dir === (L === "ar" ? "rtl" : "ltr"),
+       `${L}: it follows the reading direction (${opened.dir})`);
+    ok(opened.title && opened.yes && opened.no,
+       `${L}: with a heading, a named action and a named way out ("${opened.title}" / "${opened.yes}" / "${opened.no}")`);
+    /* The destructive button is never what the reader's next keystroke hits. */
+    ok(opened.focused === "dlgNo",
+       `${L}: and the SAFE answer holds focus, not the destructive one (${opened.focused})`);
+
+    /* The scrim: blurred and tinted, which is what takes the page out of focus
+       so the question is the only readable thing on screen. */
+    const scrim = await p7.evaluate(() => {
+      const d = document.getElementById("confirmDlg");
+      const cs = getComputedStyle(d, "::backdrop");
+      return { filter: cs.backdropFilter || cs.webkitBackdropFilter || "",
+               bg: cs.backgroundColor };
+    });
+    ok(/blur/.test(scrim.filter), `${L}: the backdrop blurs the page behind it (${scrim.filter})`);
+    ok(scrim.bg && scrim.bg !== "transparent" && !/rgba\(0, 0, 0, 0\)/.test(scrim.bg),
+       `${L}: and tints it (${scrim.bg})`);
+
+    /* Esc is a real answer, and it is the safe one. */
+    await p7.keyboard.press("Escape");
+    await p7.waitForTimeout(250);
+    const esc = await p7.evaluate(() => ({
+      open: !!document.getElementById("confirmDlg").open,
+      kept: myContracts.length,
+      stored: (localStorage.getItem(STORE) || "").includes("doc_emp"),
+      focus: (document.activeElement || {}).className,
+    }));
+    ok(!esc.open, `${L}: Escape closes it`);
+    ok(esc.kept === 1 && esc.stored,
+       `${L}: and erases nothing — the contract is still there, in memory and in storage`);
+    ok(/danger/.test(esc.focus),
+       `${L}: with focus back on the control that opened it (${esc.focus})`);
+
+    /* And the yes still does the whole job it did through confirm(). */
+    const yes = await p7.evaluate(async () => {
+      const trigger = document.querySelector(".acc-wipe .danger");
+      trigger.click();
+      await new Promise((r) => setTimeout(r, 60));
+      document.getElementById("dlgYes").click();
+      await new Promise((r) => setTimeout(r, 250));
+      return { open: !!document.getElementById("confirmDlg").open,
+               kept: myContracts.length,
+               stored: (localStorage.getItem(STORE) || "").includes("doc_emp") };
+    });
+    ok(!yes.open, `${L}: confirming closes it`);
+    ok(yes.kept === 0 && !yes.stored,
+       `${L}: and the erase still happens, in memory and in storage`);
+    await p7.close();
+  }
+  await b7.close();
 }
 
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nan account is required and honestly explained, consent is never assumed, and the contract never leaves");
