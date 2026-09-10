@@ -173,6 +173,88 @@ const AR_B = "مدة الإشعار ستون يومًا قبل إنهاء الع
      `empty, non-PDF and malformed input all return without throwing (${JSON.stringify(junk.out)})`);
   ok(junk.ms < 5000, `and finish promptly (${junk.ms}ms) — the CMap expansion is capped`);
 
+  /* ---- WHAT THE READER IS TOLD WHILE THIS IS HAPPENING.
+   *
+   * Everything above proves the extraction is correct. None of it says the
+   * reader knows it is running — and for the whole of extractPdf(), which is
+   * the slow and variable step, they were shown a dimmed icon, a pulse, and a
+   * label still reading "Upload contract file": an invitation to do the thing
+   * they had just done. Nothing named the file, so nothing confirmed the app
+   * had taken the one they meant, and that matters most for a DROP, since the
+   * drop handler is bound to the whole app and fires on screens where the
+   * upload box is not visible at all.
+   *
+   * A screen-reader user had it worse than nothing: the error path has had a
+   * live region since the beginning and the success path had none, so they
+   * were told when it went wrong and heard silence when it went right.
+   *
+   * ASSERTED ACROSS THE WHOLE OPERATION, not at the end. handleFile is awaited
+   * here so the state DURING extraction can be sampled — checking after it
+   * resolves would pass against a build that says nothing until it is over,
+   * which is exactly the build this replaces.
+   */
+  console.log("\n— and the reader is told which file, while it is being read");
+  for (const L of ["ar", "en"]) {
+    const feedback = await p.evaluate(async ([arr, l]) => {
+      if ((document.documentElement.lang === "ar") !== (l === "ar")) toggleLang();
+      nat = "sa"; obDone = true; authUser = { id: "t" };
+      goTab("home"); pickSituation("contract");
+      const idle = document.getElementById("upCta").textContent;
+      const file = new File([new Uint8Array(arr)], "employment-contract-final-v3.pdf",
+                            { type: "application/pdf" });
+      const p2 = handleFile(file);
+      /* One frame in: extraction is running and has not resolved. */
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const during = {
+        cta: document.getElementById("upCta").textContent,
+        busy: document.getElementById("upMain").classList.contains("busy"),
+        said: document.getElementById("offlineNotice").textContent,
+        saidShown: !document.getElementById("offlineNotice").hidden,
+      };
+      await p2;
+      await new Promise((r) => setTimeout(r, 60));
+      const toasts = [...document.querySelectorAll(".toast")].map((x) => x.textContent.trim());
+      return { idle, during, toasts, after: document.getElementById("upCta").textContent };
+    }, [Array.from(mk.identityH(AR)), L]);
+
+    ok(feedback.during.busy, `${L}: the row is marked busy while the file is read`);
+    ok(feedback.during.cta !== feedback.idle,
+       `${L}: and the label stops inviting an upload that already happened ("${feedback.during.cta}")`);
+    ok(/employment-contract|v3\.pdf/.test(feedback.during.cta),
+       `${L}: it names the file, so the reader knows which one was taken ("${feedback.during.cta}")`);
+    /* U+2068/U+2069. A Latin filename in an Arabic sentence renders split and
+       reordered without them — measured: «نقرأ contract-v3.pdf» came out as
+       "ontract-final-signed-… نقرأ" over two lines, showing the reader a name
+       that was not the one they picked, at the moment it is being confirmed. */
+    ok(/\u2068[^\u2069]*\u2069/.test(feedback.during.cta),
+       `${L}: with the name bidi-isolated, so it survives an Arabic sentence intact`);
+    ok(feedback.during.saidShown && /employment-contract|v3\.pdf/.test(feedback.during.said),
+       `${L}: and it is announced, not only drawn (${feedback.during.saidShown ? "live" : "silent"})`);
+    ok(feedback.after === feedback.idle,
+       `${L}: the label goes back to the invitation afterwards ("${feedback.after}")`);
+    ok(feedback.toasts.length === 1,
+       `${L}: exactly one toast confirms the read, never a stack (${feedback.toasts.length})`);
+    ok(/employment-contract|v3\.pdf/.test(feedback.toasts[0] || ""),
+       `${L}: and it says what was read ("${feedback.toasts[0] || "none"}")`);
+  }
+
+  /* AND NOT ON THE PATH THAT FAILED. A tick reading "Read contract.pdf" on the
+     way to "we could not read this" is the app contradicting itself inside one
+     second, which costs more trust than the confirmation buys. */
+  const onFail = await p.evaluate(async (arr) => {
+    nat = "sa"; obDone = true; authUser = { id: "t" };
+    goTab("home"); pickSituation("contract");
+    document.querySelectorAll(".toast").forEach((x) => x.remove());
+    await handleFile(new File([new Uint8Array(arr)], "scan.pdf", { type: "application/pdf" }));
+    await new Promise((r) => setTimeout(r, 60));
+    return { toasts: document.querySelectorAll(".toast").length,
+             screen: (document.querySelector(".screen.active") || {}).id };
+  }, Array.from(mk.scanned()));
+  ok(onFail.screen === "screen-loading" || onFail.screen === "screen-noread",
+     `an unreadable file still routes to the honest answer (${onFail.screen})`);
+  ok(onFail.toasts === 0,
+     `and nothing claims to have read it (${onFail.toasts} toasts)`);
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\nArabic PDFs read, and what we cannot read we still refuse");
   process.exit(FAIL.length ? 1 : 0);

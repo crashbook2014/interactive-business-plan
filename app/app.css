@@ -897,7 +897,14 @@
   .score-card .ring{will-change:transform}
 
   /* Copy toast — additive; the button label swap still happens */
-  .toast{position:fixed;inset-inline:0;bottom:26px;margin:0 auto;width:max-content;max-width:80%;
+  /* CLEAR OF THE TAB BAR AND OF THE HOME INDICATOR. bottom:26px was measured
+     against nothing: the tab bar is sticky at the bottom of every root screen
+     at roughly 64px plus the safe-area inset, so a toast sat behind it — and
+     on a phone with a home indicator it sat under that too. The tab bar is not
+     always present, so this clears it rather than tracking it; 26px of gap
+     above where it would be is the same rhythm the original was reaching for. */
+  .toast{position:fixed;inset-inline:0;bottom:calc(90px + env(safe-area-inset-bottom));
+      margin:0 auto;width:max-content;max-width:80%;
       background:var(--teal);color:var(--on-teal);border-radius:999px;padding:11px 20px;
       font-size:14px;box-shadow:var(--e3);z-index:40;display:flex;align-items:center;gap:9px;
       animation:toast-in var(--t-slow) var(--ease-spring) both}

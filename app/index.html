@@ -362,7 +362,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <label class="up-main" id="upMain">
         <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf" hidden/>
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
-        <span><b data-t="up_cta"></b><span data-t="up_hint"></span></span>
+        <span><b data-t="up_cta" id="upCta"></b><span data-t="up_hint" id="upHint"></span></span>
       </label>
       <!-- ANNOUNCED, NOT BUILT — and it says so before it is pressed.
            Reading a photograph needs the scan path, which exists on the server
@@ -1686,8 +1686,29 @@ const T = {
   greet_e:{ar:"مساء الخير",en:"Good evening"},
   up_cta:{ar:"ارفع ملف العقد",en:"Upload contract file"},
   up_hint:{ar:"PDF أو نص — يُقرأ على جهازك",en:"PDF or text — read on your device"},
+  /* WHAT THE READER GETS BETWEEN HANDING OVER A FILE AND THE ANALYSIS.
+     Until now: a dimmed icon and a pulse, for the whole of extractPdf() —
+     the slow, variable part. No name, so nothing confirmed WHICH file was
+     taken; nothing announced, so a screen-reader user got silence on the
+     success path while the error path had a live region all along; and the
+     label still read as an invitation to pick a file while the file was
+     already being read. */
+
   up_drop:{ar:"أفلت الملف هنا",en:"Drop the file here"},
-  up_reading:{ar:"نقرأ الملف…",en:"Reading the file…"},
+  /* THIS KEY EXISTED WITH NO CALLERS, written for exactly the moment it is now
+     used for and never wired up — which is why the whole of extractPdf() ran
+     behind a dimmed icon and a pulse. It gains the FILENAME, because "reading
+     the file" does not tell a reader WHICH file was taken, and the drop
+     handler is bound to the whole app: a file can be dropped on a screen where
+     the upload box is not even visible. */
+  /* NO TRAILING ELLIPSIS. It meant "in progress" and collided with the one
+     shortName() uses to mean "trimmed": in Arabic the sentence's trailing dots
+     land at the left edge right beside the name's leading dots, so a truncated
+     filename read «نقرأ ……nal-signed-v3.pdf». The pulsing icon already says
+     in-progress, and the truncation mark is the one carrying information. */
+  up_reading:{ar:"نقرأ {f}",en:"Reading {f}"},
+  up_reading_h:{ar:"لحظات — يُفتح على جهازك",en:"A moment — it's opening on your device"},
+  up_read:{ar:"قرأنا {f}",en:"Read {f}"},
   up_photo:{ar:"صوّر العقد",en:"Photograph it"},
   up_photo_hint:{ar:"صورة من ورقة أو شاشة",en:"A photo of paper or a screen"},
   up_photo_soon:{ar:"قريبًا",en:"Not yet"},
@@ -10361,7 +10382,14 @@ async function handleFile(file){
   const isTxt = /^text\//i.test(file.type) || /\.(txt|md)$/i.test(file.name);
   if (!isPdf && !isTxt) return fail(t("err_type"));
 
-  document.getElementById("upMain").classList.add("busy");
+  /* SAY WHICH FILE, AND SAY IT BEFORE THE SLOW PART. extractPdf() below is the
+     genuinely variable step and it ran behind nothing but a dimmed, pulsing
+     icon — while the label still read "Upload contract file", inviting the
+     reader to do the thing they had just done. The name is the confirmation:
+     it is the only thing telling them the app took the file they meant, which
+     matters most for a DROP, since that handler is bound to the whole app and
+     fires on screens where this box is not visible at all. */
+  upBusy(file.name);
   let text = "", ops = 0;
   try {
     if (isPdf){
@@ -10374,7 +10402,7 @@ async function handleFile(file){
        Cap it so the regex pass and the textarea stay bounded. */
     if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT);
   } catch(e){ text = ""; ops = 0; }
-  document.getElementById("upMain").classList.remove("busy");
+  upIdle();
 
   /* TWO FAILURES, TWO ANSWERS. A page with no text-showing operators at all is
      a scan or a photograph — there is no text layer to find, no retry will
@@ -10389,9 +10417,71 @@ async function handleFile(file){
     return;
   }
   noreadReason = "glyphs";
+  /* Only on the path that produced readable text. The branch above routes to
+     "we could not read this", and a tick reading "Read contract.pdf" on the
+     way to that screen would be the app contradicting itself in one second. */
+  toast(t("up_read").replace("{f}", shortName(file.name)));
   document.getElementById("pasteBox").value = text;
   pasteChanged();
   analyze("pasted");
+}
+
+/* A FILE NAME IS A LATIN RUN INSIDE AN ARABIC SENTENCE, and that is a bidi
+ * problem before it is a length problem.
+ *
+ * «نقرأ contract-final-v3.pdf…» rendered as "ontract-final-signed-… نقرأ" on
+ * one line and "…v3.pdf" on the next: the name was split and its pieces
+ * reordered, because a neutral-bounded Latin run inside RTL text gets resolved
+ * against the paragraph direction rather than kept whole. The reader is shown
+ * a filename that is not the one they picked, at the exact moment the app is
+ * asking them to confirm it is.
+ *
+ * U+2068 FIRST STRONG ISOLATE … U+2069 POP DIRECTIONAL ISOLATE is the fix for
+ * text going through textContent — it tells the bidi algorithm to resolve the
+ * run on its own and treat the result as one neutral unit. <bdi> would do the
+ * same in markup; these characters do it in a string, which is what this is.
+ *
+ * Trimmed from the FRONT, keeping the extension, because the informative half
+ * of "employment-contract-final-v3.pdf" is the end. */
+function shortName(name){
+  const n = String(name || "").trim();
+  /* 18, measured rather than chosen: the row is an icon, a gap and ~278px of
+     text at 390px, and anything longer wrapped the name onto a second line —
+     which reads as a broken filename even when the bidi order is right. */
+  const cut = n.length <= 18 ? n : "…" + n.slice(-17);
+  return "\u2068" + cut + "\u2069";
+}
+
+/* The upload row while a file is being read. textContent, never innerHTML:
+   this is a name chosen by whoever made the file, not by us. */
+function upBusy(name){
+  const row = document.getElementById("upMain");
+  const cta = document.getElementById("upCta");
+  const hint = document.getElementById("upHint");
+  if (row) row.classList.add("busy");
+  if (cta) cta.textContent = t("up_reading").replace("{f}", shortName(name));
+  if (hint) hint.textContent = t("up_reading_h");
+  /* The ERROR path has had a live region since the beginning and the success
+     path had none — so a screen-reader user was told when something went wrong
+     and heard nothing at all when it went right. Same region as the errors, so
+     the two cannot drift apart or talk over each other. */
+  const say = document.getElementById("offlineNotice");
+  if (say){ say.textContent = t("up_reading").replace("{f}", shortName(name)); say.hidden = false; }
+}
+
+/* Back to the invitation, and back to the KEY's own text rather than to a
+   remembered string: applyLang() rewrites every [data-t] node from its key, so
+   a language switch mid-read would otherwise strand a filename in the wrong
+   language on the button. */
+function upIdle(){
+  const row = document.getElementById("upMain");
+  const cta = document.getElementById("upCta");
+  const hint = document.getElementById("upHint");
+  if (row) row.classList.remove("busy");
+  if (cta) cta.textContent = t("up_cta");
+  if (hint) hint.textContent = t("up_hint");
+  const say = document.getElementById("offlineNotice");
+  if (say) say.hidden = true;
 }
 
 let intakeBound = false, gesturesBound = false;
@@ -10511,6 +10601,12 @@ function onScroll(){
 
 /* A toast in addition to the existing button label change. */
 function toast(msg){
+  /* ONE AT A TIME. Every toast is position:fixed at the same offset, so two
+     within 2s stacked exactly on top of each other and the reader saw one
+     illegible smear. Now the newer message replaces the older one, which is
+     also the right precedence: the most recent thing that happened is the
+     thing worth reading. */
+  document.querySelectorAll(".toast").forEach((old) => old.remove());
   const el = document.createElement("div");
   el.className = "toast";
   el.setAttribute("role","status");
