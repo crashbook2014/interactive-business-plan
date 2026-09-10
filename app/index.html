@@ -5277,7 +5277,12 @@ function renderResult(reset){
          </span>
        </button>
        <div class="advice">${quoteHtml(c)}<p>${c.p[lang]}</p>${tip}</div>`;
-    div.style.setProperty("--d", Math.min(pos,6)*40 + "ms");
+    /* CAPPED AT FOUR, WAS SIX. Beyond about four items a stagger stops reading
+       as a sequence and starts reading as lag — and the cap is what bounds the
+       whole result-screen sequence, since the actions below the flags have to
+       wait for the last one. Six put the final flag at 240ms and pushed the
+       last action past 700ms. */
+    div.style.setProperty("--d", Math.min(pos,4)*40 + "ms");
     wrap.appendChild(div);
   });
   /* What the scan withholds, said plainly and WITHOUT A NUMBER. The reader is

@@ -425,6 +425,85 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      `and read ${rolled.target} on every frame (${scoreVals.join(", ")})`);
   await p4.close();
 
+  /* ---- THE RESULT SCREEN ARRIVES IN READING ORDER, AND ARRIVES AT ONCE FOR
+   * ANYONE WHO ASKED IT TO.
+   *
+   * The flag cards had a 40ms internal stagger starting at 0, so they raced
+   * the screen's own entry animation; the verdict, the score and the four
+   * actions had no entry at all. The order below is the order the screen
+   * answers its own question — what is the verdict, then what did we find,
+   * then what can you do — and it is reading order in both directions, since
+   * .dk-a is the start column in LTR and RTL alike.
+   *
+   * THE HALF THAT IS A BUG FIX. The reduced-motion block zeroed
+   * animation-duration and said nothing about animation-delay, and they are
+   * not the same switch: every staggered element here is `animation: ... both`,
+   * so the `both` fill holds opacity:0 for the whole delay whatever the
+   * duration is. A reader who asked for less motion got no motion AND the
+   * wait — up to 240ms of blank cards before this, and half a second once the
+   * sequence below was added. That is why the second half of this block exists
+   * and why it is not optional: the fix had to land before the feature.
+   *
+   * MEASURED BY WATCHING, NOT BY READING THE CSS. Sampling computed opacity
+   * every frame is the only way to catch a delay that the stylesheet declares
+   * and the browser then ignores, or vice versa.
+   */
+  console.log("\n— the result screen arrives in reading order");
+  const watchOrder = async (reduced) => {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+      reducedMotion: reduced ? "reduce" : "no-preference" });
+    const pg = await ctx.newPage();
+    await pg.goto(APP);
+    await pg.waitForFunction(() => typeof window.show === "function");
+    const r = await pg.evaluate(async () => {
+      nat = "sa"; obDone = true; authUser = { id: "t" };
+      owned = { review: "plan_review", letter: null, case: null };
+      current = SAMPLES.employment; current.srcText = null; journey = "contract";
+      renderResult(true); renderDuties(); show("result");
+      const at = { decision: null, verdict: null, flag: null, action: null };
+      const el = () => ({
+        decision: document.querySelector("#screen-result .decision"),
+        verdict: document.querySelector("#screen-result .verdict"),
+        flag: document.querySelector("#flags .flag"),
+        action: document.querySelector("#screen-result .dk-b > button:nth-of-type(4)"),
+      });
+      const t0 = performance.now();
+      await new Promise((done) => {
+        (function tick() {
+          const e = el();
+          for (const k of Object.keys(at)) {
+            if (at[k] === null && e[k] && +getComputedStyle(e[k]).opacity > 0.9)
+              at[k] = Math.round(performance.now() - t0);
+          }
+          if (performance.now() - t0 < 1200) requestAnimationFrame(tick); else done();
+        })();
+      });
+      return at;
+    });
+    await ctx.close();
+    return r;
+  };
+
+  const seq = await watchOrder(false);
+  const named = Object.entries(seq).map(([k, v]) => `${k} ${v}ms`).join(", ");
+  ok(Object.values(seq).every((v) => v !== null),
+     `every stage of the result screen becomes visible (${named})`);
+  ok(seq.decision < seq.flag && seq.flag < seq.action,
+     `and in reading order — verdict, then findings, then actions (${named})`);
+  /* A sequence nobody waits out is not a sequence. Without this the whole
+     thing passes with every delay set to zero. */
+  ok(seq.action - seq.decision > 150,
+     `with the stages actually separated rather than nominally staggered (${seq.action - seq.decision}ms apart)`);
+  /* And bounded. This is a screen the reader has already waited on a loading
+     state for; it must not then withhold the actions. */
+  ok(seq.action <= 700,
+     `and the last action lands promptly rather than trailing (${seq.action}ms)`);
+
+  const rm = await watchOrder(true);
+  const rmNamed = Object.entries(rm).map(([k, v]) => `${k} ${v}ms`).join(", ");
+  ok(Object.values(rm).every((v) => v !== null && v <= 100),
+     `a reader who asked for reduced motion gets the whole screen at once (${rmNamed})`);
+
   await b.close();
   console.log(FAIL.length ? `\n${FAIL.length} FAILURES` : "\ngestures commit on flick or distance, keep their motion continuous, and never fight reduced motion");
   process.exit(FAIL.length ? 1 : 0);

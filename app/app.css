@@ -61,6 +61,16 @@
     --red:#B4544A; --red-bg:#F3DFDC;
     --green:#478353; --green-bg:#E2EEE2;
     --amber-ink:#8A6114; --green-ink:#33663D; --red-ink:#8E3A31;
+  /* SECONDARY TEXT IS A COLOUR, NOT A COLOUR PLUS A FADE.
+     Seven rules used to set --ink-2 and then dim it further with opacity —
+     .7 on the paste box's placeholder, .65 on an off feature in a plan card,
+     .85 on five more. Measured against the surface underneath, those came out
+     at 3.15, 2.87 and 4.37 on a card and worse on the page: every one of them
+     below AA, on text that is often 12 or 13px.
+     They passed the contrast suite because opacity is not a token and the
+     suite reads tokens. --ink-2 itself is 5.20 on the page and 6.16 on a card;
+     the fade was the whole defect, so the fade is gone rather than the colour
+     being darkened to compensate for it. */
     --ink:#2B3230; --ink-2:#5A625F;
     --line:#BEAD88;
     --on-teal:#F1E9D9;
@@ -166,9 +176,24 @@
   .app{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
       clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  /* THE DELAY IS THE PART THAT WAS STILL RUNNING.
+   *
+   * This zeroed animation-duration and said nothing about animation-delay, and
+   * the two are not the same switch. Every staggered element in this app is
+   * declared `animation: ... both`, so the `both` fill holds the FROM keyframe
+   * — opacity:0 — for the whole delay before a duration of any length applies.
+   * A reader who asked for less motion therefore got no motion and the wait
+   * anyway: the flag cards were invisible for up to 240ms, and the result
+   * screen's group sequence below would have made that half a second of blank
+   * space for the person least able to tolerate it.
+   *
+   * Reduced motion means the thing is simply THERE. Zeroing the delay is what
+   * makes that true, and it fixes the flag stagger that shipped before this. */
   @media (prefers-reduced-motion: reduce){
-    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
-      transition-duration:.01ms !important;scroll-behavior:auto !important}
+    *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;transition-delay:0ms !important;
+      scroll-behavior:auto !important}
   }
   /* Between a phone and a laptop: still one column, but framed, so a tablet or
      a narrow window reads as deliberate rather than as a stranded phone page.
@@ -221,7 +246,9 @@
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
   textarea{width:100%;min-height:120px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;font:inherit;font-size:14px;color:var(--ink);resize:vertical;line-height:1.8}
   textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}
-  textarea::placeholder{color:var(--ink-2);opacity:.7}
+  /* opacity:1 rather than nothing: Firefox dims placeholders by default, so
+     removing the declaration would hand the fade back to the user agent. */
+  textarea::placeholder{color:var(--ink-2);opacity:1}
   .paste-hint{font-size:12px;color:var(--ink-2);margin-top:7px;text-align:center}
   .primary{margin-top:14px;width:100%;background:var(--teal);color:var(--on-teal);font-weight:700;font-size:16.5px;
       border-radius:var(--r-lg);padding:16px;transition:opacity .15s,box-shadow .18s;box-shadow:var(--e2)}
@@ -365,7 +392,7 @@
   .decision .dc-ic svg{width:26px;height:26px}
   .dc-label{font-size:19px;line-height:1.35;color:var(--dc-ink);text-wrap:balance}
   .dc-why{font-size:14px;color:var(--ink-2);line-height:1.6}
-  .dc-conf{font-size:12px;color:var(--ink-2);opacity:.85;line-height:1.55;text-wrap:balance}
+  .dc-conf{font-size:12px;color:var(--ink-2);line-height:1.55;text-wrap:balance}
   /* WHEN WE READ MOST OF IT, THIS IS FOOTNOTE. WHEN WE DID NOT, IT IS THE
      MOST IMPORTANT LINE ON THE CARD.
      The text was always correct — "we only recognised 3" — but it was set in
@@ -377,9 +404,11 @@
     display:flex;gap:6px;align-items:flex-start;
     background:var(--amber-bg);border-radius:10px;padding:8px 10px;margin-top:4px}
   .dc-conf[data-level="low"] svg{width:15px;height:15px;flex:none;margin-top:1px}
-  @media (prefers-reduced-motion:no-preference){
-    .decision{animation:rise var(--t) var(--ease-spring) both}
-  }
+  /* The rise moved to the motion block below and is scoped to .active there,
+     so it replays on every arrival instead of once per page load. The
+     no-preference wrapper went with it: the global reduced-motion reset now
+     zeroes both duration AND delay, so a second opt-out here would only be a
+     second place to keep in step. */
   .verdict{font-size:19px;color:var(--ink);line-height:1.7;text-wrap:balance;margin-top:14px}
   .doc-label{display:inline-block;margin-top:12px;font-size:13px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 14px;font-weight:700}
   /* 44px hit area via a transparent border, visual size unchanged */
@@ -518,7 +547,7 @@
   .au-none[hidden]{display:none}
   .acc-who{font-weight:600;margin:2px 0 12px;word-break:break-all}
   .legal-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
-  .legal-id{font-size:12px;line-height:1.6;color:var(--ink-2);opacity:.85;margin-top:10px}
+  .legal-id{font-size:12px;line-height:1.6;color:var(--ink-2);margin-top:10px}
   .legal-links a{font-size:13px;color:var(--teal-ink);text-decoration:underline;
     text-underline-offset:2px;min-height:44px;display:inline-flex;align-items:center}
   .demo-tag{text-align:center;font-size:12px;color:var(--ink-2);margin-top:8px}
@@ -596,8 +625,57 @@
   /* Live drag: the screen tracks the finger, transitions suspended. */
   .screen.dragging{animation:none !important;transition:none !important;will-change:transform}
   .screen.settling{transition:transform var(--t) var(--ease-spring), opacity var(--t) var(--ease-out)}
-  .flag,.tl-item{animation:settle var(--t) var(--ease-out) both;animation-delay:var(--d,0ms)}
+  /* --g is the GROUP's base delay, --d the item's offset within it. Two
+     variables rather than one because the item offset is set in JS, where the
+     loop index lives, and the group offset belongs in CSS beside the layout it
+     sequences. calc() adds them so neither has to know about the other. */
+  .flag,.tl-item{animation:settle var(--t) var(--ease-out) both;
+      animation-delay:calc(var(--g,0ms) + var(--d,0ms))}
   @keyframes settle{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* THE RESULT SCREEN ARRIVES IN THE ORDER IT SHOULD BE READ.
+   *
+   * Everything on this screen used to appear at once except the flag cards,
+   * which had a 40ms internal stagger starting at 0 — so they raced the
+   * screen's own entry animation and the sequence read as one event with some
+   * jitter in it. The verdict, the score and the four actions had nothing.
+   *
+   * The order below is the order the screen answers its own question: what is
+   * the verdict, then what did we find, then what can you do about it. It is
+   * the reading order in both directions — on desktop .dk-a and .dk-b are
+   * side-by-side columns, and column 1 is the start side, which is the left in
+   * English and the right in Arabic.
+   *
+   * SCOPED TO .active, WHICH IS ALSO A FIX. .decision carried `animation:rise`
+   * unconditionally, so it played once on page load and never again — a reader
+   * who analysed a second contract got no motion at all on the line that
+   * matters most. A CSS animation starts when its selector begins to match, so
+   * scoping to .active replays the whole sequence on every arrival.
+   *
+   * BUDGETED, NOT DECORATIVE. The last action lands at 440ms. During its delay
+   * an element holds opacity:0 but keeps its box and stays clickable, so a
+   * reader who knows where the button is can still hit it; nothing is disabled
+   * and nothing moves under the thumb. Under prefers-reduced-motion every
+   * delay above is zeroed and the screen is simply complete — see the note at
+   * the top of this file, which had to be fixed before any of this was safe to
+   * add. */
+  #screen-result.active .decision{animation:rise var(--t) var(--ease-spring) both}
+  #screen-result.active .verdict{animation:settle var(--t) var(--ease-out) both;
+      animation-delay:60ms}
+  #screen-result.active #flags{--g:120ms}
+  /* The actions use --t-fast rather than --t. They are the tail of the
+     sequence, so their duration is what decides when the screen is finally
+     settled — and by the time they arrive the reader has already been given
+     the verdict and the findings, so the arrival needs to be quick rather than
+     considered. At --t the last one landed at 680ms; at --t-fast it lands at
+     540ms, which is the same sequence without the drag at the end. */
+  #screen-result.active .duties:not([hidden]),
+  #screen-result.active .dk-b > button{animation:settle var(--t-fast) var(--ease-out) both}
+  #screen-result.active .duties:not([hidden]){animation-delay:290ms}
+  #screen-result.active .dk-b > button:nth-of-type(1){animation-delay:290ms}
+  #screen-result.active .dk-b > button:nth-of-type(2){animation-delay:320ms}
+  #screen-result.active .dk-b > button:nth-of-type(3){animation-delay:350ms}
+  #screen-result.active .dk-b > button:nth-of-type(4){animation-delay:380ms}
   .primary:active,.sample:active,.plan:active,.letter-tease:active,.track-tease:active,
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
   .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform var(--t-fast) var(--ease-spring),box-shadow var(--t-fast) var(--ease-out)}
@@ -664,8 +742,8 @@
   /* A citation and an opinion must not look alike. Law carries the teal mark
      of an official source; methodology is visibly quieter and unmarked. */
   .src-line.law{color:var(--teal-ink)}
-  .src-line.law::before{content:"§";margin-inline-end:5px;font-weight:700;opacity:.75}
-  .src-line.method{font-style:italic;opacity:.8}
+  .src-line.law::before{content:"§";margin-inline-end:5px;font-weight:700}
+  .src-line.method{font-style:italic}
   .src-line[hidden]{display:none}
   .score-src{border-top:0;padding-top:0;margin-top:10px;text-align:center}
 
@@ -918,7 +996,17 @@
   .mc-list{display:grid;gap:9px;margin-bottom:6px}
   .paste-hint.nudge{color:var(--red);animation:nudge .4s ease}
   @keyframes nudge{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-  .primary.soft{opacity:.6}
+  /* NOT READY IS A DIFFERENT BUTTON, NOT A FADED ONE.
+     This was opacity:.6 on the filled teal analyze button — 2.84:1 for its
+     label, on a control that is deliberately still LIVE (see pasteChanged:
+     pressing it with too little text nudges the box rather than doing
+     nothing). A disabled control may fall below AA; this one is not disabled,
+     so it may not.
+     It borrows the outline treatment .primary.detail already uses, so "not
+     ready" reads as a hollow button and "ready" as a filled one — a clearer
+     signal than dimness, and teal-ink is a colour the contrast suite checks. */
+  .primary.soft{background:none;color:var(--teal-ink);
+      border:1.5px solid color-mix(in srgb, var(--teal) 42%, transparent);box-shadow:none}
 
   /* account */
   .acc-plan-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
@@ -971,7 +1059,7 @@
   html[lang="ar"] .date-echo{font-size:14px}
   .date-echo[hidden]{display:none}
   .fld>span{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
-  .fld em{display:block;font-style:normal;font-size:12px;color:var(--ink-2);margin-top:5px;opacity:.85}
+  .fld em{display:block;font-style:normal;font-size:12px;color:var(--ink-2);margin-top:5px}
   .fld input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
       padding:13px 15px;font:inherit;font-size:15px;color:var(--ink);box-shadow:var(--e1),var(--edge)}
   .fld input:focus{outline:2px solid var(--teal);border-color:transparent}
@@ -1334,7 +1422,7 @@
              margin-top:12px;background:var(--card)}
   .scan-lock b{display:block;font-size:15px;margin-bottom:6px}
   .scan-lock p{margin:0 0 8px;font-size:14px;color:var(--ink-2);line-height:1.6}
-  .scan-lock .scan-left{font-size:13px;color:var(--ink-2);opacity:.85}
+  .scan-lock .scan-left{font-size:13px;color:var(--ink-2)}
   /* THE BUTTON THAT SELLS THE PRODUCT, and it had no button styling at all.
      `.cta` has no base rule in this stylesheet — it is only ever styled inside
      `.pcard` — so here it inherited nothing: no background, no padding, no
@@ -1369,12 +1457,14 @@
   .au-again{background:none;border:0;color:var(--teal-ink);font:inherit;
             font-size:13px;text-decoration:underline;cursor:pointer;padding:4px}
   .acc-pack{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
-  .plan.soon{opacity:.62;cursor:default}
+  /* The «قريبًا» badge and the hidden radio already say this one is not on
+     offer; the fade only made the words harder to read (3.98 on a card). */
+  .plan.soon{cursor:default}
   .plan.soon .radio{visibility:hidden}
   .pcard ul{list-style:none;margin-top:14px;display:grid;gap:7px}
   .pcard li{font-size:13px;color:var(--ink);display:flex;gap:9px;align-items:flex-start;line-height:1.55}
   .pcard li svg{flex:none;width:15px;height:15px;margin-top:3px;color:var(--green)}
-  .pcard li.off{color:var(--ink-2);opacity:.65}
+  .pcard li.off{color:var(--ink-2)}
   .pcard li.off svg{color:var(--ink-2)}
   .pcard .cta{margin-top:15px;width:100%;border-radius:14px;padding:12px;font-weight:700;font-size:15px;
       background:var(--teal);color:var(--on-teal)}
@@ -1492,7 +1582,10 @@
   .primary.detail:hover{background:var(--teal-soft)}
 
   .is-next{position:relative;box-shadow:0 0 0 2px color-mix(in srgb, var(--band) 45%, transparent), var(--e2)}
-  .demoted{opacity:.62;filter:saturate(.55)}
+  /* Desaturation alone. The .62 opacity took ordinary body text to 3.71 while
+     saturate() does nearly all the de-emphasising work and costs almost no
+     luminance contrast, which is the half that matters for reading. */
+  .demoted{filter:saturate(.55)}
   .demoted:hover,.demoted:focus-within{opacity:1;filter:none}
   .letter-tease.demoted{background:none;border-color:var(--line)}
   .escalate.demoted{background:none;border-color:var(--line)}
@@ -1516,7 +1609,7 @@
     .demoted{transition:opacity var(--t-fast) var(--ease-out),filter var(--t-fast) var(--ease-out)}
   }
   .home-plans{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:4px;
-      color:var(--ink-2);font-size:13px;padding:10px;border-radius:var(--r-sm);opacity:.85}
+      color:var(--ink-2);font-size:13px;padding:10px;border-radius:var(--r-sm)}
   .home-plans:hover{color:var(--teal)}
   /* Secondary utilities sit quietly below the primary act, in one rhythm. */
   .home-reminders{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;width:100%;
@@ -1648,7 +1741,7 @@
     display:flex;align-items:center;justify-content:center;color:var(--on-teal)}
   .hm-up .ic svg{width:19px;height:19px}
   .hm-up b{display:block;font-size:15px;color:var(--on-teal)}
-  .hm-up .tx span{font-size:13px;color:var(--on-teal);opacity:.86;line-height:1.5}
+  .hm-up .tx span{font-size:13px;color:var(--on-teal);line-height:1.5}
   .hm-up .go{margin-inline-start:auto;color:var(--on-teal);display:flex}
   .hm-up:active{transform:scale(.985);box-shadow:var(--e1)}
   /* The money boundary and the privacy answer, rescued from two deleted
