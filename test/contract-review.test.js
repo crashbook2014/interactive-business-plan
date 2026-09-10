@@ -246,6 +246,87 @@ const base = (over) => Object.assign({
   ok(hedge("مخالفات سابقة").changed === false,
      "and do not fire on an unrelated word that merely shares a root");
 
+  /* ---- 2b. the same conclusion, said a different way
+   *
+   * The first version of the banned list caught the three phrasings its author
+   * thought of. Re-measured against the red team's set, 15 of 15 alternative
+   * phrasings still reached the reader — because the list was made of literals
+   * and the failure mode is a synonym.
+   *
+   * So this table is the measurement, kept. Every row is a sentence that makes
+   * a legal conclusion or promises an outcome WITHOUT using the words the
+   * original list banned. Each must either be dropped or come back hedged; it
+   * must never reach the reader as written. Asserting on the OUTPUT rather
+   * than on the pattern list is deliberate — it stays true if the
+   * implementation is rewritten, and it is the only form that catches a
+   * pattern added to BANNED but not reachable from grading.
+   */
+  console.log("\n— the same conclusion in other words does not get through");
+  const SAYS_TOO_MUCH = [
+    "This clause contravenes Article 74 of the labour law.",
+    "The clause breaches Article 74.",
+    "This term is contrary to the labour law.",
+    "Such a term is prohibited by Article 74.",
+    "This provision has no legal effect.",
+    "The non-compete has no legal force.",
+    "This cannot be enforced against you.",
+    "The clause can't be enforced.",
+    "A court would not uphold this clause.",
+    "The labour court will rule in your favour.",
+    "The tribunal would decide in your favour here.",
+    "You will prevail on this point.",
+    "You are going to win this case.",
+    "Your case is a slam dunk.",
+    "There is no question that this term fails.",
+    "هذا البند لا يجوز نظامًا.",
+    "الشرط لا أثر له.",
+    "هذا التعهد غير نافذ.",
+    "لن تستطيع الشركة تنفيذ هذا البند.",
+    "ستحصل على كامل مستحقاتك من المحكمة.",
+    "المحكمة ستحكم لصالحك.",
+    "من المؤكد أن هذا الشرط يسقط.",
+    "بلا شك سيصدر الحكم في مصلحتك.",
+    "ستستعيد كامل المبلغ.",
+  ];
+  const survived = [];
+  for (const s of SAYS_TOO_MUCH) {
+    const ar = /[ء-ي]/.test(s);
+    const r = run({ red_flags: [finding(ar ? { issue_ar: s } : { issue_en: s })] });
+    const kept = r.red_flags[0];
+    /* Surviving verbatim is the failure. Dropped is fine; hedged into
+       something else is fine. Reaching the reader unchanged is not. */
+    const out = kept ? (ar ? kept.issue_ar : kept.issue_en) : "";
+    if (out === s) survived.push(s);
+  }
+  ok(survived.length === 0,
+     `all ${SAYS_TOO_MUCH.length} alternative phrasings are stopped` +
+     (survived.length ? ` — ${survived.length} got through: ${JSON.stringify(survived.slice(0, 3))}` : ""));
+
+  /* And the cost of that filter, measured rather than assumed. A ban broad
+     enough to catch every synonym is also broad enough to eat the ordinary
+     contract vocabulary this mode exists to discuss, and a filter that drops
+     the real findings is not safer, it is just useless. */
+  const ORDINARY = [
+    "The notice period is 30 days, shorter than usual for this role.",
+    "The non-compete runs for 24 months, which is unusually long.",
+    "A breach of this clause triggers a penalty you should ask about.",
+    "Certain clauses here are worth a second read before you sign.",
+    "The probation is 180 days — ask whether that is what you agreed.",
+    "This clause is unclear about who pays for the return ticket.",
+    "The wage is 10,000 SAR with no stated review date.",
+    "لم يُذكر بدل السكن في العقد.",
+  ];
+  const eaten = [];
+  for (const s of ORDINARY) {
+    const ar = /[ء-ي]/.test(s);
+    const r = run({ red_flags: [finding(ar ? { issue_ar: s } : { issue_en: s })] });
+    const kept = r.red_flags[0];
+    if (!kept || (ar ? kept.issue_ar : kept.issue_en) !== s) eaten.push(s);
+  }
+  ok(eaten.length === 0,
+     `and all ${ORDINARY.length} ordinary findings survive untouched` +
+     (eaten.length ? ` — ${eaten.length} were eaten: ${JSON.stringify(eaten)}` : ""));
+
   /* ---- 3. citations are labelled, never assumed */
   console.log("\n— a citation nobody verified is labelled as such");
   const cited = run({

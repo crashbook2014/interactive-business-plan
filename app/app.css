@@ -1617,6 +1617,9 @@
      weighted cards with no statement anywhere of what Wodouh is or who it is
      for. Eighty-one pixels is a cheap price for the sentence that answers it.
      19px and 14px are both on the nine-step scale; desktop.css raises them. */
+  /* A cap that fired reads as a correction, not as a hint. */
+  .cap-note{color:var(--amber);font-weight:700}
+  html[lang="ar"] .cap-note{font-weight:400}
   .hm-hero{display:block;margin:10px 0 14px;text-align:center}
   .hm-hero .hm-hero-h{font-size:19px;color:var(--teal-ink);line-height:1.45;text-wrap:balance}
   .hm-hero p{margin-top:8px;color:var(--ink-2);font-size:14px}

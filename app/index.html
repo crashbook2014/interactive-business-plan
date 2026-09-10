@@ -1946,8 +1946,15 @@ const T = {
   sub_signed:{ar:"نقرأ العقد ونوضّح لك وش تقدر تسويه الحين — وش ملزم ووش قابل للاعتراض.",
               en:"We read it and show what you can still do — what binds you and what remains contestable."},
   rights_label:{ar:"وش تقدر تسوي الحين؟",en:"What you can do now"},
-  act_red_signed:{ar:"تستطيع الاعتراض",en:"Contestable"},
-  act_amber_signed:{ar:"يمكن معالجته",en:"Can be addressed"},
+  /* "Contestable" IS A LEGAL CONCLUSION, and it was rendering as a badge on
+     every red clause in signed mode — including the rental path, where the
+     identical claim was removed from the prose in ca24b5b and left standing in
+     the label above it. Same screen, same conclusion, same missing source: the
+     rental register has three rows and none of them says a clause can be
+     contested. What the badge can honestly say is what the reader should DO,
+     which is what the unsigned labels already do. */
+  act_red_signed:{ar:"وثّقه وناقشه",en:"Document it and raise it"},
+  act_amber_signed:{ar:"يستاهل نقاش",en:"Worth raising"},
   lb_build_signed:{ar:"ابنِ خطاب المطالبة",en:"Build your letter"},
   lb_build_sub_signed:{ar:"أضف النقاط وأنت تقرأ — ونجمعها خطابًا ترسله الآن",
                        en:"Add points as you read — we'll assemble a letter you can send now"},
@@ -2426,6 +2433,9 @@ const T = {
   tm_f_eos:{ar:"استلمت مكافأة نهاية الخدمة؟",en:"Did you receive your end-of-service award?"},
   tm_f_unpaid:{ar:"كم شهر راتب متأخر عليك؟",en:"How many months' salary are unpaid?"},
   tm_f_unpaid_h:{ar:"اتركها فاضية إذا ما فيه متأخرات.",en:"Leave blank if nothing is outstanding."},
+  /* Said in the reader's own terms: what we used, not that they were wrong. */
+  tm_capped:{ar:"رقم كبير — حسبنا على {v}. عدّله إذا كان الرقم الصحيح غير هذا.",
+             en:"That is a large number — we used {v}. Change it if the right figure is different."},
   tm_f_leave:{ar:"كم يوم إجازة سنوية ما أخذتها؟",en:"Unused annual leave days"},
   tm_f_leave_h:{ar:"الرصيد اللي كان باقي لك يوم انتهى العمل.",en:"The balance you had left on your last day."},
   tm_f_other:{ar:"عمولات أو بدلات أو مبالغ أخرى غير مدفوعة",en:"Unpaid commissions, allowances or other amounts"},
@@ -6931,7 +6941,8 @@ function numFld(id, label, val, hint){
   const v = (val === null || val === undefined || val === 0) ? "" : val;
   return `<label class="fld" for="${id}"><span>${t(label)}</span>
     <input type="number" inputmode="numeric" min="0" id="${id}" value="${esc(String(v))}"/>
-    ${hint ? `<em>${t(hint)}</em>` : ""}</label>`;
+    ${hint ? `<em>${t(hint)}</em>` : ""}
+    <em class="cap-note" id="${id}Cap" hidden></em></label>`;
 }
 function textFld(id, label, val, hint){
   return `<label class="fld" for="${id}"><span>${t(label)}</span>
@@ -6950,12 +6961,27 @@ function ynFld(id, label, val){
 function note(key){ return `<p class="tq-skip">${t(key)}</p>`; }
 
 function bindTermQ(){
+  /* A CAP THAT SAYS NOTHING REWRITES THE READER'S ANSWER BEHIND THEIR BACK.
+     These clamped silently: 999 unpaid months became 60, 9999 leave days
+     became 365, and the screen then showed a figure built on a number the
+     reader never typed and could not reconcile with what they had entered.
+     On the other side of the same cap, a mistyped value that stayed UNDER it
+     produced ~918,000 SAR under «المستحق بحسب الظاهر», beside Article 84 and
+     111 citations, ready to be carried into a letter to an employer.
+     The ceiling stays — it is a sanity bound, not a legal one — and it now
+     tells the reader it applied and what it used instead. */
   const num = (id, key, max) => {
     const el = document.getElementById(id);
     if (!el) return;
+    const note = document.getElementById(id + "Cap");
     el.oninput = () => {
       const n = parseFloat(el.value);
+      const capped = isFinite(n) && n > max;
       term[key] = isFinite(n) && n > 0 ? Math.min(n, max) : 0;
+      if (note){
+        note.hidden = !capped;
+        if (capped) note.textContent = t("tm_capped").replace("{v}", fmtNum(max));
+      }
     };
   };
   const txt = (id, key) => {

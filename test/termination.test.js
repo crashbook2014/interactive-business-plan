@@ -743,6 +743,82 @@ async function art87Certainty(p){
   ok(!/[٠-٩]/.test(Object.values(svc).join(" ")),
      "and every digit is Latin, in Arabic too");
 
+  /* ---- A REFUSED NUMBER IS SAID OUT LOUD, NOT SWALLOWED
+   *
+   * Every numeric field in this flow is clamped, and until now the clamp was
+   * silent: a reader who typed 999 unpaid months got a total computed on 60
+   * with nothing on the screen saying so, and no way to tell the difference
+   * between "we used your number" and "we used ours". On a screen whose whole
+   * purpose is to tell someone what they are owed, a figure quietly replaced
+   * by a smaller one is the worst kind of wrong — it looks like an answer.
+   *
+   * The assertion is not "a cap exists". It is that whenever the value used
+   * differs from the value typed, the screen SAYS which one it used, and names
+   * it. Read off the rendered note, in both languages, for every capped field
+   * on every step — because the fields are per-step and a guard that only
+   * visits step 0 proves nothing about the unpaid-wages field on step 2.
+   */
+  console.log("\n— a number we refuse is a number we mention");
+  const caps = await p.evaluate((langs) => {
+    const out = [];
+    for (const l of langs) {
+      lang = l;
+      nat = "sa"; term = blankTerm(); term.how = "employer";
+      Object.assign(term, { start: "2018-01-01", end: "2026-01-31", wage: 12000 });
+      owned.case = "plan_case"; renderTermHow();
+      for (let s = 0; s < TERM_STEPS.length; s++) {
+        termStep = s; renderTermQ();
+        for (const el of document.querySelectorAll("#tqForm input")) {
+          const note = document.getElementById(el.id + "Cap");
+          if (!note) continue;
+          /* Far above every cap in the flow. */
+          el.value = "999999999";
+          el.dispatchEvent(new Event("input"));
+          const shown = !note.hidden && getComputedStyle(note).display !== "none";
+          const named = (note.textContent.match(/[\d,]+/g) || [])
+            .map((n) => Number(n.replace(/,/g, "")));
+          /* The figure the note names must be the figure the calculation is
+             now using — a note that says one thing while the arithmetic does
+             another is worse than no note. */
+          const used = Object.values(term).filter((v) => typeof v === "number");
+          const honest = named.some((n) => used.includes(n));
+          /* And it goes away when the reader corrects it, or it becomes a
+             permanent warning about a number that is no longer there. */
+          el.value = "3";
+          el.dispatchEvent(new Event("input"));
+          const cleared = note.hidden;
+          out.push({ lang: l, step: s, id: el.id, shown, honest, cleared,
+                     text: note.textContent });
+        }
+      }
+    }
+    lang = "ar";
+    return out;
+  }, ["ar", "en"]);
+
+  /* Counted, not merely non-empty. Every assertion below is a FILTER, and a
+     filter over an empty list passes — which is how a suite reports success
+     while running nothing. Seven capped fields, two languages. */
+  const enough = caps.length === 14;
+  ok(enough,
+     `every capped field on every step was reached, in both languages (${caps.length} of 14)`);
+  const silent = caps.filter((c) => !c.shown);
+  ok(enough && silent.length === 0,
+     `a clamped value is disclosed on screen` +
+     (silent.length ? ` — silent: ${silent.map((c) => c.lang + "/" + c.id).join(", ")}` : ""));
+  const lying = caps.filter((c) => !c.honest);
+  ok(enough && lying.length === 0,
+     `and the figure it names is the figure the calculation used` +
+     (lying.length ? ` — ${lying.map((c) => `${c.lang}/${c.id}: "${c.text}"`).join(", ")}` : ""));
+  const stuck = caps.filter((c) => !c.cleared);
+  ok(enough && stuck.length === 0,
+     `and it clears once the number is corrected` +
+     (stuck.length ? ` — stuck: ${stuck.map((c) => c.lang + "/" + c.id).join(", ")}` : ""));
+  ok(enough && caps.filter((c) => c.lang === "en").every((c) => !/[ء-ي]/.test(c.text)),
+     "the English note is in English");
+  ok(enough && caps.filter((c) => c.lang === "ar").every((c) => /[ء-ي]/.test(c.text)),
+     "and the Arabic note is in Arabic");
+
   console.log("\n" + (FAIL.length ? `${FAIL.length} FAILURES\n` + FAIL.map(f => "  - " + f).join("\n")
                                   : "all termination checks passed"));
   await b.close();

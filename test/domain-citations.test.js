@@ -424,6 +424,45 @@ const JOB = [
   ok(hatch.bordered,
      "and reads as a control rather than as fine print under three buttons");
 
+  /* THE BADGE IS A CLAIM TOO, AND THIS IS THE HALF THE FIRST FIX MISSED.
+   *
+   * The rental prose was cleaned of "this is challengeable" because no
+   * verified source stands behind it outside employment. The BADGE on the same
+   * card still read «تستطيع الاعتراض» / "Contestable" — the identical legal
+   * conclusion, on the identical screen, in larger type. A fix that cleans the
+   * paragraph and leaves the label is not a fix.
+   *
+   * So the rule is asserted where it belongs: on the strings, for every
+   * severity, in both signed modes, in both languages. A badge may tell the
+   * reader what to DO — document it, raise it, negotiate it, pause. It may not
+   * tell them what the law will DO. */
+  const badges = await p.evaluate(() => {
+    const out = [];
+    for (const l of ["ar", "en"]) {
+      lang = l;
+      for (const signed of [true, false]) {
+        signedMode = signed;
+        for (const sv of ["red", "amber", "green"]) {
+          out.push({ lang: l, signed, sv, text: actionLabel(sv) });
+        }
+      }
+    }
+    return out;
+  });
+  /* Verbs of entitlement and of outcome. "اعتراض"/"contest"/"challenge" say a
+     right exists; "void", "illegal", "win" say how it ends. Neither has a
+     verified source behind it outside employment, and the badge does not know
+     which door the reader came through. */
+  const CONCLUDES =
+    /تستطيع|يحق|باطل|ملزم|اعتراض|مخالف|contest|challeng|void|illegal|unenforce|invalid|entitled|win\b/i;
+  const loud = badges.filter((x) => CONCLUDES.test(x.text));
+  ok(loud.length === 0,
+     `no clause badge states a legal conclusion, in either language` +
+     (loud.length ? ` — ${loud.map((x) => `${x.lang}/${x.sv}${x.signed ? "/signed" : ""}: "${x.text}"`).join(", ")}` : ""));
+  ok(badges.every((x) => x.text && x.text.trim().length > 0),
+     "and every one of the twelve still says something");
+  ok(badges.length === 12, `all twelve combinations were read (${badges.length})`);
+
   await b.close();
   if (FAIL.length) {
     console.log(`\n${FAIL.length} FAILURES`);

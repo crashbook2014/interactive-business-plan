@@ -115,6 +115,64 @@ const BANNED = [
   new RegExp("(?:ستكسب|ستربح|ستفوز)" + AR_END),
   new RegExp("حتم(?:ًا|اً|ا)" + AR_END),
   new RegExp("قطع(?:ًا|اً|ا)" + AR_END),
+
+  /* THE FIRST VERSION OF THIS LIST CAUGHT THE THREE PHRASINGS I HAPPENED TO
+   * THINK OF AND NOTHING ADJACENT. Re-tested against the red team's full set,
+   * 15 of 15 still reached the reader — so the patterns below are written as
+   * CONSTRUCTIONS rather than as literals, because the failure mode is a
+   * synonym and there are always more synonyms than there are literals.
+   *
+   * TWO FAMILIES.
+   *
+   * A court deciding for the reader. "You will win" was banned; "the labour
+   * court will rule in your favour", "you will prevail", "your case is a slam
+   * dunk" were not. Same promise, different verb.
+   *
+   * Illegality by synonym, which is the worse half. HEDGES rewrites the WORDS
+   * illegal / void / violates, so rule 4 was defeated by anything that means
+   * the same without using them: "contravenes Article 74", "has no legal
+   * effect", "cannot be enforced against you", «لا يجوز نظامًا». Each carries
+   * the identical legal conclusion the rewrite exists to prevent, and each
+   * rendered to the reader verbatim.
+   *
+   * Arabic is not an afterthought here. Arabic states impermissibility through
+   * modal negation — لا يجوز, لا أثر له, لا يُعتد به — and the earlier list
+   * had no coverage of that shape at all, which is a rule the team applies to
+   * every other surface in this app.
+   *
+   * SCOPED, so the cost of the filter stays honest. "breach" and "contrary"
+   * are ordinary contract words and are banned only next to a law reference;
+   * "cannot be enforced" and "no legal effect" are conclusions whatever
+   * follows them. */
+  /\bcontraven(?:e|es|ed|ing)\b/i,
+  /\bbreach(?:es|ed)?\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law)/i,
+  /\bcontrary\s+to\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law|the\s+regulations?)/i,
+  /\bprohibited\s+by\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law)/i,
+  /\bno\s+legal\s+(?:effect|force|standing)\b/i,
+  /\b(?:cannot|can't|could\s+not)\s+be\s+enforced\b/i,
+  /\bwould\s+not\s+(?:uphold|enforce)\b/i,
+  /\b(?:court|judge|tribunal)[^.!?]{0,60}\b(?:will|would|shall)\b[^.!?]{0,40}\b(?:rule|find|decide|hold|side)\b/i,
+  /\b(?:will|would|shall)\s+(?:rule|find|decide)\s+in\s+your\s+favou?r\b/i,
+  /\b(?:will|would|are\s+going\s+to|sure\s+to)\s+(?:win|prevail|succeed)\b/i,
+  /\bslam\s+dunk\b/i,
+  /\bno\s+question\s+that\b/i,
+  new RegExp("لا\\s+يجوز" + AR_END),
+  new RegExp("لا\\s+أثر\\s+له" + AR_END),
+  new RegExp("لا\\s+(?:يُعتد|يعتد)\\s+به" + AR_END),
+  new RegExp("غير\\s+نافذ(?:ة|ًا)?" + AR_END),
+  /* لا AND لن both negate, and only لا was covered — «لن تستطيع الشركة تنفيذ
+     هذا البند» is the same conclusion in the future tense. */
+  new RegExp("(?:لا|لن)\\s+(?:يمكن|تستطيع|يستطيع|يمكنها|تقدر|يقدر)\\s*(?:\\S+\\s+){0,2}?تنفيذ"),
+  /* A promise of what a court will HAND OVER, which names no verdict and
+     predicts one anyway: «ستحصل على كامل مستحقاتك من المحكمة». Scoped to the
+     forum so an ordinary "you will get a copy" is untouched. */
+  new RegExp("(?:ستحصل|ستنال|ستسترد|ستأخذ|ستقبض)[^.!؟]{0,50}(?:المحكمة|القضاء|الجهة\\s+المختصة)"),
+  new RegExp("(?:المحكمة|القاضي)(?:\\s+\\S+){0,6}?\\s*(?:ستحكم|سيحكم|تحكم|يحكم)"),
+  new RegExp("لصالحك" + AR_END),
+  new RegExp("من\\s+المؤكد" + AR_END),
+  new RegExp("بلا\\s+شك" + AR_END),
+  new RegExp("رابح(?:ة|ًا)?" + AR_END),
+  new RegExp("ستستعيد" + AR_END),
 ];
 
 /* "questionable and questionable" is what two adjectives in one sentence
