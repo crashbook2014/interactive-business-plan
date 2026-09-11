@@ -91,7 +91,16 @@ console.log("\n— every contract type the page names has a door in the app");
    fails here rather than at the first reader who clicks through. */
 const KIND = {
   employment: { doc: "doc_emp",  en: /\bemployment\b/i,          ar: /عقود\s*(?:ال)?عمل|عقد\s*عمل/ },
-  rental:     { doc: "doc_rent", en: /\brental\b|\blease\b/i,     ar: /(?:ال)?إيجار/ },
+  /* NOT «شبكة إيجار». Ejar is the government rental-registration platform and
+     the page cites it as a SOURCE, in the same breath as the Ministry of
+     Justice — a proper noun, not the contract type. Without this the sentence
+     "official sources: the Labour Law, MHRSD, the Ejar network, the Ministry
+     of Justice" reads as rental-in-the-same-sentence-as-a-law and fails §3,
+     while its English twin ("the Ejar network") passes, because English names
+     the institution and Arabic names it with the same word as the contract.
+     The English side needs no such carve-out for the same reason. */
+  rental:     { doc: "doc_rent", en: /\brental\b|\blease\b/i,
+                ar: /(?<!(?:شبكة|منصة|بوابة|موقع)\s{0,2})(?:ال)?إيجار/ },
   freelance:  { doc: "doc_free", en: /\bfreelance\b/i,            ar: /عمل\s*حر/ },
   supplier:   { doc: "doc_supp", en: /\bsupplier\b/i,             ar: /(?:ال)?مورّ?د/ },
 };
@@ -123,44 +132,72 @@ ok(!/إيجار|rental|lease/i.test(verified.join("\n")),
 
 const LAW = /\barticle\b|\blabou?r law\b|مادة|مواد|نظام العمل/i;
 const UNSOURCED = ["rental", "freelance"];
+/* WALKED, NOT INDEXED — and this was wrong until it was broken on purpose.
+ *
+ * This loop used to read `v[l]` and `continue` unless it was a string. `faq`'s
+ * value per language is an ARRAY of [question, answer] pairs, so every FAQ
+ * answer was skipped: a planted "Your rental contract is checked against
+ * Article 12 of the rental law" sat in the FAQ and this assertion printed ok.
+ *
+ * §2 above had already been fixed for exactly this and this was not, because
+ * §2 flattens with `strings()` and §2 is the assertion that got broken when
+ * the blindness was first found. Fixing the one that was tested and leaving
+ * the one that was not is how a suite ends up guarding its own reputation
+ * instead of the product. It now walks every string under every key, carrying
+ * the path so a failure names where to look. */
+const walk = (v, at) =>
+  typeof v === "string" ? [[at, v]]
+  : Array.isArray(v) ? v.flatMap((x, i) => walk(x, `${at}[${i}]`))
+  : v && typeof v === "object" ? Object.entries(v).flatMap(([k, x]) => walk(x, `${at}.${k}`))
+  : [];
+const sentences = Object.entries(L).flatMap(([k, v]) => walk(v, k));
+ok(sentences.length > 200, `every string was reached, arrays included (${sentences.length})`);
 const claims = [];
-for (const [k, v] of Object.entries(L)) {
-  for (const l of LANGS) {
-    const s = v && typeof v === "object" ? v[l] : null;
-    if (typeof s !== "string") continue;
-    /* Sentence by sentence: a paragraph may legitimately mention employment's
-       articles AND rental's absence of them, and judging the paragraph whole
-       would fail the one string that is doing this correctly. */
-    for (const sent of s.split(/[.؟?!।]|؟/)) {
-      if (!LAW.test(sent)) continue;
-      const hits = UNSOURCED.filter((u) => KIND[u].en.test(sent) || KIND[u].ar.test(sent));
-      /* A sentence that says rental has NO articles is the point, not a
-         violation. The negation is what this whole suite is protecting. */
-      const denies = /بدون|لا\s|ليست|ما\s+عندنا|ما\s+تحققنا|without|not\s|no\s+article|only\b/i.test(sent);
-      if (hits.length && !denies) claims.push(`${k}.${l}: "${sent.trim().slice(0, 90)}"`);
-    }
+for (const [at, s] of sentences) {
+  /* Sentence by sentence: a paragraph may legitimately mention employment's
+     articles AND rental's absence of them, and judging the paragraph whole
+     would fail the one string that is doing this correctly. */
+  for (const sent of s.split(/[.؟?!।]|؟/)) {
+    if (!LAW.test(sent)) continue;
+    const hits = UNSOURCED.filter((u) => KIND[u].en.test(sent) || KIND[u].ar.test(sent));
+    /* A sentence that says rental has NO articles is the point, not a
+       violation. The negation is what this whole suite is protecting. */
+    const denies = /بدون|لا\s|ليست|ما\s+عندنا|ما\s+تحققنا|without|not\s|no\s+article|only\b/i.test(sent);
+    if (hits.length && !denies) claims.push(`${at}: "${sent.trim().slice(0, 90)}"`);
   }
 }
 ok(claims.length === 0,
    `no string ties rental or freelance to an article number${claims.length ? " — " + claims.join(" | ") : ""}`);
 
-/* --------------------------- 4. the page and the app say the same thing */
-console.log("\n— the page's rental caveat matches the app's own");
-/* The app has said the true thing about rental since the roadmap screen was
-   built (`fu_cat_rent_d`). The landing page now says it too, and these must
-   not drift: asserted on the three CLAIMS rather than on the wording, so
-   either can be rewritten but neither can quietly become the broader one. */
+/* ------------------------- 4. the caveat is kept where it changes a decision */
+console.log("\n— the app still states the rental caveat where a reader is holding a lease");
+/* THIS USED TO REQUIRE THE CAVEAT ON THE LANDING PAGE TOO, and no longer does.
+   A positioning band is where a stranger meets the product; the third thing it
+   says about itself should not be what it cannot do, and the founder's call was
+   that the apology belonged out of the marketing copy. Removed deliberately —
+   not lost, not loosened by accident.
+
+   What the removal MUST NOT take with it is the caveat itself, which is still
+   load-bearing in the two places a reader is actually looking at a lease: the
+   roadmap screen (fu_cat_rent_d) and the line under the score (scope_rent,
+   driven by docDomain()). Those are asserted here so that dropping the
+   marketing sentence cannot quietly become dropping all of them. Claims, not
+   wording, so either can be rewritten but neither can become the broader one.
+
+   The marketing side is not unguarded: §3 above still refuses any sentence
+   that ties rental or freelance to an article number, which is the half of
+   the original claim the first click would expose. */
 const appRental = (A.fu_cat_rent_d || {}).ar || "";
-const pageRental = (L.pos_p || {}).ar || "";
-ok(appRental.length > 40 && pageRental.length > 40,
-   `both sentences were found (app ${appRental.length}, page ${pageRental.length} chars)`);
+const appScope = (A.scope_rent || {}).ar || "";
+ok(appRental.length > 40 && appScope.length > 20,
+   `both in-app sentences were found (roadmap ${appRental.length}, result ${appScope.length} chars)`);
 const CLAIMS = {
-  "reads the contract itself": /نص عقدك|عقدك نفسه|قراءة لنص/,
-  "no article numbers behind it": /بدون مواد|ولا مواد|ما تحققنا/,
+  "reads the contract itself": /نص عقدك|عقدك نفسه|قراءة لنص|نص العقد/,
+  "no article numbers behind it": /بدون مواد|ولا مواد|ما تحققنا|بلا مواد/,
 };
 for (const [what, re] of Object.entries(CLAIMS)) {
-  ok(re.test(appRental), `the app's rental line claims: ${what}`);
-  ok(re.test(pageRental), `and so does the page's: ${what}`);
+  ok(re.test(appRental + "  " + appScope),
+     `the app tells a lease reader: ${what}`);
 }
 
 /* ------------------------------------- 5. the hero mock is the real screen */
