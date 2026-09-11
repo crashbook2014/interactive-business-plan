@@ -200,6 +200,33 @@ for (const [what, re] of Object.entries(CLAIMS)) {
      `the app tells a lease reader: ${what}`);
 }
 
+/* ------------------------- 4b. business is claimed at the tense it is built */
+console.log("\n— the business card is marked a preview for as long as it is one");
+/* The positioning line now says "for individuals and businesses", and the
+   feature grid has a "Wodouh for Business" card describing team seats, redline
+   review and template scoring. All of that markup exists — and renderBiz()
+   fills it from a hardcoded BIZ object, and the screen carries `pw_demo`,
+   "prototype — no real payment happens".
+
+   So the rule is conditional on the product, not written down here: WHILE the
+   business workspace still carries its demo disclaimer, the marketing card for
+   it must be marked as a preview in both languages. Build the thing for real,
+   delete the disclaimer, and this assertion stops applying on its own — which
+   is the only kind of claim guard that does not go stale. */
+const bizScreen = (app.match(/id="screen-biz"[\s\S]*?<\/section>/) || [""])[0];
+ok(bizScreen.length > 200, `the business workspace markup was found (${bizScreen.length} chars)`);
+const bizIsDemo = /data-t="pw_demo"/.test(bizScreen);
+if (bizIsDemo) {
+  const PREVIEW = { ar: /معاينة|نموذج|قريبًا|الاتجاه/, en: /\bpreview\b|\bheading\b|\bcoming\b|\bplanned\b/i };
+  for (const l of LANGS) {
+    const said = ((L.f6_tag || {})[l] || "") + "  " + ((L.f6p || {})[l] || "");
+    ok(PREVIEW[l].test(said),
+       `${l}: the business card says it is a preview, because the workspace still says pw_demo`);
+  }
+} else {
+  ok(true, "the workspace no longer carries pw_demo — the preview wording is free to go");
+}
+
 /* ------------------------------------- 5. the hero mock is the real screen */
 console.log("\n— the hero mock shows the product that exists");
 /* A mock is a promise the first click either keeps or exposes. The result

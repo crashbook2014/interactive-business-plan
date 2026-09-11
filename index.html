@@ -17,13 +17,13 @@
 <!-- POSITIONING FIRST, INTENT SECOND. The page's primary language is Arabic
      and stays Arabic here: this metadata is what someone typing "عقد عمل" into
      Google reads, and an English title would answer a question nobody asked.
-     "نظامك الشخصي لذكاء العقود" names what Wodouh is; the half after the "·"
+     "ذكاء العقود" names what Wodouh is; the half after the "·"
      keeps the sentence people actually search for. What the description does
      NOT say is that Wodouh keeps or manages your contracts — it reads one you
      bring it, and nothing on this page may promise a vault it does not have.
      assets/landing.js sets document.title per language and must agree. -->
-<meta name="description" content="وضوح — نظامك الشخصي لذكاء العقود. افهم عقدك، واعرف حقوقك، واكتشف المخاطر قبل ما توقّع: تقييم فوري، وشرح كل بند بمصدره، وخطاب تفاوض جاهز."/>
-<title>وضوح — نظامك الشخصي لذكاء العقود · اقرأ عقدك قبل ما توقّع</title>
+<meta name="description" content="وضوح — ذكاء العقود للأفراد والشركات. افهم عقدك، واعرف حقوقك، واكتشف المخاطر قبل ما توقّع: تقييم فوري، وشرح كل بند بمصدره، وخطاب تفاوض جاهز."/>
+<title>وضوح — ذكاء العقود · اقرأ عقدك قبل ما توقّع</title>
 
 <!-- LINK PREVIEWS.
      Wodouh's realistic distribution is one person forwarding it to a colleague
@@ -42,17 +42,17 @@
 <link rel="canonical" href="https://alwodouh.com/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="وضوح — Wodouh"/>
-<meta property="og:title" content="وضوح — نظامك الشخصي لذكاء العقود"/>
+<meta property="og:title" content="وضوح — ذكاء العقود للأفراد والشركات"/>
 <meta property="og:description" content="افهم عقدك، واعرف حقوقك، واكتشف المخاطر قبل ما توقّع — تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى، مع مصدر كل رقم. يشتغل على جهازك."/>
 <meta property="og:url" content="https://alwodouh.com/"/>
 <meta property="og:image" content="https://alwodouh.com/assets/og-cover.png"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="وضوح — نظامك الشخصي لذكاء العقود"/>
+<meta property="og:image:alt" content="وضوح — ذكاء العقود للأفراد والشركات"/>
 <meta property="og:locale" content="ar_SA"/>
 <meta property="og:locale:alternate" content="en_US"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="وضوح — نظامك الشخصي لذكاء العقود"/>
+<meta name="twitter:title" content="وضوح — ذكاء العقود للأفراد والشركات"/>
 <meta name="twitter:description" content="افهم عقدك، واعرف حقوقك، واكتشف المخاطر — تقييم فوري لعقد العمل، وتقدير مستحقاتك إذا انتهى، مع مصدر كل رقم."/>
 <meta name="twitter:image" content="https://alwodouh.com/assets/og-cover.png"/>
 <!-- The only machine-readable identity anchor for "Wodouh" as an entity —
@@ -69,7 +69,7 @@
       "alternateName": "وضوح",
       "url": "https://alwodouh.com/",
       "logo": "https://alwodouh.com/assets/og-cover.png",
-      "slogan": "نظامك الشخصي لذكاء العقود"
+      "slogan": "ذكاء العقود للأفراد والشركات"
     },
     {
       "@type": "WebSite",
@@ -309,6 +309,8 @@
     max-width:760px;margin-inline:auto}
   .pos h2{font-size:clamp(22px,3.1vw,33px)}
   .pos .kicker{margin-bottom:10px}
+  .pos-who{margin-top:8px;font-size:13.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2)}
+  html[lang="ar"] .pos-who{font-weight:400;font-size:15px}
   .pos-verbs{margin-top:14px;font-size:clamp(15.5px,1.9vw,19px);color:var(--teal-ink);
     line-height:1.9;max-width:46ch;margin-inline:auto;text-wrap:balance}
   .pos .sec-lede{max-width:58ch;margin-inline:auto}
@@ -346,6 +348,15 @@
     display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .feat .ic svg{width:20px;height:20px;color:var(--teal)}
   .feat h3{font-size:16.5px;color:var(--teal-ink);margin-bottom:6px}
+  /* The one card in the grid that is a preview rather than a shipped feature.
+     Outlined rather than filled — .price .tag is filled teal because it marks
+     the plan we want chosen, and this marks the opposite: read me last. The
+     h3 itself carries no data-t, because applyLang() sets textContent and
+     would wipe the span out of its own heading. */
+  .feat h3 .soon-tag{display:inline-block;margin-inline-start:8px;vertical-align:2px;
+    font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--teal);border:1px solid var(--teal);border-radius:999px;padding:2px 7px}
+  html[lang="ar"] .feat h3 .soon-tag{font-weight:400;font-size:12px;letter-spacing:0;text-transform:none}
   .feat p{font-size:14px;color:var(--ink-2)}
 
   /* pricing */
@@ -519,6 +530,11 @@
     <div class="pos">
       <p class="kicker" data-t="k_pos"></p>
       <h2 data-t="pos_h"></h2>
+      <!-- The audience, immediately under the name, because the name no longer
+           carries it: «نظامك الشخصي» used to say "individuals" inside the noun
+           and now the noun says only what the thing is. Set as a caption rather
+           than a second heading — it qualifies the h2, it does not compete. -->
+      <p class="pos-who" data-t="pos_who"></p>
       <p class="pos-verbs" data-t="pos_verbs"></p>
       <p class="sec-lede" data-t="pos_p"></p>
     </div>
@@ -560,7 +576,7 @@
       <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a6 6 0 0 0-6 6v3l-1.7 3.2a1 1 0 0 0 .9 1.5h13.6a1 1 0 0 0 .9-1.5L18 13v-3a6 6 0 0 0-6-6z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg></div><h3 data-t="f3"></h3><p data-t="f3p"></p></div>
       <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h3M13 12h3M8 16h3"/></svg></div><h3 data-t="f4"></h3><p data-t="f4p"></p></div>
       <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 1.7.5 3.3 1.3 4.6L3 21l4.6-1.3A9 9 0 1 0 12 3z"/><path d="M9 10.5a3 3 0 1 1 3.6 2.9v1.1"/><path d="M12.6 17v.2"/></svg></div><h3 data-t="f5"></h3><p data-t="f5p"></p></div>
-      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.9-3 3.2-4.4 6-4.4S14.1 16 15 19"/><path d="M17 8h5M19.5 5.5v5"/></svg></div><h3 data-t="f6"></h3><p data-t="f6p"></p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.9-3 3.2-4.4 6-4.4S14.1 16 15 19"/><path d="M17 8h5M19.5 5.5v5"/></svg></div><h3><span data-t="f6"></span><span class="soon-tag" data-t="f6_tag"></span></h3><p data-t="f6p"></p></div>
     </div>
   </div>
 </section>

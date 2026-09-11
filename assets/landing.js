@@ -67,15 +67,36 @@ const T = {
      a problem, three steps, six features. What it never did was say what the
      thing IS, so a reader who arrived from a forwarded link met a contract
      scanner and left with no idea it was anything more.
-     This is a positioning layer, not a promise layer. "نظامك الشخصي لذكاء
-     العقود" is deliberately followed, in the same block, by the concrete list
-     of what actually happens — because "system" left on its own would be read
+     This is a positioning layer, not a promise layer. "ذكاء العقود" is
+     deliberately followed, in the same block, by the concrete list of what
+     actually happens — because a category name left on its own would be read
      as a place your contracts are kept and watched, and Wodouh keeps nothing,
      watches nothing and compares nothing. Nothing here is new capability;
-     every clause below already ships. */
+     every clause below already ships.
+
+     IT USED TO SAY «نظامك الشخصي». The word الشخصي was doing real work — it
+     set the scale honestly against the enterprise CLM tools this could
+     otherwise be mistaken for — but it also drew a line the product does not
+     draw. The same contract read from the other side is a business reading
+     its own outgoing template, and that is a screen that exists. So the noun
+     carries no owner now, and the audience is stated in the line beneath it
+     rather than smuggled into the name.
+
+     AI IS NOT IN THE HEADLINE, on purpose. The technology is real and named
+     where it matters — the consent screens name Anthropic's Claude outright,
+     because that is where a reader is deciding whether to send text — but a
+     headline that leads with AI describes the mechanism, and this one has to
+     describe the outcome. "Contract intelligence" is a thing you get. "AI"
+     is how. */
   k_pos:{ar:"وش هو وضوح",en:"What Wodouh is"},
-  pos_h:{ar:"وضوح — نظامك الشخصي لذكاء العقود",
-         en:"Wodouh — your personal contract intelligence system"},
+  pos_h:{ar:"وضوح — ذكاء العقود",
+         en:"Wodouh — Contract Intelligence"},
+  /* The audience line. Individuals first because that is who the product is
+     deepest for today and who every door on home is written for; businesses
+     named in the same breath because the workspace is real enough to look at
+     and the direction is not in doubt. */
+  pos_who:{ar:"للأفراد والشركات في السعودية.",
+           en:"For individuals and businesses in Saudi Arabia."},
   pos_verbs:{ar:"افهم عقودك. اعرف حقوقك. اكتشف المخاطر. وكن مستعدًا.",
              en:"Understand your contracts. Know your rights. Spot risks. Stay ahead."},
   /* SAY THE DEPTH, NOT THE SHORTFALL.
@@ -143,9 +164,20 @@ const T = {
   f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، وكل مبلغ بمصدره ودرجة يقينه.",en:"An exact figure with the arithmetic shown, each amount with its source and how certain it is."},
   f5:{ar:"المساعد القانوني",en:"Legal assistant"},
   f5p:{ar:"مساعد مدعوم بالذكاء الاصطناعي: اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"An AI-assisted helper: ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
+  /* THE ONE CARD OUT OF SIX THAT IS NOT SHIPPING, and it now says so.
+     Five of these describe things a reader gets on their first visit. The
+     business workspace is real markup — team seats, a contract list, your own
+     outgoing templates scored from the other side — but renderBiz() draws it
+     from a hardcoded BIZ object and the screen itself carries pw_demo,
+     "prototype — no real payment happens". Six cards in one grid, all in the
+     present tense, made the sixth a promise the other five had earned.
+     It keeps its place and its detail, because the direction is not in doubt
+     and understating it would be its own kind of dishonesty. What changed is
+     the tense, plus a chip so the eye sorts it before the sentence does. */
+  f6_tag:{ar:"معاينة",en:"Preview"},
   f6:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
-  f6p:{ar:"للشركات: مقاعد للفريق، ومراجعة التعديلات، وتقييم قوالبكم الصادرة من وجهة نظر الطرف الآخر.",
-       en:"For companies: team seats, redline review, and scoring for your own outgoing templates from the other side's view."},
+  f6p:{ar:"الاتجاه اللي ماشي له وضوح: مقاعد للفريق، ومراجعة التعديلات، وتقييم قوالبكم الصادرة من وجهة نظر الطرف الآخر. المساحة معروضة اليوم كنموذج تقدر تفتحه وتشوفه.",
+       en:"Where Wodouh is heading: team seats, redline review, and scoring your own outgoing templates from the other side's view. The workspace is open today as a preview you can look at."},
 
   k_price:{ar:"الأسعار",en:"Pricing"},
   /* "المخرجات" is software jargon — nobody in Saudi says "outputs" about a
@@ -263,8 +295,8 @@ function applyLang(){
      first, the search-intent line after it in Arabic, which is the page's
      primary language and the one people type their question in. */
   document.title = lang === "ar"
-    ? "وضوح — نظامك الشخصي لذكاء العقود · اقرأ عقدك قبل ما توقّع"
-    : "Wodouh — Your Personal Contract Intelligence System";
+    ? "وضوح — ذكاء العقود · اقرأ عقدك قبل ما توقّع"
+    : "Wodouh — Contract Intelligence for People and Businesses";
   document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   const sar = lang === "ar" ? "ر.س" : "SAR";
