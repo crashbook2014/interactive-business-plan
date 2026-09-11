@@ -27,6 +27,7 @@ const ORDER = [
   "copy-keys.test.js",
   "landing-claims.test.js",
   "result-report.test.js",
+  "legal-trust.test.js",
   "deploy-bundle.test.js",
   "schema.test.js",
   "rls.test.js",

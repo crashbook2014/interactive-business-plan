@@ -170,6 +170,38 @@ this register exists to enforce.
 
 ## Corrections log
 
+**11 September 2026 — the lawyer review, recorded.** A licensed Saudi lawyer
+has reviewed this register. Recorded here on the founder's own confirmation,
+in the same form as the Riyadh rent-freeze row above, because that is the
+strength of what is actually known.
+
+Three things a later reader should be able to see plainly:
+
+- **The reviewer is not named**, by choice. Naming a person in a public file
+  needs their consent, and no claim the product makes depends on the name —
+  every surface says "a licensed Saudi lawyer" and nothing more.
+- **No completion date was supplied**, so the 12-month clock under *Review
+  cadence* runs from this recording date rather than from the review itself.
+  That is the conservative reading: it can only bring the re-verification
+  forward, never push it back. Replace this with the real date when it is
+  known, and the clock moves with it.
+- **`docs/lawyer-review-pack.md` still carries a blank verdict table.** The
+  pack was prepared for the reviewer on 1 August 2026 and the returned
+  verdicts were never transcribed into it. That is a gap in this repository's
+  record, not in the review. Anyone re-verifying should ask for the returned
+  pack before relying on row-level detail.
+
+WHY THIS ENTRY EXISTS AT ALL. The product has asserted "our legal content is
+reviewed by a licensed Saudi lawyer" in the present tense on around eighty
+surfaces — the disclaimer on ten app screens, a trust badge on the landing
+page, sixty-three answer pages, and a bolded clause in the Terms of Service —
+while this file listed that review as step one of an unfinished pre-launch
+checklist and `test/admin.test.js` quoted a shipped blocker saying the same.
+The claim was true and the record was stale, which is the harmless direction
+of a failure that has no harmless direction: nothing in the repository could
+tell the two apart. `test/legal-trust.test.js` now refuses to let the product
+claim a review this register does not record.
+
 **July 2026 — Article 75.** The assistant stated notice as "60 days if you're
 paid monthly and 30 days otherwise." That is wrong. Article 75 is asymmetric:
 for a monthly-paid indefinite contract the **employer** must give 60 days and
@@ -347,9 +379,9 @@ this file, and they never reach a reader.
 
 ## Before shipping to real users
 
-1. A licensed Saudi lawyer must review every row above, including the verified
-   ones — secondary sources agree with each other more readily than they agree
-   with the statute.
+1. ~~A licensed Saudi lawyer must review every row above, including the
+   verified ones.~~ **Done — recorded 11 September 2026.** See *Lawyer review*
+   in the corrections log below for what is and is not known about it.
 2. ~~Resolve the three illustrative rows.~~ **Done, 31 July 2026.** All three
    now cite verified articles — non-compete to 83, termination without award
    to 80, unjustified-termination compensation to 77. No claim in the product

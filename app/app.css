@@ -856,6 +856,39 @@
      of an official source; methodology is visibly quieter and unmarked. */
   .src-line.law{color:var(--teal-ink)}
   .src-line.law::before{content:"§";margin-inline-end:5px;font-weight:700}
+  /* The article is a link to our own sourced page about it. Underlined rather
+     than recoloured: .src-line.law is already teal-ink against the card, and a
+     second colour inside one short line would read as two kinds of statement
+     where there is one. The underline is offset so it does not collide with
+     the descenders in «المادة». */
+  /* The row is the tap target: 44px, which is what test/layout.test.js sweeps
+     this screen for. .linked rather than :has(.art-link) so the rule needs no
+     selector support the rest of this file does not already assume. */
+  /* 44px on the ANCHOR, not on the row. box-sizing is border-box here, so a
+     min-height on .src-line is eaten by its own 8px padding and 1px rule and
+     the link came out at 35 — which the sweep reported to the pixel. The
+     control is what gets measured, so the control is what carries the floor. */
+  .src-line.law.linked{display:flex;align-items:stretch}
+  /* THE § MOVES INSIDE THE LINK. As a child of a flex container the row's own
+     ::before computes to display:block and takes a whole line to itself — the
+     marker sat stranded above the citation it marks. Re-hung on the anchor, it
+     is back on the line AND inside the tap target, which is where a marker for
+     a link belongs anyway. */
+  .src-line.law.linked::before{content:none}
+  .src-line.law.linked .art-link::before{content:"§";margin-inline-end:5px;font-weight:700}
+  /* 46, not 44. The anchor measured 43 at the floor of 44: a flex item's
+     min-height loses to fractional layout often enough that sitting exactly on
+     the limit makes the sweep a coin toss. Two pixels of headroom is cheaper
+     than a guard that fails once a week. */
+  .src-line.law.linked .art-link{display:flex;align-items:center;flex:1;min-width:0;min-height:46px}
+  .src-line.law .art-link{color:inherit;text-decoration:underline;
+      text-underline-offset:3px;text-decoration-thickness:1px;
+      text-decoration-color:color-mix(in srgb, var(--teal-ink) 45%, transparent)}
+  .src-line.law .art-link:hover,.src-line.law .art-link:focus-visible{
+      text-decoration-color:var(--teal-ink)}
+  @supports not (color: color-mix(in srgb, red, blue)){
+    .src-line.law .art-link{text-decoration-color:var(--teal-ink)}
+  }
   .src-line.method{font-style:italic}
   /* The scope line is not italic and not a footnote: it is the sentence that
      explains why the list above is as short as it is, and on a lease it is

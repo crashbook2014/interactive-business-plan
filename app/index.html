@@ -5115,15 +5115,91 @@ function renderEscalate(target){
      </div>`;
 }
 
+/* THE ARTICLE, AND OUR OWN SOURCED PAGE ABOUT IT.
+ *
+ * answers/ holds thirty generated pages, one per claim, each naming the
+ * article it rests on and the date it was last checked — and until now the
+ * only link to any of them lived inside a <noscript> block, which in a
+ * JavaScript app means nobody who can use the product ever saw it. A reader
+ * who met «نظام العمل السعودي — المادة 83» under a red flag had no way to
+ * reach Wodouh's own explanation of Article 83. Fifteen of the eighteen
+ * articles the app cites already had a page written.
+ *
+ * KEYED ON THE INSTRUMENT, NOT ON THE NUMBER, and this is the whole risk of
+ * the change. Three of the app's citations contain an article number that
+ * belongs to a DIFFERENT law:
+ *
+ *   «نظام التأمينات الاجتماعية مع المادتين 84 و85»  → Social Insurance, not Labour
+ *   «اللائحة التنفيذية لنظام العمل — المادة 6»       → the Implementing Regulations
+ *
+ * The second is the nastier one: it contains the literal words «نظام العمل»,
+ * so any pattern that merely looks for the law's name somewhere in the string
+ * matches it. Both regexes below are anchored to the whole citation, so a
+ * citation is either exactly "the Saudi Labour Law, article N" or it gets no
+ * link at all. Attaching the Labour Law's article-84 page to a GOSI figure
+ * would be a false citation on a money line that looked entirely correct.
+ *
+ * The three cited articles with no page are exactly the three the register
+ * declines to fully verify — Implementing Regulations 6 is another
+ * instrument, 53 is DISPUTED and 81 is verified as to its grounds only — so
+ * the library's coverage is the register's discipline made visible rather
+ * than a gap. test/legal-trust.test.js asserts that by reason, not by list. */
+const ANSWER_PAGE = {
+  37:"a-non-saudi-s-contract-must-be-written-article-37",
+  40:"employer-bears-recruitment-fees-article-40",
+  /* Article 75 has two pages. This is the general notice rule; the other,
+     during-the-notice-period-article-75, is the narrower question of what
+     each side owes DURING the period, which is not what a notice clause in a
+     contract is about. */
+  75:"notice-article-75",
+  76:"a-party-who-terminates-without-observing-article-76",
+  77:"compensation-for-termination-without-valid-reason-article-77",
+  79:"a-resignation-is-deemed-accepted-article-79",
+  80:"termination-without-award-or-notice-article-80",
+  83:"non-compete-must-be-in-writing-article-83",
+  84:"end-of-service-article-84",
+  85:"resignation-reduction-article-85",
+  87:"exceptions-to-the-resignation-reduction-article-87",
+  107:"overtime-paid-at-the-hourly-wage-article-107",
+  109:"annual-leave-at-least-21-days-article-109",
+  111:"accrued-annual-leave-not-taken-article-111",
+  222:"labour-claims-not-heard-after-12-article-222"
+};
+const LABOUR_CITE = {
+  ar: /^نظام العمل السعودي — المادة (\d+)$/,
+  en: /^Saudi Labor Law — Article (\d+)$/
+};
+function answerHref(text){
+  const m = (LABOUR_CITE[lang] || LABOUR_CITE.en).exec(String(text || "").trim());
+  if (!m) return null;
+  const slug = ANSWER_PAGE[Number(m[1])];
+  return slug ? `../answers/${slug}/${lang === "ar" ? "ar/" : ""}` : null;
+}
+
 /* Nothing is shown without saying where it came from. Two kinds, and the
    difference is deliberate and visible: a legal claim cites the article, and
    only articles verified in docs/legal-sources.md are ever cited that way.
    Everything else is Wodouh's own reading and says so, rather than borrowing
    authority it does not have. */
 function srcOf(c){
-  return c.src
-    ? `<div class="src-line law">${t("govern_by")}: ${esc(c.src[lang])}</div>`
-    : `<div class="src-line method">${t("src_method")}</div>`;
+  if (!c.src) return `<div class="src-line method">${t("src_method")}</div>`;
+  const text = c.src[lang], href = answerHref(text);
+  /* A NEW TAB, not a navigation. This is a single-page app and `current` is
+     held in memory: following a link in place would throw away the analysis
+     the reader is in the middle of, and the back button would return them to
+     a blank result screen. Same treatment the sources list already gives its
+     outbound links. */
+  /* THE WHOLE ROW IS THE TARGET, not just the article. An inline link inside a
+     sentence measures 14px tall in Arabic, and test/layout.test.js sweeps every
+     anchor on this screen for the 44px minimum at 390 and 430px — it caught
+     this immediately. Padding the inline element would have satisfied the
+     measurement while leaving a thin strip to actually hit, on a screen read
+     one-handed. So the label goes inside the link and the row becomes the
+     control: "What governs this: Saudi Labour Law — Article 83" reads as one
+     statement and behaves as one. */
+  return href
+    ? `<div class="src-line law linked"><a class="art-link" href="${href}" target="_blank" rel="noopener noreferrer">${t("govern_by")}: ${esc(text)}</a></div>`
+    : `<div class="src-line law">${t("govern_by")}: ${esc(text)}</div>`;
 }
 
 function scoreBand(n){ return n>=80 ? "great" : n>=60 ? "good" : n>=40 ? "fair" : "poor"; }
