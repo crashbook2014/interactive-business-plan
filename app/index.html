@@ -444,6 +444,14 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       </div>
       <span class="doc-label" id="docLabel"></span>
       <p class="src-line method score-src" data-t="src_score"></p>
+      <!-- WHICH BODY OF LAW WAS JUST READ, at screen level.
+           Every clause with no citation already prints src_method ("Wodouh's
+           reading — not a statutory rule"), so on a lease each finding is
+           individually disclaimed. What no clause could answer is "why are
+           there only three?" — seventeen rules can fire on an employment
+           contract and three on a lease, and a short list with no explanation
+           reads as a thorough one. Silence is not a disclaimer. -->
+      <p class="src-line scope" id="scopeNote" hidden></p>
       <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
       <p class="currency" data-t="src_stamp"></p>
       <div class="legend">
@@ -1862,6 +1870,25 @@ const T = {
            en:"We show the rules that apply to your situation — contract type, notice, and compensation all differ."},
   next_step:{ar:"الخطوة التالية",en:"Next step"},
   src_method:{ar:"قراءة وضوح — ليست نصًّا نظاميًا",en:"Wodouh's reading — not a statutory rule"},
+  /* WHAT WAS READ, AND AGAINST WHAT. Printed under the score, per document
+     kind, because the per-clause src_method disclaims each finding and nothing
+     accounts for the ones that were never looked for: seventeen clause rules
+     can fire on an employment contract and three on a lease, and three
+     findings with no explanation read as a thorough reading rather than a
+     narrow one.
+     The rental and freelance wording is the sentence already approved inside
+     this app on the roadmap screen (fu_cat_rent_d), shortened. Two phrasings
+     of one truth is how two screens start disagreeing. */
+  scope_job:{ar:"قرأنا عقدك مقابل نظام العمل السعودي — كل ملاحظة مسندة لمادة، والمواد معروضة في «حسابي».",
+             en:"Read against the Saudi Labour Law — every point is tied to an article, and the articles are listed in Account."},
+  scope_rent:{ar:"قرأنا نص عقدك نفسه، لا أنظمة الإيجار: ما عندنا قواعد موثّقة للإيجار ولا مواد نستند لها هنا. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والنقاش، لا في تقرير حكم نظامي.",
+              en:"Read as a contract, not against rental law: we have no verified rental rules and no articles to lean on here. What's above is a reading of your own clauses — enough to document and to raise, not to settle a legal question."},
+  scope_gig:{ar:"قرأنا نص عقدك نفسه، لا أنظمة العمل الحر: ما عندنا سجل موثّق لها بعد. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والمطالبة، لا في تقرير حكم نظامي.",
+             en:"Read as a contract, not against freelance law: we have no verified register for it yet. What's above is a reading of your own clauses — enough to document and to claim on, not to settle a legal question."},
+  /* The document did not identify itself, so we cannot even name what we did
+     not read it against. Says less than the two above, on purpose. */
+  scope_unknown:{ar:"ما قدرنا نحدد نوع العقد بثقة، فقرأنا نصّه نفسه بدون مواد نظامية. اللي فوق قراءة لبنودك.",
+                 en:"We could not tell what kind of contract this is, so we read its words without article numbers. What's above is a reading of your own clauses."},
 
   /* The rights library: grouped the way the questions actually arrive. */
   lib_ask:{ar:"تعرض لك الآن الأنظمة المشتركة بين الجميع. اختر وضعك عشان نضيف اللي يخصك أنت.",
@@ -5126,6 +5153,40 @@ const DC_ICON = {
   lawyer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.2"/></svg>'
 };
 
+/* WHAT THIS READING WAS MEASURED AGAINST — and, for everything that is not an
+ * employment contract, what it was NOT.
+ *
+ * ASKED OF THE DOCUMENT, NOT THE DOOR, and that distinction is the whole
+ * reason this function exists rather than a ternary on `journey`. The door is
+ * the reader's account of their situation; the upload row on home opens the
+ * employment journey, so a lease pasted through it would otherwise be
+ * described as having been read against the Labour Law. docDomain() reads the
+ * contract for itself and is already what decides whether a citation is
+ * allowed through — this is the same fact, said out loud to the reader.
+ *
+ * A SAMPLE IS NOT A PASTED CONTRACT. The built-in samples carry a doc kind and
+ * no source text, so they are named directly; docDomain() would return null on
+ * an empty string and tell a reader we could not identify a document we wrote
+ * ourselves.
+ *
+ * Hidden rather than emptied when there is nothing to say — an empty <p> in a
+ * column of source lines still takes its margin, and a gap under the score
+ * reads as something that failed to load. */
+const SCOPE_OF = { doc_emp:"job", doc_clean:"job", doc_rent:"rent", doc_free:"gig" };
+function renderScope(){
+  const el = document.getElementById("scopeNote");
+  if (!el) return;
+  const dom = current && current.srcText
+    ? docDomain(current.srcText)
+    : (current ? SCOPE_OF[current.doc] : null);
+  const key = dom === "job" ? "scope_job"
+            : dom === "rent" ? "scope_rent"
+            : dom === "gig" ? "scope_gig"
+            : "scope_unknown";
+  el.textContent = t(key);
+  el.hidden = !current;
+}
+
 function renderDecision(){
   const d = decide(current);
   const reds = current.clauses.filter(c=>c.s==="red").length;
@@ -5228,6 +5289,7 @@ function renderResult(reset){
   document.getElementById("verdict").textContent =
     (signedMode && current.vs ? current.vs : current.verdict)[lang];
   document.getElementById("docLabel").textContent = t(current.doc);
+  renderScope();
   if (reset){
     document.getElementById("scoreNum").textContent = "0";
     document.getElementById("ringVal").style.strokeDashoffset = "326.7";

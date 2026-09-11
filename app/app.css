@@ -792,6 +792,14 @@
   .src-line.law{color:var(--teal-ink)}
   .src-line.law::before{content:"§";margin-inline-end:5px;font-weight:700}
   .src-line.method{font-style:italic}
+  /* The scope line is not italic and not a footnote: it is the sentence that
+     explains why the list above is as short as it is, and on a lease it is
+     load-bearing. Amber-tinted rather than grey for the same reason the cap
+     note on a clamped input is — the reader is being told a limit, not given
+     a citation. */
+  .src-line.scope{font-style:normal;color:var(--ink);background:var(--amber-bg);
+      border:0;border-radius:var(--r-md);padding:10px 13px;margin-top:10px;
+      font-size:13px;line-height:1.65;text-align:start}
   .src-line[hidden]{display:none}
   .score-src{border-top:0;padding-top:0;margin-top:10px;text-align:center}
 

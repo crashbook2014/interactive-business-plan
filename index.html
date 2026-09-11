@@ -275,11 +275,29 @@
   .row{display:flex;align-items:center;gap:10px;border-radius:var(--r-md);padding:11px 13px}
   .row .dot{flex:none;width:23px;height:23px;border-radius:999px;display:flex;align-items:center;justify-content:center}
   .row .dot svg{width:12px;height:12px}
-  .row b{font-size:13.5px;color:var(--ink);font-weight:700}
+  .row .tx{min-width:0}
+  .row b{display:block;font-size:13.5px;color:var(--ink);font-weight:700}
   html[lang="ar"] .row b{font-weight:400;font-size:15px}
+  /* The severity, in words. Tinted to its own band so the label and the row
+     agree, and normal-weight so it reads as a caption under the title rather
+     than as a second heading. */
+  .row i{display:block;font-style:normal;font-size:11.5px;font-weight:700;margin-top:1px}
+  html[lang="ar"] .row i{font-weight:400;font-size:12.5px}
   .row.red{background:var(--red-bg)} .row.red .dot{background:var(--red)}
+  .row.red i{color:var(--red)}
   .row.amber{background:var(--amber-bg)} .row.amber .dot{background:var(--amber)}
+  .row.amber i{color:var(--amber-ink)}
   .row.green{background:var(--green-bg)} .row.green .dot{background:var(--green)}
+  .row.green i{color:var(--green-ink)}
+  /* Size follows severity, as it now does in the app: the red finding is the
+     one the reader is meant to see first, and on a screen built to rank things
+     the ranking should survive being glanced at. */
+  .row.red{padding:14px 13px} .row.red b{font-size:15px}
+  .row.red .dot{width:27px;height:27px} .row.red .dot svg{width:14px;height:14px}
+  html[lang="ar"] .row.red b{font-size:16.5px}
+  .row.green{padding:9px 13px} .row.green b{font-size:12.5px}
+  .row.green .dot{width:20px;height:20px} .row.green .dot svg{width:11px;height:11px}
+  html[lang="ar"] .row.green b{font-size:13.5px}
 
   /* positioning band. Same card idiom as .quote/.step/.feat — one border, one
      radius token, the shared shadow pair — so the page gains a statement and
@@ -476,9 +494,18 @@
       </div>
       <div class="verdict" data-t="shot_verdict"></div>
       <div class="rows">
-        <div class="row red"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v5M7 10.6v.4" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round"/></svg></span><b data-t="shot_r1"></b></div>
-        <div class="row amber"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round"/></svg></span><b data-t="shot_r2"></b></div>
-        <div class="row green"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b data-t="shot_r3"></b></div>
+        <!-- THE MOCK IS A PROMISE ABOUT THE PRODUCT, so it has to be one the
+             first click keeps. Two things changed in the real result screen and
+             had not reached this picture: every flag now states its severity in
+             WORDS under the title, because colour alone fails the roughly one
+             man in twelve who reads red against green badly and everyone in
+             sunlight; and the rows vary in size by severity, because a screen
+             whose whole job is to rank findings was ranking them in hue only.
+             The severity strings are the app's own act_red / act_amber /
+             act_green, verbatim. -->
+        <div class="row red"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v5M7 10.6v.4" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round"/></svg></span><span class="tx"><b data-t="shot_r1"></b><i data-t="shot_s1"></i></span></div>
+        <div class="row amber"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round"/></svg></span><span class="tx"><b data-t="shot_r2"></b><i data-t="shot_s2"></i></span></div>
+        <div class="row green"><span class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="var(--on-teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tx"><b data-t="shot_r3"></b><i data-t="shot_s3"></i></span></div>
       </div>
     </div>
   </div>

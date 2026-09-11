@@ -202,22 +202,40 @@ const AR_B = "مدة الإشعار ستون يومًا قبل إنهاء الع
       const idle = document.getElementById("upCta").textContent;
       const file = new File([new Uint8Array(arr)], "employment-contract-final-v3.pdf",
                             { type: "application/pdf" });
-      const p2 = handleFile(file);
-      /* One frame in: extraction is running and has not resolved. */
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      /* EVERY VALUE THE LABEL TOOK, NOT THE ONE IT HAPPENED TO HOLD.
+         The first version of this sampled two frames after calling handleFile
+         and asserted on that instant. Extraction is fast on a warm PDF.js and
+         a small fixture, so roughly one run in three had already finished and
+         restored the label — a guard that fails when the product is FASTER is
+         a guard that teaches people to re-run until green, which is worse than
+         not having one. Recording the transitions makes the assertion true
+         whatever the timing: the label must have said it, not must be saying
+         it at an arbitrary moment. */
+      const cta = document.getElementById("upCta");
+      const say = document.getElementById("offlineNotice");
+      const row = document.getElementById("upMain");
+      const seen = { cta: [cta.textContent], said: [], busy: false };
+      const obs = new MutationObserver(() => {
+        seen.cta.push(cta.textContent);
+        if (!say.hidden && say.textContent) seen.said.push(say.textContent);
+        if (row.classList.contains("busy")) seen.busy = true;
+      });
+      obs.observe(document.getElementById("screen-intake"),
+                  { subtree: true, childList: true, characterData: true, attributes: true });
+      await handleFile(file);
+      obs.disconnect();
       const during = {
-        cta: document.getElementById("upCta").textContent,
-        busy: document.getElementById("upMain").classList.contains("busy"),
-        said: document.getElementById("offlineNotice").textContent,
-        saidShown: !document.getElementById("offlineNotice").hidden,
+        cta: seen.cta.find((x) => x !== idle) || cta.textContent,
+        busy: seen.busy,
+        said: seen.said[0] || "",
+        saidShown: seen.said.length > 0,
       };
-      await p2;
       await new Promise((r) => setTimeout(r, 60));
       const toasts = [...document.querySelectorAll(".toast")].map((x) => x.textContent.trim());
       return { idle, during, toasts, after: document.getElementById("upCta").textContent };
     }, [Array.from(mk.identityH(AR)), L]);
 
-    ok(feedback.during.busy, `${L}: the row is marked busy while the file is read`);
+    ok(feedback.during.busy, `${L}: the row was marked busy at some point while the file was read`);
     ok(feedback.during.cta !== feedback.idle,
        `${L}: and the label stops inviting an upload that already happened ("${feedback.during.cta}")`);
     ok(/employment-contract|v3\.pdf/.test(feedback.during.cta),

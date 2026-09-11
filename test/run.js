@@ -25,6 +25,7 @@ const ORDER = [
   "contrast.test.js",
   "type-scale.test.js",
   "copy-keys.test.js",
+  "landing-claims.test.js",
   "deploy-bundle.test.js",
   "schema.test.js",
   "rls.test.js",

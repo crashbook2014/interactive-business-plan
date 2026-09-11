@@ -50,6 +50,17 @@ const T = {
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
   shot_r3:{ar:"الراتب والبدلات",en:"Salary & benefits"},
+  /* THE SEVERITY WORD, verbatim from the app's act_red / act_amber / act_green.
+     The real result screen has carried it under every clause title since
+     severity stopped being conveyed by colour alone — around one man in twelve
+     reads red against green badly, and nobody reads either well in sunlight.
+     A hero mock without it is a picture of a product that no longer exists,
+     and the mismatch is exposed by the first click. Copied rather than
+     imported because the two pages have separate copy objects; the guard in
+     test/landing-claims.test.js is what keeps them identical. */
+  shot_s1:{ar:"انتبه قبل التوقيع",en:"Pause before signing"},
+  shot_s2:{ar:"يستاهل التفاوض",en:"Worth negotiating"},
+  shot_s3:{ar:"مطمئن",en:"All clear"},
 
   /* ---- WHAT WODOUH IS, in its own words.
      The page already argues the product well — a hero that names one decision,
@@ -67,8 +78,29 @@ const T = {
          en:"Wodouh — your personal contract intelligence system"},
   pos_verbs:{ar:"افهم عقودك. اعرف حقوقك. اكتشف المخاطر. وكن مستعدًا.",
              en:"Understand your contracts. Know your rights. Spot risks. Stay ahead."},
-  pos_p:{ar:"أي عقد قدّامك — عمل أو إيجار أو عمل حر — تفتحه في وضوح وتطلع منه فاهم: تقييمه، والبنود اللي تنتبه لها ومصدرها من النظام، ومستحقاتك إذا انتهى، وخطاب تفاوض جاهز إذا حبيت ترد. القرار قرارك، ودورنا إنك تاخذه وأنت داري.",
-         en:"Any contract in front of you — employment, rental or freelance — you open it in Wodouh and come out understanding it: the score, the clauses to watch and where each one sits in the law, what you're owed if it ends, and a negotiation letter ready if you want to answer back. The decision stays yours; our job is that you make it knowing."},
+  /* TIERED, BECAUSE THE PRODUCT IS TIERED.
+   *
+   * This promised, of ANY of the three types, "the clauses to watch and where
+   * each one sits in the law" and "what you're owed if it ends". Measured
+   * against the app, neither half is true for a lease: seventeen clause rules
+   * can fire on an employment contract and three on a lease, ruleInDomain()
+   * strips every article number outside the employment doors on purpose, and
+   * the end-of-service calculator is labour-only. The register says the same
+   * thing about itself — thirty-five labour rows carry the verified token and
+   * rental's three deliberately do not, so they stay out of the graded corpus.
+   *
+   * Depth is not a thing to be coy about. Employment is the spine and saying
+   * so is a stronger claim than pretending three things are one thing. What
+   * rental and freelance get — a reading of the contract's own words, what it
+   * obliges, what to document — is genuinely useful and is not a citation, and
+   * a reader who finds that out for themselves after paying attention to this
+   * paragraph has been told something untrue by it.
+   *
+   * The rental half is the wording already approved inside the app, on the
+   * roadmap screen (fu_cat_rent_d). Two phrasings of one truth is how the two
+   * drift apart. */
+  pos_p:{ar:"أي عقد قدّامك — عمل أو إيجار أو عمل حر — تفتحه في وضوح وتطلع منه فاهم: تقييمه، والبنود اللي تنتبه لها، وخطاب تفاوض جاهز إذا حبيت ترد. في عقود العمل نذهب أعمق: كل ملاحظة مسندة لمادة من نظام العمل، ونحسب لك مستحقاتك إذا انتهى العقد. أما الإيجار والعمل الحر فنقرأ عقدك نفسه — نصّه، وش يلزمك، ووش توثّقه — بدون مواد نظامية، لأننا ما تحققنا منها بعد. القرار قرارك، ودورنا إنك تاخذه وأنت داري.",
+         en:"Any contract in front of you — employment, rental or freelance — you open it in Wodouh and come out understanding it: the score, the clauses to watch, and a negotiation letter ready if you want to answer back. On employment we go deeper: every point is tied to an article of the Labour Law, and we calculate what you're owed if it ends. On rental and freelance we read the contract itself — its words, what it obliges, what to document — without article numbers, because we have not verified them yet. The decision stays yours; our job is that you make it knowing."},
 
   k_problem:{ar:"المشكلة",en:"The problem"},
   problem_h:{ar:"العقود مكتوبة عشان تُوقَّع، مو عشان تُفهَم.",en:"Contracts are written to be signed, not to be understood."},
@@ -94,7 +126,7 @@ const T = {
   st2:{ar:"اقرأ الخلاصة",en:"Read the verdict"},
   st2p:{ar:"تقييم من 100، وكل بند مشروح بلغة بسيطة: أحمر انتبه، أصفر فاوض، أخضر مطمئن.",
         en:"A score out of 100 and every clause in plain language: red to pause, amber to negotiate, green to relax."},
-  st3:{ar:"أرسل خطابك",e:"",en:"Send your letter"},
+  st3:{ar:"أرسل خطابك",en:"Send your letter"},
   st3p:{ar:"أضف البنود وأنت تقرأ، ونجمعها لك خطاب تفاوض مهذب وواثق ترسله كما هو.",
         en:"Add points as you read and we assemble a polite, confident letter you can send as is."},
 
@@ -179,7 +211,7 @@ const T = {
     ["وقّعت بالفعل، أو انتهى عقدي — فات الأوان؟","لا. وضوح يقرأ العقد الموقّع ويوضّح وش ملزم ووش قابل للاعتراض، ويحسب مستحقاتك عند الإنهاء. والدعوى العمالية لا تُسمع بعد 12 شهرًا من انتهاء العلاقة (نظام العمل، المادة 222)، فالوقت يهم."],
     ["هل يغني عن المحامي؟","لا. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره، وهذه المراجعة هي ما يقف خلف المواد التي نستشهد بها — لكن وضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا خاصًا بك، ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
-    ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية."],
+    ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية. عقود العمل هي الأعمق: مسندة لمواد نظام العمل ومعها حاسبة نهاية الخدمة. الإيجار والعمل الحر نقرأ فيهما نص عقدك نفسه بدون مواد نظامية، لأن سجلنا الموثّق نظام عمل فقط حتى الآن."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
     ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة — وضوح غير مسجَّل فيها حاليًا."],
     ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ خلال 14 يومًا بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."],
@@ -190,7 +222,7 @@ const T = {
     ["I already signed, or my contract ended — is it too late?","No. Wodouh reads a signed contract and shows what binds you and what remains contestable, and calculates what you're owed on termination. A labour claim is not heard after 12 months from the end of the relationship (Labor Law, Article 222), so timing matters."],
     ["Does this replace a lawyer?","No. Our legal content is reviewed by a licensed Saudi lawyer before publication, which is what stands behind the articles we cite — but Wodouh itself is not a law firm and does not provide legal representation. For a real dispute or large sums you need a lawyer of your own; Wodouh gets your file ready before you go."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
-    ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign."],
+    ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign. Employment is the deepest: tied to Labour Law articles, with the end-of-service calculator. On rental and freelance we read your contract's own words without article numbers, because our verified register is labour law only so far."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
     ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added — Wodouh is not currently registered for VAT."],
     ["What if the letter isn't useful?","We refund you within 14 days, no questions. You're paying for an output you actually use, not for a trial."],

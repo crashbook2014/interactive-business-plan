@@ -182,6 +182,54 @@ const JOB = [
   ok(kinds.prose === null,
      `and prose about cats is nothing at all, rather than the first guess (${kinds.prose})`);
 
+  /* ---- AND THE SCREEN SAYS WHICH BODY OF LAW IT JUST READ.
+   *
+   * Everything above proves the CITATIONS are scoped correctly. None of it
+   * says the reader is told why. On a lease the app finds three clauses where
+   * an employment contract finds six, each marked "Wodouh's reading — not a
+   * statutory rule" — and three findings with no explanation read as a
+   * thorough reading rather than a narrow one. Per-clause honesty does not add
+   * up to a screen that is honest about its own coverage; silence about scope
+   * is not a disclaimer.
+   *
+   * ASKED OF THE DOCUMENT, NOT THE DOOR, for the same reason the citations are:
+   * the upload row on home opens the employment journey, so a lease pasted
+   * through it would otherwise be described as having been read against the
+   * Labour Law — the exact claim this whole suite exists to prevent, made in
+   * prose instead of in a citation.
+   */
+  console.log("\n— and the result says what it was, and was not, read against");
+  const scopeOf = (text, door) => p.evaluate(({ t: txt, d }) => {
+    nat = "sa"; obDone = true; authUser = { id: "t", email: "t@t.t" };
+    journey = d;
+    current = analyzePasted(txt, d);
+    if (!current) return { nulled: true };
+    current.srcText = txt;
+    renderResult(false); show("result");
+    const el = document.getElementById("scopeNote");
+    return { nulled: false, hidden: el.hidden, text: el.textContent,
+             clauses: current.clauses.length,
+             cited: current.clauses.filter((c) => c.src).length };
+  }, { t: text, d: door });
+
+  const jobScope = await scopeOf(JOB, "contract");
+  ok(!jobScope.nulled && !jobScope.hidden,
+     `an employment contract gets a scope line (${jobScope.clauses} clauses, ${jobScope.cited} cited)`);
+  ok(/نظام العمل/.test(jobScope.text),
+     `and it names the Labour Law, which is what it was read against ("${jobScope.text.slice(0, 60)}")`);
+
+  /* THROUGH THE CONTRACT DOOR, which is where the upload row on home sends
+     every reader — so this is the case that actually happens, not a corner. */
+  const leaseScope = await scopeOf(LEASE, "contract");
+  ok(!leaseScope.nulled && !leaseScope.hidden,
+     `a lease gets one too (${leaseScope.clauses} clauses, ${leaseScope.cited} cited)`);
+  ok(!/نظام العمل/.test(leaseScope.text),
+     `and it does NOT claim the Labour Law, even through the contract door ("${leaseScope.text.slice(0, 60)}")`);
+  ok(/ما عندنا|بدون مواد|لا أنظمة/.test(leaseScope.text),
+     "and it says plainly that there are no verified rules behind it here");
+  ok(jobScope.text !== leaseScope.text,
+     "the two are different sentences — a single generic line would say nothing");
+
   console.log("\n— a document with no door yet is read on its own evidence");
   const strayJob = await read(JOB, null);
   ok(!strayJob.nulled && strayJob.n >= 1,
