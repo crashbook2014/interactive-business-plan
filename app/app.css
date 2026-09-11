@@ -344,6 +344,23 @@
      an arrow pointing forward on a button that goes back. */
   html[dir="rtl"] .back .bk{transform:scaleX(-1)}
   .score-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:26px 20px 20px;text-align:center;box-shadow:var(--e2),var(--edge);--band:var(--teal)}
+  /* THE MASTHEAD, on the .letterhead pattern the letter and the case file
+     already use: mark, name in letterspaced caps, hairline rule beneath. Those
+     are artifacts a reader sends onward, and this one is read the same way —
+     it is the screen people screenshot and forward. The date sits at the far
+     end rather than centred, so the row reads as a document header and not as
+     a title. 10.5px carries letter-spacing, which is both the reason it is
+     legible at that size and what test/type-scale.test.js requires of anything
+     below 12px. */
+  .rp-head{display:flex;align-items:center;gap:8px;padding-bottom:13px;margin-bottom:18px;
+      border-bottom:1px solid var(--line);text-align:start}
+  .rp-head .rp-mk{width:17px;height:17px;flex:none}
+  .rp-kicker{font-family:var(--en);font-size:10.5px;font-weight:800;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--teal)}
+  html[lang="ar"] .rp-kicker{font-family:var(--ar);font-weight:400;font-size:13px;
+      letter-spacing:0;text-transform:none}
+  .rp-date{margin-inline-start:auto;font-size:12px;color:var(--ink-2);
+      font-variant-numeric:tabular-nums}
   /* The score is the emotional centre of the app, so it carries the verdict's
      colour rather than a constant brand teal. */
   .score-card[data-band="great"]{--band:var(--green)}
@@ -416,8 +433,49 @@
       border:12px solid transparent;border-bottom-width:13px;background-clip:padding-box;
       box-shadow:inset 0 -1px 0 var(--line)}
   .how-built:hover{color:var(--teal)}
-  .legend{display:flex;justify-content:center;gap:14px;margin-top:14px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
-  .legend i{font-style:normal;display:inline-block;width:9px;height:9px;border-radius:99px;margin-inline-end:5px}
+  /* THE COLOPHON. Four grey captions that used to sit loose under the ring,
+     each centred on its own line, now one labelled block with a rule above it.
+     Start-aligned rather than centred: centred text reads as a caption and
+     invites a skim, and this is the block that answers "what was this read
+     against" — the one a sceptical reader stops on. The .score-card is
+     text-align:center, hence the explicit start here.
+
+     .how-built keeps its 12px transparent border. That is not spacing — it is
+     what carries the link past the 44px touch minimum that
+     test/layout.test.js sweeps at 390 and 430px, and shrinking it to tidy the
+     block would fail that sweep rather than look tidier.
+
+     THE LEGEND USED TO LIVE HERE and is gone. It explained the three severity
+     colours from inside .dk-a while the flags it explained were in .dk-b — on
+     a laptop that is the other column. Its job moved into the tally above the
+     findings, where the counts and the colour names are the same object, and
+     its copy keys moved with it rather than being orphaned. */
+  .rp-meta{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);text-align:start}
+  .rp-meta-h{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--teal);margin:0 0 9px}
+  html[lang="ar"] .rp-meta-h{font-weight:400;font-size:13px;letter-spacing:0;text-transform:none}
+  .rp-meta .src-line{margin-top:0;padding-top:0;border-top:0;text-align:start}
+  .rp-meta .src-line + .src-line,.rp-meta .currency{margin-top:8px}
+  .rp-meta .currency{text-align:start}
+  .rp-meta .how-built{margin:2px 0 0;margin-inline-start:-12px}
+  /* THE FINDINGS HEADER. 16.5px matches .duties h3 — the two lists on this
+     screen are peers ("what can they do to me" and "what did I agree to") and
+     a heading a step apart would rank one over the other by accident.
+     The tally wraps under the heading on a narrow phone rather than squeezing
+     the title, and each chip carries its severity's own ink on its own tint,
+     the pairs contrast.test.js already holds at 4.5:1. */
+  .fx-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .fx-head h3{font-size:16.5px;color:var(--teal-ink);margin:0}
+  .fx-tally{display:flex;gap:6px;flex-wrap:wrap;margin-inline-start:auto}
+  .fx-tally[hidden]{display:none}
+  .fx-chip{font-size:12px;line-height:1.6;border-radius:999px;padding:2px 10px;
+      white-space:nowrap;font-weight:600}
+  html[lang="ar"] .fx-chip{font-weight:400;font-size:13px}
+  .fx-chip b{font-weight:800;font-variant-numeric:tabular-nums;margin-inline-end:2px}
+  html[lang="ar"] .fx-chip b{font-weight:700}
+  .fx-chip.red{background:var(--red-bg);color:var(--red-ink)}
+  .fx-chip.amber{background:var(--amber-bg);color:var(--amber-ink)}
+  .fx-chip.green{background:var(--green-bg);color:var(--green-ink)}
   .flags{margin-top:16px;display:grid;gap:10px}
   /* One scannable line per clause; detail is one tap away (and always in full
      on the clause-by-clause screen), so the result reads at a glance. */
@@ -717,13 +775,20 @@
      the verdict and the findings, so the arrival needs to be quick rather than
      considered. At --t the last one landed at 680ms; at --t-fast it lands at
      540ms, which is the same sequence without the drag at the end. */
+  /* NAMED, NOT COUNTED. These four delays used to be addressed as
+     .dk-b > button:nth-of-type(1..4). That is correct only for exactly the
+     current markup: add a button anywhere in .dk-b — an upgrade prompt, a
+     second CTA — and every delay silently shifts onto a different element,
+     and so does the probe in test/motion.test.js that asserts this sequence.
+     Nothing fails; the guard just quietly stops watching what it names. The
+     ids already exist, so naming them costs nothing and takes the trap out. */
   #screen-result.active .duties:not([hidden]),
   #screen-result.active .dk-b > button{animation:settle var(--t-fast) var(--ease-out) both}
   #screen-result.active .duties:not([hidden]){animation-delay:290ms}
-  #screen-result.active .dk-b > button:nth-of-type(1){animation-delay:290ms}
-  #screen-result.active .dk-b > button:nth-of-type(2){animation-delay:320ms}
-  #screen-result.active .dk-b > button:nth-of-type(3){animation-delay:350ms}
-  #screen-result.active .dk-b > button:nth-of-type(4){animation-delay:380ms}
+  #screen-result.active .dk-b > .detail{animation-delay:290ms}
+  #screen-result.active #letterTease{animation-delay:320ms}
+  #screen-result.active #trackTease{animation-delay:350ms}
+  #screen-result.active #assistTease{animation-delay:380ms}
   .primary:active,.sample:active,.plan:active,.letter-tease:active,.track-tease:active,
   .ghost:active,.fb-btns button:active{transform:scale(.978)}
   .primary,.sample,.plan,.letter-tease,.track-tease,.ghost,.fb-btns button{transition:transform var(--t-fast) var(--ease-spring),box-shadow var(--t-fast) var(--ease-out)}

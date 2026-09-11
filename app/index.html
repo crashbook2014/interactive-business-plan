@@ -425,6 +425,20 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <h2 class="sr-only" data-t="res_head"></h2>
     <button class="back" onclick="show('home',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="back_home"></span></button>
     <div class="score-card dk-split">
+      <!-- THE MASTHEAD. Wodouh already owns a document idiom — .letterhead puts
+           the mark, the name in letterspaced caps and a hairline rule at the top
+           of the letter and the case file, because those are artifacts a reader
+           sends to someone else. The result screen is the one document-shaped
+           output that never wore it, and without it the screen opens on a
+           coloured verdict with nothing saying what kind of thing it is.
+           It carries the date because a report without one cannot be filed,
+           quoted or argued from later. Spans both desktop columns for free:
+           .dk-split > * is grid-column 1/-1 unless it is .dk-a or .dk-b. -->
+      <div class="rp-head">
+        <svg class="rp-mk" viewBox="0 0 64 64" stroke="var(--teal)" aria-hidden="true"><use href="#mark-lens"/></svg>
+        <span class="rp-kicker" data-t="rp_kicker"></span>
+        <span class="rp-date" id="rpDate"></span>
+      </div>
       <div class="dk-a">
       <div class="decision" id="decision" aria-live="polite">
         <span class="dc-ic" id="dcIcon" aria-hidden="true"></span>
@@ -443,21 +457,32 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <div class="num"><b id="scoreNum">0</b><i>/ 100</i></div>
       </div>
       <span class="doc-label" id="docLabel"></span>
-      <p class="src-line method score-src" data-t="src_score"></p>
-      <!-- WHICH BODY OF LAW WAS JUST READ, at screen level.
+      <!-- SCOPE AND SOURCES, COLLECTED.
+           These four lines used to sit loose under the ring — the scope note,
+           the method line, the reference date and the link that explains the
+           score — four separately-centred grey captions in a column. Every one
+           of them is honest and every one earns its place; stacked unlabelled
+           they read as footnotes nobody gathered up, and a reader skims past
+           the whole run. A report states its scope and method once, under a
+           heading that says that is what this is.
+
+           Order is the order a reader asks in: which law was read, how the
+           score was built, how current the references are, and then the way in
+           if they want the whole methodology.
+
+           WHICH BODY OF LAW WAS JUST READ stays the first line of the block.
            Every clause with no citation already prints src_method ("Wodouh's
            reading — not a statutory rule"), so on a lease each finding is
            individually disclaimed. What no clause could answer is "why are
            there only three?" — seventeen rules can fire on an employment
            contract and three on a lease, and a short list with no explanation
            reads as a thorough one. Silence is not a disclaimer. -->
-      <p class="src-line scope" id="scopeNote" hidden></p>
-      <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
-      <p class="currency" data-t="src_stamp"></p>
-      <div class="legend">
-        <span><i style="background:var(--red)"></i><span data-t="lg_red"></span></span>
-        <span><i style="background:var(--amber)"></i><span data-t="lg_amber"></span></span>
-        <span><i style="background:var(--green)"></i><span data-t="lg_green"></span></span>
+      <div class="rp-meta">
+        <h3 class="rp-meta-h" data-t="rp_meta_h"></h3>
+        <p class="src-line scope" id="scopeNote" hidden></p>
+        <p class="src-line method score-src" data-t="src_score"></p>
+        <p class="currency" data-t="src_stamp"></p>
+        <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
       </div>
       <div class="all-clear" id="allClear" hidden>
         <span class="ac-tick"><svg class="draw" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
@@ -470,7 +495,20 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
            read together — which is the whole reason a reader scrolls back up.
            On a phone the wrapper is a plain div and the order is unchanged. -->
       <div class="dk-b">
-      <h3 class="sr-only" data-t="res_flags_h"></h3>
+      <!-- THE FINDINGS, HEADED AND COUNTED.
+           This heading was sr-only, so a sighted reader got no "findings" at
+           all — the list simply started, and a coloured pile that starts
+           without a header reads as output rather than as a finding. The
+           tally beside it says how many of each severity were found, which
+           nothing on the screen said before: a reader could not tell whether
+           three amber flags were the whole story or the first three.
+           It also absorbs the legend, which used to explain these colours
+           from the other desktop column. A count and a colour name in one
+           chip is the legend doing its job where the eye already is. -->
+      <div class="fx-head">
+        <h3 data-t="res_flags_h"></h3>
+        <div class="fx-tally" id="flagTally"></div>
+      </div>
       <div class="flags" id="flags"></div>
       <!-- WHAT THE READER TOOK ON. Everything above this point answers "what
            can they do to me". Nothing answered "what did I agree to", and a
@@ -1797,6 +1835,16 @@ const T = {
                en:"We recognised only {n} in your contract, and the score above covers those alone — not the whole contract. Read the rest yourself, or have a lawyer look at it."},
   res_flags_h:{ar:"البنود المرصودة",en:"Flagged clauses"},
   res_head:{ar:"نتيجة تقييم العقد",en:"Contract score result"},
+  /* THE MASTHEAD AND THE COLOPHON.
+     rp_kicker names the kind of document the reader is holding, in the app's
+     own voice: this is a contract review, not a chat reply and not a verdict
+     handed down. rp_meta_h heads the block that collects what used to be four
+     separate grey captions stacked under the ring — scope, method, reference
+     date, and the link that explains the score. Each was honest on its own;
+     four of them in a column read as footnotes nobody gathered up. A report
+     states its method once, deliberately, under a heading that says so. */
+  rp_kicker:{ar:"مراجعة عقد",en:"Contract review"},
+  rp_meta_h:{ar:"النطاق والمصادر",en:"Scope and sources"},
   load_head:{ar:"جارٍ تحليل العقد",en:"Analyzing the contract"},
   ob_head:{ar:"اعرف وش وقّعت عليه",en:"Know what you're signing"},
   src_head:{ar:"مصادرنا",en:"Our sources"},
@@ -5172,6 +5220,58 @@ const DC_ICON = {
  * Hidden rather than emptied when there is nothing to say — an empty <p> in a
  * column of source lines still takes its margin, and a gap under the score
  * reads as something that failed to load. */
+/* THE DATE THE REVIEW WAS RUN.
+   Not stored on `current` and deliberately not invented: a review reopened
+   from the library is being read now, and the figure that matters to a reader
+   deciding whether to trust it is when the reading happened, which for this
+   screen is always this moment. fmtDate() is reused rather than a second
+   formatter, so the masthead, the timeline and the case file all spell a date
+   the same way in both languages — three spellings of one date is how a
+   document starts looking assembled by different people. */
+/* THE TALLY — counts derived from the clauses actually rendered.
+ *
+ * SUPPRESSED WHEN THE REVIEW IS LOCKED, and that is not a styling choice. The
+ * free scan deliberately shows one flag and withholds how many there are:
+ * renderDecision() switches #dcWhy to dc_why_scan ("there are clauses here
+ * worth reading") precisely so the free tier states a KIND and not a COUNT,
+ * and the lock panel counts nothing for the same reason. A tally above the
+ * list would hand over the exact number the rest of the screen is careful not
+ * to give, and it would do it while showing a single flag — so the reader gets
+ * the number without the findings, which is the worst of both.
+ *
+ * The severity names come from lg_red / lg_amber / lg_green, the legend's own
+ * keys. The legend is gone from the markup and its words live here, beside the
+ * counts, in the column where the flags actually are.
+ *
+ * Only severities that occurred get a chip. A zero chip is noise: "0 red" is a
+ * sentence about nothing, and on a clean contract three of these would say
+ * nothing three times. */
+const TALLY = [["red","lg_red"],["amber","lg_amber"],["green","lg_green"]];
+function renderFlagTally(){
+  const wrap = document.getElementById("flagTally");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  if (!current || !reviewUnlocked()) { wrap.hidden = true; return; }
+  const counts = {};
+  current.clauses.forEach(c => { counts[c.s] = (counts[c.s] || 0) + 1; });
+  TALLY.forEach(([sev, key]) => {
+    if (!counts[sev]) return;
+    const chip = document.createElement("span");
+    chip.className = "fx-chip " + sev;
+    const n = document.createElement("b");
+    n.textContent = fmtNum(counts[sev]);
+    chip.appendChild(n);
+    chip.appendChild(document.createTextNode(" " + t(key)));
+    wrap.appendChild(chip);
+  });
+  wrap.hidden = !wrap.children.length;
+}
+
+function renderReportHead(){
+  const el = document.getElementById("rpDate");
+  if (el) el.textContent = fmtDate(Date.now());
+}
+
 const SCOPE_OF = { doc_emp:"job", doc_clean:"job", doc_rent:"rent", doc_free:"gig" };
 function renderScope(){
   const el = document.getElementById("scopeNote");
@@ -5285,6 +5385,8 @@ function renderResult(reset){
   /* Called directly in a few places as well as through show(). Same reason. */
   if (!current){ show("home"); return; }
   document.querySelector(".score-card").dataset.band = scoreBand(current.score);
+  renderReportHead();
+  renderFlagTally();
   renderDecision();
   document.getElementById("verdict").textContent =
     (signedMode && current.vs ? current.vs : current.verdict)[lang];

@@ -465,7 +465,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
         decision: document.querySelector("#screen-result .decision"),
         verdict: document.querySelector("#screen-result .verdict"),
         flag: document.querySelector("#flags .flag"),
-        action: document.querySelector("#screen-result .dk-b > button:nth-of-type(4)"),
+        /* Named, not counted. This was .dk-b > button:nth-of-type(4) — which
+           silently retargets onto a different element the moment a button is
+           added anywhere in that column, and keeps passing while measuring
+           the wrong thing. #assistTease is the last action by name. */
+        action: document.querySelector("#assistTease"),
       });
       const t0 = performance.now();
       await new Promise((done) => {
