@@ -296,11 +296,18 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     renderPlans();
     const cards = document.querySelectorAll("#planCards .pcard").length;
     const seg = document.querySelectorAll("#billSeg button").length;
+    /* SEEDED, because the workspace is the reader's own contracts now. It used
+       to paint a hardcoded BIZ fixture — an invented company, four invented
+       contracts, four invented team seats — so this block asserted that a
+       mockup rendered. With real data there is nothing to show until there is
+       something to show, which is the point. */
+    myContracts = [{ doc:"doc_emp", score:82, at:Date.now(), signed:false },
+                   { doc:"doc_rent", score:44, at:Date.now() - 86400000, signed:true }];
     renderBiz();
     return { cards, seg,
              stats: document.querySelectorAll("#bizStats > *").length,
              contracts: document.querySelectorAll("#bizContracts > *").length,
-             seats: document.querySelectorAll("#bizSeats > *").length,
+             seats: document.querySelectorAll("#bizSeats") ? 0 : 0,
              cardText: document.getElementById("planCards").textContent,
              bizText: document.getElementById("screen-biz").textContent };
   });
@@ -311,7 +318,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(biz.seg === 0, `and no billing toggle, because no annual price exists (got ${biz.seg})`);
   ok(/699|٦٩٩/.test(biz.cardText) && /799|٧٩٩/.test(biz.cardText),
      "the pack and the business price are both on it");
-  ok(biz.stats > 0 && biz.contracts > 0 && biz.seats > 0, "business workspace renders all three sections");
+  /* Two sections, not three: the seats row went to the roadmap with the
+     outgoing-template list, because neither can be real without a
+     multi-tenant backend and a counterparty reading of the rules. */
+  ok(biz.stats === 3 && biz.contracts === 2,
+     `business workspace renders the reader's own contracts (${biz.stats} stats, ${biz.contracts} rows)`);
   ok(!/undefined|NaN/.test(biz.bizText), "business workspace contains no undefined or NaN");
 
   /* ---------------------------------------------- photo + noread

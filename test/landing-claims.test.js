@@ -201,30 +201,56 @@ for (const [what, re] of Object.entries(CLAIMS)) {
 }
 
 /* ------------------------- 4b. business is claimed at the tense it is built */
-console.log("\n— the business card is marked a preview for as long as it is one");
-/* The positioning line now says "for individuals and businesses", and the
-   feature grid has a "Wodouh for Business" card describing team seats, redline
-   review and template scoring. All of that markup exists — and renderBiz()
-   fills it from a hardcoded BIZ object, and the screen carries `pw_demo`,
-   "prototype — no real payment happens".
+console.log("\n— the business card claims the workspace, not the parts still on the roadmap");
+/* THIS ASSERTION RETIRED ITSELF EXACTLY AS DESIGNED, AND THAT IS THE POINT.
+ *
+ * Its first form was conditional on `pw_demo` being present in screen-biz:
+ * while the workspace was a mockup, the landing card had to say "preview".
+ * The workspace is now real — it renders the reader's own contracts — so the
+ * disclaimer went, the condition stopped matching, and the whole section began
+ * printing "the preview wording is free to go" without checking anything.
+ *
+ * That was the correct behaviour for a self-retiring rule and the wrong place
+ * to leave it, because the card is only PART real: team seats and reading your
+ * outgoing templates from the other side are still unbuilt, and both used to
+ * be drawn on that screen as though they worked.
+ *
+ * So the rule is re-derived against the roadmap, which is where the product
+ * keeps what it has not built and which test/future.test.js already forces to
+ * badge every card as coming. While a capability is on the roadmap, the
+ * landing page may not claim it in the present tense. Build it, take it off
+ * the roadmap, and this stops applying on its own — same mechanism, pointed at
+ * something that will still be true tomorrow. */
+const roadmap = (app.match(/const FU_CARDS = \[[\s\S]*?\];/) || [""])[0];
+ok(roadmap.length > 100, `the roadmap card list was found (${roadmap.length} chars)`);
+const planned = [...roadmap.matchAll(/"(fu_[a-z]+)"/g)].map((m) => m[1]);
+ok(planned.length > 5, `and parsed (${planned.length} planned features)`);
 
-   So the rule is conditional on the product, not written down here: WHILE the
-   business workspace still carries its demo disclaimer, the marketing card for
-   it must be marked as a preview in both languages. Build the thing for real,
-   delete the disclaimer, and this assertion stops applying on its own — which
-   is the only kind of claim guard that does not go stale. */
-const bizScreen = (app.match(/id="screen-biz"[\s\S]*?<\/section>/) || [""])[0];
-ok(bizScreen.length > 200, `the business workspace markup was found (${bizScreen.length} chars)`);
-const bizIsDemo = /data-t="pw_demo"/.test(bizScreen);
-if (bizIsDemo) {
-  const PREVIEW = { ar: /معاينة|نموذج|قريبًا|الاتجاه/, en: /\bpreview\b|\bheading\b|\bcoming\b|\bplanned\b/i };
-  for (const l of LANGS) {
-    const said = ((L.f6_tag || {})[l] || "") + "  " + ((L.f6p || {})[l] || "");
-    ok(PREVIEW[l].test(said),
-       `${l}: the business card says it is a preview, because the workspace still says pw_demo`);
+/* The two that came off the business workspace. Keyed to the roadmap rather
+   than named here: if fu_seats ships and leaves that list, the claim below is
+   free, and nothing in this file has to be remembered and edited. */
+const STILL_PLANNED = {
+  fu_seats: { ar: /مقاعد|الفريق/, en: /\bseats?\b|\bteam\b/i },
+  fu_tmpl:  { ar: /قوالبكم|قوالب/, en: /templates?/i },
+};
+const card = [(L.f6 || {}).ar, (L.f6 || {}).en, (L.f6p || {}).ar, (L.f6p || {}).en];
+ok(card.every((x) => typeof x === "string" && x.length > 10),
+   "the business card is present in both languages");
+/* "Still to come" in the card's own words, either language's marker. */
+const DEFERS = /قادم|قادمتان|قادمتين|ما زال|لسه|to come|coming|roadmap|still/i;
+for (const [key, re] of Object.entries(STILL_PLANNED)) {
+  if (!planned.includes(key)) {
+    ok(true, `${key} is no longer on the roadmap — the card may claim it`);
+    continue;
   }
-} else {
-  ok(true, "the workspace no longer carries pw_demo — the preview wording is free to go");
+  for (const l of ["ar", "en"]) {
+    const text = ((L.f6 || {})[l] || "") + "  " + ((L.f6p || {})[l] || "");
+    /* If the card mentions the capability at all, it must mark it as coming.
+       Not mentioning it is also fine — silence claims nothing. */
+    if (!re[l].test(text)) { ok(true, `${l}: the card does not mention ${key}`); continue; }
+    ok(DEFERS.test(text),
+       `${l}: the card names ${key} and marks it as still to come`);
+  }
 }
 
 /* ------------------------------------- 5. the hero mock is the real screen */

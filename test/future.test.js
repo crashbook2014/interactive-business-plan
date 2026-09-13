@@ -90,7 +90,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     }, L);
 
     ok(r.dir === (L === "ar" ? "rtl" : "ltr"), `${L}: the document direction is right (${r.dir})`);
-    ok(r.cards.length === 11, `${L}: every planned feature renders (${r.cards.length})`);
+    /* 13 since team seats and outgoing-template reading moved here off the
+       business workspace, where both were drawn as if they already worked. */
+    ok(r.cards.length === 13, `${L}: every planned feature renders (${r.cards.length})`);
 
     /* A card added in one language and forgotten in the other renders as a
        blank row rather than as an error, so emptiness is the assertion. */

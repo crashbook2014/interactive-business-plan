@@ -519,16 +519,11 @@
    * is a real conflict rule, the server is a backup the reader asked for
    * rather than a second source of truth.
    */
-  /* The app's live language, without this file reaching into app state it
-     does not own more than it must. Falls back to Arabic, which is the
-     product's default and the schema's. */
-  function currentLang() {
-    try {
-      var l = (global.document && global.document.documentElement.lang) ||
-              (typeof global.lang === "string" ? global.lang : "");
-      return l === "en" ? "en" : "ar";
-    } catch (e) { return "ar"; }
-  }
+  /* currentLang() used to live here, to file each synced contract under the
+     language its owner read it in. `analyses` has no language column and wants
+     none: doc_kind is an i18n key, so a row renders in whichever language the
+     reader is using when they look at it. Storing a language per row was the
+     wrong shape for a product whose language toggle is one tap away. */
 
   var NUM = function (v) { var n = Number(v); return Number.isFinite(n) ? n : null; };
   var STR = function (v, max) { return typeof v === "string" ? v.slice(0, max || 120) : null; };
@@ -609,31 +604,42 @@
     var body = shape(local || {});
     var jobs = [];
 
-    body.contracts.forEach(function (c) {
-      jobs.push(
-        api("/rest/v1/contracts", {
-          method: "POST",
-          headers: { "prefer": "return=representation" },
-          /* The language the reader was actually using, read from the app at
-             the moment of the push. This used to be cfg().LANG — a config key
-             that is set nowhere, documented nowhere, and read only here, so
-             every synced contract was filed as Arabic regardless of the
-             language its owner read it in. The schema constrains this to
-             'ar' or 'en', so anything else falls back rather than being
-             rejected by the database. */
-          body: { user_id: u.id, language: currentLang(), status: "analyzed" }
-        }).then(function (rows) {
-          var id = rows && rows[0] && rows[0].id;
-          if (!id) return;
-          return api("/rest/v1/contract_analyses", {
-            method: "POST",
-            /* user_id is sent, and the database overwrites it from the parent
-               contract anyway. Belt and braces on purpose. */
-            body: { contract_id: id, user_id: u.id, score: c.score || 0 }
-          });
+    /* WRITTEN TO THE TABLE THAT CAN HOLD IT.
+     *
+     * This used to POST to `contracts` and then `contract_analyses`, and
+     * `public.contracts` has no doc_kind column — id, user_id,
+     * original_filename, language, status, timestamps. So the document kind
+     * that shape() had already prepared was dropped on the way out, and every
+     * synced row came back as a score with no idea what it scored. That is
+     * also why nothing ever read any of it: there was nothing to render.
+     *
+     * `public.analyses` is the table the schema wrote for this, and it was
+     * never used. Its own comment says so — "doc_kind is an i18n key (doc_emp,
+     * doc_rent, ...), not free text" — and its four columns are exactly the
+     * four fields myContracts holds. It carries owner-only RLS for all four
+     * verbs and an index on (user_id, created_at desc), which is precisely the
+     * query pullLocal() below makes.
+     *
+     * One insert for the whole list rather than two round trips per row.
+     *
+     * ROWS SYNCED BY THE OLD PATH CANNOT BE RECOVERED. They never carried a
+     * document kind, so there is nothing to restore them from. Nothing is lost
+     * that was ever readable, and saying so here is cheaper than someone
+     * discovering it later.
+     *
+     * contracts/contract_analyses stay in the schema: they belong to the
+     * upload path, with original_filename and the red_flags jsonb, and this
+     * data was never theirs. */
+    if (body.contracts.length) {
+      jobs.push(api("/rest/v1/analyses", {
+        method: "POST",
+        body: body.contracts.map(function (c) {
+          return { user_id: u.id, doc_kind: c.doc_kind, score: c.score,
+                   signed_mode: c.signed === true,
+                   created_at: new Date(c.at || Date.now()).toISOString() };
         })
-      );
-    });
+      }));
+    }
 
     if (body.reminders.length) {
       jobs.push(api("/rest/v1/reminders", {
@@ -660,6 +666,40 @@
         failed: res.filter(function (r) { return r.status === "rejected"; }).length
       };
     });
+  }
+
+  /* THE OTHER HALF OF THE ROUND TRIP.
+   *
+   * pushLocal has existed for a while and nothing ever read what it wrote, so
+   * a reader's history died with the handset: the eight-item local list was
+   * the whole library, on one device. The sync was a write-only drain.
+   *
+   * Eight, matching the local cap and shape()'s own slice, so a pull can never
+   * arrive larger than the list it merges into. Ordered newest first by the
+   * index the schema already carries for this — analyses_user_created_idx on
+   * (user_id, created_at desc).
+   *
+   * Only the four columns the list renders are selected. rule_ids and
+   * verdict_key are in that table and are none of this list's business; asking
+   * for columns a screen does not use is how a read path grows into a leak.
+   *
+   * Returns rows in the LOCAL shape, so the caller merges one kind of object
+   * and the translation lives here beside the push it mirrors. */
+  function pullLocal() {
+    if (!user()) return Promise.reject(new Error("signed_out"));
+    return api("/rest/v1/analyses?select=doc_kind,score,signed_mode,created_at" +
+               "&order=created_at.desc&limit=8")
+      .then(function (rows) {
+        return (rows || []).map(function (r) {
+          var at = Date.parse(r && r.created_at);
+          return {
+            doc: STR(r && r.doc_kind, 40),
+            score: NUM(r && r.score),
+            signed: (r && r.signed_mode) === true,
+            at: Number.isFinite(at) ? at : null
+          };
+        });
+      });
   }
 
   /* --------------------------------------------------------- erasure */
@@ -698,6 +738,7 @@
     savePhone: savePhone,
     skipPhone: skipPhone,
     pushLocal: pushLocal,
+    pullLocal: pullLocal,
     shape: shape,
     deleteAccount: deleteAccount
   };

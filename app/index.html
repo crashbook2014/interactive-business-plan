@@ -1169,24 +1169,23 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <p class="disclaimer" data-t="pw_demo"></p>
   </section>
 
-  <!-- BUSINESS WORKSPACE -->
+  <!-- BUSINESS WORKSPACE — the reader's own contracts.
+       The seats row, the outgoing-templates list and the trial chip are gone,
+       along with the pw_demo disclaimer that labelled them: with nothing
+       invented left on the screen, the disclaimer would be describing
+       something that is no longer here. Seats and templates are on the roadmap
+       now, which is where the product keeps what it has not built. -->
   <section class="screen" id="screen-biz">
     <button class="back" onclick="show('plans',1)"><span class="bk" aria-hidden="true">‹</span><span data-t="pl_title"></span></button>
     <div class="biz-head">
       <div>
         <h2 class="section-title" style="margin:0" id="bizName"></h2>
-        <span class="trial-chip" data-t="biz_trial"></span>
       </div>
     </div>
     <div class="biz-stats" id="bizStats"></div>
     <h3 class="biz-h" data-t="biz_contracts"></h3>
     <div class="biz-list" id="bizContracts"></div>
-    <h3 class="biz-h" data-t="biz_templates"></h3>
-    <p class="biz-note" data-t="biz_tmpl_note"></p>
-    <div class="biz-list" id="bizTemplates"></div>
-    <h3 class="biz-h" data-t="biz_seats"></h3>
-    <div class="seats" id="bizSeats"></div>
-    <p class="disclaimer" data-t="pw_demo"></p>
+    <p class="biz-note" id="bizEmpty" data-t="mc_empty" hidden></p>
   </section>
 
   <!-- AI LEGAL ASSISTANT -->
@@ -2061,6 +2060,17 @@ const T = {
   fu_loan_d:{ar:"افهم عقد التمويل قبل ما توقّعه: نسبة الربح، إجمالي ما ستسدّده، الرسوم، السداد المبكر، التأخر، والضمانات. وضوح يقرأ العقد فقط — ما يربط بحسابك البنكي، وما يقدّم طلب تمويل، وما يقرّر لك موافقة أو رفض.",
              en:"Understand a financing agreement before you sign: the profit rate, the total you will repay, the fees, early settlement, late payment and security. Wodouh would read the agreement only — no bank connection, no application, no lending decision."},
 
+  /* THE TWO THAT CAME OFF THE BUSINESS WORKSPACE. Written the way every other
+     card on this screen is written — what it would do, and plainly what it
+     would not. Both descriptions name the reason they are not built, because
+     "coming soon" on its own tells a reader nothing about whether to wait. */
+  fu_seats:{ar:"مقاعد للفريق",en:"Team seats"},
+  fu_seats_d:{ar:"مساحة واحدة يشتغل فيها الفريق: عقود مشتركة، وصلاحيات، ومن راجع وش. اليوم كل حساب في وضوح يرى عقوده هو فقط — مشاركة العقود بين أعضاء فريق تحتاج بنية جديدة، وما بنيناها.",
+              en:"One workspace a team works in: shared contracts, roles, and who reviewed what. Today every Wodouh account sees only its own contracts — sharing them between team members needs infrastructure we have not built."},
+  fu_tmpl:{ar:"قراءة قوالبكم الصادرة",en:"Reading your outgoing templates"},
+  fu_tmpl_d:{ar:"عقدكم اللي ترسلونه، مقروءًا من وجهة نظر الطرف الآخر — وش البنود اللي تخلي أحدهم يتردد قبل التوقيع. اليوم كل قاعدة عندنا مكتوبة لمن يوقّع، لا لمن يصدر العقد، وقلبها ناحية الطرف الثاني قراءة مختلفة مو نسخة أكبر.",
+            en:"The contract you send out, read from the other side — which clauses make someone hesitate before signing. Every rule we have today is written for the person signing rather than the one issuing, and turning it around is a different reading, not a larger one."},
+
   fu_cats_h:{ar:"أنواع العقود",en:"Contract types"},
   fu_cat_now:{ar:"متاح اليوم",en:"Available today"},
   fu_cat_next:{ar:"قادم",en:"Planned"},
@@ -2591,22 +2601,21 @@ const T = {
   f_api:{ar:"ربط API وتصدير",en:"API access and export"},
   f_lawyer:{ar:"مراجعة محامٍ بسعر مخفّض",en:"Discounted lawyer review"},
 
+  /* biz_title was defined and never used — the screen showed an invented
+     company name instead. It is the heading now. biz_trial went with the
+     fixture: there is no trial, because there are no payments. */
   biz_title:{ar:"مساحة عملكم",en:"Your workspace"},
-  biz_trial:{ar:"تجربة — باقي 14 يومًا",en:"Trial — 14 days left"},
   biz_stat_c:{ar:"عقد",en:"contracts"},
   biz_stat_avg:{ar:"متوسط التقييم",en:"avg score"},
   biz_stat_need:{ar:"يحتاج انتباه",en:"need attention"},
   biz_contracts:{ar:"العقود",en:"Contracts"},
-  biz_templates:{ar:"قوالبكم الصادرة",en:"Your outgoing templates"},
-  biz_tmpl_note:{ar:"نقيّم عقودكم من وجهة نظر الطرف الآخر — عشان تعرفون ليش بعضهم يتردد.",
-                 en:"We score your contracts from the other side's view — so you know why some people hesitate."},
-  biz_seats:{ar:"الفريق",en:"Team"},
-  biz_seats_n:{ar:"{a} من {b} مقاعد",en:"{a} of {b} seats"},
-  biz_invite:{ar:"أضف عضوًا",en:"Invite member"},
-  st_review:{ar:"قيد المراجعة",en:"In review"},
-  st_sent:{ar:"مُرسل",en:"Sent"},
-  st_signed:{ar:"موقّع",en:"Signed"},
-  st_redline:{ar:"تعديلات واردة",en:"Redlines in"},
+  /* biz_templates / biz_tmpl_note / biz_seats / biz_seats_n / biz_invite and
+     the four st_* status labels lived here to dress the fixture. They went
+     with it: the statuses described a workflow the product has no way to
+     observe — nothing tells Wodouh a contract was sent, returned or signed —
+     and biz_invite was a button that never existed. The two capabilities are
+     on the roadmap now, as fu_seats and fu_tmpl, where they carry a badge
+     saying they are not built. */
   cf_cta:{ar:"جهّز ملف قضيتي",en:"Build my case file"},
   cf_title:{ar:"ملف قضيتك",en:"Your case file"},
   cf_sub:{ar:"نجمع مطالبتك ومستنداتك في ملف واحد — جاهز للتسوية أو للمحامي.",
@@ -5906,7 +5915,18 @@ const FU_CARDS = [
   ["🚨", "fu_watch",  "fu_watch_d"],
   ["🤝", "fu_nego",   "fu_nego_d"],
   ["✍️", "fu_docs",   "fu_docs_d"],
-  ["🏦", "fu_loan",   "fu_loan_d"]
+  ["🏦", "fu_loan",   "fu_loan_d"],
+  /* MOVED HERE OUT OF THE BUSINESS WORKSPACE, where both were drawn as if they
+     already worked. Neither is a data problem. Seats need a multi-tenant
+     backend that does not exist — every policy in the schema is one user's
+     own rows — and cannot be enforced while entitlement lives in localStorage.
+     Reading a contract from the other side needs the rule set inverted: every
+     rule is written for the person signing, and turning "this blocks you from
+     working" into what it means for the company issuing it is a different
+     reading, not a bigger one. This screen is where the product keeps what it
+     has not built. */
+  ["👥", "fu_seats",  "fu_seats_d"],
+  ["📄", "fu_tmpl",   "fu_tmpl_d"]
 ];
 /* `true` means it works TODAY and must never carry a "soon" badge. The four
    that do are the reason this list is here: a roadmap that leaves a reader
@@ -6675,6 +6695,8 @@ function initAuth(){
   authReady = who.then(() => {}, () => {});
   who.then(u => {
     if (!u) return;
+    /* Their history comes back before anything is asked of them. */
+    pullContracts();
     return WodouhAuth.getProfile().then(p => {
       /* Their existing work comes BEFORE the phone question: it is data they
          already have and could lose, and the phone is a favour to us. If there
@@ -9854,51 +9876,65 @@ function choosePlan(id){
   renderPlans();
 }
 
-/* ---- business workspace: the thing the tier actually buys ---- */
-const BIZ = {
-  name:{ar:"شركة أفق للتقنية",en:"Ufuq Technology Co."},
-  seats:{ used:4, total:5, who:[{ar:"ن",en:"N"},{ar:"م",en:"M"},{ar:"س",en:"S"},{ar:"ع",en:"A"}] },
-  contracts:[
-    { s:"redline", score:58, t:{ar:"عقد مورّد — سحابة",en:"Vendor agreement — cloud"},
-      w:{ar:"رجع معدّلًا من المورّد",en:"Returned with vendor edits"} },
-    { s:"review",  score:71, t:{ar:"عقد عمل — مهندس أول",en:"Employment — senior engineer"},
-      w:{ar:"بانتظار مراجعة الموارد البشرية",en:"Awaiting HR review"} },
-    { s:"sent",    score:88, t:{ar:"اتفاقية عدم إفصاح",en:"Mutual NDA"},
-      w:{ar:"أُرسل قبل يومين",en:"Sent 2 days ago"} },
-    { s:"signed",  score:92, t:{ar:"عقد إيجار مكتب",en:"Office lease"},
-      w:{ar:"موقّع ومسجّل في إيجار",en:"Signed and registered on Ejar"} }
-  ],
-  templates:[
-    { score:61, t:{ar:"قالبكم للعمل الحر",en:"Your freelance template"},
-      w:{ar:"3 بنود تجعل المستقلين يترددون",en:"3 clauses make freelancers hesitate"} },
-    { score:84, t:{ar:"قالب عقد العمل",en:"Your employment template"},
-      w:{ar:"بند الإشعار غير متبادل",en:"Notice period isn't mutual"} }
-  ]
-};
+/* ---- business workspace: the reader's own contracts ----
+ *
+ * THIS WAS A FIXTURE. A hardcoded BIZ literal painted an invented company
+ * («شركة أفق للتقنية»), four invented contracts, two invented outgoing
+ * templates, four invented team seats and a "Trial — 14 days left" chip for a
+ * trial that does not exist. It read no storage and no backend, and it carried
+ * pw_demo as its disclaimer, which is the honest label for a mockup and no
+ * substitute for the thing.
+ *
+ * It now reads myContracts — the reader's real analyses, and since pullLocal()
+ * they follow them across devices rather than dying with the handset.
+ *
+ * TWO SECTIONS ARE GONE, and not because they were hard. Team seats need a
+ * multi-tenant backend that does not exist — every RLS policy in all ten
+ * migrations is auth.uid() = user_id, single-subject — and could not be
+ * enforced anyway while entitlement lives in localStorage. Outgoing templates
+ * need the analysis engine read from the counterparty's side, and no such
+ * perspective exists: signedMode switches already-signed against
+ * before-signing, and every rule in RULES is written for the person signing.
+ * Both moved to the roadmap, where what is planned already lives and carries a
+ * badge saying so.
+ *
+ * The rows hold no free text — a copy key and a timestamp — which is also why
+ * the interpolation below is safe where the fixture's was not: BIZ wrote
+ * t[lang] and w[lang] into innerHTML unescaped, and real user data would have
+ * carried that straight onto the screen. */
+function bizStats(list){
+  const n = list.length;
+  const avg = n ? Math.round(list.reduce((a, c) => a + c.score, 0) / n) : 0;
+  /* NEEDS ATTENTION IS scoreBand()'s OWN BOUNDARY. The fixture used score < 70,
+     which belongs to no vocabulary in this app and cut the "good" band in
+     half — a 65 was good on the result screen and a worry here. Below 60 is
+     fair-or-poor everywhere else, so it is fair-or-poor here. */
+  const need = list.filter(c => c.score < 60).length;
+  return { n, avg, need };
+}
 
 function renderBiz(){
-  document.getElementById("bizName").textContent = BIZ.name[lang];
-  const all = BIZ.contracts;
-  const avg = Math.round(all.reduce((a,c)=>a+c.score,0)/all.length);
-  const need = all.filter(c=>c.score<70).length;
-  document.getElementById("bizStats").innerHTML =
-    `<div class="st"><b>${fmtNum(all.length)}</b><span>${t("biz_stat_c")}</span></div>
-     <div class="st"><b>${fmtNum(avg)}</b><span>${t("biz_stat_avg")}</span></div>
-     <div class="st warn"><b>${fmtNum(need)}</b><span>${t("biz_stat_need")}</span></div>`;
+  const list = myContracts.slice();
+  document.getElementById("bizName").textContent = t("biz_title");
 
-  const row = (c, status) =>
+  const empty = document.getElementById("bizEmpty");
+  if (empty) empty.hidden = list.length > 0;
+
+  const s = bizStats(list);
+  /* An empty workspace showed NaN before this, because the fixture made the
+     empty case unreachable and nothing rendered it. */
+  document.getElementById("bizStats").innerHTML =
+    `<div class="st"><b>${fmtNum(s.n)}</b><span>${t("biz_stat_c")}</span></div>
+     <div class="st"><b>${fmtNum(s.avg)}</b><span>${t("biz_stat_avg")}</span></div>
+     <div class="st warn"><b>${fmtNum(s.need)}</b><span>${t("biz_stat_need")}</span></div>`;
+
+  /* The same .brow idiom renderMyContracts() uses, deliberately: one list of
+     contracts should not be two designs. */
+  document.getElementById("bizContracts").innerHTML = list.map(c =>
     `<div class="brow">
        <span class="sc ${scoreBand(c.score)}">${fmtNum(c.score)}</span>
-       <span class="tx"><b>${c.t[lang]}</b><span>${c.w[lang]}</span></span>
-       ${status ? `<span class="status${c.s==="redline"?" redline":""}">${t("st_"+c.s)}</span>` : ""}
-     </div>`;
-  document.getElementById("bizContracts").innerHTML = BIZ.contracts.map(c=>row(c,true)).join("");
-  document.getElementById("bizTemplates").innerHTML = BIZ.templates.map(c=>row(c,false)).join("");
-
-  document.getElementById("bizSeats").innerHTML =
-    BIZ.seats.who.map(w=>`<span class="seat">${w[lang]}</span>`).join("") +
-    `<span class="seat add">+</span>
-     <span class="n">${t("biz_seats_n").replace("{a}",fmtNum(BIZ.seats.used)).replace("{b}",fmtNum(BIZ.seats.total))}</span>`;
+       <span class="tx"><b>${t(c.doc)}</b><span>${fmtDate(c.at)}</span></span>
+     </div>`).join("");
 }
 
 /* ---------------------------------------------- assistant: UI + state */
@@ -11538,6 +11574,48 @@ async function wipeDeviceNow(){
   applyLang();
   goTab("home");
   toast(t("wipe_done"));
+}
+
+/* THE PULL, MERGED ON THE SAME TERMS AS THE DISK.
+ *
+ * loadState() validates every stored contract before it is believed — the doc
+ * must be a real copy key, the score must be a finite number, and both are
+ * clamped. The server gets exactly that treatment and no more. It is a backup
+ * the reader asked for, not a second source of truth, and a row that arrived
+ * over the network has no better claim on this list than one that was already
+ * on the device.
+ *
+ * Merged rather than replaced: an analysis run on this device a moment ago and
+ * not yet pushed must survive a pull. Keyed on doc+at, which is what makes a
+ * row the same row — a second reading of the same contract kind at a different
+ * moment is a different entry and should be.
+ *
+ * Silent on failure. The reader did not ask for this and their local list is
+ * already correct; a sync error is not their problem to read about. Same
+ * posture pushLocal's own failure path takes. */
+function mergeContracts(rows){
+  const clean = (Array.isArray(rows) ? rows : [])
+    .filter(c => c && typeof c === "object"
+              && Object.prototype.hasOwnProperty.call(T, c.doc)
+              && Number.isFinite(+c.score) && Number.isFinite(+c.at))
+    .map(c => ({ doc:c.doc, score:Math.max(0, Math.min(100, +c.score)),
+                 at:+c.at, signed:!!c.signed }));
+  if (!clean.length) return false;
+  const seen = new Set(myContracts.map(c => c.doc + "@" + c.at));
+  const added = clean.filter(c => !seen.has(c.doc + "@" + c.at));
+  if (!added.length) return false;
+  myContracts = myContracts.concat(added)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, 8);
+  saveState();
+  return true;
+}
+
+function pullContracts(){
+  if (!authOn() || !signedIn() || typeof WodouhAuth.pullLocal !== "function") return;
+  WodouhAuth.pullLocal().then(rows => {
+    if (mergeContracts(rows)){ renderMyContracts(); }
+  }).catch(() => {});
 }
 
 function recordContract(){

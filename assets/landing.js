@@ -168,20 +168,20 @@ const T = {
   f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، وكل مبلغ بمصدره ودرجة يقينه.",en:"An exact figure with the arithmetic shown, each amount with its source and how certain it is."},
   f5:{ar:"المساعد القانوني",en:"Legal assistant"},
   f5p:{ar:"مساعد مدعوم بالذكاء الاصطناعي: اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"An AI-assisted helper: ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
-  /* THE ONE CARD OUT OF SIX THAT IS NOT SHIPPING, and it now says so.
-     Five of these describe things a reader gets on their first visit. The
-     business workspace is real markup — team seats, a contract list, your own
-     outgoing templates scored from the other side — but renderBiz() draws it
-     from a hardcoded BIZ object and the screen itself carries pw_demo,
-     "prototype — no real payment happens". Six cards in one grid, all in the
-     present tense, made the sixth a promise the other five had earned.
-     It keeps its place and its detail, because the direction is not in doubt
-     and understating it would be its own kind of dishonesty. What changed is
-     the tense, plus a chip so the eye sorts it before the sentence does. */
-  f6_tag:{ar:"معاينة",en:"Preview"},
+  /* THE CARD IS PART REAL NOW, AND SAYS WHICH PART.
+     It used to carry a Preview chip because the whole screen behind it was a
+     mockup: an invented company, invented contracts, invented team seats. The
+     workspace now shows the reader's own contracts, scored and dated, and
+     follows them across devices — so the chip came off. Keeping it would
+     undersell something that works.
+     What the card must still do is name the two halves that are NOT built:
+     team seats, and reading your outgoing templates from the other side. Both
+     were drawn on that screen as if they worked and both are on the roadmap
+     now. test/landing-claims.test.js holds this card to the roadmap, so
+     neither can quietly graduate here without being built there. */
   f6:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
-  f6p:{ar:"الاتجاه اللي ماشي له وضوح: مقاعد للفريق، ومراجعة التعديلات، وتقييم قوالبكم الصادرة من وجهة نظر الطرف الآخر. المساحة معروضة اليوم كنموذج تقدر تفتحه وتشوفه.",
-       en:"Where Wodouh is heading: team seats, redline review, and scoring your own outgoing templates from the other side's view. The workspace is open today as a preview you can look at."},
+  f6p:{ar:"عقودكم في مكان واحد: كل عقد بتقييمه وتاريخه، وتتبعكم على أي جهاز تسجّلون الدخول منه. أما مقاعد الفريق وقراءة قوالبكم الصادرة من وجهة نظر الطرف الآخر، فما زالتا قادمتين — تلقونهما في «إلى وين ماشي وضوح».",
+       en:"Every contract you review in one place, each with its score and date, following you to any device you sign in on. Team seats and reading your outgoing templates from the other side are still to come — both are on the roadmap."},
 
   k_price:{ar:"الأسعار",en:"Pricing"},
   /* "المخرجات" is software jargon — nobody in Saudi says "outputs" about a
