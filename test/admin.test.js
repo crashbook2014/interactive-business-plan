@@ -616,6 +616,80 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(!/create policy \w+ on public\.app_flags\s+for (insert|delete)/.test(migration),
      "the console can flip a flag and can never invent or delete one");
 
+  /* ================================================ the numbers panel
+   *
+   * Four counts, and until 0011 not one was trustworthy. Two queried
+   * public.uploads, which 0004 revokes from `authenticated` and puts under RLS
+   * with no policies — deliberately, so no file_id can reach a browser — so
+   * the request was refused at the GRANT layer and the catch wrote the literal
+   * word "unreadable". The other two answered, and lied: profiles and
+   * contracts are owner-only, so an operator counting them counted their own
+   * rows and "Accounts" read 1 on a project with thousands.
+   *
+   * Nothing tested any of this. The three states below are the whole point of
+   * the panel — a number, zero as a FACT, and an admitted failure — and the
+   * one that matters is that zero and "could not read" never look alike. */
+  console.log("\n— the numbers are real, and say so when they are not");
+  const NUM_USER = { id: "00000000-0000-0000-0000-000000000002", email: "op@example.com" };
+  const numbersCase = async (rpc) => {
+    const np = await browser.newPage();
+    await np.route("**/auth/v1/token**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ access_token: "a", refresh_token: "b", expires_in: 3600, user: NUM_USER }) }));
+    await np.route("**/auth/v1/user**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(NUM_USER) }));
+    /* Catch-all FIRST, specific handlers after — Playwright matches routes in
+       reverse registration order, as the block above this one learned the hard
+       way. */
+    await np.route("**/rest/v1/**", r => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+    await np.route("**/rest/v1/admins**", r => r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify([{ role: "owner" }]) }));
+    await np.route("**/rest/v1/rpc/admin_counts**", rpc);
+    await np.addInitScript(() => {
+      try {
+        localStorage.setItem("wodouh.session.v1", JSON.stringify({
+          refresh_token: "b",
+          user: { id: "00000000-0000-0000-0000-000000000002", email: "op@example.com" }
+        }));
+      } catch (e) {}
+    });
+    await np.goto(BASE + "/admin/");
+    await np.waitForTimeout(1800);
+    const out = await np.evaluate(() => {
+      const host = document.getElementById("numbers");
+      return { pills: [...host.querySelectorAll(".pill")].map(p => p.textContent.trim()),
+               text: host.textContent || "" };
+    });
+    await np.close();
+    return out;
+  };
+
+  const real = await numbersCase(r => r.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ accounts: 5231, contracts_saved: 87, scans_uploaded: 12, scans_pending: 0 }]) }));
+  ok(real.pills.join(",") === "5231,87,12,0",
+     `real counts render exactly as the database returned them (${real.pills.join(", ")})`);
+  /* ZERO IS A FACT. The sweep keeping up looks identical to a broken query
+     unless this is asserted, and that is the state an operator most needs to
+     be able to trust. */
+  ok(real.pills[3] === "0" && !/Unable to load/.test(real.text),
+     "and a zero reads as zero, not as a failure");
+
+  const none = await numbersCase(r => r.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ accounts: 0, contracts_saved: 0, scans_uploaded: 0, scans_pending: 0 }]) }));
+  ok(none.pills.join(",") === "0,0,0,0",
+     `an empty database reads as four zeros (${none.pills.join(", ")})`);
+
+  /* The old failure, in its real shape: PostgREST refusing the table. */
+  const denied = await numbersCase(r => r.fulfill({ status: 403, contentType: "application/json",
+    body: JSON.stringify({ message: "permission denied for table uploads" }) }));
+  ok(denied.pills.every(x => x === "Unable to load"),
+     `a refused query says so on every row (${[...new Set(denied.pills)].join(", ")})`);
+  ok(!denied.pills.some(x => x === "0"),
+     "and never as a zero, which is the whole reason this panel is read");
+  ok(/permission denied/.test(denied.text),
+     "the reason reaches the page rather than being swallowed by the catch");
+  ok(!/unreadable/.test(denied.text),
+     "and the bare word it used to print is gone");
+
   await browser.close();
 
   console.log(FAIL.length

@@ -579,11 +579,26 @@
   }
 
   /* ======================================================== 3. numbers */
+  /* ONE CALL, NOT FOUR, AND A FUNCTION RATHER THAN FOUR TABLE READS.
+   *
+   * This used to GET each table directly. Two of them — both counting
+   * public.uploads — could never work: 0004 revokes that table from anon and
+   * authenticated and enables RLS with no policies, deliberately, so that no
+   * file_id can ever reach a browser. The console asks as `authenticated`, the
+   * request is refused before RLS is consulted, and the catch below wrote the
+   * word "unreadable".
+   *
+   * The other two were worse, because they answered. profiles and contracts
+   * are owner-only, so an operator counting them counts their own rows: on a
+   * project with thousands of accounts, "Accounts" read 1 and looked fine.
+   *
+   * public.admin_counts() (0011) returns four integers, guarded by is_admin(),
+   * and an integer carries no identifier. No table was opened to anyone. */
   var COUNTS = [
-    { name: "Accounts", path: "/rest/v1/profiles?select=id", note: "profiles" },
-    { name: "Contracts saved", path: "/rest/v1/contracts?select=id", note: "contracts" },
-    { name: "Scans uploaded", path: "/rest/v1/uploads?select=id", note: "uploads" },
-    { name: "Scans not yet deleted", path: "/rest/v1/uploads?select=id&deleted_at=is.null", note: "uploads — should trend to zero" }
+    { name: "Accounts",             key: "accounts",        note: "profiles" },
+    { name: "Contracts saved",      key: "contracts_saved", note: "contracts" },
+    { name: "Scans uploaded",       key: "scans_uploaded",  note: "uploads" },
+    { name: "Scans not yet deleted", key: "scans_pending",  note: "uploads — should trend to zero" }
   ];
 
   function renderNumbers() {
@@ -595,20 +610,39 @@
     if (!A.user() || !role) { host.innerHTML = empty("Sign in as an operator to see the numbers."); return; }
 
     host.innerHTML = COUNTS.map(function (c) { return row(c.name, c.note, "…", "off"); }).join("");
-    COUNTS.forEach(function (c, i) {
-      /* A header read, not a table download. These rows are people's
-         employment situations; counting them should not mean transferring
-         them. */
-      A.apiCount(c.path).then(function (n) {
+    /* A function call, not a table download. These rows are people's
+       employment situations; counting them should not mean transferring
+       them. */
+    A.api("/rest/v1/rpc/admin_counts").then(function (rows) {
+      var d = rows && rows[0];
+      if (!d) throw new Error("no_row");
+      COUNTS.forEach(function (c, i) {
         var r = host.children[i];
         if (!r) return;
-        r.querySelector(".pill").textContent = String(n);
-        r.querySelector(".pill").className = "pill " + (n ? "on" : "off");
-      }).catch(function () {
+        var n = Number(d[c.key]);
+        var pill = r.querySelector(".pill");
+        /* THREE STATES, AND ZERO IS THE INTERESTING ONE. Zero is a fact — no
+           scans yet, the sweep is keeping up — and it has to read as a fact.
+           It keeps the "off" tint because nothing is happening, not because
+           nothing could be read. */
+        if (!Number.isFinite(n)) { pill.textContent = "Unable to load"; pill.className = "pill warn"; return; }
+        pill.textContent = String(n);
+        pill.className = "pill " + (n ? "on" : "off");
+      });
+    }).catch(function (e) {
+      /* Not zero, and not a bare word either. Zero is a fact; this is the
+         absence of one, and the two must never look alike on a page you make
+         decisions from. The error is carried into the note so the panel can
+         say permission denied rather than leaving you to guess — it is an
+         operator console, and the reason is the useful half. */
+      var why = (e && e.message) ? String(e.message).slice(0, 80) : "request failed";
+      COUNTS.forEach(function (c, i) {
         var r = host.children[i];
-        /* Not zero. Zero is a fact; this is the absence of one, and the two
-           must never look alike on a page you make decisions from. */
-        if (r) r.querySelector(".pill").textContent = "unreadable";
+        if (!r) return;
+        r.querySelector(".pill").textContent = "Unable to load";
+        r.querySelector(".pill").className = "pill warn";
+        var sub = r.querySelector("small");
+        if (sub) sub.textContent = c.note + " — " + why;
       });
     });
     host.insertAdjacentHTML("beforeend", empty(

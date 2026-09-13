@@ -201,6 +201,7 @@ you are getting:
 | `0008_operator_allowlist.sql` | `admin_allowlist` + the trigger that promotes on first sign-in |
 | `0009_scans.sql` | `scan_events` — one row per free scan, so the monthly limit survives clearing storage |
 | `0010_prune_schedule.sql` | schedules `prune_scan_events()` daily via `pg_cron`, so the thirteen-month retention the privacy policy promises is actually enforced rather than merely written |
+| `0011_admin_counts.sql` | `admin_counts()` — the four console totals as a `security definer` function guarded by `is_admin()`. Two of those rows used to read "unreadable" because `uploads` is revoked from every client role, and the other two silently counted the operator's own rows. A count returns no identifier, so `0004`'s guarantee that no `file_id` reaches a browser is untouched |
 
 ### Becoming an operator
 
