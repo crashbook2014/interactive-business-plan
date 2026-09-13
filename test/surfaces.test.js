@@ -507,6 +507,14 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     /* Driven, not reasoned about: the counter is what the reader sees. */
     const seen = await p.evaluate(async () => {
       lang = "en"; applyLang(); nat = "sa"; asked = 0; chat = [];
+      /* THE OFFLINE ENGINE, WHICH IS WHAT THIS BLOCK IS ABOUT. ask() now
+         reaches the model when ANALYZE_URL is configured, and a network answer
+         has no notion of a "miss" — the server grades every reply into a tier.
+         The guarantee under test is the local engine's: a question it cannot
+         place costs nothing. The online half of the same guarantee — a request
+         that produced no answer is refunded — is asserted in
+         test/assist.test.js against a stubbed endpoint. */
+      window.WODOUH_CONFIG = Object.assign({}, window.WODOUH_CONFIG, { ANALYZE_URL: "" });
       openAssist("rights");
       const read = () => (document.getElementById("quota") || {}).textContent || "";
       const start = read();

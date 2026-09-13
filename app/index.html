@@ -6226,10 +6226,37 @@ function authRedirect(name, back){
 /* Put them back where they were interrupted. Falls through to authBack on
    anything unrecognised rather than trapping the reader on the sign-in screen
    they have just successfully passed. */
+/* SOME SCREENS ARE NOT A show() AWAY, and resuming them as one lands the
+ * reader on a blank version of the thing they asked for.
+ *
+ * Measured, on a fresh page, signing in and returning to the assistant:
+ * openAssist() gives 2 messages, 6 capability chips, the quota line and the
+ * input placeholder; show("assist") gives 0, 0, "" and "". The screen was
+ * there and everything on it was missing — including as_not_lawyer, the
+ * "I'm an AI, not a lawyer" line, which is the one message on that screen
+ * that is not decoration.
+ *
+ * That is the path a first-time reader takes: press Ask Wodouh, get sent to
+ * sign in because "assist" is deliberately not in AUTH_FREE, come back to an
+ * empty box. It reads as a broken feature and it was a blank render.
+ *
+ * The opener is the authority on how a screen is entered, so resuming uses it.
+ * Keyed by the same name authRedirect() was given, so adding a gated screen
+ * means adding it here or getting show()'s behaviour — which is correct for
+ * the screens that genuinely need nothing else. */
+const RESUME = {
+  assist: () => openAssist(asOrigin || "home"),
+  ask:    () => openAsk(),
+  eos:    () => openEos(),
+};
 function resumeAfterAuth(){
   const p = pendingNav; pendingNav = null;
   if (p && p.kind === "scan"){ analyze(p.payload); return; }
-  if (p && p.kind === "screen"){ show(p.payload); return; }
+  if (p && p.kind === "screen"){
+    const open = RESUME[p.payload];
+    if (open) { open(); return; }
+    show(p.payload); return;
+  }
   show(authBack, 1);
 }
 
@@ -10041,7 +10068,11 @@ function msgEl(m){
 function renderQuota(){
   const q = document.getElementById("quota");
   const bar = document.getElementById("askBar");
-  const left = FREE_QUESTIONS - asked;
+  /* THE METER ON SCREEN IS THE METER BEING SPENT. With the model path live,
+     ask() spends the persisted daily cap, so showing the session counter here
+     would have told a reader they had three left while the allowance that
+     actually stops them was somewhere else entirely. */
+  const left = askAiLive() ? askLeft() : FREE_QUESTIONS - asked;
   if (left > 0){
     q.className = "quota";
     q.textContent = left === 1 ? t("as_left1") : t("as_left").replace("{n}", fmtNum(left));
@@ -10096,27 +10127,115 @@ function submitAsk(e){
    charged for a failure is the version of this that a reader remembers.
 
    The increment moved to the point where an answer actually exists. */
+/* THE SCREEN CALLED "ASK WODOUH" NOW ASKS WODOUH.
+ *
+ * It did not. ask() called answer(), a local keyword-matching table, and made
+ * no network request at any width — while a fully built, consent-gated,
+ * citation-tiered AI ask sat on a different screen wired to the configured
+ * ANALYZE_URL. Two things called ask, one of them real, and the button people
+ * press was the other one.
+ *
+ * THE MODEL PATH REUSES THE GRADED ONE WHOLE. Same endpoint, same kind, same
+ * server-side grading, and above all the same four tiers — a verified answer
+ * carries its articles, an unverified one carries the warning that says so,
+ * and a refusal is a refusal. Re-implementing that labelling for a chat bubble
+ * would have been a second copy of the one thing on this screen that must
+ * never drift.
+ *
+ * THE CAP IS THE PERSISTED ONE, and that is not a detail. `asked` lives in a
+ * module variable and resets on reload, which was fine for a local keyword
+ * table and is not fine for a metered model call: a reader who refreshes would
+ * have had unlimited AI. askLeft()/askSpend() are the daily cap the real ask
+ * path already enforces through saveState(), so both doors now spend from one
+ * allowance.
+ *
+ * SPENT ON THE ATTEMPT, NOT THE ANSWER, matching askRun(): a cap that only
+ * counts successes is a cap a retry loop walks straight through.
+ *
+ * WITH NO ENDPOINT CONFIGURED IT FALLS BACK TO answer(), which is the
+ * shipped-inert rule every other AI surface in this file obeys — nothing
+ * reaches out until someone configures it to. */
+function askAiLive(){ return !!analyzeUrl(); }
+
 function ask(text){
-  if (asked >= FREE_QUESTIONS) return;
+  const live = askAiLive();
+  if (live ? askLeft() <= 0 : asked >= FREE_QUESTIONS) return;
   chat.push({ who:"user", text });
   const box = document.getElementById("chat");
   box.appendChild(msgEl({ who:"user", text }));
   const typing = msgEl({ who:"bot", typing:true });
   box.appendChild(typing);
   box.scrollTop = box.scrollHeight;
-  document.getElementById("askInput").disabled = true;
-  setTimeout(()=>{
-    const a = answer(text);
-    if (!a.miss) asked++;              /* only a real answer costs a question */
+  const input = document.getElementById("askInput");
+  input.disabled = true;
+  const land = (m) => {
     typing.remove();
-    const m = { who:"bot", q:text, ...a };
     chat.push(m);
     box.appendChild(msgEl(m));
     buzz(6);
-    document.getElementById("askInput").disabled = false;
+    input.disabled = false;
     renderQuota();
     box.scrollTop = box.scrollHeight;
-  }, 700);
+  };
+
+  if (!live){
+    setTimeout(()=>{
+      const a = answer(text);
+      if (!a.miss) asked++;            /* only a real answer costs a question */
+      land({ who:"bot", q:text, ...a });
+    }, 700);
+    return;
+  }
+
+  /* SPENT BEFORE THE REQUEST so a retry loop cannot farm the allowance, and
+     REFUNDED if the request never produced an answer. Those are not in
+     tension: what must cost is an answer, and a refusal or an unverified reply
+     is a real answer the model produced. A timeout, a 429 or a 502 is the
+     reader getting nothing, and this screen has said since it was built that
+     being charged for a failure is the version of it a reader remembers. */
+  askSpend(); saveState();
+  const refund = () => {
+    if (askUsed.day === askToday() && askUsed.n > 0){
+      askUsed = { day: askUsed.day, n: askUsed.n - 1 };
+      saveState();
+    }
+  };
+  fetchWithDeadline(analyzeUrl(), {
+    method: "POST",
+    headers: analyzeHeaders(),
+    body: JSON.stringify({ kind:"ask", q: String(text).trim().slice(0, 600), lang })
+  }).then(res => res.json().catch(()=>null).then(d => ({ res, d })))
+    .then(({ res, d }) => {
+      if (!res.ok || !d || typeof d.tier !== "string"){
+        refund();
+        land({ who:"bot", q:text, text: t(res.status === 429 ? "ai_busy" : "ask_err") });
+        return;
+      }
+      /* Coerced on this side too, exactly as askRun() does: a tier we do not
+         recognise must never render as the verified one. */
+      const KNOWN = ["verified", "contract", "refused"];
+      const tier = KNOWN.includes(d.tier) ? d.tier : "unverified";
+      const body = String(d.answer || "").slice(0, 1500);
+
+      if (tier === "refused"){
+        const why = d.reason === "citation" ? "ask_ref_citation"
+                  : d.reason === "money" ? "ask_ref_money" : "ask_ref";
+        land({ who:"bot", q:text, text: t(why) });
+        return;
+      }
+      const m = { who:"bot", q:text, text: t("ask_tier_" + (tier === "verified" ? "v" : tier === "contract" ? "c" : "u")) + "\n\n" + body };
+      /* The warning travels with the answer it qualifies, not beside it. */
+      if (tier === "unverified") m.extra = t("ask_unv_b");
+      if (tier === "contract") m.extra = t("ask_doc_note");
+      if (tier === "verified" && Array.isArray(d.cites)){
+        const arts = d.cites.slice(0, 6)
+          .map(c => c && c.article ? String(c.article).slice(0, 60) : null)
+          .filter(Boolean);
+        if (arts.length) m.refs = arts.map(a => ({ ar:a, en:a }));
+      }
+      land(m);
+    })
+    .catch(() => { refund(); land({ who:"bot", q:text, text: t("ask_err") }); });
 }
 
 /* --------------------------------------------------- AI legal assistant */

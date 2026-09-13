@@ -1068,7 +1068,15 @@ async function seedTermination(p){
   const subs = await p.evaluate(() => {
     const out = { live: SUBSCRIPTIONS_LIVE };
     /* Every route in: the assistant's quota gate and the account screen. */
-    chat.length = 0; asked = FREE_QUESTIONS; openAssist("home"); renderQuota();
+    /* BOTH METERS, because which one is in force depends on the build. The
+       assistant spends the session counter when there is no endpoint and the
+       persisted daily cap when it can reach the model; exhausting only the
+       first left the gate unrendered on a configured build and quietly turned
+       this block into an assertion about an empty panel. */
+    chat.length = 0;
+    asked = FREE_QUESTIONS;
+    askUsed = { day: askToday(), n: ASK_PER_DAY };
+    openAssist("home"); renderQuota();
     out.quotaBtns = [...document.querySelectorAll("#quota button")].map(x => x.textContent.trim());
     out.quotaText = document.getElementById("quota").textContent || "";
     out.quotaStillExplains = out.quotaText.length > 20;
