@@ -1854,8 +1854,14 @@
   .tl-export-b button:hover{background:var(--teal-soft)}
   .tl-export-b button:active{transform:scale(.97)}
   .tl-export-n{margin-top:12px;font-size:12px;color:var(--ink-2);line-height:1.5}
-  .tl-note .dot-on{width:30px;height:18px;border-radius:99px;background:var(--teal);position:relative}
-  .tl-note .dot-on::after{content:"";position:absolute;top:2.5px;inset-inline-end:2.5px;width:13px;height:13px;border-radius:99px;background:var(--on-teal)}
+  /* WAS .dot-on: a 30x18 pill with a knob, which is a toggle switch drawn in
+     the ON position. It was not interactive and there was no service behind
+     it — the reminders come from an .ics file the reader exports, fired by
+     their own calendar. A control that looks enabled is a claim, and this one
+     sat directly beside the sentence making it. Replaced by the calendar glyph
+     the sentence now names. */
+  .tl-note .tl-cal{display:flex;flex:none;color:var(--teal)}
+  .tl-note .tl-cal svg{width:18px;height:18px}
 
   /* feedback */
   .feedback{background:none;border-top:1px solid var(--line);border-radius:0;padding:16px 10px 4px;margin-top:18px;text-align:center}

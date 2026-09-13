@@ -159,7 +159,11 @@ const T = {
   f2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   f2p:{ar:"يُبنى وأنت تقرأ — صيغة جاهزة بالعربي والإنجليزي ترسلها للطرف الآخر.",en:"Built as you read — ready bilingual wording to send the other party."},
   f3:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
-  f3p:{ar:"فترة التجربة، نافذة الإشعار، التجديد — ننبّهك قبلها بوقت كافٍ.",en:"Probation, notice windows, renewals — we nudge you well before each one."},
+  /* Named the mechanism rather than promising a service. Wodouh sends no
+     notifications — the .ics it generates carries alarms at fourteen days and
+     one day, and the reader's own calendar fires them. Kept in step with the
+     app's tr_sub by test/availability.test.js. */
+  f3p:{ar:"فترة التجربة، نافذة الإشعار، التجديد — نحسبها لك ونحفظها في تقويمك، مع تنبيه قبلها بأسبوعين وبيوم.",en:"Probation, notice windows, renewals — we work out the dates and put them in your calendar, set to alert you two weeks and a day before."},
   f4:{ar:"حاسبة نهاية الخدمة",en:"End-of-service calculator"},
   f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، وكل مبلغ بمصدره ودرجة يقينه.",en:"An exact figure with the arithmetic shown, each amount with its source and how certain it is."},
   f5:{ar:"المساعد القانوني",en:"Legal assistant"},

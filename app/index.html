@@ -1222,7 +1222,13 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   <section class="screen" id="screen-timeline">
     <button class="back" id="tlBack" onclick="tlBack()"><span class="bk" aria-hidden="true">‹</span><span id="tlBackLabel"></span></button>
     <h2 class="section-title" data-t="tl_title"></h2>
-    <div class="tl-note"><span class="dot-on"></span><span data-t="tl_note"></span></div>
+    <!-- THE TOGGLE THAT WAS NOT A TOGGLE. .dot-on rendered a 30x18 pill with a
+         knob — a switch drawn in the ON position, not interactive, beside a
+         sentence promising reminders the app cannot send. A control that looks
+         enabled is a claim, and it was the strongest one on this screen.
+         A calendar glyph instead: it names the mechanism that actually does
+         the alerting rather than implying a service is running. -->
+    <div class="tl-note"><span class="tl-cal" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span data-t="tl_note"></span></div>
     <p class="src-line method" data-t="src_tl"></p>
     <div class="timeline" id="tlList"></div>
     <div class="tl-export" id="tlExport" hidden>
@@ -2477,11 +2483,22 @@ const T = {
   lt_foot:{ar:"أُعدّ بمساعدة وضوح",en:"Prepared with Wodouh"},
   copied:{ar:"نُسخ ✓",en:"Copied ✓"},
   tr_title:{ar:"ذكّرني بمواعيد هذا العقد",en:"Track this contract's deadlines"},
-  tr_sub:{ar:"فترة التجربة، نافذة الإشعار، والتجديد — ننبهك قبلها بوقت كافٍ",en:"Probation, notice windows, renewals — we'll nudge you well before each one"},
+  /* WHO DOES THE REMINDING. This said "we'll nudge you well before each one",
+     and Wodouh nudges nobody: there is no Notification call, no PushManager,
+     nothing in the service worker. What exists is an .ics file carrying two
+     VALARMs, at fourteen days and one day, which the reader's OWN calendar
+     fires — and only once they have exported it. Meanwhile «تنبيهات ذكية» /
+     "Smart contract alerts" sits on the roadmap as planned, so the product was
+     promising on one screen what it calls unbuilt on another.
+     Naming the mechanism is not a climbdown. "We work out the dates and put
+     them in your calendar" is a concrete thing a reader can picture, where
+     "we'll nudge you" is a promise they would eventually notice we had not
+     kept. */
+  tr_sub:{ar:"فترة التجربة، نافذة الإشعار، والتجديد — نحسبها لك ونحفظها في تقويمك مع تنبيه قبلها بأسبوعين وبيوم",en:"Probation, notice windows, renewals — we work out the dates and put them in your calendar, set to alert you two weeks and a day before"},
   tr_on_title:{ar:"التذكيرات مفعّلة ✓",en:"Reminders on ✓"},
   tr_on_sub:{ar:"اعرض المواعيد القادمة",en:"View the upcoming dates"},
   tl_title:{ar:"مواعيدك القادمة",en:"Your upcoming dates"},
-  tl_note:{ar:"سننبهك قبل كل موعد بأسبوعين وقبله بيوم",en:"We'll remind you two weeks and one day before each date"},
+  tl_note:{ar:"نحفظ مواعيدك في تقويمك، وتنبيهه يجيك قبل كل موعد بأسبوعين وقبله بيوم",en:"We put your dates in your calendar, and it alerts you two weeks and one day before each one"},
   cal_head:{ar:"احفظها في تقويمك",en:"Save these to your calendar"},
   cal_apple:{ar:"تقويم آبل",en:"Apple Calendar"},
   cal_google:{ar:"تقويم قوقل",en:"Google Calendar"},
@@ -2489,7 +2506,7 @@ const T = {
             en:"A calendar file that opens on your device — we never ask for access to your calendar."},
   cal_done:{ar:"تم تنزيل ملف التقويم",en:"Calendar file downloaded"},
   cal_fail:{ar:"تعذّر إنشاء ملف التقويم. جرّب مرة ثانية.",en:"Couldn't create the calendar file. Try again."},
-  tl_empty:{ar:"ما فيه عقود متابَعة بعد. أكثر الحقوق تضيع لأن موعدها فات — حلّل عقدًا ونذكّرك قبل كل موعد.",en:"No contracts tracked yet. Most rights are lost to a date that passed — analyze a contract and we'll warn you before each one."},
+  tl_empty:{ar:"ما فيه عقود متابَعة بعد. أكثر الحقوق تضيع لأن موعدها فات — حلّل عقدًا ونطلّع لك مواعيده جاهزة لتقويمك.",en:"No contracts tracked yet. Most rights are lost to a date that passed — analyze a contract and we'll have its dates ready for your calendar."},
   tl_in:{ar:"بعد {n} يوم",en:"in {n} days"},
   tl_reminders:{ar:"تذكيراتك",en:"Your reminders"},
   desk_title:{ar:"اقرأ عقدك بوضوح — قبل ما توقّع.",en:"Read your contract clearly — before you sign."},
