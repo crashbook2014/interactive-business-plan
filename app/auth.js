@@ -191,6 +191,21 @@
      count is a header read rather than a table download — which matters
      because the tables being counted hold people's employment situations. The
      console is the only caller. */
+  /* THE ACCESS TOKEN, FOR THE ONE CALLER THAT CANNOT GO THROUGH api().
+   *
+   * api() attaches the Bearer itself and is the right door for everything that
+   * speaks JSON. The scan upload does not: it POSTs multipart/form-data to an
+   * Edge Function, and api() would stringify the FormData into "[object
+   * FormData]" and label it application/json.
+   *
+   * So the token is readable, narrowly and deliberately. It is no wider a
+   * surface than it looks: the session already lives in this origin's
+   * localStorage, and any script that could call this could read it there. The
+   * caller must not log it, put it in a URL, or write it to the DOM. */
+  function token() {
+    return session && session.access_token ? session.access_token : null;
+  }
+
   function apiCount(path) {
     var h = { apikey: cfg().SUPABASE_ANON_KEY, prefer: "count=exact", range: "0-0" };
     if (session && session.access_token) h["authorization"] = "Bearer " + session.access_token;
@@ -717,6 +732,7 @@
        which is where the actual permission lives. */
     api: api,
     apiCount: apiCount,
+    token: token,
     configured: configured,
     appleAvailable: appleAvailable,
     phoneAvailable: phoneAvailable,

@@ -360,7 +360,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </button>
     <div class="intake" id="intake">
       <label class="up-main" id="upMain">
-        <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf" hidden/>
+        <input type="file" id="fileInput" accept=".pdf,.txt,text/plain,application/pdf,image/jpeg,image/png,image/webp" hidden/>
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
         <span><b data-t="up_cta" id="upCta"></b><span data-t="up_hint" id="upHint"></span></span>
       </label>
@@ -1212,6 +1212,18 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <p id="nrBody"></p>
       <ul class="nr-tips" id="nrTips"></ul>
     </div>
+    <!-- WHERE A SCAN'S REVIEW LANDS, and deliberately not the result screen.
+         The result screen is built around a Wodouh score, and Wodouh's own
+         rules never saw a photographed contract — there is no text they could
+         have read. Putting a scan there would have meant inventing a number.
+         What a scan gets is the AI read, on its own, labelled as such. -->
+    <div id="nrPanel" hidden></div>
+    <!-- THE SCAN OFFER. Hidden unless there is a held file AND the endpoint is
+         configured AND the reader is signed in — scanAvailable(). This is the
+         only control in the app that sends the file itself, so it never
+         appears speculatively, and pressing it opens a consent that says so
+         before a byte moves. -->
+    <button class="primary" id="nrScan" onclick="offerScan()" hidden></button>
     <button class="primary" id="nrRetry" onclick="retryPaste()"></button>
     <button class="ghost wide" id="nrSample" onclick="openIntake(true)"></button>
     <p class="disclaimer" data-t="disclaimer"></p>
@@ -1328,7 +1340,20 @@ window.WODOUH_CONFIG = Object.assign({
   REDIRECT_URL: "https://alwodouh.com/app/index.html",
   /* Deployed and live — see docs/claude-analysis.md for what changed in the
      privacy copy as a result. */
-  ANALYZE_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/analyze"
+  ANALYZE_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/analyze",
+
+  /* THE SCAN PATH. The Edge Function, the uploads table, the retention sweep
+     and analyze's resolveUpload() have all existed for a while; the client had
+     no call site, so a photographed contract dead-ended on "we could not read
+     this". This is that call site.
+
+     IT SENDS THE FILE ITSELF, which nothing else in this app does, and the
+     privacy page names it as the fourth exception for that reason. Nothing
+     goes without the reader pressing through a consent that says so.
+
+     Leave this unset and the scan offer never appears — the same shipped-inert
+     rule ANALYZE_URL follows. */
+  UPLOAD_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/upload"
 
   /* PHONE_SIGNIN is DELIBERATELY ABSENT, which means off.
    *
@@ -1794,7 +1819,12 @@ const T = {
   up_photo_soon:{ar:"قريبًا",en:"Not yet"},
   up_or:{ar:"أو الصق النص",en:"or paste the text"},
   err_big:{ar:"الملف أكبر من 8 ميجابايت. جرّب تلصق نص العقد بدلًا من رفعه.",en:"That file is over 8 MB. Try pasting the contract text instead."},
-  err_type:{ar:"نقرأ PDF والملفات النصية. لو عندك صورة أو صيغة ثانية، الصق النص مباشرة.",en:"We read PDFs and text files. If yours is an image or another format, paste the text directly."},
+  /* IMAGES ARE READ NOW, so this no longer sends a photograph away. It named
+     "an image" as a thing to paste instead, which was true while the scan path
+     had no client and is the opposite of true now — the three types the upload
+     function accepts are the three named here. */
+  err_type:{ar:"نقرأ PDF والملفات النصية والصور (JPG وPNG وWEBP). لو عندك صيغة ثانية، الصق النص مباشرة.",
+            en:"We read PDFs, text files and photographs (JPG, PNG, WEBP). If yours is another format, paste the text directly."},
   how_built:{ar:"كيف بُني هذا التقييم؟",en:"How is this score built?"},
 
   /* The decision, before the number. Wording stays plain and avoids
@@ -2145,8 +2175,8 @@ const T = {
                     en:"The three exceptions, and exactly what each one sends"},
   acc_privacy_b:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك. لا نرفعه لخادم، ولا نخزّنه، ولا نشاركه مع أحد. لو حذفت التطبيق راح معه كل شيء.",
                  en:"Your contract is analyzed inside the app on your device. We don't upload it, store it, or share it. Delete the app and it all goes with it."},
-  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه ثلاثة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانتان إضافيتان منفصلتان داخل الشاشة نفسها، كل وحدة مطفية إلا إذا شغّلتها أنت: الأولى ترسل تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت، والثانية ترسل نص عقدك نفسه — مو تفاصيل عنه، النص — عشان يجيك الجواب مقروءًا من عقدك ومعه المقاطع اللي قرأناها منه. وإذا ما علّمت ولا وحدة، ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، وما يُحفظ منها شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.\n\nوإذا كان عقدك صورة أو مسحًا ضوئيًا بلا نص نقدر نقرأه، وضوح ما يرفعه: يقول لك إنه ما قدر يقرأه ويطلب منك تلصق النص. قراءة العقود الممسوحة ضوئيًا لسا تحت التطوير.",
-                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are three exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. Two further tick boxes on that same screen, each separate and each off unless you turn it on, add more: one adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation; the other sends the text of your contract itself, so the answer can be read out of your own document and show you the lines it was read from. Leave both unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full.\n\nIf your contract is a photo or a scan with no text we can read, Wodouh does not upload it: it tells you it could not read it and asks you to paste the text instead. Reading scanned contracts is still being built."},
+  acc_privacy_b_ai:{ar:"يُحلَّل عقدك داخل التطبيق على جهازك، وكل مبلغ يُحسب هنا ويبقى هنا.\n\nفيه أربعة استثناءات، كلها اختيارية وكلها تحتاج موافقتك الصريحة. وهي منفصلة عن بعض، لأن كل واحد يرسل شيئًا مختلفًا:\n\n1 — «قراءة أعمق لعقدك»: يُرسل نص العقد وحده، بدون أرقامك ولا إجاباتك.\n\n2 — «مراجعة ثانية بالذكاء الاصطناعي»: ترسل أكثر — تواريخك وراتبك ونوع عقدك وطريقة الإنهاء وكل مبلغ في تقييمك والأوراق اللي علّمتها، ومنها ما كتبته بنفسك في خانة سبب الإنهاء.\n\n3 — «اسأل سؤالك»: يُرسل سؤالك كما كتبته. وفيه خانتان إضافيتان منفصلتان داخل الشاشة نفسها، كل وحدة مطفية إلا إذا شغّلتها أنت: الأولى ترسل تواريخك وأجرك ونوع عقدك وطريقة الإنهاء عشان يكون الجواب على حالتك أنت، والثانية ترسل نص عقدك نفسه — مو تفاصيل عنه، النص — عشان يجيك الجواب مقروءًا من عقدك ومعه المقاطع اللي قرأناها منه. وإذا ما علّمت ولا وحدة، ما يطلع غير السؤال.\n\nالثلاثة يمرّون بخادم وضوح إلى نموذج Claude من Anthropic، وما يُحفظ منها شيء في أي مرحلة. ولا واحد منها يقدر يغيّر أي مبلغ — الحساب كله على جهازك. وإذا رفضتها كلها، التقييم يشتغل كامل.\n\n4 — «اقرأها كصورة»: هذا الوحيد اللي يرسل الملف نفسه، لا نصًّا مأخوذًا منه، لأن الصورة ما فيها نص يُؤخذ. ما يصير إلا إذا كان عقدك صورة أو مسحًا بلا نص مقروء، وبعد شاشة منفصلة تقول لك هذا بالضبط، وما يصير من نفسه أبدًا. يُحذف الملف بعد ساعة. وما يرجع منه تقييم من 100: قواعد وضوح ما قرأت نصًّا هناك، فاللي يوصلك قراءة الذكاء الاصطناعي وحده، وموسومة كذلك.",
+                    en:"Your contract is analyzed inside the app on your device, and every amount is calculated here and stays here.\n\nThere are four exceptions. All are optional, all need your explicit agreement, and they are kept separate from each other because they send different things:\n\n1 — \"A closer read of your contract\": sends the contract text alone, not your figures or your answers.\n\n2 — \"AI second-pass review\": sends more — your dates, your wage, your contract type, how the job ended, every amount in your assessment, the documents you ticked, and what you typed yourself in the reason field.\n\n3 — \"Ask a question\": sends your question as you typed it. Two further tick boxes on that same screen, each separate and each off unless you turn it on, add more: one adds your dates, your wage, your contract type and how the job ended, so the answer can be about your situation; the other sends the text of your contract itself, so the answer can be read out of your own document and show you the lines it was read from. Leave both unticked and only the question goes.\n\nAll three go through Wodouh's server to Anthropic's Claude model, and nothing is stored at any point. None of them can change any amount — all the arithmetic stays on your device. Decline all three and the assessment works in full.\n\n4 — \"Read it as a photograph\": the only one that sends the FILE itself rather than text taken from it, because a photograph has no text to take. It happens only when your contract is an image or a scan with no readable text, only after a separate screen that says this in these words, and never on its own. The file is deleted after an hour. No score out of 100 comes back from it: Wodouh's own rules read no text there, so what you get is the AI's read alone, labelled as that."},
   /* The flag check, described exactly. It is added to the privacy screen only
      when a project is configured, because until then it never happens — and a
      privacy screen that lists something the build cannot do is as wrong as one
@@ -2288,6 +2318,21 @@ const T = {
   /* Said, not implied. The reader needs to know these are THEIR words and not
      our paraphrase — that is the difference between an opinion and evidence. */
   q_own:{ar:"من عقدك",en:"From your contract"},
+  /* THE ONE CONSENT IN THIS APP WHERE THE FILE ITSELF LEAVES.
+     Every other AI path sends text the reader chose to paste. This sends the
+     image or the PDF, because that is the only way a photograph can be read at
+     all, and the sentence says so in those words rather than "we process your
+     document". Anthropic's Claude is named, as it is on every other consent
+     here, because a reader deciding whether to hand over a contract is owed
+     the name of who receives it. */
+  scan_ok_t:{ar:"نرسل الملف نفسه؟",en:"Send the file itself?"},
+  scan_ok_b:{ar:"عشان نقرأ صورة، لازم نرسل الملف نفسه — مو نصًّا منه — إلى نموذج Claude من Anthropic. يُحذف بعد ساعة، وما نحتفظ به. وما راح نطلّع لك تقييمًا من 100 على صورة: قواعد وضوح ما قرأت نصًّا، واللي تحت قراءة الذكاء الاصطناعي وحده.",
+             en:"To read a photograph we have to send the file itself — not text taken from it — to Anthropic's Claude model. It is deleted after an hour and we keep nothing. And we will not put a score out of 100 on a photograph: Wodouh's own rules read no text here, so what comes back is the AI's read alone."},
+  scan_ok_yes:{ar:"أرسله واقرأه",en:"Send it and read it"},
+  nrs_send:{ar:"اقرأها كصورة",en:"Read it as a photograph"},
+  scan_signin:{ar:"تحتاج تسجّل الدخول عشان نرسل الملف.",en:"You need to sign in before we can send the file."},
+  scan_failed:{ar:"ما قدرنا نرسل الملف. جرّب مرة ثانية، أو الصق النص.",
+               en:"We couldn't send the file. Try again, or paste the text instead."},
   nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
   nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن — لكن نص العقد يشتغل معنا تمامًا.",
             en:"This looks like a scan or a photo. We can't read images yet — but the contract's text works perfectly."},
@@ -8636,6 +8681,38 @@ async function fetchWithDeadline(url, opts, ms){
    anything else reaching here is the network. */
 function isTimeout(e){ return !!e && e.name === "AbortError"; }
 
+/* THE SAME HEADERS, PLUS WHO IS ASKING.
+ *
+ * analyzeHeaders() sends the anon apikey, which is what satisfies the
+ * gateway's verify_jwt for an unauthenticated call. The scan path needs more:
+ * upload/index.ts resolves the caller through /auth/v1/user before it will
+ * accept a byte, and analyze's resolveUpload() re-checks that the upload row
+ * belongs to the person asking about it. Without a Bearer token both return
+ * 401 / not_your_upload, which is exactly what a call site added without this
+ * would have done.
+ *
+ * The token is read from the session at call time and is never logged, never
+ * put in a URL, and never written to the DOM. */
+function authHeaders(extra){
+  const h = analyzeHeaders(extra);
+  const u = (typeof WodouhAuth === "object" && WodouhAuth) ? WodouhAuth : null;
+  const tok = u && typeof u.token === "function" ? u.token() : null;
+  if (tok) h["authorization"] = "Bearer " + tok;
+  return h;
+}
+
+function uploadUrl(){
+  const c = window.WODOUH_CONFIG;
+  return c && typeof c.UPLOAD_URL === "string" && /^https:\/\//.test(c.UPLOAD_URL)
+    ? c.UPLOAD_URL : null;
+}
+/* Configured, signed in, and able to analyse what comes back. All three, or
+   the offer does not appear — a button that leads to a 401 is worse than no
+   button. */
+function scanAvailable(){
+  return !!uploadUrl() && !!analyzeUrl() && (!authOn() || signedIn());
+}
+
 function analyzeHeaders(extra){
   const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
   return Object.assign({ "content-type": "application/json" }, key ? { apikey: key } : {}, extra || {});
@@ -9169,6 +9246,42 @@ function crTermValue(kt, key, how){
   return t(how === "days" ? "cr_days" : "cr_hours").replace("{n}", fmtNum(n));
 }
 
+/* THE REVIEW OF A PHOTOGRAPHED CONTRACT.
+ *
+ * Same endpoint, same kind, same panel as a pasted contract — the difference
+ * is that the server is handed an upload reference instead of text, and
+ * resolveUpload() checks that the row belongs to the person asking before it
+ * will read anything. That check is why authHeaders() exists.
+ *
+ * No score, and no figures. analyze suppresses money on a scan because there
+ * is no text to attest a number against, and this screen shows no Wodouh score
+ * because Wodouh's rules never read the document. */
+async function crFromScan(uploadId){
+  const url = analyzeUrl();
+  if (!url || !uploadId) return;
+  crBusy = true; crError = null; crResult = null; crTrim = null;
+  renderCrPanel("nrPanel");
+  try {
+    const res = await fetchWithDeadline(url, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ kind: "contract_review", upload: uploadId,
+                             nat: nat === "nonsa" ? "nonsa" : "sa" })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || typeof data !== "object" || !Array.isArray(data.red_flags)){
+      crError = res.status === 429 ? "ai_busy"
+              : (data && data.error === "not_your_upload") ? "scan_failed" : "ai_failed";
+    } else {
+      crResult = data;
+    }
+  } catch(e){
+    crError = isTimeout(e) ? "ai_timeout" : "ai_offline";
+  }
+  crBusy = false;
+  renderCrPanel("nrPanel");
+}
+
 async function crRun(){
   const url = analyzeUrl();
   if (!url || !aiConsent) return;
@@ -9245,8 +9358,12 @@ function crFindingEl(f, kind){
   return el;
 }
 
-function renderCrPanel(){
-  const host = document.getElementById("crPanel");
+/* The host is a parameter so a scan's review can render on the screen a scan
+   actually reaches. Everything else about the panel — the tiering, the
+   unverified citation badges, the "no figure moved" rule — is identical, which
+   is the point of passing a host rather than writing a second panel. */
+function renderCrPanel(hostId){
+  const host = document.getElementById(hostId || "crPanel");
   if (!host) return;
   /* Unconfigured: nothing renders. Same shipped-inert rule as every other AI
      surface — an invisible feature cannot mislead anyone about where their
@@ -10806,6 +10923,85 @@ function renderNoread(){
   document.getElementById("nrSample").textContent = t("nr_sample");
   document.getElementById("nrTips").innerHTML =
     T[p + "tips"][lang].map(x=>`<li>${esc(x)}</li>`).join("");
+  /* Offered only where it helps: a photograph or a PDF with no text layer.
+     A font problem is fixed by re-exporting, and sending the file would waste
+     the reader's time and an upload for nothing. */
+  const btn = document.getElementById("nrScan");
+  if (btn){
+    const can = scan && !!pendingScan && scanAvailable();
+    btn.hidden = !can;
+    if (can) btn.textContent = t("nrs_send");
+    /* The retry stays primary when there is no offer, and steps down to the
+       secondary role when there is — two primaries is no hierarchy at all. */
+    const retry = document.getElementById("nrRetry");
+    if (retry) retry.className = can ? "ghost wide" : "primary";
+  }
+}
+
+/* ------------------------------------------------------------ the scan send
+ *
+ * upload → uploads row → analyze{kind:"contract_review", upload} → the same
+ * AI panel a pasted contract renders into. Every piece of that except this
+ * function already existed and had no caller.
+ *
+ * CONSENT FIRST, and in the app's own dialog rather than a native confirm, so
+ * it can name what leaves: this is the one path where the FILE goes, not text
+ * the reader chose to paste. askConfirm() is the same control the two
+ * destructive actions use. */
+let pendingScan = null;
+let scanBusy = false;
+
+async function offerScan(){
+  if (scanBusy || !pendingScan || !scanAvailable()) return;
+  const ok = await askConfirm({
+    title: t("scan_ok_t"), body: t("scan_ok_b"),
+    yes: t("scan_ok_yes"), no: t("dlg_cancel")
+  });
+  if (!ok) return;
+  sendScan();
+}
+
+async function sendScan(){
+  const file = pendingScan;
+  if (!file || !scanAvailable()) return;
+  scanBusy = true;
+  const notice = document.getElementById("offlineNotice");
+  const fail = (key) => {
+    scanBusy = false;
+    if (notice){ notice.textContent = t(key); notice.hidden = false; }
+    show("intake", 1);
+  };
+  upBusy(file.name);
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    /* No content-type header: the browser sets multipart/form-data with the
+       boundary, and naming it by hand omits the boundary and breaks the parse
+       on the other side. */
+    const h = authHeaders();
+    delete h["content-type"];
+    const up = await fetchWithDeadline(uploadUrl(), { method:"POST", headers:h, body:fd });
+    const u = await up.json().catch(() => null);
+    upIdle();
+    if (!up.ok || !u || typeof u.upload !== "string"){
+      /* The function's own error ladder, mapped to what a reader can act on.
+         "too_large" and "bad_type" are the reader's to fix; the rest are
+         ours. */
+      const e = u && u.error;
+      return fail(e === "too_large" ? "err_big"
+                : e === "bad_type" ? "err_type"
+                : e === "sign_in_required" ? "scan_signin"
+                : e === "rate_limited" ? "ai_busy" : "scan_failed");
+    }
+    /* Handed to the SAME review the pasted path uses. The panel, the tiering
+       and the figure suppression on a scan are all already built there. */
+    scanBusy = false;
+    pendingScan = null;
+    crFromScan(u.upload);
+  } catch(e){
+    upIdle();
+    return fail(isTimeout(e) ? "ai_timeout" : "ai_offline");
+  }
 }
 
 /* Enough real letters to be worth analysing? Guards against glyph-index soup. */
@@ -10823,7 +11019,24 @@ async function handleFile(file){
   if (file.size > MAX_FILE) return fail(t("err_big"));
   const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
   const isTxt = /^text\//i.test(file.type) || /\.(txt|md)$/i.test(file.name);
-  if (!isPdf && !isTxt) return fail(t("err_type"));
+  /* THE THREE TYPES upload/index.ts accepts, and no others — the picker's
+     accept list and this gate now agree with the server rather than with each
+     other. A type the function would refuse is refused here, where the reader
+     is still looking at the box. */
+  const isImg = /^image\/(jpeg|png|webp)$/i.test(file.type) ||
+                /\.(jpe?g|png|webp)$/i.test(file.name);
+  if (!isPdf && !isTxt && !isImg) return fail(t("err_type"));
+
+  /* A PHOTOGRAPH HAS NO TEXT LAYER TO LOOK FOR. There is nothing to extract,
+     so it goes straight to the offer rather than through a parse that can only
+     fail. The offer is where the consent is. */
+  if (isImg){
+    pendingScan = file;
+    noreadReason = "scan";
+    current = null;
+    runLoading(()=>{ buzz(12); renderNoread(); show("noread"); });
+    return;
+  }
 
   /* SAY WHICH FILE, AND SAY IT BEFORE THE SLOW PART. extractPdf() below is the
      genuinely variable step and it ran behind nothing but a dimmed, pulsing
@@ -10855,6 +11068,10 @@ async function handleFile(file){
      readers the same thing sends one of them round a loop that cannot end. */
   if (!legible(text)){
     noreadReason = (isPdf && ops === 0) ? "scan" : "glyphs";
+    /* Held for the offer, and only in the case the offer covers. A font
+       problem is not fixed by sending the file — re-exporting it is — so a
+       "glyphs" failure keeps nothing. */
+    pendingScan = noreadReason === "scan" ? file : null;
     current = null;
     runLoading(()=>{ buzz(12); renderNoread(); show("noread"); });
     return;

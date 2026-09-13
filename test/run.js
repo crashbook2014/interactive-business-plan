@@ -31,6 +31,7 @@ const ORDER = [
   "availability.test.js",
   "workspace.test.js",
   "assist.test.js",
+  "scan.test.js",
   "deploy-bundle.test.js",
   "schema.test.js",
   "rls.test.js",

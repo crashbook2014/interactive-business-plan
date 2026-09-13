@@ -79,6 +79,13 @@ function signInStub(){
   if (typeof WodouhAuth !== "undefined"){
     WodouhAuth.init = () => Promise.resolve(authUser);
     WodouhAuth.user = () => authUser;
+    /* A TOKEN TOO, because a signed-in reader has one and the scan path needs
+       it: upload/index.ts resolves the caller before it accepts a byte, and
+       analyze's resolveUpload() re-checks ownership. Without this the stub
+       simulated "signed in" while every authHeaders() call went out bare, and
+       a suite asserting the Bearer is attached would have been asserting
+       against its own omission. */
+    WodouhAuth.token = () => "test-access-token";
   }
 }
 const signInSrc = "(" + signInStub.toString() + ")();";

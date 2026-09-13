@@ -243,7 +243,7 @@ async function serveWithAiCsp(page){
      nothing. So the page now says what actually happens to a scan — Wodouh
      refuses it and asks for pasted text — and this list is three again. */
   const FLOWS = [/A closer read of your contract/i, /AI second-pass review/i,
-                 /Ask a question/i];
+                 /Ask a question/i, /Read it as a photograph/i];
   const named = FLOWS.filter(re => re.test(claim2.acc)).length;
   ok(named === FLOWS.length,
      `configured: every off-device flow is named on the privacy page (${named}/${FLOWS.length})`);
@@ -256,11 +256,23 @@ async function serveWithAiCsp(page){
      until then it must not claim one. */
   const appSrc = require("node:fs").readFileSync(
     require("node:path").join(__dirname, "..", "app", "index.html"), "utf8");
+  /* THE DIRECTION FLIPPED, WHICH IS WHAT THIS CHECK WAS BUILT FOR.
+   *
+   * It used to assert the call site did NOT exist, because the page had been
+   * corrected downward: it described a file upload the client could not
+   * perform, and a privacy page that names a data flow which does not happen
+   * is inaccurate in exactly the way a privacy page must not be.
+   *
+   * The scan path now has a call site, so the disclosure comes back — in the
+   * same change, which is the rule the comment above set. The assertion is
+   * still bidirectional: whichever way the call site goes, the page must go
+   * with it, and neither can move alone. */
   const hasUploadCall = /functions\/v1\/upload|UPLOAD_URL/.test(appSrc);
-  ok(hasUploadCall === false,
-     "the client still has no call site that uploads a file, as the page now says");
-  ok(!/uploads the FILE|uploads the file itself/i.test(claim2.acc),
-     "and the page no longer describes a file upload that cannot happen");
+  const saysUpload = /sends the FILE itself|يرسل الملف نفسه/i.test(claim2.acc);
+  ok(hasUploadCall === saysUpload,
+     `the call site and the disclosure agree (call site ${hasUploadCall}, page says ${saysUpload})`);
+  ok(!hasUploadCall || /deleted after an hour|يُحذف الملف بعد ساعة/i.test(claim2.acc),
+     "and where it uploads, the page says how long the file lives");
   ok(/reason field/i.test(claim2.acc),
      "configured: it still says the reason text is sent by the review");
   ok(/can change any amount/i.test(claim2.acc),
