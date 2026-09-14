@@ -46,7 +46,16 @@
  * Bump CACHE on any change to the shell. The old cache is deleted on activate,
  * so a reader never holds two builds at once.
  */
-const CACHE = "wodouh-shell-v2";
+/* v3 — bumped because v2 was not, through every shell change since it was set.
+   Stale-while-revalidate returns the cached copy first and refreshes for next
+   time, so a reader who had visited before opened an old build on arrival and
+   only got the current one on their second visit. With the version unchanged,
+   `activate` had nothing to delete and the old entries simply stayed. That is
+   how a laptop came to be running a build from before the apikey header was
+   added while a phone ran a different one, and how the two devices disagreed
+   about whether the product worked at all. Bumping the version is what makes
+   `activate` drop the previous cache and re-fetch the shell. */
+const CACHE = "wodouh-shell-v3";
 
 /* Everything needed to open the app with the network off. Relative, so the
    same file works at /app/ today and at the domain root later. */
