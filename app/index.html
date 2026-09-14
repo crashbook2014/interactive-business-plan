@@ -4872,6 +4872,7 @@ function show(name, back){
             || el.querySelector("h1,h2");
   if (h){ h.setAttribute("tabindex","-1"); h.focus({ preventScroll:true }); }
   if (name==="result") animateRing();
+  if (name==="account" && typeof renderWipe === "function") renderWipe();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
   if (typeof renderSituations === "function") renderSituations();
@@ -5109,8 +5110,16 @@ function analyze(kind){
   if (navigator.onLine === false){ notice.hidden = false; return; }
   notice.hidden = true;
   if (kind === "pasted" && document.getElementById("pasteBox").value.trim().length < 40){
-    const hint = document.querySelector("#screen-home .paste-hint");
-    hint.classList.remove("nudge"); void hint.offsetWidth; hint.classList.add("nudge");
+    /* THE HINT MOVED SCREENS AND THIS SELECTOR DID NOT. The paste box and its
+       hint left #screen-home for #screen-intake when the document was put
+       first; this still asked for "#screen-home .paste-hint", got null, and
+       threw on .classList — so pressing "Read it for me" with an empty or very
+       short paste did nothing at all: no nudge, no focus (the line below never
+       ran), no message. Silence is the one thing a missing input must never
+       produce. Scoped to the element rather than to a screen, so the next move
+       cannot break it the same way. */
+    const hint = document.querySelector(".paste-hint");
+    if (hint){ hint.classList.remove("nudge"); void hint.offsetWidth; hint.classList.add("nudge"); }
     document.getElementById("pasteBox").focus();
     return;
   }
