@@ -537,7 +537,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "a money refusal tells the reader the model never computes money here");
 
   /* ---- 11b. a failed send must not cost the reader twice */
-  console.log("\n— a failed question keeps its text and says the attempt counted");
+  console.log("\n— a failed question keeps its text and costs nothing");
   reply = null;   /* fulfil with null -> unusable shape -> error path */
   const failed = await p.evaluate(async () => {
     /* The assertions above have already spent the day's five, so the box is
@@ -551,13 +551,50 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
              box: (document.getElementById("askQ") || {}).value,
              text: document.getElementById("askBody").textContent };
   });
-  ok(failed.after === failed.before - 1, "the attempt is deducted, as designed");
-  ok(/counted against today/i.test(failed.text),
-     "and the reader is TOLD it was deducted, rather than watching a meter move silently");
+  /* INVERTED, DELIBERATELY — this pair asserted the opposite until Sept 2026.
+   *
+   * It used to read "the attempt is deducted, as designed", and the design it
+   * named was real: spend up front, because a cap that only counts successes
+   * is a cap a retry loop walks straight through. What that reasoning missed
+   * is that it charges for failures the reader did not cause and cannot see —
+   * a dropped connection on a long-haul route, our own deadline, a 429. On a
+   * flaky link that is the whole day's allowance gone without one answer.
+   *
+   * The anti-abuse argument survives where it actually holds: server-side, in
+   * bump_rate_limit, which a client-side refund cannot reach. This counter was
+   * never a security control — it lives in localStorage.
+   *
+   * A refusal still costs, and #screen-assist's suite asserts that half. What
+   * is refunded is only the case where nothing came back at all. */
+  ok(failed.after === failed.before,
+     `a failure that produced no answer costs nothing (${failed.before} → ${failed.after})`);
+  ok(/didn't count that attempt|ما احتسبنا/i.test(failed.text),
+     "and the reader is TOLD it was not counted, rather than left guessing");
   ok(/survive a failure/.test(failed.box || failed.kept),
      "the question they typed is still there — they do not retype it from memory");
   ok(!/score above/i.test(failed.text),
      "and the failure message does not talk about a score that is not on this screen");
+
+  /* THE HALF THAT STOPS THE REFUND BECOMING "NEVER CHARGE ANYTHING".
+     A refusal is a real answer the model produced and reasoned about; it is
+     the most expensive kind to generate and the easiest to mistake for a
+     failure. Without this, the fix above simplifies into a free-questions
+     machine and nothing in the suite would notice. */
+  console.log("\n— but a refusal is an answer, and still costs");
+  reply = { tier: "refused", reason: "citation", answer: "" };
+  const refusedCost = await p.evaluate(async () => {
+    askUsed = { day:"", n:0 }; askError = null; askAnswer = null; renderAsk();
+    const before = askLeft();
+    document.getElementById("askQ").value = "سؤال يرفضه النموذج";
+    document.getElementById("askQ").dispatchEvent(new Event("input"));
+    await askRun();
+    return { before, after: askLeft(), err: askError,
+             tier: askAnswer && askAnswer.tier };
+  });
+  ok(refusedCost.tier === "refused" && !refusedCost.err,
+     `the refusal arrives as an answer, not an error (${refusedCost.tier}/${refusedCost.err})`);
+  ok(refusedCost.after === refusedCost.before - 1,
+     `and it costs one, because the model did answer (${refusedCost.before} → ${refusedCost.after})`);
 
   /* ---- 12. the cap is real and survives a reload */
   console.log("\n— the daily cap holds, and holds across a reload");

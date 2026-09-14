@@ -3230,7 +3230,10 @@ const T = {
   /* And say plainly that the attempt counted. It is deliberate — a cap that
      only counts successes is a cap a retry loop walks straight through — but
      a meter that moves without explanation reads as rigged. */
-  ask_spent:{ar:"احتُسبت هذي المحاولة من رصيد اليوم.",en:"That attempt counted against today's allowance."},
+  /* WAS "that attempt counted against today's allowance" — printed on every
+     failure, including the ones where nothing came back. It is now true in the
+     other direction: see askRefund(). */
+  ask_kept:{ar:"ما احتسبنا هذي المحاولة من رصيد اليوم.",en:"We didn't count that attempt against today's allowance."},
   ask_empty:{ar:"اكتب سؤالك أول.",en:"Type your question first."},
   ask_disc:{ar:"مبني على سجل يراجعه محامٍ سعودي مرخّص. ووضوح ليس مكتب محاماة، وهذا الجواب ليس استشارة قانونية.",
             en:"Drawn from a register a licensed Saudi lawyer reviews. Wodouh is not a law firm, and this answer is not legal advice."},
@@ -8881,6 +8884,34 @@ function askSpend(){
   askUsed = askUsed.day === d ? { day:d, n:askUsed.n + 1 } : { day:d, n:1 };
   saveState();
 }
+/* THE OTHER HALF OF askSpend(), AND IT WAS MISSING ON THE SCREEN THAT NEEDED
+ * IT MOST.
+ *
+ * The allowance is spent up front, deliberately — a cap that only counts
+ * successes is a cap a retry loop walks straight through. But #screen-ask
+ * then kept it on every failure: a dropped connection, our own deadline, a
+ * 429, a malformed response. The reader got no answer and paid for it anyway,
+ * and the screen printed "that attempt counted against today's allowance" to
+ * tell them so. On a flaky route that is the reader's whole allowance gone
+ * without a single answer, which is the version of this product a person
+ * remembers and tells other people about.
+ *
+ * WHY REFUNDING IS SAFE, given the anti-abuse reasoning above. This counter is
+ * a courtesy budget in localStorage, not a security control — anyone who wants
+ * to edit it already can. The cap that actually holds is server-side
+ * (bump_rate_limit, in analyze and upload alike), and a client-side refund
+ * cannot touch it. So refunding what the reader never received costs us
+ * nothing we were relying on.
+ *
+ * A REFUSAL IS NOT A FAILURE. The model answering "I will not answer that" is
+ * a real answer it produced, and it still costs. What is refunded is the case
+ * where nothing came back at all. */
+function askRefund(){
+  if (askUsed.day === askToday() && askUsed.n > 0){
+    askUsed = { day: askUsed.day, n: askUsed.n - 1 };
+    saveState();
+  }
+}
 
 /* renderAskEntry() IS GONE. It hid the Rights-screen twin of the home question
    door, and that button no longer exists — asking a question has nothing to do
@@ -8934,8 +8965,10 @@ function renderAsk(){
   let out = "";
 
   if (askAnswer) out += askAnswerHtml(askAnswer);
+  /* ask_empty never reached askSpend(), so there is nothing to reassure them
+     about; every other error here refunded, so say so. */
   if (askError) out += `<div class="tm-sec"><p>${t(askError)}</p>
-       ${askError === "ask_empty" ? "" : `<p class="tq-skip">${t("ask_spent")}</p>`}</div>`;
+       ${askError === "ask_empty" ? "" : `<p class="tq-skip">${t("ask_kept")}</p>`}</div>`;
 
   if (left <= 0){
     out += `<div class="tm-sec"><p>${t("ask_none_left")}</p></div>`;
@@ -9085,6 +9118,8 @@ async function askRun(){
     const d = await res.json().catch(() => null);
     if (!res.ok || !d || typeof d.tier !== "string"){
       askError = res.status === 429 ? "ai_busy" : "ask_err";
+      /* Nothing usable came back, so it costs nothing. See askRefund(). */
+      askRefund();
     } else {
       /* Coerced again on this side. The server already graded it; this guards
          the one class of bug that would put unlabelled text on screen — a
@@ -9131,6 +9166,8 @@ async function askRun(){
     }
   } catch(e){
     askError = isTimeout(e) ? "ask_timeout" : "ask_offline";
+    /* The route dropped or our deadline fired — the reader has nothing. */
+    askRefund();
   }
   askBusy = false;
   renderAsk();
@@ -10361,13 +10398,11 @@ function ask(text){
      is a real answer the model produced. A timeout, a 429 or a 502 is the
      reader getting nothing, and this screen has said since it was built that
      being charged for a failure is the version of it a reader remembers. */
-  askSpend(); saveState();
-  const refund = () => {
-    if (askUsed.day === askToday() && askUsed.n > 0){
-      askUsed = { day: askUsed.day, n: askUsed.n - 1 };
-      saveState();
-    }
-  };
+  /* askRefund() is the shared one, beside askSpend(). This screen used to
+     carry its own copy of those four lines, which is exactly how #screen-ask
+     came to have none at all. */
+  askSpend();
+  const refund = askRefund;
   fetchWithDeadline(analyzeUrl(), {
     method: "POST",
     headers: analyzeHeaders(),
