@@ -7920,6 +7920,7 @@ function termTermOdd(){
 function termComp(){
   const h = termHow();
   if (!h || !h.comp) return 0;
+  if (termCtype() === null) return 0;
   return compFor(termWage(), termServiceYears(),
                  termCtype() === "fixed" ? "fixed" : "indef", termRemainingMonths());
 }
@@ -7931,7 +7932,7 @@ function termComp(){
 function termNoticeOwed(){
   const h = termHow();
   if (!h || !h.notice) return 0;
-  if (isNonSaudi() || termCtype() === "fixed") return 0;
+  if (isNonSaudi() || termCtype() === "fixed" || termCtype() === null) return 0;
   return noticeFor(term.noticeDue, term.noticeGiven, termWage());
 }
 
@@ -7955,10 +7956,10 @@ function termUnassessed(){
     { key:"tm_m_leave",  needs:["leaveDays"],                applies:true },
     { key:"tm_m_unpaid", needs:["unpaidMonths"],             applies:true },
     { key:"tm_m_other",  needs:["otherAmt"],                 applies:true },
-    { key:"tm_m_notice", needs:["noticeDue"],
+    { key:"tm_m_notice", needs:["noticeDue","ctype"],
       applies: !!(h && h.notice) && !isNonSaudi() && termCtype() !== "fixed" },
-    { key:"tm_m_comp",   needs:["termEnd"],
-      applies: !!(h && h.comp) && termCtype() === "fixed" },
+    { key:"tm_m_comp",   needs:["termEnd","ctype"],
+      applies: !!(h && h.comp) && termCtype() !== "indef" },
     /* The end-of-service line reaches this list only on the resignation path,
        and only for the Article 87 exception. Everywhere else its inputs are
        dates and a wage, which the flow requires before it will compute at all.
