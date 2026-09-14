@@ -43,19 +43,38 @@
  *
  * VERSION
  *
- * Bump CACHE on any change to the shell. The old cache is deleted on activate,
- * so a reader never holds two builds at once.
+ * Not a number anyone picks — the cache is named after a fingerprint of the
+ * shell's own bytes, so it changes exactly when the shell does and the old
+ * cache is deleted on activate. See the note above SHELL_HASH for why that
+ * stopped being a rule in a comment.
  */
-/* v3 — bumped because v2 was not, through every shell change since it was set.
-   Stale-while-revalidate returns the cached copy first and refreshes for next
-   time, so a reader who had visited before opened an old build on arrival and
-   only got the current one on their second visit. With the version unchanged,
-   `activate` had nothing to delete and the old entries simply stayed. That is
-   how a laptop came to be running a build from before the apikey header was
-   added while a phone ran a different one, and how the two devices disagreed
-   about whether the product worked at all. Bumping the version is what makes
-   `activate` drop the previous cache and re-fetch the shell. */
-const CACHE = "wodouh-shell-v3";
+/* THE VERSION IS NOT CHOSEN ANY MORE, IT IS DERIVED.
+ *
+ * The rule above — bump CACHE on any change to the shell — was a comment, and
+ * it lapsed through every shell change between v2 and the day someone noticed.
+ * With the version unchanged, `activate` has nothing to delete, so
+ * stale-while-revalidate keeps handing a returning reader the previous build
+ * and only refreshes it for next time.
+ *
+ * That is not cosmetic here. The shell carries the legal figures and the rules
+ * that compute them, so an old shell is old law. It is also what produced a
+ * week of "it works on my phone but not my laptop": two devices holding two
+ * builds, one from before the apikey header was added, disagreeing about
+ * whether the product worked at all.
+ *
+ * SHELL_HASH is a fingerprint of the bytes of every file in SHELL below, and
+ * the cache is named after it — so there is no version for anyone to forget,
+ * and no way to change one half without the other. Change a shell file and
+ * test/shell-cache.test.js fails until you run:
+ *
+ *     node tools/shell-fingerprint.mjs --write
+ *
+ * This file is deliberately not part of its own fingerprint: writing the hash
+ * in would change the file and invalidate the hash it just recorded. It does
+ * not need to be — the browser updates a worker by byte-comparing the worker
+ * script itself, which is the one file that already has a working mechanism. */
+const SHELL_HASH = "e7c9cfa70079";
+const CACHE = "wodouh-shell-" + SHELL_HASH;
 
 /* Everything needed to open the app with the network off. Relative, so the
    same file works at /app/ today and at the domain root later. */
