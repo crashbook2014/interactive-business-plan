@@ -8767,9 +8767,35 @@ function scanAvailable(){
   return !!uploadUrl() && !!analyzeUrl() && (!authOn() || signedIn());
 }
 
+/* THE ANON KEY GOES IN `authorization`, NOT IN `apikey`, AND THAT IS THE WHOLE
+ * FIX FOR A FORTNIGHT OF FAILED AI CALLS.
+ *
+ * a8b5ea2 put the key in an `apikey` header because the gateway in front of
+ * the Edge Functions enforces verify_jwt and rejects a call carrying no
+ * credential. That satisfied the gateway and broke the browser: the deployed
+ * function's CORS preflight allows `content-type, authorization` and has never
+ * named `apikey`, and a browser will not send a request carrying a header the
+ * preflight did not authorise. So OPTIONS went out, the function answered 204,
+ * and the POST was never sent — every AI question failing while the server
+ * logs showed nothing but healthy preflights.
+ *
+ * The gateway accepts either form. `Authorization: Bearer <anon key>` is the
+ * documented one and it is already in the allowlist, so this needs no function
+ * deploy to take effect — which matters, because the function cannot be
+ * redeployed from here without hand-copying the verified legal register.
+ *
+ * THE FUNCTION ITSELF NEVER READ `apikey`. Checked against the deployed source:
+ * it reads `authorization` to identify the caller, and every apikey it sets is
+ * the SERVICE key on its own outbound calls. So nothing downstream loses a
+ * credential by this move.
+ *
+ * authHeaders() below overwrites `authorization` with the reader's own access
+ * token when they have one, which is what resolveUpload() checks ownership
+ * against. The anon key is the floor, not the ceiling. */
 function analyzeHeaders(extra){
   const key = (window.WODOUH_CONFIG || {}).SUPABASE_ANON_KEY;
-  return Object.assign({ "content-type": "application/json" }, key ? { apikey: key } : {}, extra || {});
+  return Object.assign({ "content-type": "application/json" },
+                       key ? { authorization: "Bearer " + key } : {}, extra || {});
 }
 /* Two locks, and BOTH must be open. ANALYZE_URL is the credential — without it
    there is nowhere to send anything and the feature cannot exist. The flag is

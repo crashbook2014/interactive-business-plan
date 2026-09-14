@@ -56,12 +56,23 @@ for (const src of [analyzeSrc, authSrc]) {
 }
 /* content-type is deleted again on the multipart upload so the browser can set
    its own boundary — it is still sent on every JSON call, so it stays. */
-ok(sent.size >= 3, `the headers the client sends were parsed (${[...sent].join(", ") || "none"})`);
-/* Named explicitly, because these three are the whole point: apikey is the one
-   that was missing, and the other two are what makes the list non-trivial. */
-for (const h of ["content-type", "apikey", "authorization"]) {
+ok(sent.size >= 2, `the headers the client sends were parsed (${[...sent].join(", ") || "none"})`);
+/* Named explicitly, because these two are what the gateway and the ownership
+   check respectively depend on. */
+for (const h of ["content-type", "authorization"]) {
   ok(sent.has(h), `the client sends ${h}`);
 }
+/* AND IT MUST NOT SEND `apikey`, which is the half that cannot be tested
+   against the repo alone.
+   The function that is DEPLOYED allows only `content-type, authorization` —
+   the apikey entry exists in this repo and has never shipped. So a client that
+   sends apikey is a client whose every AI call the browser refuses, no matter
+   how correct the repo's allowlist looks here. The anon key travels as
+   `Authorization: Bearer`, which the gateway accepts and the live preflight
+   already permits.
+   Delete this assertion the day analyze is redeployed and not before. */
+ok(!sent.has("apikey"),
+   "and does not send apikey, which the deployed preflight has never allowed");
 
 /* ------------------------------------------- what each function will accept */
 for (const f of ["analyze", "upload"]) {
