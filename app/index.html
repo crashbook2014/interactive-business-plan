@@ -1481,10 +1481,13 @@ function ensureFlags(){
       /* Two seconds, not thirty: this is a flag lookup behind a compiled
          default that already holds, so waiting on it would delay the app to
          learn something it can do without. */
+      /* No retry: this lookup has promised never to delay the app, and a
+         second attempt would double the window it is allowed to take. The
+         compiled default already holds while it is away. */
       const res = await fetchWithDeadline(url, {
         headers: { apikey: key },
         cache: "no-store",
-      }, FLAG_TIMEOUT);
+      }, FLAG_TIMEOUT, 0);
       if (!res.ok) return false;
       const rows = await res.json();
       flagValues = flagShape(rows);
@@ -3216,8 +3219,14 @@ const T = {
      "your score above" is unaffected — there is no score above here, and a
      sentence about something that is not on screen reads as carelessness at
      the exact moment the reader needs a clear one. */
-  ask_offline:{ar:"ما فيه اتصال، وما وصل سؤالك. باقي وضوح كله شغّال على جهازك.",
-               en:"No connection, and your question didn't get through. The rest of Wodouh still works on your device."},
+  /* NOT "you have no connection". The reader whose request fails this way is
+     usually online — their browser is fine, their other tabs are fine, and the
+     thing that failed is the route to our service, which is ours and not
+     theirs. Telling them otherwise sends them to restart a router that was
+     never broken. It also says we tried again, so a single dropped connection
+     does not read as a broken product. */
+  ask_offline:{ar:"ما قدرنا نوصل لخدمة وضوح، وأعدنا المحاولة — وسؤالك ما وصل. باقي وضوح كله شغّال على جهازك.",
+               en:"We couldn't reach Wodouh's service, and we tried again — your question didn't get through. The rest of Wodouh still works on your device."},
   /* And say plainly that the attempt counted. It is deliberate — a cap that
      only counts successes is a cap a retry loop walks straight through — but
      a meter that moves without explanation reads as rigged. */
@@ -3256,8 +3265,8 @@ const T = {
               en:"The service took too long, so we stopped waiting. Your assessment above is computed on your device and is unaffected — try again if you like."},
   ask_timeout:{ar:"الخدمة تأخرت أكثر من اللازم، فأوقفنا الانتظار وما وصلك جواب. باقي وضوح كله شغّال على جهازك.",
                en:"The service took too long, so we stopped waiting and no answer arrived. The rest of Wodouh keeps working on your device."},
-  ai_offline:{ar:"ما فيه اتصال. تقييمك أعلاه محسوب على جهازك وما تأثر.",
-              en:"No connection. Your assessment above was calculated on your device and is unaffected."},
+  ai_offline:{ar:"ما قدرنا نوصل لخدمة وضوح، وأعدنا المحاولة. تقييمك أعلاه محسوب على جهازك وما تأثر.",
+              en:"We couldn't reach Wodouh's service, and we tried again. Your assessment above was calculated on your device and is unaffected."},
   /* --- Article 87 exceptions */
   tm_f_exc:{ar:"هل كانت استقالتك لأحد هذي الأسباب؟",en:"Was your resignation for any of these reasons?"},
   tm_exc_none:{ar:"لا، استقالة عادية",en:"No, an ordinary resignation"},
@@ -3460,7 +3469,7 @@ const T = {
   airv_timeout:{ar:"المراجعة تأخرت أكثر من اللازم، فأوقفناها.",en:"The review took too long, so we stopped waiting."},
   airv_busy:{ar:"الخدمة مزدحمة حاليًا.",en:"The service is busy right now."},
   airv_failed:{ar:"ما قدرنا نكمل المراجعة الثانية.",en:"We couldn't complete the second pass."},
-  airv_offline:{ar:"ما فيه اتصال.",en:"No connection."},
+  airv_offline:{ar:"ما قدرنا نوصل للخدمة.",en:"We couldn't reach the service."},
   airv_unaffected:{ar:"تقييمك أعلاه ما تأثر — كله محسوب على جهازك، ومراجعتنا الذاتية اشتغلت كالمعتاد.",
                    en:"Your assessment above is unaffected — all of it was calculated on your device, and our own review ran as usual."},
   airv_src:{ar:"مراجعة آلية لتقييمنا: تنبّه ولا تحسب، وما غيّرت أي مبلغ.",
@@ -8668,13 +8677,55 @@ function analyzeUrl(){
    able to shorten it. A test that proves a thirty-second deadline by waiting
    thirty seconds is a test nobody runs. */
 let AI_TIMEOUT_MS = 30000;
-async function fetchWithDeadline(url, opts, ms){
-  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
-  const timer = ctrl ? setTimeout(() => ctrl.abort(), ms || AI_TIMEOUT_MS) : null;
-  try {
-    return await fetch(url, Object.assign({}, opts, ctrl ? { signal: ctrl.signal } : {}));
-  } finally {
-    if (timer) clearTimeout(timer);
+
+/* ONE RETRY, AND ONLY FOR A CONNECTION THAT NEVER LANDED.
+ *
+ * The project this app talks to is hosted a long way from the people using
+ * it, and a long-haul route does not fail cleanly: it fails sometimes. The
+ * founder's own desktop produced ERR_CONNECTION_TIMED_OUT on one sign-in
+ * attempt and completed the next one from the same browser minutes later,
+ * while a phone on a different carrier went through every time. A single
+ * dropped connection should not be the reader's problem to notice and solve
+ * by pressing the button again — especially on the screens where the thing
+ * they pressed it for is a contract they are frightened about.
+ *
+ * WHAT IS RETRIED, AND WHAT DELIBERATELY IS NOT.
+ *
+ * A transport failure — DNS, connect refused, a route that dropped — means
+ * the request did not arrive, so sending it again asks nothing twice.
+ *
+ * A DEADLINE IS NOT RETRIED. Our own AbortController firing means the request
+ * very likely did arrive and is still being worked on at the other end; a
+ * second copy would be a second job, a second charge, and on the AI paths a
+ * second rate-limit slot. `isTimeout()` is what separates the two, and it is
+ * the same distinction the offline-vs-timeout copy already makes.
+ *
+ * Two call sites pass 0 and opt out entirely — the flag lookup, because it is
+ * a 2-second best-effort that has promised never to delay the app, and the
+ * upload, because a browser cannot tell a connection that failed on the way
+ * out from one that failed on the way back, and guessing wrong there sends
+ * the same file to Anthropic twice.
+ *
+ * `let` for the same reason as the deadline above: a suite has to be able to
+ * turn it off and to stop waiting 400ms between attempts. */
+let AI_RETRIES = 1;
+let RETRY_PAUSE_MS = 400;
+async function fetchWithDeadline(url, opts, ms, retries){
+  let left = 1 + (retries === undefined ? AI_RETRIES : retries);
+  for (;;){
+    left--;
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), ms || AI_TIMEOUT_MS) : null;
+    let err;
+    try {
+      return await fetch(url, Object.assign({}, opts, ctrl ? { signal: ctrl.signal } : {}));
+    } catch (e) {
+      err = e;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+    if (left <= 0 || isTimeout(err)) throw err;
+    await new Promise((r) => setTimeout(r, RETRY_PAUSE_MS));
   }
 }
 /* Which of the two a caught exception was: AbortError is the deadline, and
@@ -10980,7 +11031,13 @@ async function sendScan(){
        on the other side. */
     const h = authHeaders();
     delete h["content-type"];
-    const up = await fetchWithDeadline(uploadUrl(), { method:"POST", headers:h, body:fd });
+    /* No retry, deliberately. A browser cannot tell a request that died on
+       the way out from one whose response died on the way back, so a second
+       attempt risks a second upload row and a second copy of the same file
+       sent to Anthropic — billed, stored and swept twice. The reader pressing
+       the button again is a decision; us doing it silently is not. */
+    const up = await fetchWithDeadline(uploadUrl(), { method:"POST", headers:h, body:fd },
+                                       AI_TIMEOUT_MS, 0);
     const u = await up.json().catch(() => null);
     upIdle();
     if (!up.ok || !u || typeof u.upload !== "string"){

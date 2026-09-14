@@ -61,6 +61,7 @@ const ORDER = [
   "termination.test.js",
   "claude-path.test.js",
   "network-deadline.test.js",
+  "network-retry.test.js",
   "ai-context.test.js",
   "duties-relevance.test.js",
   "demand-letter.test.js",
