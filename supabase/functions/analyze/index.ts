@@ -87,7 +87,27 @@ const RATE_WINDOW = "00:01:00";
 function cors(extra: Record<string, string> = {}) {
   return {
     "access-control-allow-origin": ALLOWED_ORIGIN || "null",
-    "access-control-allow-headers": "content-type, authorization",
+    /* `apikey` IS LOAD-BEARING AND WAS MISSING FOR A FORTNIGHT.
+     *
+     * a8b5ea2 added the anon apikey to every client call, because the gateway
+     * in front of this function enforces verify_jwt and rejects a call without
+     * it. That fixed the gateway and broke the browser: a preflight allowlist
+     * that does not name a header the page intends to send makes the browser
+     * refuse to send the request at all. The server sees a clean OPTIONS, that
+     * OPTIONS returns 204, and the POST never arrives — so the logs look
+     * healthy while every AI question in the product fails.
+     *
+     * That is exactly what happened. The live logs show five preflights
+     * answered 204 with no POST behind any of them, and the one POST that did
+     * land came from a device still serving an older cached build that predates
+     * a8b5ea2 and therefore sent no apikey at all.
+     *
+     * The two halves have to move together, which nothing was holding them to:
+     * every suite intercepts this endpoint, so no test has ever performed a
+     * real preflight. test/cors-preflight.test.js now parses the headers the
+     * client sends and the headers this list allows, and fails when they
+     * disagree. */
+    "access-control-allow-headers": "content-type, authorization, apikey",
     "access-control-allow-methods": "POST, OPTIONS",
     ...extra,
   };

@@ -54,7 +54,12 @@ const RATE_WINDOW = "00:01:00";
 function cors() {
   return {
     "access-control-allow-origin": ALLOWED_ORIGIN || "null",
-    "access-control-allow-headers": "authorization, content-type",
+    /* apikey for the same reason analyze/index.ts carries it, and it breaks the
+       same way: authHeaders() is analyzeHeaders() plus the Bearer, so every
+       scan upload sends the anon apikey too. Leave it out and the browser
+       refuses the POST after a clean 204 — a PDF that never leaves the device
+       while the server logs look untroubled. */
+    "access-control-allow-headers": "authorization, content-type, apikey",
     "access-control-allow-methods": "POST, OPTIONS",
     "vary": "origin",
   };
