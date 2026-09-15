@@ -4149,6 +4149,18 @@ const RULES = [
        en:"Holding your passport is a violation. You can report it to the Ministry of Human Resources — keeping your passport is your right."} },
 
   { re:/(recruitment\s*(?:fee|cost)|iqama\s*fee|work\s*permit\s*fee|رسوم\s*(?:الاستقدام|الإقامة|رخصة\s*العمل|التأشيرة)|تتحمل\s*رسوم)/i, s:"red",
+    /* THE FLAG IS ABOUT WHO PAYS, and the pattern could not see who.
+       It matched fee VOCABULARY, so «تتحمل الشركة رسوم الإقامة ورخصة العمل»
+       — the company bears them, which is the law and is the clause protecting
+       the reader — came back red under «انتبه قبل التوقيع», with advice to
+       have it removed. A reader who acted on that advice would have asked to
+       delete the sentence that saved them the money.
+       Scoped to the employer bearing them explicitly, so an employee-pays
+       clause is untouched: the guard excuses, it does not disable. */
+    /* (?:ال)? on every noun, because normAr() strips the definite article
+       from the TEXT but not from a pattern where ال follows \s* rather than a
+       real space — the same shape ruleUnlessN's other caller already uses. */
+    unless:/(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*(?:ال)?(?:شركة|منشأة|مؤسسة|جهة)|(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*صاحب\s*(?:ال)?عمل|(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*(?:ال)?طرف\s*(?:ال)?أول|على\s*(?:نفقة\s*)?(?:صاحب\s*(?:ال)?عمل|(?:ال)?(?:شركة|منشأة|مؤسسة))|(?:company|employer|first\s*part(?:y|ies))\s*(?:shall\s*|will\s*|is\s*to\s*)?(?:bears?|bear|pays?|covers?|is\s*responsible\s*for)|at\s*the\s*(?:company|employer)(?:'|’)?s\s*(?:expense|cost)/i,
     t:{ar:"رسوم الاستقدام والإقامة",en:"Recruitment and Iqama fees"},
     nat:"nonsa",
     src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"},
