@@ -166,7 +166,12 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
                door: !!btn,
                /* The sentence beside the button is the reviewed one from the
                   assessment, not a second claim written for this screen. */
-               reuses: out.textContent.includes(T.tm_s_eos_81[document.documentElement.lang === 'ar' ? 'ar' : 'en']) };
+               reuses: out.textContent.includes(T.tm_s_eos_81[document.documentElement.lang === 'ar' ? 'ar' : 'en']),
+               /* An Article 81 claim on screen without Article 81 beside it
+                  would be the one thing this product never does. The register
+                  records the grounds as verified and the award consequence as
+                  Wodouh's reading, and tm_src_81 says exactly that. */
+               cited: out.textContent.includes(T.tm_src_81[document.documentElement.lang === 'ar' ? 'ar' : 'en']) };
     };
     const out = { reduced: [], full: [] };
     /* Both reduction tiers and the zero tier, across the range. */
@@ -188,6 +193,8 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
       bad('Article 81 door', `${c.s}->${c.e} cuts the award to factor ${c.factor} and offers no employer-breach route`);
     else if (!c.reuses)
       bad('Article 81 door', `${c.s}->${c.e} shows the route but not the reviewed tm_s_eos_81 sentence`);
+    else if (!c.cited)
+      bad('Article 81 door', `${c.s}->${c.e} states Article 81 without the tm_src_81 citation beside it`);
   }
   for (const c of door.full)
     if (c.door)

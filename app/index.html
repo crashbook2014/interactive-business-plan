@@ -7211,7 +7211,8 @@ function calcEos(){
          eosHow==="resign" && !exc && factor<1
            ? `<p class="eos-note">${t("tm_s_eos_81")}<br>
                 <button type="button" class="ghost" id="eos81" onclick="openTerm()">${t("eos_81_cta")}</button>
-              </p>` : ""}
+              </p>
+              <p class="src-line law">${t("tm_src_81")}</p>` : ""}
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
