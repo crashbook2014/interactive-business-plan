@@ -152,6 +152,62 @@ const base = (over) => Object.assign({
        "but \"certain clauses\" is ordinary English and survives");
   }
 
+  /* ---- 0c. THE SECOND SWEEP. Ten phrasings walked through the list above,
+     and every one of them had a sibling already caught — "will rule in your
+     favour" was banned and "will award you your full entitlement" was not,
+     "prohibited by the Labor Law" was banned and "not permitted under the
+     Labor Law" was not, "slam dunk" was banned and "open and shut" was not.
+     A filter of literals is a list of the phrasings someone happened to think
+     of; these are pinned here so the next widening cannot quietly undo one. */
+  console.log("\n— and the second sweep of phrasings does not walk through it");
+  for (const promise of [
+    "The labour court will award you your full entitlement.",
+    "You will recover all your dues through the labour court.",
+    "This clause is invalid under Saudi law.",
+    "This provision is not permitted under the Labor Law.",
+    "Your employer has no right to enforce this clause.",
+    "This term is legally ineffective.",
+    "You have an open and shut case.",
+  ]) {
+    const r = run({ red_flags: [finding({ issue_en: promise })] });
+    ok(r.red_flags.length === 0, `dropped: "${promise}"`);
+  }
+  for (const promise of [
+    "المحكمة ستنصفك وتعيد لك حقك.",
+    "هذا البند غير صحيح نظاماً.",
+    "هذا الشرط لا قيمة له نظاماً.",
+  ]) {
+    const r = run({ red_flags: [finding({ issue_ar: promise })] });
+    ok(r.red_flags.length === 0, `dropped: "${promise}"`);
+  }
+
+  /* THE COST OF THE WIDENING, which is the half that decides whether it was
+     worth doing. Each line below is the ordinary sentence sitting closest to
+     one of the ten above: a recovery verb with no forum behind it, "no right
+     to" describing what a clause SAYS rather than whether it holds, "award"
+     as the name of a statutory payment rather than something a court hands
+     over, and «غير صحيح» meaning a figure is wrong — which is a real finding
+     and the most likely thing an over-wide Arabic pattern would eat. A filter
+     that swallows these is worse than the bypasses it closed. */
+  for (const keeper of [
+    "You will recover your passport at the end of the contract.",
+    "The clause states you have no right to annual leave beyond fifteen days.",
+    "The end-of-service award is calculated on your last wage.",
+    "The court fee is not mentioned anywhere in the document.",
+    "The stated salary figure is not correct in the annex.",
+  ]) {
+    const r = run({ red_flags: [finding({ issue_en: keeper })] });
+    ok(r.red_flags.length === 1, `survives: "${keeper}"`);
+  }
+  for (const keeper of [
+    "الرقم المذكور في الملحق غير صحيح.",
+    "هذا الشرط يستحق المراجعة قبل التوقيع.",
+    "مدة الإشعار أقصر من المتعارف عليه، وتستاهل نقاش.",
+  ]) {
+    const r = run({ red_flags: [finding({ issue_ar: keeper })] });
+    ok(r.red_flags.length === 1, `survives: "${keeper}"`);
+  }
+
   /* ---- 1. money */
   console.log("\n— the model may report a figure the contract states, and no other");
   const clean = run({});

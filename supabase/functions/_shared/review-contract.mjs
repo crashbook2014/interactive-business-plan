@@ -147,11 +147,11 @@ const BANNED = [
   /\bcontraven(?:e|es|ed|ing)\b/i,
   /\bbreach(?:es|ed)?\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law)/i,
   /\bcontrary\s+to\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law|the\s+regulations?)/i,
-  /\bprohibited\s+by\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law)/i,
+  /\b(?:prohibited|forbidden|barred|not\s+(?:permitted|allowed|permissible)|impermissible)\s+(?:by|under)\s+(?:article|the\s+law|(?:the\s+)?labou?r\s+law|saudi\s+law|the\s+regulations?)/i,
   /\bno\s+legal\s+(?:effect|force|standing)\b/i,
   /\b(?:cannot|can't|could\s+not)\s+be\s+enforced\b/i,
   /\bwould\s+not\s+(?:uphold|enforce)\b/i,
-  /\b(?:court|judge|tribunal)[^.!?]{0,60}\b(?:will|would|shall)\b[^.!?]{0,40}\b(?:rule|find|decide|hold|side)\b/i,
+  /\b(?:court|judge|tribunal)[^.!?]{0,60}\b(?:will|would|shall)\b[^.!?]{0,40}\b(?:rule|find|decide|hold|side|award|grant|order|compensate)\b/i,
   /\b(?:will|would|shall)\s+(?:rule|find|decide)\s+in\s+your\s+favou?r\b/i,
   /\b(?:will|would|are\s+going\s+to|sure\s+to)\s+(?:win|prevail|succeed)\b/i,
   /\bslam\s+dunk\b/i,
@@ -173,6 +173,50 @@ const BANNED = [
   new RegExp("بلا\\s+شك" + AR_END),
   new RegExp("رابح(?:ة|ًا)?" + AR_END),
   new RegExp("ستستعيد" + AR_END),
+
+  /* SECOND SWEEP. Ten phrasings walked straight through the list above, which
+   * is the same lesson a third time: the gap is never the words already named,
+   * it is the next synonym. So these are widenings of the constructions that
+   * were already here rather than ten more literals.
+   *
+   * A COURT HANDING SOMETHING OVER. The court family was scoped to verbs of
+   * DECIDING — rule, find, decide, hold, side — so "the labour court will
+   * award you your full entitlement" named no verdict and predicted one
+   * anyway. Deciding and giving are the same promise; the verb set now covers
+   * both. Same hole in the reader-side verb: "you will win" was banned and
+   * "you will recover all your dues through the labour court" was not, so
+   * recovery verbs join it, scoped to a forum or an outcome noun so that "you
+   * will recover your passport at the end of the contract" is untouched.
+   *
+   * ILLEGALITY BY SYNONYM, again. "prohibited by the Labor Law" was banned
+   * and "not permitted under the Labor Law" was not — one construction, two
+   * spellings of the same modal, so the prohibition family is now a set.
+   * "void / unenforceable / illegal" were banned and "invalid" and "legally
+   * ineffective" were not. And "cannot be enforced" was banned while "has no
+   * right to enforce" — the same conclusion from the other party's side — was
+   * not; the ban is on ENFORCEABILITY being decided, so it is scoped to the
+   * enforcement verbs and leaves "the clause says you have no right to annual
+   * leave" alone, which is a finding rather than a conclusion.
+   *
+   * ARABIC. «ستنصفك» is the same shape as «ستحكم لصالحك» with the favour
+   * folded into the verb. «غير صحيح» is scoped to a law word because it is
+   * also the ordinary way to say a FIGURE is wrong, which is a real finding
+   * this filter must not eat; «لا قيمة له» is a conclusion whatever follows
+   * it, exactly as «لا أثر له» already was.
+   *
+   * IDIOM. "slam dunk" was caught and "open and shut" was not. An idiom set
+   * is a literal set by nature — there is no construction under it — so this
+   * is the one place below where naming them one by one is the honest tool. */
+  /\b(?:will|would|are\s+going\s+to|sure\s+to)\s+(?:recover|recoup|reclaim|be\s+awarded)\b[^.!?]{0,60}\b(?:court|tribunal|dues|entitlements?|award|compensation|rights?)\b/i,
+  /\b(?:is|are|was|were|would\s+be|shall\s+be)\s+(?:legally\s+)?(?:invalid|inoperative|ineffective)\b/i,
+  /\b(?:invalid|inoperative|impermissible|ineffective)\s+(?:under|at)\s+(?:saudi\s+)?(?:law|the\s+law|(?:the\s+)?labou?r\s+law|article)/i,
+  /\blegally\s+(?:ineffective|invalid|meaningless|worthless)\b/i,
+  /\bno\s+(?:right|power|authority|standing)\s+to\s+(?:enforce|rely\s+on|invoke|impose|uphold|apply)\b/i,
+  /\bopen[\s-]and[\s-]shut\b/i, /\bcut[\s-]and[\s-]dried\b/i,
+  /\bno[\s-]brainer\b/i, /\bairtight\s+case\b/i, /\b(?:cannot|can't)\s+lose\b/i,
+  new RegExp("(?:ستنصف|سينصف|تنصف|ينصف)(?:ك|كم|كما)" + AR_END),
+  new RegExp("غير\\s+صحيح(?:ة|ًا|اً)?[^.!؟]{0,20}?(?:نظام|قانون|المادة|الشرع)"),
+  new RegExp("لا\\s+قيمة\\s+له" + AR_END),
 ];
 
 /* "questionable and questionable" is what two adjectives in one sentence
