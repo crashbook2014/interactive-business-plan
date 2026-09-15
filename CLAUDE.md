@@ -77,7 +77,8 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
 ## Fragile areas
 - `app/index.html` is ~13,900 lines. Read 50 lines around any target before editing.
 - Migrations `0007–0009` unapplied in prod; schema-advisor fixes need `0010`.
-- `ai_analysis` defaults to `true` on flag-fetch failure (open bug).
+- `ai_analysis` compiles OFF and only a well-formed flag raises it, so a failed
+  flag fetch ships the AI dark rather than open. Set the row `true` in prod.
 - `supabase/functions/analyze/index.ts` is deployed by hand — run `npm run typecheck` before touching it.
 
 ## Active bugs (Sep 2026) — see docs/status-2026-09-14.md
