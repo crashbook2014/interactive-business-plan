@@ -56,7 +56,9 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
 - **`FREE_NOW` must stay `true`** until payments are live
 - `ANALYZE_URL` hardcoded at line 1343 (AI is live)
 - `UPLOAD_URL` hardcoded at line 1356 (scan upload is live)
-- `AI_COMPILED` does not exist yet — ai_analysis fail-open bug is open
+- `AI_COMPILED = false` + `AI_LIVE` (line ~12699) — the AI surface compiles OFF
+  and only a well-formed `ai_analysis` flag raises it. The row must be `true`
+  in production or the AI ships dark.
 
 ## Config
 - Browser: inline `window.WODOUH_CONFIG` in `app/index.html` (line 1337). Set via `setup-supabase.mjs`.
@@ -79,10 +81,10 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
 - `supabase/functions/analyze/index.ts` is deployed by hand — run `npm run typecheck` before touching it.
 
 ## Active bugs (Sep 2026) — see docs/status-2026-09-14.md
-1. `ai_analysis` fail-open — add `AI_COMPILED = false`
-2. 10 BANNED list bypasses in contract grader
-3. Article 81 door missing on resign path (`factor < 1`)
-4. Employer-pays-fees clause flagged red (polarity bug)
+All four Claude-fixable items from the 14 Sep audit are now closed:
+`ai_analysis` fail-open (029f54e), the ten BANNED-list bypasses, the missing
+Article 81 door on the resign path, and the employer-pays-fees polarity bug.
+The remaining items in that report need a founder or legal decision, not code.
 
 ## Compact context rules
 **Preserve:** current task goal, files changed this session, commands run,
