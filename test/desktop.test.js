@@ -26,14 +26,14 @@
  * Every assertion here is about a width no phone suite covers, which is why
  * all of this went unseen for so long.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
 
 (async () => {
   const b = await chromium.launch(launchOpts());
-  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const p = await aiPage(b, { viewport: { width: 1440, height: 900 } });
   p.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
@@ -159,7 +159,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* ---- THE SHELL ITSELF. */
   console.log("\n— the nav is one element, in the header on a laptop");
   const navAt = async (w, h, fn) => {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await aiPage(b, { viewport: { width: w, height: h } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const r = await q.evaluate((f) => {
@@ -209,7 +209,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      input stretched to 1080px is worse than one at 440px, not better. */
   console.log("\n— every screen sits in a readable column, not the whole window");
   const colAt = async (w, fn) => {
-    const q = await b.newPage({ viewport: { width: w, height: 900 } });
+    const q = await aiPage(b, { viewport: { width: w, height: 900 } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const r = await q.evaluate((f) => {
@@ -270,7 +270,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      to two columns on WINDOW width while the frame stayed 440px. */
   console.log("\n— home is a front page, and its doors are not narrower than a phone's");
   const doorAt = async (w, h) => {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await aiPage(b, { viewport: { width: w, height: h } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const r = await q.evaluate(() => {
@@ -350,7 +350,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   console.log("\n— a screen that asked for two columns gets two columns");
   const at = async (w, h, fn) => {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await aiPage(b, { viewport: { width: w, height: h } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const r = await q.evaluate((f) => {
@@ -408,7 +408,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      the button, sees the form again, and concludes it is broken. It is the
      single interaction that matters most to the reader this product is for. */
   console.log("\n— pressing Calculate on a phone actually shows the figure");
-  const calc = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const calc = await aiPage(b, { viewport: { width: 390, height: 844 } });
   await calc.goto(APP);
   await calc.waitForFunction(() => typeof window.show === "function");
   await calc.evaluate(() => {
@@ -436,7 +436,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* And the laptop must NOT jump: there the figure is already in the column
      beside the form, and yanking the page to it would be a jolt with no
      purpose. The rule is "is it visible", not "which platform is this". */
-  const noJump = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const noJump = await aiPage(b, { viewport: { width: 1440, height: 900 } });
   await noJump.goto(APP);
   await noJump.waitForFunction(() => typeof window.show === "function");
   await noJump.evaluate(() => {
@@ -459,7 +459,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      swallow the focus target. */
   console.log("\n— the back arrow points back, in both directions");
   for (const [lang, wantMirror] of [["ar", true], ["en", false]]) {
-    const q = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const q = await aiPage(b, { viewport: { width: 390, height: 844 } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const bk = await q.evaluate((l) => {
@@ -486,7 +486,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   console.log("\n— the current-tab pill lands on the current tab, on both platforms");
   for (const [w, lang] of [[390, "ar"], [390, "en"], [1440, "ar"], [1440, "en"]]) {
-    const q = await b.newPage({ viewport: { width: w, height: 844 } });
+    const q = await aiPage(b, { viewport: { width: w, height: 844 } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     await q.evaluate((l) => {
@@ -521,7 +521,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      is the assertion that was missing. */
   console.log("\n— arriving on a screen still moves focus into it, on both platforms");
   for (const [w, h, label] of [[390, 844, "phone"], [1440, 900, "laptop"]]) {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await aiPage(b, { viewport: { width: w, height: h } });
     await q.goto(APP);
     await q.waitForFunction(() => typeof window.show === "function");
     const moved = await q.evaluate(() => {
@@ -555,7 +555,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      settled measurement says the layout is fine, and it is — which is exactly
      why this one is taken while the animation is still running. */
   console.log("\n— and no sideways flash while a screen is arriving");
-  const flash = await b.newPage({ viewport: { width: 1024, height: 768 } });
+  const flash = await aiPage(b, { viewport: { width: 1024, height: 768 } });
   await flash.goto(APP);
   await flash.waitForFunction(() => typeof window.show === "function");
   const mid = await flash.evaluate(() => {
@@ -610,7 +610,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(preState.preBack,
      "and comes back when the inputs are cleared, rather than leaving it blank again");
 
-  const preOnPhone = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const preOnPhone = await aiPage(b, { viewport: { width: 390, height: 844 } });
   await preOnPhone.goto(APP);
   await preOnPhone.waitForFunction(() => typeof window.show === "function");
   const phonePre = await preOnPhone.evaluate(() => {
@@ -669,7 +669,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      "the inputs lead in both directions — right in Arabic, left in English");
 
   console.log("\n— the phone is unaffected: no aside below 900px");
-  const small = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const small = await aiPage(b, { viewport: { width: 390, height: 844 } });
   await small.goto(APP);
   await small.waitForFunction(() => typeof window.show === "function");
   const hidden = await small.evaluate(() => {

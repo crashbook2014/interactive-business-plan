@@ -279,7 +279,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
      screen makes that decision legible — and about the promise the consent
      text makes, which is checked against the bytes on the wire rather than
      against the copy. */
-  const { playwright, launchOpts, APP } = require("./_env.js");
+  const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
   const { chromium } = playwright();
   const AI_HOST = "https://stub.supabase.co";
   const b = await chromium.launch(launchOpts());
@@ -292,7 +292,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
    * cleared again, the door must disappear completely. Forced explicitly
    * rather than relied on as the file's own default, which it no longer is. */
   console.log("\n— an unconfigured build cannot ask anything");
-  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p0 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   const off = [];
   p0.on("request", r => { if (!r.url().startsWith("http://127.") && !r.url().startsWith("http://localhost")) off.push(r.url()); });
   p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
@@ -327,7 +327,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   /* The shipping build itself: an endpoint is configured. Not askAvailable()
      — that also gates on the remote ai_analysis flag, a separate switch this
      file has no business asserting the live value of. */
-  const p0b = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p0b = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p0b.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p0b.goto(APP);
   await p0b.waitForFunction(() => typeof window.show === "function");
@@ -337,7 +337,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
 
   /* ---- 8. configured: consent gates the send */
   console.log("\n— consent gates the send, and the payload matches what the consent promised");
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   /* The shipped CSP is closed to everything, so the AI-enabled policy is
      served here — the same single-host grant a real deployment would make. */

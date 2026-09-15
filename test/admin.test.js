@@ -74,7 +74,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     values: flagValues,
     pending: !!flagPending,
     url: flagsUrl(),
-    pay: PAYMENT_LIVE, subs: SUBSCRIPTIONS_LIVE, lawyer: LAWYER_DESK.live,
+    pay: PAYMENT_LIVE, subs: SUBSCRIPTIONS_LIVE, lawyer: LAWYER_DESK.live, ai: AI_LIVE,
   }));
   /* Both directions. Before a project existed this asserted null; that was
      the state of the day, not a property. What must always hold is that the
@@ -84,8 +84,8 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ? "flagsUrl() points at the configured project and nowhere else"
     : "flagsUrl() is null without a project, so there is nothing to fetch");
   ok(state.values === null, "no flags are loaded");
-  ok(state.pay === false && state.subs === false && state.lawyer === false,
-     "and all three switches read their compiled constant");
+  ok(state.pay === false && state.subs === false && state.lawyer === false && state.ai === false,
+     "and all four switches read their compiled constant");
 
   /* ---- 3. the free path is still silent, end to end */
   /* THIS CLAIM NARROWED, and the narrowing is the honest half of a decision
@@ -126,10 +126,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const got = await page.evaluate((r) => {
       flagValues = r === null ? null : (typeof flagShape === "function" ? flagShape(r) : null);
       applyFlags();
-      return { pay: PAYMENT_LIVE, subs: SUBSCRIPTIONS_LIVE, lawyer: LAWYER_DESK.live };
+      return { pay: PAYMENT_LIVE, subs: SUBSCRIPTIONS_LIVE, lawyer: LAWYER_DESK.live, ai: AI_LIVE };
     }, rows);
     ok(got.pay === false && got.subs === false && got.lawyer === false,
        `${name} → payments, subscriptions and the lawyer desk all stay off`);
+    ok(got.ai === false,
+       `${name} → AI analysis also stays off (fail-open bug: was true before AI_COMPILED added)`);
   }
 
   /* A flag CAN turn something on — otherwise the fail-safe assertions above
@@ -140,6 +142,20 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     return PAYMENT_LIVE;
   });
   ok(raised === true, "and a well-formed flag genuinely does turn one on, so the checks above mean something");
+
+  /* ai_analysis follows the same pattern — and this is the assertion that
+     would have caught the fail-open: before AI_COMPILED existed, aiAvailable()
+     passed `true` as the fallback, so every malformed case in the loop above
+     left the AI surface ON. The loop proves it now lands off; this proves the
+     flag can still raise it, so the loop is not passing on a dead feature. */
+  const aiRaised = await page.evaluate(() => {
+    flagValues = flagShape([{ key: "ai_analysis", enabled: true }]);
+    applyFlags();
+    return { live: AI_LIVE, available: aiAvailable() };
+  });
+  ok(aiRaised.live === true, "a well-formed ai_analysis flag turns AI on");
+  ok(aiRaised.available === true,
+     "and with ANALYZE_URL configured, aiAvailable() follows the flag — so the loop above is not passing on a dead feature");
 
   /* ---- 5. a cached "on" expires */
   console.log("\n— a stale cache cannot keep charging people");

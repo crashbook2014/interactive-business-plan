@@ -410,7 +410,7 @@ const base = (over) => Object.assign({
 
   /* ---- 7. the client half: what a reader actually sees */
   console.log("\n— on screen: absent when unconfigured, and tiered when it is");
-  const { playwright, launchOpts, APP } = require("./_env.js");
+  const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
   const { chromium } = playwright();
   const b = await chromium.launch(launchOpts());
 
@@ -419,7 +419,7 @@ const base = (over) => Object.assign({
      Still a real guarantee: if the endpoint is ever cleared again, the panel
      must render nothing, not a teaser or a locked state. Forced explicitly
      rather than relied on as the file's own default. */
-  const page0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const page0 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   page0.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
   await page0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   await page0.goto(APP);
@@ -441,14 +441,14 @@ const base = (over) => Object.assign({
   /* The shipping build itself: an endpoint is configured. Not aiAvailable()
      — that also gates on the remote ai_analysis flag, a separate switch this
      file has no business asserting the live value of. */
-  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await aiPage(b, { viewport: { width: 390, height: 844 } });
   page.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
   await page.goto(APP);
   await page.waitForFunction(() => typeof window.renderCrPanel === "function");
   const hasUrl = await page.evaluate(() => !!analyzeUrl());
   ok(hasUrl === true, "the shipping build has an AI endpoint configured");
 
-  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p2 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p2.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
   await p2.addInitScript(() => {
     window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };

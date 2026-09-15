@@ -1520,6 +1520,16 @@ function applyFlags(){
   PAYMENT_LIVE       = flagOn("payments", PAYMENT_COMPILED);
   SUBSCRIPTIONS_LIVE = flagOn("subscriptions", SUBSCRIPTIONS_COMPILED);
   LAWYER_DESK.live   = flagOn("lawyer_desk", LAWYER_COMPILED);
+  AI_LIVE            = flagOn("ai_analysis", AI_COMPILED);
+  /* NOT screen-scoped, and deliberately unconditional. The privacy line states
+     whether the reader's text can leave the device, and that answer changes the
+     moment the ai_analysis flag lands. Flags arrive AFTER boot, so a reader
+     already sitting on the intake screen was shown the answer for the compiled
+     default and never saw it corrected — the line said the text never leaves
+     while the build could in fact send it, which is the exact failure
+     renderPrivacyCopy() was written to prevent. It is idempotent and touches
+     two elements; there is no reason to gate it on which screen is showing. */
+  renderPrivacyCopy();
   const cur = document.querySelector(".screen.active");
   const id = cur ? cur.id.replace("screen-", "") : "";
   if (id === "paywall") renderPaywall();
@@ -8786,7 +8796,7 @@ function analyzeHeaders(extra){
    the switch on top of it, so the console can turn the AI off in seconds
    without anyone editing config. With no flags loaded the credential decides
    alone, exactly as it did before the console existed. */
-function aiAvailable(){ return !!analyzeUrl() && flagOn("ai_analysis", true); }
+function aiAvailable(){ return !!analyzeUrl() && AI_LIVE; }
 
 let aiConsent = false, aiBusy = false, aiFindings = null, aiError = null;
 
@@ -12644,6 +12654,14 @@ const LAWYER_DESK = { live: LAWYER_COMPILED, turnaround: null };
    screen again — which they did, four lines apart. */
 const PAYMENT_COMPILED = false;
 let PAYMENT_LIVE = PAYMENT_COMPILED;
+
+/* AI analysis is live (ANALYZE_URL is set), but the compiled default is off.
+   Without this constant, flagOn("ai_analysis", true) left the AI panel on
+   whenever the flags endpoint was slow or failed — a 2 s timeout on a mobile
+   connection tripped it. The flag in app_flags can enable it; a fetch failure
+   falls back to this compiled-off constant instead of silently staying on. */
+const AI_COMPILED = false;
+let AI_LIVE = AI_COMPILED;
 
 /* WHAT WE SAY WE ACCEPT IS A CLAIM, AND IT WAS HARD-CODED.
    mada, Apple Pay and STC Pay were three literal <i> tags under the pay
