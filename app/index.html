@@ -3614,6 +3614,17 @@ const T = {
   eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
   eos_none:{ar:"الاستقالة قبل إتمام سنتين لا تستحق مكافأة عادةً.",
             en:"Resigning before completing two years generally earns no award."},
+  /* THE DOOR OUT OF A REDUCED FIGURE. The reduction above is right for an
+     ordinary resignation and wrong for a reader who left because the employer
+     breached the contract — and the free calculator had no way to say so, so
+     someone owed the full award read 0 or a third and went away. This is a
+     LABEL ON A ROUTE, not a second answer: the sentence beside it is
+     tm_s_eos_81, reused verbatim from the assessment rather than written
+     again here, and the figure on this screen does not move. Adding a fourth
+     "how it ended" option would be shipping a legal reading as a number in
+     the free tool, which is a founder decision and not this one. */
+  eos_81_cta:{ar:"استقلت بسبب إخلال من صاحب العمل؟ راجع حالتك",
+              en:"Resigned because of an employer breach? Review your case"},
   /* Shown only when the reader has chosen one of the Article 87 options. It
      states no legal condition of its own — the condition is in the option
      they picked — it only explains why the Article 85 reduction is absent
@@ -7176,6 +7187,19 @@ function calcEos(){
             explanation, it is a fraction. */
          eosHow==="resign" && !exc && factor>0
            ? `<p class="eos-note">${t("eos_pre_resign")}</p>` : ""}
+       ${/* A REDUCED FIGURE MUST NOT BE A DEAD END. Article 85 cuts the award
+            for an ordinary resignation, but a resignation driven by an
+            employer breach keeps the full Article 84 award — measured, the
+            paid path with how:'forced' returns 15,000 on the same three years
+            at 10,000 where this panel showed 5,000, and at 1.5 years it showed
+            0 with no hint an exception existed. The sentence is
+            tm_s_eos_81, already reviewed and already shipped inside the
+            assessment; the button only opens that assessment. No figure here
+            changes and no new legal claim is made. */
+         eosHow==="resign" && !exc && factor<1
+           ? `<p class="eos-note">${t("tm_s_eos_81")}<br>
+                <button type="button" class="ghost" id="eos81" onclick="openTerm()">${t("eos_81_cta")}</button>
+              </p>` : ""}
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
