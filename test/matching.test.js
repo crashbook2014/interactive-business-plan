@@ -257,6 +257,46 @@ My neighbour has a garden with tomatoes in it, and we talked for a while.`;
   ok(await oneSided(HEAD + "البند الثالث: لأي من الطرفين إنهاء العقد بإشعار ثلاثين يوماً.\nالبند التاسع: ومع ذلك يحق للطرف الأول إنهاء العقد في أي وقت دون إشعار ودون سبب.") === true,
      "a mutual clause elsewhere in the document does NOT excuse a one-sided one — the guard is bounded to its own clause");
 
+  /* A SECOND POLARITY BUG, in the rule that matters most to a resident.
+   *
+   * The recruitment-and-Iqama rule matched fee VOCABULARY and never read who
+   * bears the fees. So «تتحمل الشركة رسوم الإقامة ورخصة العمل» — the company
+   * bears them, which is the law and is the sentence PROTECTING the reader —
+   * came back red under «انتبه قبل التوقيع», advising them to have the clause
+   * removed. A reader who acted on that advice would have asked to delete the
+   * clause that saved them the money, which is worse than a false alarm: it is
+   * a false alarm pointed at their own protection.
+   *
+   * Both directions are asserted, because a guard tested only on the sentence
+   * it was written for is a guard that could be `unless:/./` and still pass. */
+  console.log("\n— the fees flag reads WHO pays, not merely that fees are mentioned");
+  const BODY = "البند الأول: يبلغ الراتب الشهري الأساسي عشرة آلاف ريال.\nالبند الثاني: فترة التجربة تسعون يوماً.\nالبند الثالث: الإجازة السنوية ثلاثون يوماً.\n";
+  const fees = (txt) => p.evaluate((t) => {
+    nat = "nonsa";
+    const r = analyzePasted(t, DOOR);
+    return r ? r.clauses.some(c => /رسوم الاستقدام/.test((c.t && c.t.ar) || "")) : null;
+  }, txt);
+  const EN_BODY = "EMPLOYMENT CONTRACT\nThe Employer and the Employee agree as follows.\n1. Basic monthly salary is ten thousand riyals.\n2. Probation period is ninety days.\n";
+
+  ok(await fees(HEAD + BODY + "البند السابع: تتحمل الشركة رسوم الإقامة ورخصة العمل ورسوم الاستقدام.") === false,
+     "a clause putting the fees on the COMPANY is not flagged red");
+  ok(await fees(HEAD + BODY + "البند السابع: رسوم الاستقدام وتجديد الإقامة على صاحب العمل.") === false,
+     "nor is the same thing written as «على صاحب العمل»");
+  ok(await fees(EN_BODY + "7. The employer shall bear all recruitment fees and work permit fees.") === false,
+     "and the same holds in English");
+
+  ok(await fees(HEAD + BODY + "البند السابع: يتحمل الطرف الثاني رسوم الاستقدام ورسوم الإقامة.") === true,
+     "while a clause putting them on the WORKER still is — the guard excuses, it does not disable");
+  ok(await fees(HEAD + BODY + "البند السابع: تُخصم رسوم الإقامة ورخصة العمل من راتب الموظف شهرياً.") === true,
+     "including the deduction wording, which never names who bears them");
+  ok(await fees(EN_BODY + "7. The employee shall pay the recruitment fee and the iqama fee.") === true,
+     "and the same holds in English");
+
+  /* Bounded, like the termination guard above: an employer-pays clause in one
+     article must not silence an employee-pays clause in another. */
+  ok(await fees(HEAD + BODY + "البند السادس: تتحمل الشركة رسوم التأشيرة.\nالبند الثاني عشر: ومع ذلك يتحمل الطرف الثاني رسوم الاستقدام وتجديد الإقامة بالكامل.") === true,
+     "an employer-pays clause elsewhere does NOT excuse an employee-pays clause");
+
   /* ---- 4d. the Arabic reader must not get the weaker analysis */
   console.log("\n— the Arabic reader gets the same analysis as the English one");
   const nc = await p.evaluate((t) => {

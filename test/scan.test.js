@@ -25,7 +25,7 @@
  *    that; this file holds the half it cannot see — that the offer is not
  *    shown when it cannot work.
  */
-const { playwright, launchOpts, APP, signInStub } = require("./_env.js");
+const { playwright, launchOpts, APP, signInStub, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 
 const FAIL = [];
@@ -41,7 +41,7 @@ const PNG = () => new File([new Uint8Array([137, 80, 78, 71])], "contract.png", 
      round trip was tested. */
   const wired = async (opts) => {
     opts = opts || {};
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
     const seen = { upload: null, analyze: null };
     await p.route("**/functions/v1/upload", (r) => {
       const h = r.request().headers();

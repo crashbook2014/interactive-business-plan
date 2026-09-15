@@ -274,6 +274,34 @@ async function art87Certainty(p){
   ok(leak.length === 0,
      `Article 76 notice compensation never appears on the resident track (${leak.length} leaks)`);
 
+  /* ctype === null must not silently add notice or comp to the result.
+     A Saudi user who has not answered the contract-type question yet lands on
+     this state; treating null as "indefinite" added 20,000 SAR notice compensation
+     that was never earned. */
+  const ctypeNull = await p.evaluate(() => {
+    nat = "sa";
+    term = Object.assign(blankTerm(), {
+      how: "employer", start: "2020-01-01", end: "2026-01-01",
+      wage: 10000, noticeDue: 60, noticeGiven: 0,
+      leaveDays: 10, gotEos: false, ctype: null  /* not yet answered */
+    });
+    owned.case = "plan_case";
+    return {
+      notice: termNoticeOwed(),
+      comp:   termComp(),
+      lines:  termLines().map(l => l.key),
+      unassessed: termUnassessed().map(g => g.key)
+    };
+  });
+  ok(ctypeNull.notice === 0,
+     `ctype=null: notice compensation is 0, not ${ctypeNull.notice}`);
+  ok(ctypeNull.comp === 0,
+     `ctype=null: Article 77 comp is 0, not ${ctypeNull.comp}`);
+  ok(!ctypeNull.lines.includes("tm_m_notice"),
+     "ctype=null: notice line absent from computed lines");
+  ok(ctypeNull.unassessed.includes("tm_m_notice"),
+     "ctype=null: notice line appears in unassessed (missing inputs named)");
+
   /* Article 81: forced resignation keeps the full award; ordinary does not */
   const forced = paths.find(r => r.track === "sa" && r.h === "forced" && r.L === "en");
   const quit   = paths.find(r => r.track === "sa" && r.h === "resigned" && r.L === "en");

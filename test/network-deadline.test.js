@@ -16,7 +16,7 @@
  * was simply slow sends them looking for a fault on their end that does not
  * exist.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
 const fs = require("node:fs");
 const path = require("node:path");
 const { chromium } = playwright();
@@ -55,7 +55,7 @@ const withCap = (promise, label) => Promise.race([
   ok(rolled === 1, `the abort plumbing is written once (${rolled})`);
 
   const b = await chromium.launch(launchOpts());
-  const p = await b.newPage({ viewport: { width: 390, height: 800 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 800 } });
   p.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
   await p.route("**/app/", async (route) => {
     const res = await route.fetch();

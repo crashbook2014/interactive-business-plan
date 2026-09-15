@@ -1520,6 +1520,16 @@ function applyFlags(){
   PAYMENT_LIVE       = flagOn("payments", PAYMENT_COMPILED);
   SUBSCRIPTIONS_LIVE = flagOn("subscriptions", SUBSCRIPTIONS_COMPILED);
   LAWYER_DESK.live   = flagOn("lawyer_desk", LAWYER_COMPILED);
+  AI_LIVE            = flagOn("ai_analysis", AI_COMPILED);
+  /* NOT screen-scoped, and deliberately unconditional. The privacy line states
+     whether the reader's text can leave the device, and that answer changes the
+     moment the ai_analysis flag lands. Flags arrive AFTER boot, so a reader
+     already sitting on the intake screen was shown the answer for the compiled
+     default and never saw it corrected — the line said the text never leaves
+     while the build could in fact send it, which is the exact failure
+     renderPrivacyCopy() was written to prevent. It is idempotent and touches
+     two elements; there is no reason to gate it on which screen is showing. */
+  renderPrivacyCopy();
   const cur = document.querySelector(".screen.active");
   const id = cur ? cur.id.replace("screen-", "") : "";
   if (id === "paywall") renderPaywall();
@@ -2143,8 +2153,8 @@ const T = {
      true for anyone who does not opt in. It stops being true the moment the
      optional Claude read is both configured and accepted, so these variants
      replace it rather than the promise being quietly softened for everyone. */
-  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك — وكلها تُرسل نصًّا، ما ترفع ملفًا.",
-                   en:"Your text is analyzed on your device. The only exceptions are optional and happen only with your consent — and all of them send text, never a file."},
+  privacy_line_ai:{ar:"يُحلَّل النص على جهازك. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك — الثلاثة الأولى تُرسل نصًّا، وإذا طلبت قراءة صورة يُرسل الملف نفسه ويُحذف بعد ساعة.",
+                   en:"Your text is analyzed on your device. The only exceptions are optional and happen only with your consent — the first three send text only; reading a scanned image sends the file itself, deleted after one hour."},
   my_contracts:{ar:"عقودي",en:"My contracts"},
   mc_empty:{ar:"ما حلّلت أي عقد بعد.",en:"You haven't analyzed a contract yet."},
   mc_open:{ar:"افتحه",en:"Open"},
@@ -3604,6 +3614,17 @@ const T = {
   eos_b_total:{ar:"الإجمالي التقديري",en:"Estimated total"},
   eos_none:{ar:"الاستقالة قبل إتمام سنتين لا تستحق مكافأة عادةً.",
             en:"Resigning before completing two years generally earns no award."},
+  /* THE DOOR OUT OF A REDUCED FIGURE. The reduction above is right for an
+     ordinary resignation and wrong for a reader who left because the employer
+     breached the contract — and the free calculator had no way to say so, so
+     someone owed the full award read 0 or a third and went away. This is a
+     LABEL ON A ROUTE, not a second answer: the sentence beside it is
+     tm_s_eos_81, reused verbatim from the assessment rather than written
+     again here, and the figure on this screen does not move. Adding a fourth
+     "how it ended" option would be shipping a legal reading as a number in
+     the free tool, which is a founder decision and not this one. */
+  eos_81_cta:{ar:"استقلت بسبب إخلال من صاحب العمل؟ راجع حالتك",
+              en:"Resigned because of an employer breach? Review your case"},
   /* Shown only when the reader has chosen one of the Article 87 options. It
      states no legal condition of its own — the condition is in the option
      they picked — it only explains why the Article 85 reduction is absent
@@ -4128,6 +4149,18 @@ const RULES = [
        en:"Holding your passport is a violation. You can report it to the Ministry of Human Resources — keeping your passport is your right."} },
 
   { re:/(recruitment\s*(?:fee|cost)|iqama\s*fee|work\s*permit\s*fee|رسوم\s*(?:الاستقدام|الإقامة|رخصة\s*العمل|التأشيرة)|تتحمل\s*رسوم)/i, s:"red",
+    /* THE FLAG IS ABOUT WHO PAYS, and the pattern could not see who.
+       It matched fee VOCABULARY, so «تتحمل الشركة رسوم الإقامة ورخصة العمل»
+       — the company bears them, which is the law and is the clause protecting
+       the reader — came back red under «انتبه قبل التوقيع», with advice to
+       have it removed. A reader who acted on that advice would have asked to
+       delete the sentence that saved them the money.
+       Scoped to the employer bearing them explicitly, so an employee-pays
+       clause is untouched: the guard excuses, it does not disable. */
+    /* (?:ال)? on every noun, because normAr() strips the definite article
+       from the TEXT but not from a pattern where ال follows \s* rather than a
+       real space — the same shape ruleUnlessN's other caller already uses. */
+    unless:/(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*(?:ال)?(?:شركة|منشأة|مؤسسة|جهة)|(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*صاحب\s*(?:ال)?عمل|(?:تتحمل|يتحمل|وتتحمل|ويتحمل)\s*(?:ال)?طرف\s*(?:ال)?أول|على\s*(?:نفقة\s*)?(?:صاحب\s*(?:ال)?عمل|(?:ال)?(?:شركة|منشأة|مؤسسة))|(?:company|employer|first\s*part(?:y|ies))\s*(?:shall\s*|will\s*|is\s*to\s*)?(?:bears?|bear|pays?|covers?|is\s*responsible\s*for)|at\s*the\s*(?:company|employer)(?:'|’)?s\s*(?:expense|cost)/i,
     t:{ar:"رسوم الاستقدام والإقامة",en:"Recruitment and Iqama fees"},
     nat:"nonsa",
     src:{ar:"نظام العمل السعودي — المادة 40",en:"Saudi Labor Law — Article 40"},
@@ -4872,6 +4905,7 @@ function show(name, back){
             || el.querySelector("h1,h2");
   if (h){ h.setAttribute("tabindex","-1"); h.focus({ preventScroll:true }); }
   if (name==="result") animateRing();
+  if (name==="account" && typeof renderWipe === "function") renderWipe();
   if (typeof renderBuilder === "function") renderBuilder();
   if (typeof renderTabs === "function") renderTabs();
   if (typeof renderSituations === "function") renderSituations();
@@ -5109,8 +5143,16 @@ function analyze(kind){
   if (navigator.onLine === false){ notice.hidden = false; return; }
   notice.hidden = true;
   if (kind === "pasted" && document.getElementById("pasteBox").value.trim().length < 40){
-    const hint = document.querySelector("#screen-home .paste-hint");
-    hint.classList.remove("nudge"); void hint.offsetWidth; hint.classList.add("nudge");
+    /* THE HINT MOVED SCREENS AND THIS SELECTOR DID NOT. The paste box and its
+       hint left #screen-home for #screen-intake when the document was put
+       first; this still asked for "#screen-home .paste-hint", got null, and
+       threw on .classList — so pressing "Read it for me" with an empty or very
+       short paste did nothing at all: no nudge, no focus (the line below never
+       ran), no message. Silence is the one thing a missing input must never
+       produce. Scoped to the element rather than to a screen, so the next move
+       cannot break it the same way. */
+    const hint = document.querySelector(".paste-hint");
+    if (hint){ hint.classList.remove("nudge"); void hint.offsetWidth; hint.classList.add("nudge"); }
     document.getElementById("pasteBox").focus();
     return;
   }
@@ -7157,6 +7199,20 @@ function calcEos(){
             explanation, it is a fraction. */
          eosHow==="resign" && !exc && factor>0
            ? `<p class="eos-note">${t("eos_pre_resign")}</p>` : ""}
+       ${/* A REDUCED FIGURE MUST NOT BE A DEAD END. Article 85 cuts the award
+            for an ordinary resignation, but a resignation driven by an
+            employer breach keeps the full Article 84 award — measured, the
+            paid path with how:'forced' returns 15,000 on the same three years
+            at 10,000 where this panel showed 5,000, and at 1.5 years it showed
+            0 with no hint an exception existed. The sentence is
+            tm_s_eos_81, already reviewed and already shipped inside the
+            assessment; the button only opens that assessment. No figure here
+            changes and no new legal claim is made. */
+         eosHow==="resign" && !exc && factor<1
+           ? `<p class="eos-note">${t("tm_s_eos_81")}<br>
+                <button type="button" class="ghost" id="eos81" onclick="openTerm()">${t("eos_81_cta")}</button>
+              </p>
+              <p class="src-line law">${t("tm_src_81")}</p>` : ""}
        <p class="eos-note">${t("eos_note")}</p>
      </div>` +
     (eosHow === "term" ? triageHtml(ed) : "");
@@ -7911,6 +7967,7 @@ function termTermOdd(){
 function termComp(){
   const h = termHow();
   if (!h || !h.comp) return 0;
+  if (termCtype() === null) return 0;
   return compFor(termWage(), termServiceYears(),
                  termCtype() === "fixed" ? "fixed" : "indef", termRemainingMonths());
 }
@@ -7922,7 +7979,7 @@ function termComp(){
 function termNoticeOwed(){
   const h = termHow();
   if (!h || !h.notice) return 0;
-  if (isNonSaudi() || termCtype() === "fixed") return 0;
+  if (isNonSaudi() || termCtype() === "fixed" || termCtype() === null) return 0;
   return noticeFor(term.noticeDue, term.noticeGiven, termWage());
 }
 
@@ -7946,10 +8003,10 @@ function termUnassessed(){
     { key:"tm_m_leave",  needs:["leaveDays"],                applies:true },
     { key:"tm_m_unpaid", needs:["unpaidMonths"],             applies:true },
     { key:"tm_m_other",  needs:["otherAmt"],                 applies:true },
-    { key:"tm_m_notice", needs:["noticeDue"],
+    { key:"tm_m_notice", needs:["noticeDue","ctype"],
       applies: !!(h && h.notice) && !isNonSaudi() && termCtype() !== "fixed" },
-    { key:"tm_m_comp",   needs:["termEnd"],
-      applies: !!(h && h.comp) && termCtype() === "fixed" },
+    { key:"tm_m_comp",   needs:["termEnd","ctype"],
+      applies: !!(h && h.comp) && termCtype() !== "indef" },
     /* The end-of-service line reaches this list only on the resignation path,
        and only for the Article 87 exception. Everywhere else its inputs are
        dates and a wage, which the flow requires before it will compute at all.
@@ -8802,7 +8859,7 @@ function analyzeHeaders(extra){
    the switch on top of it, so the console can turn the AI off in seconds
    without anyone editing config. With no flags loaded the credential decides
    alone, exactly as it did before the console existed. */
-function aiAvailable(){ return !!analyzeUrl() && flagOn("ai_analysis", true); }
+function aiAvailable(){ return !!analyzeUrl() && AI_LIVE; }
 
 let aiConsent = false, aiBusy = false, aiFindings = null, aiError = null;
 
@@ -12660,6 +12717,14 @@ const LAWYER_DESK = { live: LAWYER_COMPILED, turnaround: null };
    screen again — which they did, four lines apart. */
 const PAYMENT_COMPILED = false;
 let PAYMENT_LIVE = PAYMENT_COMPILED;
+
+/* AI analysis is live (ANALYZE_URL is set), but the compiled default is off.
+   Without this constant, flagOn("ai_analysis", true) left the AI panel on
+   whenever the flags endpoint was slow or failed — a 2 s timeout on a mobile
+   connection tripped it. The flag in app_flags can enable it; a fetch failure
+   falls back to this compiled-off constant instead of silently staying on. */
+const AI_COMPILED = false;
+let AI_LIVE = AI_COMPILED;
 
 /* WHAT WE SAY WE ACCEPT IS A CLAIM, AND IT WAS HARD-CODED.
    mada, Apple Pay and STC Pay were three literal <i> tags under the pay

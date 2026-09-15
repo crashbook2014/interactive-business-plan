@@ -1,0 +1,1176 @@
+<title>Wodouh Investor Deck</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Jost:wght@300;400;500;600;700&display=swap">
+
+<style>
+/* ── tokens ── */
+:root {
+  --forest:  #0D3830;
+  --forest2: #1A4E47;
+  --teal:    #1E6E64;
+  --teal-lt: #8FCBBE;
+  --teal-dim:#3A8077;
+  --sand:    #F0E8D8;
+  --sand-dk: #E2D8C4;
+  --cream:   #FDFAF4;
+  --ink:     #232C28;
+  --ink2:    #58645E;
+  --line:    #CEC4A8;
+  --label:   #9A9078;
+  --grn:     #3A7048;
+  --grnbg:   #EBF2EC;
+  --red:     #A84840;
+  --W:       1270px;
+  --H:       715px;
+}
+
+/* dark-theme tokens */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sand:   #1C2B27;
+    --sand-dk:#162320;
+    --cream:  #111C19;
+    --ink:    #DDD8C8;
+    --ink2:   #8A9A94;
+    --line:   #2A3C38;
+    --label:  #6A7870;
+    --grnbg:  rgba(58,112,72,.15);
+  }
+}
+:root[data-theme="dark"] {
+  --sand:   #1C2B27;
+  --sand-dk:#162320;
+  --cream:  #111C19;
+  --ink:    #DDD8C8;
+  --ink2:   #8A9A94;
+  --line:   #2A3C38;
+  --label:  #6A7870;
+  --grnbg:  rgba(58,112,72,.15);
+}
+
+/* ── base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Jost', system-ui, sans-serif;
+  background: #1A1A1A;
+  color: var(--ink);
+}
+
+/* ── toolbar (screen only) ── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-bottom: 1px solid #2A2A2A;
+}
+.tb-brand {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #888;
+}
+.tb-btn {
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.tb-btn:hover { background: var(--forest2); }
+.tb-note {
+  font-size: 10px;
+  color: #555;
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* ── deck wrapper ── */
+.deck {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 32px;
+}
+
+/* ── slide base ── */
+.slide {
+  width: var(--W);
+  height: var(--H);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 40px rgba(0,0,0,.5);
+}
+
+/* ── print ── */
+@media print {
+  @page { size: 1270px 715px; margin: 0; }
+  body { background: transparent; }
+  .toolbar { display: none; }
+  .deck { gap: 0; padding: 0; }
+  .slide { box-shadow: none; page-break-after: always; break-after: page; }
+  .slide:last-child { page-break-after: avoid; break-after: avoid; }
+}
+
+/* ── small-screen scaling ── */
+@media screen and (max-width: 1300px) {
+  .slide { transform-origin: top center; transform: scale(var(--sc, 1)); margin-bottom: calc((var(--sc, 1) - 1) * var(--H)); }
+}
+
+/* ══════════════════════════════════════════
+   shared slide components
+══════════════════════════════════════════ */
+.eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.divider {
+  height: 1px;
+  background: var(--line);
+}
+.tag {
+  display: inline-block;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  padding: 3px 8px;
+}
+.tag-live   { color: var(--grn); border: 1px solid var(--grn); background: var(--grnbg); }
+.tag-plan   { color: var(--label); border: 1px solid var(--line); background: transparent; }
+.tag-target { color: #A07820; border: 1px solid #CEAD5A; background: #FBF4E0; }
+
+/* ══════════════════════════════════════════
+   SLIDE 1 — COVER
+   full-bleed forest, left text, right SVG
+══════════════════════════════════════════ */
+.s1 { background: var(--forest); }
+.s1-grid {
+  display: grid;
+  grid-template-columns: 520px 1fr;
+  height: 100%;
+}
+
+.s1-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 54px 44px 54px 58px;
+  border-right: 1px solid rgba(255,255,255,.1);
+}
+.s1-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--teal-lt);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.s1-logo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(143,203,190,.25);
+}
+.s1-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 50px;
+  font-weight: 700;
+  line-height: 1.08;
+  color: var(--sand);
+  text-wrap: balance;
+  margin-bottom: 22px;
+}
+.s1-headline em {
+  color: var(--teal-lt);
+  font-style: italic;
+}
+.s1-body {
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: rgba(240,232,216,.55);
+  max-width: 380px;
+  margin-bottom: 40px;
+}
+.s1-meta {
+  display: flex;
+  gap: 0;
+}
+.s1-meta-item {
+  padding-right: 18px;
+  margin-right: 18px;
+  border-right: 1px solid rgba(255,255,255,.12);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(143,203,190,.5);
+}
+.s1-meta-item:last-child { border: 0; }
+
+.s1-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* SVG for s1 lives inline */
+
+/* ══════════════════════════════════════════
+   SLIDE 2 — PRODUCT TODAY
+══════════════════════════════════════════ */
+.s2 { background: var(--cream); }
+.s2-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 28px 54px 22px;
+  border-bottom: 1.5px solid var(--line);
+}
+.s2-header-left .eyebrow { color: var(--teal); margin-bottom: 7px; }
+.s2-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--forest);
+  line-height: 1.1;
+}
+.s2-header-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.s2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: calc(var(--H) - 96px);
+}
+
+/* journey column */
+.s2-journey {
+  padding: 22px 32px 22px 54px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+}
+.j-step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  position: relative;
+}
+.j-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 26px;
+  width: 2px;
+  height: calc(100% + 2px);
+  background: var(--line);
+}
+.j-step + .j-step { margin-top: 4px; }
+.j-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  position: relative; z-index: 1;
+  flex-shrink: 0;
+}
+.j-num.dark { background: var(--forest); color: var(--sand); }
+.j-num.teal { background: var(--teal); color: #fff; }
+.j-body { padding: 3px 0 12px; }
+.j-title { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.j-desc { font-size: 10.5px; font-weight: 300; color: var(--ink2); line-height: 1.5; }
+
+/* right panel */
+.s2-right {
+  padding: 22px 54px 22px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.feature-section { margin-bottom: 0; }
+.feature-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--label); margin-bottom: 8px;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.feat {
+  background: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.feat.hl { border-color: var(--teal); background: rgba(30,110,100,.06); }
+.feat-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--line); flex-shrink: 0;
+}
+.feat.hl .feat-dot { background: var(--teal); }
+.feat-name { font-size: 11px; font-weight: 500; color: var(--ink); }
+
+.transform-panel {
+  background: var(--forest);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.tf-col { font-size: 10.5px; line-height: 1.5; }
+.tf-label {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; margin-bottom: 5px;
+}
+.tf-before .tf-label { color: rgba(240,232,216,.35); }
+.tf-before .tf-text { color: rgba(240,232,216,.5); font-weight: 300; }
+.tf-after .tf-label { color: var(--teal-lt); }
+.tf-after .tf-text { color: rgba(240,232,216,.85); font-weight: 400; }
+.tf-arrow { font-size: 20px; color: var(--teal-dim); text-align: center; }
+
+.arch-note {
+  background: var(--grnbg);
+  border: 1px solid rgba(58,112,72,.25);
+  border-left: 3px solid var(--grn);
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-size: 10.5px; line-height: 1.5;
+  color: var(--ink);
+}
+.arch-note strong { font-weight: 600; color: var(--grn); }
+
+/* ══════════════════════════════════════════
+   SLIDE 3 — THE 100K PLAN
+══════════════════════════════════════════ */
+.s3 { background: var(--sand); }
+.s3-header {
+  background: var(--forest);
+  padding: 22px 54px 20px;
+}
+.s3-header .eyebrow { color: var(--teal-lt); margin-bottom: 8px; }
+.s3-header-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
+}
+.s3-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px; font-weight: 700;
+  color: var(--sand); line-height: 1.12;
+}
+.s3-header-question {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; font-style: italic; font-weight: 400;
+  color: rgba(240,232,216,.5);
+  text-align: right;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+.s3-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: calc(var(--H) - 110px);
+}
+
+.s3-left {
+  padding: 22px 32px 22px 54px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+.cap-section-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--label); margin-bottom: 4px;
+}
+.cap-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 10px 12px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.cap-icon {
+  width: 38px; height: 38px;
+  background: var(--sand-dk);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.cap-item-title { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.cap-item-desc { font-size: 10px; font-weight: 300; color: var(--ink2); line-height: 1.4; }
+
+.s3-right {
+  padding: 22px 54px 22px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.proof-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--label);
+}
+.proof-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.proof-point {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.proof-dash {
+  width: 14px; height: 2px;
+  background: var(--teal);
+  margin-top: 7px;
+}
+.proof-text { font-size: 12px; line-height: 1.55; color: var(--ink); }
+.proof-text strong { font-weight: 600; }
+
+.metrics-table {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--cream);
+}
+.mt-head {
+  background: var(--sand-dk);
+  padding: 7px 14px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--label);
+}
+.mt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--ink2);
+}
+.mt-row strong { font-weight: 600; color: var(--ink); }
+
+/* expand loop */
+.expand-visual {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 4px;
+}
+.ev-step {
+  background: var(--forest);
+  color: rgba(240,232,216,.8);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 7px 10px;
+  border-radius: 4px;
+  text-align: center;
+  flex: 1;
+}
+.ev-step.hi { background: var(--teal); color: #fff; }
+.ev-arrow {
+  color: var(--label);
+  font-size: 12px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 4 — ENTERPRISE
+══════════════════════════════════════════ */
+.s4 { background: var(--cream); }
+.s4-top {
+  padding: 24px 54px 20px;
+  border-bottom: 1.5px solid var(--line);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.s4-top .eyebrow { color: var(--teal); margin-bottom: 7px; }
+.s4-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; font-weight: 700;
+  color: var(--forest); line-height: 1.1;
+}
+
+/* progression bar */
+.prog-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+  margin: 0 54px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 18px;
+}
+.pb-cell {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  background: var(--sand);
+}
+.pb-cell:last-child { border-right: none; }
+.pb-cell.now { background: var(--forest); }
+.pb-time {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; margin-bottom: 7px;
+}
+.pb-cell.now .pb-time { color: var(--teal-lt); }
+.pb-cell:not(.now) .pb-time { color: var(--label); }
+.pb-name {
+  font-size: 12.5px; font-weight: 600;
+  margin-bottom: 4px; line-height: 1.2;
+}
+.pb-cell.now .pb-name { color: var(--sand); }
+.pb-cell:not(.now) .pb-name { color: var(--ink); }
+.pb-desc {
+  font-size: 10px; font-weight: 300; line-height: 1.5;
+}
+.pb-cell.now .pb-desc { color: rgba(240,232,216,.55); }
+.pb-cell:not(.now) .pb-desc { color: var(--ink2); }
+
+/* enterprise flow */
+.s4-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 18px 54px;
+  gap: 40px;
+  height: calc(var(--H) - 202px);
+  align-items: center;
+}
+.ent-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-style: italic; font-weight: 400;
+  color: var(--forest); line-height: 1.55;
+  border-left: 2px solid var(--teal);
+  padding-left: 16px;
+  align-self: center;
+}
+.ent-intro strong { font-weight: 700; font-style: normal; }
+
+.ent-flow { display: flex; flex-direction: column; gap: 0; }
+.ef-node {
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 500;
+  color: var(--ink);
+  background: var(--sand);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ef-node.trigger { background: var(--forest); color: var(--sand); border-color: var(--forest); }
+.ef-node.result  { background: rgba(30,110,100,.08); border-color: var(--teal); color: var(--forest); }
+.ef-tag {
+  font-size: 8px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+  flex-shrink: 0;
+}
+.ef-node.trigger .ef-tag { background: rgba(255,255,255,.1); color: var(--teal-lt); }
+.ef-node:not(.trigger):not(.result) .ef-tag { background: var(--sand-dk); color: var(--label); }
+.ef-node.result .ef-tag { background: rgba(30,110,100,.12); color: var(--teal); }
+.ef-connector {
+  width: 1px; height: 10px;
+  background: var(--line);
+  margin-left: 14px;
+  position: relative;
+}
+.ef-connector::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: -3px;
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--line);
+}
+.ent-note {
+  margin-top: 10px;
+  font-size: 9.5px; font-weight: 300; font-style: italic;
+  color: var(--ink2); line-height: 1.6;
+  padding-left: 14px;
+  border-left: 1.5px solid var(--line);
+}
+
+/* ══════════════════════════════════════════
+   SLIDE 5 — ROADMAP + CLOSE
+   full-bleed forest
+══════════════════════════════════════════ */
+.s5 { background: var(--forest); }
+.s5-inner {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 32px 54px 28px;
+}
+
+.s5-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.s5-head .eyebrow { color: var(--teal-lt); margin-bottom: 8px; }
+.s5-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px; font-weight: 700;
+  color: var(--sand); line-height: 1.1;
+}
+.s5-desc {
+  font-size: 11px; font-weight: 300;
+  color: rgba(240,232,216,.45);
+  text-align: right; max-width: 280px; line-height: 1.55;
+}
+
+.s5-mid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 40px;
+  padding-top: 18px;
+  align-items: start;
+}
+
+/* timeline */
+.timeline {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1px;
+  background: rgba(255,255,255,.08);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+}
+.tl-phase {
+  background: rgba(255,255,255,.04);
+  padding: 16px 14px;
+}
+.tl-phase.now { background: rgba(30,110,100,.22); }
+.tl-time {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.tl-phase.now .tl-time { color: rgba(255,255,255,.85); }
+.tl-phase:not(.now) .tl-time { color: var(--teal-lt); opacity: .7; }
+.tl-items { display: flex; flex-direction: column; gap: 6px; }
+.tl-item {
+  font-size: 10px; font-weight: 400;
+  color: rgba(240,232,216,.55);
+  padding-left: 10px;
+  line-height: 1.4;
+  position: relative;
+}
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 6px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(143,203,190,.4);
+}
+.tl-phase.now .tl-item { color: rgba(240,232,216,.78); }
+.tl-phase.now .tl-item::before { background: var(--teal-lt); }
+
+/* win column */
+.win-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.win-label {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .22em;
+  text-transform: uppercase; color: rgba(143,203,190,.6); margin-bottom: 2px;
+}
+.win-item {
+  border-left: 2px solid var(--teal);
+  padding-left: 12px;
+}
+.win-title {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--sand); margin-bottom: 3px; line-height: 1.3;
+}
+.win-desc {
+  font-size: 9.5px; font-weight: 300;
+  color: rgba(240,232,216,.48); line-height: 1.55;
+}
+
+.s5-foot {
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.closing {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700; font-style: italic;
+  color: var(--sand); line-height: 1.3;
+  max-width: 620px;
+  text-wrap: balance;
+}
+.closing em { color: var(--teal-lt); font-style: normal; }
+.contact {
+  text-align: right;
+  font-size: 10px; font-weight: 400;
+  color: rgba(240,232,216,.35);
+  line-height: 1.7;
+}
+.contact a { color: rgba(143,203,190,.55); text-decoration: none; }
+</style>
+
+<!-- toolbar -->
+<div class="toolbar">
+  <span class="tb-brand">Wodouh — وضوح · Investor Deck · September 2026</span>
+  <button class="tb-btn" onclick="window.print()">Save as PDF ↓</button>
+  <span class="tb-note">Chrome / Edge recommended<br>Set page size to "Custom" 1270×715 px, no margins</span>
+</div>
+
+<div class="deck">
+
+<!-- ══════════════════════════
+     SLIDE 1 · COVER
+══════════════════════════ -->
+<div class="slide s1">
+  <div class="s1-grid">
+    <div class="s1-left">
+      <div class="s1-logo">Wodouh · وضوح</div>
+      <h1 class="s1-headline">Contracts carry<br>intelligence.<br><em>Most people<br>never reach it.</em></h1>
+      <p class="s1-body">People and businesses hold contracts that contain obligations, rights, restrictions, and risks — yet understanding what those contracts actually mean is slow, costly, and often inaccessible. Wodouh changes that.</p>
+      <div class="s1-meta">
+        <span class="s1-meta-item">Saudi Arabia</span>
+        <span class="s1-meta-item">Employment Law</span>
+        <span class="s1-meta-item">Arabic-first</span>
+        <span class="s1-meta-item">Live · Sept 2026</span>
+      </div>
+    </div>
+    <div class="s1-right">
+      <!-- flow diagram SVG -->
+      <svg width="380" height="460" viewBox="0 0 380 460" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+        <!-- CONTRACT input -->
+        <rect x="90" y="0" width="200" height="54" rx="7" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <text x="190" y="28" text-anchor="middle" font-family="Jost,sans-serif" font-size="10" font-weight="700" letter-spacing="0.2em" fill="rgba(240,232,216,0.45)">CONTRACT</text>
+        <text x="190" y="44" text-anchor="middle" font-family="Jost,sans-serif" font-size="9" fill="rgba(240,232,216,0.25)">employment · lease · service</text>
+        <!-- connector 1 -->
+        <line x1="190" y1="54" x2="190" y2="98" stroke="rgba(143,203,190,0.4)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="183,95 197,95 190,106" fill="rgba(143,203,190,0.4)"/>
+        <!-- WODOUH ENGINE box -->
+        <rect x="55" y="106" width="270" height="78" rx="10" fill="#1E6E64"/>
+        <rect x="55" y="106" width="270" height="78" rx="10" fill="none" stroke="rgba(143,203,190,0.5)" stroke-width="1.5"/>
+        <text x="190" y="147" text-anchor="middle" font-family="Cormorant Garamond,Georgia,serif" font-style="italic" font-size="30" font-weight="700" fill="white">Wodouh</text>
+        <text x="190" y="170" text-anchor="middle" font-family="Jost,sans-serif" font-size="9" font-weight="600" letter-spacing="0.18em" fill="rgba(255,255,255,0.55)">CONTRACT INTELLIGENCE</text>
+        <!-- glow -->
+        <ellipse cx="190" cy="145" rx="90" ry="28" fill="rgba(30,110,100,0.25)" filter="url(#glow)"/>
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="12" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+        <!-- fan-out from engine -->
+        <line x1="190" y1="184" x2="190" y2="220" stroke="rgba(143,203,190,0.5)" stroke-width="1.5"/>
+        <line x1="190" y1="220" x2="60" y2="220" stroke="rgba(143,203,190,0.3)" stroke-width="1.5"/>
+        <line x1="190" y1="220" x2="320" y2="220" stroke="rgba(143,203,190,0.3)" stroke-width="1.5"/>
+        <!-- left arm -->
+        <line x1="60" y1="220" x2="60" y2="256" stroke="rgba(143,203,190,0.3)" stroke-width="1.5"/>
+        <polygon points="53,253 67,253 60,263" fill="rgba(143,203,190,0.3)"/>
+        <!-- center -->
+        <line x1="190" y1="220" x2="190" y2="256" stroke="rgba(143,203,190,0.6)" stroke-width="2"/>
+        <polygon points="183,253 197,253 190,263" fill="rgba(143,203,190,0.6)"/>
+        <!-- right arm -->
+        <line x1="320" y1="220" x2="320" y2="256" stroke="rgba(143,203,190,0.3)" stroke-width="1.5"/>
+        <polygon points="313,253 327,253 320,263" fill="rgba(143,203,190,0.3)"/>
+
+        <!-- output boxes -->
+        <!-- UNDERSTAND -->
+        <rect x="2" y="263" width="116" height="50" rx="6" fill="rgba(30,110,100,0.2)" stroke="rgba(143,203,190,0.35)" stroke-width="1"/>
+        <text x="60" y="286" text-anchor="middle" font-family="Jost,sans-serif" font-size="9" font-weight="700" letter-spacing="0.16em" fill="#8FCBBE">UNDERSTAND</text>
+        <text x="60" y="303" text-anchor="middle" font-family="Jost,sans-serif" font-size="8.5" fill="rgba(240,232,216,0.35)">rights &amp; obligations</text>
+
+        <!-- DECIDE (hero) -->
+        <rect x="132" y="263" width="116" height="50" rx="6" fill="#1E6E64" stroke="rgba(143,203,190,0.7)" stroke-width="1.5"/>
+        <text x="190" y="286" text-anchor="middle" font-family="Jost,sans-serif" font-size="9" font-weight="700" letter-spacing="0.16em" fill="white">DECIDE</text>
+        <text x="190" y="303" text-anchor="middle" font-family="Jost,sans-serif" font-size="8.5" fill="rgba(255,255,255,0.5)">with full context</text>
+
+        <!-- ACT -->
+        <rect x="262" y="263" width="116" height="50" rx="6" fill="rgba(30,110,100,0.2)" stroke="rgba(143,203,190,0.35)" stroke-width="1"/>
+        <text x="320" y="286" text-anchor="middle" font-family="Jost,sans-serif" font-size="9" font-weight="700" letter-spacing="0.16em" fill="#8FCBBE">ACT</text>
+        <text x="320" y="303" text-anchor="middle" font-family="Jost,sans-serif" font-size="8.5" fill="rgba(240,232,216,0.35)">with confidence</text>
+
+        <!-- tagline below -->
+        <line x1="40" y1="338" x2="340" y2="338" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="190" y="360" text-anchor="middle" font-family="Cormorant Garamond,serif" font-style="italic" font-size="14" fill="rgba(240,232,216,0.3)">Turn contracts from documents people read</text>
+        <text x="190" y="378" text-anchor="middle" font-family="Cormorant Garamond,serif" font-style="italic" font-size="14" fill="rgba(240,232,216,0.3)">into intelligence people act on.</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDE 2 · PRODUCT TODAY
+══════════════════════════ -->
+<div class="slide s2">
+  <div class="s2-header">
+    <div class="s2-header-left">
+      <p class="eyebrow">The Product</p>
+      <h2 class="s2-headline">Built, live, and working<br>in production today.</h2>
+    </div>
+    <div class="s2-header-right">
+      <span class="tag tag-live">✓ Live at alwodouh.com</span>
+      <span style="font-size:9.5px;color:var(--label);text-align:right">Saudi employment contracts · Arabic &amp; English</span>
+    </div>
+  </div>
+  <div class="s2-cols">
+    <div class="s2-journey">
+      <div class="j-step">
+        <div class="j-num dark">1</div>
+        <div class="j-body">
+          <p class="j-title">User arrives with a contract</p>
+          <p class="j-desc">Employment contract in Arabic or English. Scanned or digital. No account required to start.</p>
+        </div>
+      </div>
+      <div class="j-step">
+        <div class="j-num teal">2</div>
+        <div class="j-body">
+          <p class="j-title">Document extracted on-device</p>
+          <p class="j-desc">Text PDFs are read entirely locally — nothing leaves the device without explicit consent.</p>
+        </div>
+      </div>
+      <div class="j-step">
+        <div class="j-num teal">3</div>
+        <div class="j-body">
+          <p class="j-title">AI analysis with verified citations</p>
+          <p class="j-desc">Every article number and riyal figure shown is verified against a curated legal register — enforced by architecture, not by prompt.</p>
+        </div>
+      </div>
+      <div class="j-step">
+        <div class="j-num teal">4</div>
+        <div class="j-body">
+          <p class="j-title">Actionable intelligence delivered</p>
+          <p class="j-desc">End-of-service calculated deterministically. Rights explained. Personalized letter drafted.</p>
+        </div>
+      </div>
+      <div class="j-step">
+        <div class="j-num dark">5</div>
+        <div class="j-body">
+          <p class="j-title">User acts</p>
+          <p class="j-desc">Knows their rights. Has a letter. Knows their next step. Saved their case file.</p>
+        </div>
+      </div>
+    </div>
+    <div class="s2-right">
+      <div class="feature-section">
+        <p class="feature-label">Free — no account needed</p>
+        <div class="feature-grid">
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">End-of-service calculator</span></div>
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">Employment rights library</span></div>
+        </div>
+        <p class="feature-label">Paid features — live</p>
+        <div class="feature-grid">
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">Contract analysis &amp; flags</span></div>
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">AI questions (verified)</span></div>
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">Negotiation letter</span></div>
+          <div class="feat hl"><div class="feat-dot"></div><span class="feat-name">Full case file</span></div>
+        </div>
+      </div>
+      <div class="transform-panel">
+        <div class="tf-col tf-before">
+          <p class="tf-label">Before</p>
+          <p class="tf-text">"I have a contract. I don't know what it means or what I'm owed."</p>
+        </div>
+        <div class="tf-arrow">→</div>
+        <div class="tf-col tf-after">
+          <p class="tf-label">After Wodouh</p>
+          <p class="tf-text">"I know my rights, have a letter ready, and know my next step."</p>
+        </div>
+      </div>
+      <div class="arch-note">
+        <strong>Legal accuracy enforced by architecture.</strong> A citation can only render if it exists as a dated, human-verified row in a legal register. Riyal figures are computed by deterministic code the model cannot reach. Demonstrable in the source.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDE 3 · THE PLAN
+══════════════════════════ -->
+<div class="slide s3">
+  <div class="s3-header">
+    <p class="eyebrow">The Investment Thesis</p>
+    <div class="s3-header-grid">
+      <h2 class="s3-headline">100,000 SAR to prove<br>Saudi consumers will pay<br>for contract clarity.</h2>
+      <p class="s3-header-question">"What will Wodouh actually prove with this first round?"</p>
+    </div>
+  </div>
+  <div class="s3-body">
+    <div class="s3-left">
+      <p class="cap-section-label">Capital is used for</p>
+      <div class="cap-item">
+        <div class="cap-icon">📣</div>
+        <div>
+          <p class="cap-item-title">Consumer acquisition</p>
+          <p class="cap-item-desc">Putting the product in front of real Saudi users facing real employment situations</p>
+        </div>
+      </div>
+      <div class="cap-item">
+        <div class="cap-icon">⚙️</div>
+        <div>
+          <p class="cap-item-title">Product iteration</p>
+          <p class="cap-item-desc">Completing the PDF/scan flow, desktop layout, and feedback from first real users</p>
+        </div>
+      </div>
+      <div class="cap-item">
+        <div class="cap-icon">🧱</div>
+        <div>
+          <p class="cap-item-title">Infrastructure &amp; AI costs</p>
+          <p class="cap-item-desc">Supabase, Anthropic API, and compute behind every verified analysis</p>
+        </div>
+      </div>
+      <div class="cap-item">
+        <div class="cap-icon">⚖️</div>
+        <div>
+          <p class="cap-item-title">Legal &amp; compliance</p>
+          <p class="cap-item-desc">Lawyer review of terms, citations, and content before scaling</p>
+        </div>
+      </div>
+    </div>
+    <div class="s3-right">
+      <p class="proof-label">What this round proves</p>
+      <div class="proof-list">
+        <div class="proof-point">
+          <div class="proof-dash"></div>
+          <p class="proof-text"><strong>Real use:</strong> Saudi consumers use it on real contracts, not just demos</p>
+        </div>
+        <div class="proof-point">
+          <div class="proof-dash"></div>
+          <p class="proof-text"><strong>Real trust:</strong> Users return, share the output, and recommend it</p>
+        </div>
+        <div class="proof-point">
+          <div class="proof-dash"></div>
+          <p class="proof-text"><strong>Willingness to pay:</strong> Conversion data at each price point (149 – 349 SAR)</p>
+        </div>
+        <div class="proof-point">
+          <div class="proof-dash"></div>
+          <p class="proof-text"><strong>Category signal:</strong> What the next contract type should be, from real users</p>
+        </div>
+      </div>
+      <div class="metrics-table">
+        <div class="mt-head">First-round milestones — labeled as targets, not guarantees</div>
+        <div class="mt-row"><span>First paying users</span><strong><span class="tag tag-target">Target</span></strong></div>
+        <div class="mt-row"><span>Free → paid conversion rate</span><strong><span class="tag tag-target">Target</span></strong></div>
+        <div class="mt-row"><span>Payment gateway (Tap / Moyasar)</span><strong><span class="tag tag-plan">In progress</span></strong></div>
+        <div class="mt-row"><span>Repeat usage rate</span><strong><span class="tag tag-target">Target</span></strong></div>
+      </div>
+      <div>
+        <p class="proof-label" style="margin-bottom:7px">Expansion logic</p>
+        <div class="expand-visual">
+          <div class="ev-step hi">High demand</div>
+          <div class="ev-arrow">→</div>
+          <div class="ev-step">Validate</div>
+          <div class="ev-arrow">→</div>
+          <div class="ev-step">Prove pay</div>
+          <div class="ev-arrow">→</div>
+          <div class="ev-step">Next category</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDE 4 · ENTERPRISE
+══════════════════════════ -->
+<div class="slide s4">
+  <div class="s4-top">
+    <div>
+      <p class="eyebrow">The Bigger Opportunity</p>
+      <h2 class="s4-headline">Consumer traction is the proof.<br>Enterprise is the destination.</h2>
+    </div>
+    <span class="tag tag-plan">→ Planned direction</span>
+  </div>
+
+  <!-- progression bar -->
+  <div class="prog-bar">
+    <div class="pb-cell now">
+      <p class="pb-time">Today</p>
+      <p class="pb-name">Consumer contract intelligence</p>
+      <p class="pb-desc">Employment contracts. Individual users. Bilingual. Saudi Labor Law specific.</p>
+    </div>
+    <div class="pb-cell">
+      <p class="pb-time">Next</p>
+      <p class="pb-name">More contract categories</p>
+      <p class="pb-desc">Rental, freelance, service agreements — categories chosen by real consumer demand.</p>
+    </div>
+    <div class="pb-cell">
+      <p class="pb-time">Then — Planned</p>
+      <p class="pb-name">Enterprise contract intelligence</p>
+      <p class="pb-desc">Organizations making decisions that touch contracts across employees, vendors, partners.</p>
+    </div>
+    <div class="pb-cell">
+      <p class="pb-time">Long term — Planned</p>
+      <p class="pb-name">Contract intelligence platform</p>
+      <p class="pb-desc">Cross-organization. Multi-category. Decision-layer. Not just reading — acting.</p>
+    </div>
+  </div>
+
+  <div class="s4-bottom">
+    <p class="ent-intro">A company wants to make a business decision. That decision may affect <strong>contracts with employees, suppliers, and partners.</strong> Today this means asking multiple teams to review manually — slow, expensive, inconsistent.</p>
+    <div>
+      <div class="ent-flow">
+        <div class="ef-node trigger"><span class="ef-tag">TRIGGER</span>A business decision is made</div>
+        <div class="ef-connector"></div>
+        <div class="ef-node"><span class="ef-tag">01</span>Wodouh checks all relevant contracts</div>
+        <div class="ef-connector"></div>
+        <div class="ef-node"><span class="ef-tag">02</span>Contractual impact identified and explained</div>
+        <div class="ef-connector"></div>
+        <div class="ef-node"><span class="ef-tag">03</span>Relevant clauses surfaced for the team</div>
+        <div class="ef-connector"></div>
+        <div class="ef-node result"><span class="ef-tag">ACTION</span>Team understands what needs attention — and acts</div>
+      </div>
+      <p class="ent-note">Wodouh does not replace legal teams. It gives business teams contractual awareness to make better decisions, faster. Legal reviews fewer surprises.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDE 5 · ROADMAP + CLOSE
+══════════════════════════ -->
+<div class="slide s5">
+  <div class="s5-inner">
+    <div class="s5-head">
+      <div>
+        <p class="eyebrow">The Roadmap</p>
+        <h2 class="s5-title">From the first contract<br>to the decisions it shapes.</h2>
+      </div>
+      <p class="s5-desc">Built in Saudi Arabia. Designed for a market that signs millions of contracts every year.</p>
+    </div>
+    <div class="s5-mid">
+      <div class="timeline">
+        <div class="tl-phase now">
+          <p class="tl-time">Now</p>
+          <div class="tl-items">
+            <p class="tl-item">Employment contract intelligence</p>
+            <p class="tl-item">Bilingual Arabic / English</p>
+            <p class="tl-item">Verified AI citations — by architecture</p>
+            <p class="tl-item">Free tier + paid tier live</p>
+            <p class="tl-item">Consumer acquisition begins</p>
+          </div>
+        </div>
+        <div class="tl-phase">
+          <p class="tl-time">Next</p>
+          <div class="tl-items">
+            <p class="tl-item">First paying users</p>
+            <p class="tl-item">Conversion rate validated</p>
+            <p class="tl-item">More contract categories</p>
+            <p class="tl-item">Payment gateway live</p>
+            <p class="tl-item">Stronger consumer traction</p>
+          </div>
+        </div>
+        <div class="tl-phase">
+          <p class="tl-time">Then — Planned</p>
+          <div class="tl-items">
+            <p class="tl-item">Enterprise workflows</p>
+            <p class="tl-item">B2B revenue layer</p>
+            <p class="tl-item">Contract intelligence at scale</p>
+            <p class="tl-item">Series A readiness</p>
+          </div>
+        </div>
+        <div class="tl-phase">
+          <p class="tl-time">Long term</p>
+          <div class="tl-items">
+            <p class="tl-item">Contract intelligence platform</p>
+            <p class="tl-item">Cross-organization</p>
+            <p class="tl-item">Multi-category</p>
+            <p class="tl-item">Decision-layer product</p>
+          </div>
+        </div>
+      </div>
+      <div class="win-col">
+        <p class="win-label">Why Wodouh can win</p>
+        <div class="win-item">
+          <p class="win-title">Legal accuracy enforced by architecture</p>
+          <p class="win-desc">Citations render only from a human-verified register. Figures computed by deterministic code the model cannot reach. Demonstrable in the source — not a prompt claim.</p>
+        </div>
+        <div class="win-item">
+          <p class="win-title">Privacy by design — not by promise</p>
+          <p class="win-desc">Documents stay on-device by default. Nothing leaves without explicit consent. No secrets ever reach the browser. This is demonstrable in the code.</p>
+        </div>
+        <div class="win-item">
+          <p class="win-title">Built for Saudi Arabia — not translated for it</p>
+          <p class="win-desc">Arabic-first, Saudi Labor Law specific. Free value before any signup — which is how trust is earned in this market.</p>
+        </div>
+      </div>
+    </div>
+    <div class="s5-foot">
+      <p class="closing">Today, Wodouh helps people understand contracts.<br>Tomorrow, it helps them <em>make better decisions because of them.</em></p>
+      <div class="contact">
+        Abdulelah Alshanqiti<br>
+        <a href="mailto:Abdulelah@alwodouh.com">Abdulelah@alwodouh.com</a><br>
+        alwodouh.com
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+// responsive scale for narrow viewports
+function scaleSlides(){
+  const vw = window.innerWidth;
+  const sc = Math.min(1, (vw - 32) / 1270);
+  document.querySelectorAll('.slide').forEach(s => {
+    s.style.setProperty('--sc', sc);
+    s.style.transform = sc < 1 ? `scale(${sc})` : '';
+    s.style.marginBottom = sc < 1 ? `${(sc - 1) * 715}px` : '';
+  });
+}
+scaleSlides();
+window.addEventListener('resize', scaleSlides);
+</script>
