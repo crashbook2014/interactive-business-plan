@@ -70,6 +70,62 @@ const attr = (html, re) => { const m = html.match(re); return m ? m[1] : null; }
   ok(out.excluded > 0,
      `the register still excludes rows rather than ticking everything (${out.excluded} excluded, and neither has a page)`);
 
+  /* ---- 1b. the <title> tag stays inside SERP length, and no two collide */
+  console.log("\n— every <title> fits Google's budget, and no two pages share one");
+
+  /* `Math.max(10, …)` used to floor the truncated topic length regardless of
+     how much room the suffix left it, so the assembled title could exceed the
+     60-character budget with nothing rechecking it afterward — confirmed on
+     the Article 77 page, which shipped at 62 characters.
+
+     Zero tolerance on duplicates: a shared <title> is two pages telling a
+     search engine they are the same page. Length is not zero-tolerance in the
+     same way — Articles 77 and 77(2) diverge only at "indefinite" vs
+     "fixed-term", past where the citation-suffix budget leaves room, so no
+     length both fits 60 characters and reaches a real difference for that
+     pair. buildTitle() is documented to grow past budget rather than ship a
+     duplicate or a title that differs only by whether it happens to mention
+     the article number. So: budget overage is allowed ONLY where it is the
+     price of a title that would otherwise collide, checked below by asserting
+     every overage traces to a genuine slug-family pair (a "-2", "-3", …
+     sibling of another row's slug) rather than an unexplained regression. */
+  const TITLE_BUDGET = 60;
+  let longest = 0;
+  const overBudget = [];
+  const titlesByLang = { en: new Map(), ar: new Map() };
+  for (const f of out.files){
+    const title = attr(f.html, /<title>([^<]*)<\/title>/);
+    if (title === null) continue; /* sitemap.xml has no <title> */
+    longest = Math.max(longest, title.length);
+    if (title.length > TITLE_BUDGET) overBudget.push({ path: f.path, title });
+    const lang = f.path.endsWith("/ar/") ? "ar" : "en";
+    if (!titlesByLang[lang].has(title)) titlesByLang[lang].set(title, []);
+    titlesByLang[lang].get(title).push(f.path);
+  }
+
+  /* Two different topics truncating to the same short prefix reproduces, one
+     layer up, the exact collision the H1/JSON-LD growth loop in build()
+     already exists to prevent — confirmed on disk: Articles 77 and 77(2)
+     shipped byte-identical <title> tags despite distinct H1s. */
+  let dupes = [];
+  for (const lang of ["en", "ar"]){
+    for (const [title, paths] of titlesByLang[lang]){
+      if (paths.length > 1) dupes.push(`${lang}: "${title}" — ${paths.join(", ")}`);
+    }
+  }
+  ok(dupes.length === 0,
+     `no two pages in the same language share a <title>${dupes.length ? " — " + dupes.join("; ") : ""}`);
+
+  const unexplainedOverage = overBudget.filter(o => !/-\d+\//.test(o.path));
+  ok(unexplainedOverage.length === 0,
+     `every over-budget <title> traces to a slug-family disambiguation, not an ` +
+     `unexplained regression (longest: ${longest}, over budget: ${overBudget.length}` +
+     (unexplainedOverage.length ? `, unexplained: ${unexplainedOverage.map(o => o.path).join(", ")}` : "") + ")");
+  ok(overBudget.length <= 4,
+     `at most one pair of rows (both languages) needs to exceed the ${TITLE_BUDGET}-character ` +
+     `budget to stay unique — a growing count here means a new collision, not this known one ` +
+     `(${overBudget.length} over budget)`);
+
   /* ---- 2. no page states an article number its row does not hold */
   console.log("\n— an article number appears only where the register put one");
 

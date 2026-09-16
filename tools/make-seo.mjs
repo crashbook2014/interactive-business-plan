@@ -180,28 +180,75 @@ function citation(article){
 const TITLE_SITE = { en: "Wodouh", ar: "وضوح" };
 const TITLE_GENERIC = { en: "Saudi employment", ar: "العمل في السعودية" };
 const TITLE_BUDGET = 60;
-function buildTitle(topic, cite, lang){
+/* `usedTitles` is a per-language Set, threaded in from build() and shared
+   across every row — see the comment below on why a truncated title can
+   collide even when the topic it was cut from does not. */
+function buildTitle(topic, cite, lang, usedTitles){
   const site = TITLE_SITE[lang];
   const suffixFull = cite ? (lang === "ar" ? cite.fullAr : cite.fullEn) : TITLE_GENERIC[lang];
   const suffixShort = cite ? (lang === "ar" ? cite.shortAr : cite.shortEn) : suffixFull;
   const assemble = (top, suf) => `${top} — ${suf} | ${site}`;
+  const claim = (title) => { usedTitles.add(title); return title; };
 
   let title = assemble(topic, suffixFull);
-  if (title.length <= TITLE_BUDGET) return title;
+  if (title.length <= TITLE_BUDGET && !usedTitles.has(title)) return claim(title);
 
   title = assemble(topic, suffixShort);
-  if (title.length <= TITLE_BUDGET) return title;
+  if (title.length <= TITLE_BUDGET && !usedTitles.has(title)) return claim(title);
 
+  /* THE FLOOR USED TO BE A BARE 10, WHICH COULD OVERFLOW THE BUDGET.
+   * `TITLE_BUDGET - fixedLen` goes negative whenever the suffix alone is
+   * already long (a long citation name), and `Math.max(10, …)` forced the
+   * topic to keep ten characters regardless — so the assembled title could
+   * exceed 60 characters with nothing rechecking it afterward. Confirmed on
+   * disk: the Article 77 page shipped a 62-character title. Clamping the
+   * floor to 0 instead means the topic can be cut to nothing in the worst
+   * case, which degrades further below, rather than the title running over.
+   */
   const fixedLen = ` — ${suffixShort} | ${site}`.length + 1; /* +1 for the ellipsis */
-  const maxTopicLen = Math.max(10, TITLE_BUDGET - fixedLen);
-  let cut = topic;
-  if (cut.length > maxTopicLen){
-    cut = cut.slice(0, maxTopicLen);
+  const maxTopicLen = Math.max(0, TITLE_BUDGET - fixedLen);
+
+  const cutAt = (len) => {
+    if (len <= 0) return "";
+    let cut = topic.slice(0, len);
     const lastSpace = cut.lastIndexOf(" ");
     if (lastSpace > 10) cut = cut.slice(0, lastSpace);
-    cut = cut.replace(/[،,:؛.—-]+$/, "") + "…";
+    return cut.replace(/[،,:؛.—-]+$/, "") + "…";
+  };
+
+  const cut = topic.length > maxTopicLen ? cutAt(maxTopicLen) : topic;
+  title = assemble(cut, suffixShort);
+
+  /* TWO LONG TOPICS CAN TRUNCATE TO THE SAME SHORT PREFIX.
+   * `topic` here is already grown long enough to make this row's H1 and
+   * JSON-LD `name` unique (see the growth loop in build()) — Articles 77 and
+   * 77(2) diverge only at "indefinite" vs "fixed-term", roughly 55 characters
+   * into the sentence. But cutting two different long topics down to a
+   * ten-or-so-character prefix for the <title> tag can reproduce the exact
+   * collision that growth exists to prevent, one layer up: distinct H1s,
+   * identical <title>. Confirmed on disk: both pages shipped the literal same
+   * truncated title.
+   *
+   * There is no length that both fits TITLE_BUDGET and reaches the
+   * disambiguating word for this pair — the word itself sits past where the
+   * suffix leaves room. So if the cut collides, the cut grows past the
+   * nominal budget until it actually reaches the point where the two
+   * sentences differ, the same way the question-uniqueness loop above does.
+   * A <title> a few characters over budget is a display truncation in a
+   * search result; a duplicate <title> is two pages telling a search engine
+   * they are the same page, and a title that differs only by whether it
+   * happens to mention the article number is not a real disambiguation
+   * either — both cost more than a slightly long title does. */
+  if (usedTitles.has(title)){
+    for (let len = maxTopicLen + 1; len <= topic.length; len++){
+      const tryTitle = assemble(cutAt(len), suffixShort);
+      if (!usedTitles.has(tryTitle)){ title = tryTitle; break; }
+    }
   }
-  return assemble(cut, suffixShort);
+  if (usedTitles.has(title))
+    throw new Error(`two rows produce the same <title> in ${lang} and the topic ` +
+                     `is already exhausted: "${title}"`);
+  return claim(title);
 }
 
 /* --------------------------------------------------------- the strings
@@ -217,7 +264,7 @@ const S = {
     site: "Wodouh",
     q: (t, c) => c ? `${t} — what does ${c.shortEn} say?`
                    : `${t} — what are the rules in Saudi Arabia?`,
-    title: (t, c) => buildTitle(t, c, "en"),
+    title: (t, c, u) => buildTitle(t, c, "en", u),
     articleLabel: c => c.fullEn,
     noArticle: "No article number. The register records this claim without one, and Wodouh never adds a number the source does not carry.",
     checked: d => `Last re-checked ${d}.`,
@@ -244,7 +291,7 @@ const S = {
     site: "وضوح",
     q: (t, c) => c ? `${t} — ماذا تقول ${c.shortAr}؟`
                    : `${t} — ما القواعد في السعودية؟`,
-    title: (t, c) => buildTitle(t, c, "ar"),
+    title: (t, c, u) => buildTitle(t, c, "ar", u),
     articleLabel: c => c.fullAr,
     noArticle: "بلا رقم مادة. السجل يوثّق هذا الادعاء دون رقم، ووضوح لا يضيف رقمًا لا يحمله المصدر.",
     checked: d => `آخر إعادة تحقّق: ${d}.`,
@@ -328,7 +375,7 @@ ${body}
 
 /* ------------------------------------------------------- an answer page */
 
-function answerPage(row, lang, date){
+function answerPage(row, lang, date, usedTitles){
   const t = S[lang];
   date = lang === "ar" ? dateAr(date) : date;
   const claim = lang === "ar" ? row.claim_ar : row.claim;
@@ -377,7 +424,7 @@ ${links.map(l => `    <li><a href="${esc(l.href)}" rel="nofollow noopener">${esc
 
   return { path, html: page({
     lang, path, altPath,
-    title: t.title(topic, row.cite),
+    title: t.title(topic, row.cite, usedTitles),
     desc: t.metaDesc(topic),
     body, jsonld
   }) };
@@ -598,10 +645,15 @@ export function build(md){
     }
   }
 
+  /* One Set per language, threaded through every buildTitle() call in that
+     language so a truncated <title> can be checked against every other title
+     already produced this run — see the collision comment inside buildTitle()
+     for why the topic being unique is not enough. */
+  const usedTitles = { en: new Set(), ar: new Set() };
   const files = [];
   for (const r of rows){
-    files.push(answerPage(r, "en", date));
-    files.push(answerPage(r, "ar", date));
+    files.push(answerPage(r, "en", date, usedTitles.en));
+    files.push(answerPage(r, "ar", date, usedTitles.ar));
   }
   files.push(indexPage(rows, "en", date), indexPage(rows, "ar", date));
   files.push(howPage("en", rows.length, excluded, date),
