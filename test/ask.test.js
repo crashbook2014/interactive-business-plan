@@ -48,6 +48,30 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(new Set(committed.rows.map(r => r.id)).size === committed.rows.length,
      "every row id is unique, so a citation resolves to one row");
 
+  /* ---- 1b. THE LOAN REGISTER IS EMPTY, AND THAT IS THE ASSERTION.
+     Not a placeholder for a test to write later: an empty financing corpus is
+     the data form of "the product cites nothing on the loan path", and it must
+     stay empty until a human opens the SAMA Rulebook and checks a row. If this
+     ever passes with rows in it, somebody filled the register in from search
+     results — which is exactly how the employment register would have been
+     wrong, and the reason it is not. */
+  const loanReg = readFileSync(path.join(ROOT, "docs/legal-sources-loans.md"), "utf8");
+  const loanCommitted = JSON.parse(
+    readFileSync(path.join(ROOT, "supabase/functions/_shared/corpus-loans.json"), "utf8"));
+  const loanFresh = buildCorpus(loanReg, { from: "docs/legal-sources-loans.md", allowEmpty: true });
+  ok(JSON.stringify(loanFresh.rows) === JSON.stringify(loanCommitted.rows),
+     "the committed loan corpus matches what its register generates today");
+  ok(loanCommitted.rows.length === 0 && loanCommitted.verified === 0,
+     `no financing claim is verified yet, so the loan corpus is empty (${loanCommitted.rows.length} rows)`);
+  ok(loanCommitted.excluded > 0,
+     `while the register does hold rows waiting to be checked (${loanCommitted.excluded} excluded)`);
+  /* The two corpora must not share an article number space: "Article 11" of a
+     financing regulation verifying "Article 11" against an employment contract
+     is the cross-domain leak this file's whole discipline exists to stop. */
+  const labourArticles = new Set(committed.rows.map(r => r.article).filter(Boolean));
+  ok(loanCommitted.rows.every(r => !labourArticles.has(r.article)),
+     "and no loan article number collides with a labour one");
+
   /* Generic on purpose. This is not "is 53 excluded" — it is "is anything the
      register did not tick excluded", which stays true for the next disputed
      row without anyone remembering to add a case here. */

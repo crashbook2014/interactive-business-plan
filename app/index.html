@@ -2332,6 +2332,15 @@ const T = {
   cr_k_hours:{ar:"ساعات العمل الأسبوعية",en:"Weekly hours"},
   cr_days:{ar:"{n} يوم",en:"{n} days"},
   cr_hours:{ar:"{n} ساعة",en:"{n} hours"},
+  cr_months:{ar:"{n} شهر",en:"{n} months"},
+  /* The loan key-terms table. */
+  cr_k_fin:{ar:"نوع التمويل",en:"Financing type"},
+  cr_k_principal:{ar:"مبلغ التمويل",en:"Amount financed"},
+  cr_k_rate:{ar:"نسبة الربح",en:"Profit rate"},
+  cr_k_term:{ar:"مدة التمويل",en:"Term"},
+  cr_k_inst:{ar:"القسط الشهري",en:"Monthly installment"},
+  cr_k_total:{ar:"إجمالي المبلغ المستحق",en:"Total amount payable"},
+  cr_k_early:{ar:"السداد المبكر",en:"Early settlement"},
   cr_type:{ar:"نوع العقد",en:"Contract type"},
   cr_sum:{ar:"الخلاصة",en:"In short"},
   /* Which reading this is. A resident and a Saudi get different findings on
@@ -4261,7 +4270,60 @@ const RULES = [
         a:{ar:"تأكد أن المدة مكتوبة بوضوح، وأن أي بند إنهاء مبكر متبادل بين الطرفين.",
        en:"Make sure the term is written clearly, and that any early-termination clause cuts both ways."},
     r:{ar:"لو أُنهي عقدك مبكرًا بلا سبب مشروع، تستحق أجر المدة الباقية — وبحد أدنى شهرين.",
-       en:"If your contract was ended early without valid reason, you're owed the wages for the remaining term — with a floor of two months."} }
+       en:"If your contract was ended early without valid reason, you're owed the wages for the remaining term — with a floor of two months."} },
+  /* LOAN RULES CARRY NO `src`, ON PURPOSE. Unlike the employment register,
+     nobody has yet human-verified a SAMA (Saudi Central Bank) citation for
+     any of this — see docs/growth-strategy.md-adjacent research notes. Every
+     rule below flags a PATTERN worth understanding, phrased as "check" and
+     "make sure," never as "the law requires" — exactly the same voice already
+     used for the uncited penalty-clause and auto-renewal rules above. A real
+     SAMA citation gets added to a rule's `src` only after a human confirms
+     the exact regulation text against the primary source, the same
+     discipline the employment register already enforces. */
+  { re:/(?:نسبة|معدل)\s*(?:ال)?ربح|(?:ال)?نسبة\s*(?:السنوية\s*)?(?:ال)?فعلية|profit\s*rate|interest\s*rate|\bapr\b|annual\s*percentage\s*rate/i, s:"red",
+    /* Fires on the ABSENCE of a stated rate, not its presence — see `unless`.
+       If the contract names a rate anywhere, this is not the flag; if it
+       never does, the reader has agreed to a cost of financing they cannot
+       compute from the document alone. */
+    unless:/%|٪|نسبة\s*(?:ال)?ربح\s*(?:هي|تبلغ|قدرها)|the\s*rate\s*is|profit\s*rate\s*of/i,
+    dom:["loan"], t:{ar:"لا يوجد رقم واضح لنسبة الربح",en:"No stated profit rate"},
+    p:{ar:"العقد يذكر «نسبة الربح» أو ما شابه بدون رقم محدد بجانبها. بدون رقم، ما تقدر تحسب كم راح يكلفك التمويل فعليًا ولا تقارنه بعرض آخر.",
+       en:"The contract mentions a profit/interest rate without a specific number next to it. Without a number, you can't calculate what the financing actually costs you or compare it to another offer."},
+    ask:{ar:"أرجو ذكر نسبة الربح السنوية الفعلية بالكامل، ككتابة رقمية واضحة.",
+            en:"I would ask that the actual annual profit rate be stated in full, as a clear number."},
+        a:{ar:"اطلب كتابة نسبة الربح كرقم واضح قبل التوقيع.",en:"Ask for the profit rate written as a clear number before signing."},
+    r:{ar:"بدون الرقم، اطلب من الجهة الممولة كشف تكلفة التمويل الكاملة كتابةً قبل التوقيع.",
+       en:"Without the number, ask the financing provider for the full cost of financing in writing before you sign."} },
+  { re:/(?:غرامة|رسوم|مصاريف)\s*(?:ال)?سداد\s*(?:ال)?مبكر|early\s*(?:settlement|repayment)\s*(?:fee|penalty|charge)|prepayment\s*penalty/i, s:"amber",
+    dom:["loan"], t:{ar:"رسوم السداد المبكر",en:"Early-settlement fee"},
+    p:{ar:"العقد يفرض رسومًا إذا سددت التمويل قبل موعده. تأكد من الرقم أو طريقة حسابه — ومن وجود حد أعلى له.",
+       en:"The contract charges a fee if you pay off the financing early. Check the exact figure or how it's calculated — and whether it has a cap."},
+    ask:{ar:"أرجو توضيح كيف تُحسب رسوم السداد المبكر، ووضع حد أعلى لها كتابةً.",
+            en:"I would ask exactly how the early-settlement fee is calculated, and for a written cap on it."},
+        a:{ar:"اسأل عن طريقة حساب رسوم السداد المبكر وحدها الأعلى قبل التوقيع.",
+       en:"Ask how the early-settlement fee is calculated and what its cap is before signing."},
+    r:{ar:"إذا قررت السداد الكامل لاحقًا، اطلب من الجهة الممولة كشف تسوية مكتوب يبيّن المبلغ المتبقي والرسوم قبل الدفع — لا تعتمد على تقدير شفهي.",
+       en:"If you decide to pay off the loan in full later, ask the financing provider for a written settlement statement showing the remaining balance and fees before you pay — don't rely on a verbal estimate."} },
+  { re:/(?:يستحق|يحق للجهة الممولة).{0,30}(?:كامل|جميع)\s*(?:ال)?مبلغ|(?:ال)?إخلال\s*(?:ال)?واحد|تعثر.{0,20}قسط\s*واحد|acceleration|entire\s*(?:remaining\s*)?balance\s*(?:becomes?|shall\s*become)\s*due|cross[- ]?default/i, s:"red",
+    dom:["loan"], t:{ar:"استحقاق كامل المبلغ عند إخلال واحد",en:"Whole balance due on one missed payment"},
+    p:{ar:"العقد يعطي الجهة الممولة حق المطالبة بكامل المبلغ المتبقي فور تأخرك عن قسط واحد. هذا شائع في عقود التمويل، لكن اعرف بالضبط متى يُفعَّل ووش يترتب عليه.",
+       en:"The contract lets the financing provider demand the entire remaining balance the moment you miss a single installment. This is common in financing contracts, but know exactly when it's triggered and what follows."},
+    ask:{ar:"أرجو معرفة عدد الأقساط المتأخرة قبل تفعيل هذا الحق، ووجود مهلة تصحيح قبله.",
+            en:"I would ask how many missed installments are needed before this right is triggered, and whether there's a grace period to catch up first."},
+        a:{ar:"اسأل عن مهلة التصحيح المتاحة قبل استحقاق كامل المبلغ.",
+       en:"Ask what grace period exists before the whole balance becomes due."},
+    r:{ar:"لو تأخرت عن قسط، تواصل مع الجهة الممولة فورًا — كثير من الجهات تسمح بترتيب بديل قبل تفعيل هذا الحق.",
+       en:"If you fall behind on an installment, contact the financing provider immediately — many will arrange an alternative before triggering this right."} },
+  { re:/(?:حوالة|تحويل)\s*(?:ال)?راتب|salary\s*assignment|assignment\s*of\s*wages|(?:يتنازل|يفوض).{0,20}(?:صاحب\s*العمل|جهة\s*العمل)/i, s:"amber",
+    dom:["loan"], t:{ar:"حوالة الراتب",en:"Salary assignment"},
+    p:{ar:"العقد يحوّل جزءًا من راتبك مباشرة لصاحب العمل إلى الجهة الممولة. هذا شائع في التمويل الاستهلاكي، لكن اعرف كم النسبة المحوّلة ووش يصير لو غيّرت جهة عملك.",
+       en:"The contract routes part of your salary directly from your employer to the financing provider. This is common in consumer financing, but know the exact percentage and what happens if you change employers."},
+    ask:{ar:"أرجو معرفة النسبة المحوّلة من الراتب بالضبط، وإجراء تحديث الحوالة عند تغيير جهة العمل.",
+            en:"I would ask exactly what percentage of salary is assigned, and what the process is for updating the assignment if I change employers."},
+        a:{ar:"اسأل عن نسبة حوالة الراتب وإجراء تحديثها عند تغيير الوظيفة.",
+       en:"Ask what percentage of your salary is assigned, and how it's updated if you change jobs."},
+    r:{ar:"إذا غيّرت جهة عملك، أبلغ الجهة الممولة فورًا لتحديث حوالة الراتب — التأخير قد يُقرأ كتعثر.",
+       en:"If you change employers, tell the financing provider right away to update the salary assignment — a delay here can read as a missed payment."} }
 ];
 
 /* A record with no `nat` applies to everyone; one that names a track applies
@@ -4431,6 +4493,17 @@ const DOMAIN_SIGNALS = {
     /(?:ال)?مورد\b|(?:ال)?مقدم\s*(?:ال)?خدمة|(?:ال)?عميل\b|\bthe\s*client\b|\bcontractor\b|\bsupplier\b/i,
     /(?:ال)?أتعاب|(?:ال)?دفعة\s*(?:ال)?مقدمة|\bfees?\s*(?:of|is|are|payable)|\bretainer\b|\bmilestone\s*payment/i,
     /(?:ال)?مخرجات|نطاق\s*(?:ال)?عمل|(?:ال)?تسليمات|deliverables?|scope\s*of\s*work|statement\s*of\s*work/i,
+  ],
+  /* Bank/consumer-finance loans — SAMA calls the parties "creditor"/"borrower"
+     ("الجهة الممولة"/"المقترض"), not "lender"/"borrower" the way an ordinary
+     English loan note might, so both are matched. Distinct from `rent`'s
+     "instalment"-adjacent vocabulary by requiring financing-specific nouns
+     (principal, profit rate, financing) rather than "rent"/"lease" terms. */
+  loan: [
+    /عقد\s*(?:ال)?تمويل|اتفاقي(?:ة|ه)\s*(?:ال)?تمويل|(?:ال)?تمويل\s*(?:ال)?استهلاكي|loan\s*agreement|financing\s*(?:contract|agreement)|credit\s*agreement/i,
+    /(?:ال)?جهة\s*(?:ال)?ممولة|(?:ال)?مُقرض|(?:ال)?مقرض\b|(?:ال)?مقترض\b|(?:ال)?مستفيد\b|\bcreditor\b|\blender\b|\bborrower\b/i,
+    /(?:ال)?مبلغ\s*(?:ال)?تمويل|(?:أصل\s*)?(?:ال)?مبلغ\s*(?:الأساسي|المقترض)|نسبة\s*(?:ال)?الربح|معدل\s*(?:ال)?ربح|principal\s*amount|profit\s*rate|interest\s*rate|\bapr\b/i,
+    /(?:ال)?سداد\s*(?:ال)?مبكر|(?:ال)?قسط\s*(?:ال)?شهري|(?:ال)?ضامن|(?:ال)?رهن|installment\s*plan|monthly\s*installment|collateral|guarantor|early\s*settlement/i,
   ],
 };
 
@@ -4644,7 +4717,7 @@ function tidyQuote(sc){
  * "we could not read this". Listing the exceptions fails safe: a door added
  * later is employment until someone says otherwise, which is what the rules
  * already are. */
-const NON_EMPLOYMENT = ["rent", "gig"];
+const NON_EMPLOYMENT = ["rent", "gig", "loan"];
 
 /* THE DOORS THAT ARE EMPLOYMENT, NAMED — because "not one of the two
  * exceptions" was not the same question as "employment", and the gap between
@@ -9414,6 +9487,20 @@ const CR_KEYS = [
   ["working_hours_per_week", "cr_k_hours", "hours"],
 ];
 
+/* The loan table. The early-settlement row is last and is a sentence rather
+   than a figure, because what the contract says about paying the thing off is
+   the question borrowers actually arrive with — and the answer is often that
+   the contract says nothing, which no number could carry. */
+const CR_KEYS_LOAN = [
+  ["financing_type", "cr_k_fin", "bilingual"],
+  ["principal_amount", "cr_k_principal", "money"],
+  ["profit_rate_percent", "cr_k_rate", "percent"],
+  ["term_months", "cr_k_term", "months"],
+  ["monthly_installment", "cr_k_inst", "money"],
+  ["total_cost", "cr_k_total", "money"],
+  ["early_settlement", "cr_k_early", "bilingual"],
+];
+
 /* Every value the model produced, rendered. Numbers go through fmtNum so an
    Arabic reader sees Arabic-Indic digits like everywhere else in the app. */
 function crTermValue(kt, key, how){
@@ -9424,7 +9511,11 @@ function crTermValue(kt, key, how){
   if (how === "text") return kt[key] || null;
   const n = kt[key];
   if (typeof n !== "number" || !isFinite(n)) return null;
-  if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || "SAR");
+  /* An employment review names the currency `salary_currency`, a loan review
+     names it `currency`. Both are read here rather than in two renderers. */
+  if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || kt.currency || "SAR");
+  if (how === "percent") return fmtNum(n) + "%";
+  if (how === "months") return t("cr_months").replace("{n}", fmtNum(n));
   return t(how === "days" ? "cr_days" : "cr_hours").replace("{n}", fmtNum(n));
 }
 
@@ -9481,8 +9572,15 @@ async function crRun(){
          get different findings on the same contract — passport retention,
          Iqama fees, sponsorship transfer and return airfare only apply to
          one of them, and raising them for the other is noise. */
+      /* WHICH KIND OF CONTRACT, decided here because this is where the text
+         is. docDomain() has already read it — the same classification the
+         RULES engine scopes itself by — so the server is told rather than
+         asked to guess from the document it is about to analyse. Only "loan"
+         is sent: every other domain uses the employment prompt, which is what
+         the server falls back to for anything it does not recognise. */
       body: JSON.stringify({ kind: "contract_review", text: crT.text,
-                             nat: nat === "nonsa" ? "nonsa" : "sa" })
+                             nat: nat === "nonsa" ? "nonsa" : "sa",
+                             domain: docDomain(text) === "loan" ? "loan" : "job" })
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data || typeof data !== "object" || !Array.isArray(data.red_flags)){
@@ -9627,7 +9725,11 @@ function renderCrPanel(hostId){
   const rows = [];
   const ctype = lang === "ar" ? meta.contract_type_ar : meta.contract_type_en;
   if (ctype) rows.push([t("cr_type"), ctype]);
-  for (const [key, label, how] of CR_KEYS){
+  /* Which table this is, from the server's own answer rather than from which
+     keys happen to be non-null — a loan whose every figure was legitimately
+     dropped would otherwise render as an employment contract with nothing in
+     it, which is a different and much more confusing claim. */
+  for (const [key, label, how] of (crResult.domain === "loan" ? CR_KEYS_LOAN : CR_KEYS)){
     const v = crTermValue(kt, key, how);
     if (v) rows.push([t(label), v]);
   }

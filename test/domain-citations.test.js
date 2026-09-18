@@ -12,6 +12,15 @@
  * dispute. The register at docs/legal-sources.md is labour-only, so there is
  * no verified source behind any claim about a lease.
  *
+ * A THIRD NAMED EXCEPTION, loan/consumer-financing contracts, was added the
+ * same way rent and gig were: its own RULES entries (`dom:["loan"]`), no
+ * citation on any of them, because no SAMA (Saudi Central Bank) claim has
+ * been human-verified yet the way the labour and rental registers have been.
+ * The count in the paragraph above is the count at the time the bug was
+ * found, not a live invariant — new rules are added over time, employment
+ * and otherwise; what must never change is that only a verified register
+ * backs a citation.
+ *
  * THE SECOND DEFECT, WHICH THE FIX ITSELF INTRODUCED AND THIS SUITE CAUGHT:
  * `journey` holds the situation the reader picked — contract, resign, term,
  * owed, unsure, rent, gig — so "is this employment?" cannot be asked as
@@ -32,6 +41,15 @@ const LEASE = [
   "يحق للمؤجر إنهاء العقد في أي وقت دون إبداء الأسباب.",
   "في حال تأخر المستأجر عن السداد يلتزم بغرامة قدرها عشرة آلاف ريال عن كل شهر تأخير.",
   "يتحمل المستأجر تكاليف الصيانة الدورية للوحدة.",
+].join("\n");
+
+const LOAN = [
+  "عقد تمويل استهلاكي بين الجهة الممولة والمقترض.",
+  "مبلغ التمويل مائة ألف ريال يسدد على ستين قسطًا شهريًا.",
+  "نسبة الربح السنوية 6.5% محسوبة على الرصيد المتناقص.",
+  "يحق للجهة الممولة المطالبة بكامل المبلغ المتبقي فور تأخر المقترض عن قسط واحد.",
+  "في حال السداد المبكر يلتزم المقترض بغرامة سداد مبكر قدرها ثلاثة أشهر من تكلفة التمويل.",
+  "يخضع العقد لحوالة الراتب، حيث يحوّل صاحب العمل نسبة من راتب المقترض مباشرة إلى الجهة الممولة شهريًا.",
 ].join("\n");
 
 const JOB = [
@@ -77,6 +95,21 @@ const JOB = [
   const gig = await read(LEASE, "gig");
   ok(gig.nulled || gig.srcs.length === 0,
      "the freelance door carries no labour citation either");
+
+  /* THE THIRD NAMED EXCEPTION. No SAMA (Saudi Central Bank) citation has been
+     human-verified for any loan claim yet — see docs/legal-sources.md, which
+     is labour-only, and the rental register, which is the only other verified
+     corpus and is unrelated to financing. So a loan contract must carry ZERO
+     citations today, the same standing as an unrouted document, until a real
+     SAMA-verified register exists for it. */
+  console.log("\n— a loan contract carries no labour citation either");
+  const loan = await read(LOAN, "loan");
+  ok(!loan.nulled, "the loan contract is still read rather than refused outright");
+  ok(loan.srcs.length === 0,
+     `and carries no article number at all, SAMA or otherwise (${loan.srcs.join(" / ") || "none"})`);
+  ok(!/المادة 80/.test(loan.srcs.join(" ")),
+     "in particular not Article 80, which is about dismissing an employee");
+  ok(loan.n >= 3, `while still flagging real loan-specific clauses (${loan.n})`);
 
   /* ---- THE HALF THAT MUST NOT MOVE. Every employment door, by name. */
   console.log("\n— and every employment door still gets the full register");
@@ -144,9 +177,10 @@ const JOB = [
    * door that contradicts it.
    */
   console.log("\n— the same document reads the same way through every door");
-  const DOORS = ["contract", "term", "resign", "owed", "unsure", "rent", "gig", null];
+  const DOORS = ["contract", "term", "resign", "owed", "unsure", "rent", "gig", "loan", null];
   for (const [name, text, cites] of [["an employment contract", JOB, true],
-                                     ["a lease", LEASE, false]]) {
+                                     ["a lease", LEASE, false],
+                                     ["a loan contract", LOAN, false]]) {
     const seen = [];
     for (const door of DOORS) seen.push(await read(text, door));
     const counts = [...new Set(seen.map((x) => x.n))];
@@ -173,12 +207,15 @@ const JOB = [
       + "Monthly salary: SAR 10,000. Probation period: 90 days.\nAnnual leave: 21 days."),
     leaseEn: docDomain("RESIDENTIAL LEASE AGREEMENT\nThe Landlord leases the premises to the Tenant.\n"
       + "Annual rent: SAR 65,000. The Tenant maintains the property."),
+    loanEn: docDomain("LOAN AGREEMENT\nThe Lender extends financing to the Borrower.\n"
+      + "Principal amount: SAR 100,000. Profit rate: 6.5% per annum. Monthly installment plan over 60 months."),
     prose: docDomain("القطط حيوانات أليفة تحب اللعب والنوم في الشمس طوال اليوم."),
   }));
   ok(kinds.plain === "job",
      `a plainly written contract with none of the legal register is still employment (${kinds.plain})`);
   ok(kinds.english === "job", `and so is an English one (${kinds.english})`);
   ok(kinds.leaseEn === "rent", `an English lease is a lease (${kinds.leaseEn})`);
+  ok(kinds.loanEn === "loan", `an English loan agreement is a loan (${kinds.loanEn})`);
   ok(kinds.prose === null,
      `and prose about cats is nothing at all, rather than the first guess (${kinds.prose})`);
 
@@ -660,5 +697,5 @@ const JOB = [
     FAIL.forEach((f) => console.log("  - " + f));
     process.exit(1);
   }
-  console.log("\nthe register reaches employment contracts and stops at the door of every other kind");
+  console.log("\nthe register reaches employment contracts and stops at the door of every other kind — rent, gig, and loan financing alike");
 })();

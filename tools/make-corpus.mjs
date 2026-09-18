@@ -40,6 +40,23 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const REGISTER = join(root, "docs", "legal-sources.md");
 const OUT = join(root, "supabase", "functions", "_shared", "corpus.json");
 
+/* A SECOND REGISTER, AND WHY IT IS A SECOND FILE RATHER THAN MORE ROWS.
+   Loan and consumer-financing claims answer to SAMA, not to the Labour Law.
+   Putting them in the employment register would put them in the employment
+   corpus, and `verifiedArticles()` builds one flat set of article numbers from
+   whatever it is given — so "Article 11" of a financing regulation would
+   silently verify "Article 11" cited against an employment contract. The
+   rental table already lives apart for the same reason, one file down.
+   Its corpus is EMPTY today and that is the correct state: not one row in
+   docs/legal-sources-loans.md has been checked against a primary source. */
+const REGISTERS = [
+  { name: "employment", md: REGISTER, out: OUT, allowEmpty: false },
+  { name: "loans",
+    md: join(root, "docs", "legal-sources-loans.md"),
+    out: join(root, "supabase", "functions", "_shared", "corpus-loans.json"),
+    allowEmpty: true },
+];
+
 /* Markdown that is presentation, not content. The model reads the claim as a
    sentence; asterisks and link syntax are noise that shows up in quotes. */
 export function plain(s){
@@ -80,7 +97,7 @@ function idFor(article, seen){
    the sources ("a URL in the corpus is a URL a completion can put in front of
    someone as a source it never opened"), while the public pages exist to show
    exactly those links. */
-export function verifiedRows(md){
+export function verifiedRows(md, { allowEmpty = false } = {}){
   const lines = md.split("\n");
   const start = lines.findIndex(l => /^##\s+Claim register/.test(l));
   if (start < 0) throw new Error("no '## Claim register' heading in the register");
@@ -111,21 +128,31 @@ export function verifiedRows(md){
     if (!claim_ar) throw new Error(`row "${id}" is verified but has no Arabic claim`);
     rows.push({ id, article, claim: plain(cells[0]), claim_ar, sourcesCell: cells[4] ?? "" });
   }
-  if (!rows.length) throw new Error("no verified rows found in the register");
+  /* An empty employment register is a broken build — that file has had rows
+     since the product had a product. An empty LOAN register is the honest
+     current state, so it is allowed rather than fatal: a register nobody has
+     verified yet compiles to a corpus with nothing in it, which is exactly
+     what "the product cites nothing on this path" looks like in data. */
+  if (!rows.length && !allowEmpty) throw new Error("no verified rows found in the register");
   return { rows, excluded };
 }
 
-export function buildCorpus(md){
-  const { rows, excluded } = verifiedRows(md);
+export function buildCorpus(md, { from = "docs/legal-sources.md", allowEmpty = false } = {}){
+  const { rows, excluded } = verifiedRows(md, { allowEmpty });
   /* The sources column is dropped here, deliberately — see verifiedRows. */
   const clean = rows.map(({ id, article, claim, claim_ar }) => ({ id, article, claim, claim_ar }));
-  return { generated_from: "docs/legal-sources.md", verified: clean.length,
+  return { generated_from: from, verified: clean.length,
            excluded, rows: clean };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)){
-  const corpus = buildCorpus(readFileSync(REGISTER, "utf8"));
-  writeFileSync(OUT, JSON.stringify(corpus, null, 2) + "\n");
-  console.log(`corpus: ${corpus.verified} verified rows, ${corpus.excluded} excluded`);
-  corpus.rows.forEach(r => console.log(`  ${r.id.padEnd(22)} ${r.claim.slice(0, 64)}…`));
+  for (const reg of REGISTERS){
+    const corpus = buildCorpus(readFileSync(reg.md, "utf8"), {
+      from: reg.md.slice(root.length + 1).replace(/\\/g, "/"),
+      allowEmpty: reg.allowEmpty,
+    });
+    writeFileSync(reg.out, JSON.stringify(corpus, null, 2) + "\n");
+    console.log(`${reg.name}: ${corpus.verified} verified rows, ${corpus.excluded} excluded`);
+    corpus.rows.forEach(r => console.log(`  ${r.id.padEnd(22)} ${r.claim.slice(0, 64)}…`));
+  }
 }
