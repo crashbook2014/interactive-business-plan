@@ -1,0 +1,99 @@
+# Deploys the `analyze` edge function with the Supabase CLI.
+#
+# WHY THIS EXISTS. Every deploy since version 6 has needed a human at a
+# terminal, and docs/deploy-analyze.md records the cost of that: the contract
+# answer tier, `obligations`, `topic` and the whole loan review path all sit in
+# main, inert, because nobody has run one command. The agent sandbox cannot run
+# it either — api.supabase.com is denied by the egress policy — so the work
+# kept stalling at the same step.
+#
+# A runner has neither problem. It has the network and it has the real CLI,
+# which matters more than it sounds: `supabase functions deploy` resolves the
+# relative imports in analyze/index.ts itself, so `_shared` travels with the
+# entrypoint byte for byte. The other routes — MCP, the dashboard — take the
+# file list by hand, and that list is the whole contract. It has already gone
+# wrong once on this project.
+#
+# MANUAL ONLY, ON PURPOSE. This is not wired to `push: main`. Pages already
+# publishes the app on every merge; making the function follow would mean a
+# doc-only commit redeploying the thing that costs money per call and holds the
+# safety graders. Deploying stays a decision someone makes.
+name: deploy analyze
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: "Supabase project ref"
+        required: false
+        default: "nkgjgpageqohalerccfu"
+
+# Two deploys racing would leave nobody sure which version is live.
+concurrency:
+  group: deploy-analyze
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # THE GATE. A bad bundle does not fail at deploy time — the dashboard
+      # reports success and the function dies on the first real request,
+      # because the three `_shared` imports resolve at module load. This reads
+      # the imports out of the entrypoint and checks each file exists, parses,
+      # and really exports the names the entrypoint binds.
+      - name: Check the deploy bundle
+        run: node test/deploy-bundle.test.js
+
+      # The entrypoint is TypeScript and nothing else type-checks it before it
+      # is live.
+      - name: Type-check the Claude proxy
+        run: npm run typecheck
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # verify_jwt is NOT passed here. supabase/config.toml already pins
+      # [functions.analyze] verify_jwt = true, and the runbook is explicit that
+      # it stays as the function has it — a content deploy must not quietly
+      # change who may call this.
+      - name: Deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "SUPABASE_ACCESS_TOKEN is not set as a repository secret."
+            echo "Create one at https://supabase.com/dashboard/account/tokens"
+            echo "then add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          supabase functions deploy analyze \
+            --project-ref "${{ inputs.project_ref }}"
+
+      # The deploy command returning 0 means the upload was accepted. It does
+      # not mean the function booted — see the gate above for why those are
+      # different. Print the version so the run itself is the record of what
+      # went out, and say plainly what still has to be checked by hand.
+      - name: Report the deployed version
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions list --project-ref "${{ inputs.project_ref }}" || true
+          echo ""
+          echo "Uploaded. Still unproven until a real request is served:"
+          echo "  node test/verify-claude-live.mjs <analyze url>"

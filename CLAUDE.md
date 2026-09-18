@@ -79,7 +79,11 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
 - Migrations `0007–0009` unapplied in prod; schema-advisor fixes need `0010`.
 - `ai_analysis` compiles OFF and only a well-formed flag raises it, so a failed
   flag fetch ships the AI dark rather than open. Set the row `true` in prod.
-- `supabase/functions/analyze/index.ts` is deployed by hand — run `npm run typecheck` before touching it.
+- `supabase/functions/analyze/index.ts` deploys via the **deploy analyze**
+  workflow (needs the `SUPABASE_ACCESS_TOKEN` repo secret); `api.supabase.com` is
+  egress-blocked from the sandbox, so no agent can deploy it directly. Production
+  runs **version 6** until someone dispatches that workflow. Run
+  `npm run typecheck` and `node test/deploy-bundle.test.js` before touching it.
 
 ## Active bugs (Sep 2026) — see docs/status-2026-09-14.md
 All four Claude-fixable items from the 14 Sep audit are now closed:
