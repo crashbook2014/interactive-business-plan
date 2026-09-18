@@ -171,6 +171,45 @@ const CASE = {
     check(hit.length === 0, "no promise language", hit.join(", "));
   }
 
+  /* ---- 5b. the loan path, the half of it that is actually deployed.
+     The client half ships with the page: docDomain() classifies, the loan
+     RULES fire, and no labour citation may appear. The server half —
+     CR_SYSTEM_LOAN, CR_SCHEMA_LOAN and the domain-aware grading — is NOT
+     live: analyze runs version 6 and every deploy since has needed a human
+     (docs/deploy-analyze.md). So nothing here calls analyze. That is not a
+     gap in the check, it is the check matching what is deployed: a watchdog
+     that asserted the server half would fail every six hours for a reason
+     nobody could fix from here, and a check that cries wolf is how the last
+     stale warning in docs/operations.md got everyone to stop looking. */
+  console.log("\n5b. The loan path (client half — analyze is still v6)");
+  const loan = await page.evaluate(() => {
+    const text = [
+      "عقد تمويل استهلاكي بين الجهة الممولة والمقترض.",
+      "مبلغ التمويل مائة ألف ريال يسدد على ستين قسطًا شهريًا.",
+      "نسبة الربح السنوية 6.5% محسوبة على الرصيد المتناقص.",
+      "يحق للجهة الممولة المطالبة بكامل المبلغ المتبقي فور تأخر المقترض عن قسط واحد.",
+      "في حال السداد المبكر يلتزم المقترض بغرامة سداد مبكر قدرها ثلاثة أشهر من تكلفة التمويل.",
+      "يخضع العقد لحوالة الراتب، حيث يحوّل صاحب العمل نسبة من راتب المقترض مباشرة إلى الجهة الممولة شهريًا.",
+    ].join("\n");
+    nat = "sa";
+    const r = analyzePasted(text, "loan");
+    return {
+      domain: docDomain(text),
+      clauses: r ? r.clauses.length : 0,
+      srcs: r ? r.clauses.filter((c) => c.src).length : -1,
+      titles: r ? r.clauses.map((c) => (c.t && c.t.ar) || "").join(" | ") : "",
+    };
+  });
+  check(loan.domain === "loan",
+        `a financing contract is read as a loan (${loan.domain})`);
+  check(loan.clauses >= 3, `${loan.clauses} loan clauses found`);
+  /* THE ONE THAT MATTERS. No SAMA claim has been verified, so the live page
+     must put no article number on a loan contract at all. */
+  check(loan.srcs === 0,
+        `and carries no citation whatsoever (${loan.srcs})`);
+  check(!/نظام العمل|المادة/.test(loan.titles),
+        "no labour-law language on a financing contract", loan.titles);
+
   /* ---- 6. Arabic and RTL, which is half the audience */
   console.log("\n6. Arabic");
   const ar = await page.evaluate(() => {
