@@ -2332,6 +2332,15 @@ const T = {
   cr_k_hours:{ar:"ساعات العمل الأسبوعية",en:"Weekly hours"},
   cr_days:{ar:"{n} يوم",en:"{n} days"},
   cr_hours:{ar:"{n} ساعة",en:"{n} hours"},
+  cr_months:{ar:"{n} شهر",en:"{n} months"},
+  /* The loan key-terms table. */
+  cr_k_fin:{ar:"نوع التمويل",en:"Financing type"},
+  cr_k_principal:{ar:"مبلغ التمويل",en:"Amount financed"},
+  cr_k_rate:{ar:"نسبة الربح",en:"Profit rate"},
+  cr_k_term:{ar:"مدة التمويل",en:"Term"},
+  cr_k_inst:{ar:"القسط الشهري",en:"Monthly installment"},
+  cr_k_total:{ar:"إجمالي المبلغ المستحق",en:"Total amount payable"},
+  cr_k_early:{ar:"السداد المبكر",en:"Early settlement"},
   cr_type:{ar:"نوع العقد",en:"Contract type"},
   cr_sum:{ar:"الخلاصة",en:"In short"},
   /* Which reading this is. A resident and a Saudi get different findings on
@@ -9452,6 +9461,20 @@ const CR_KEYS = [
   ["working_hours_per_week", "cr_k_hours", "hours"],
 ];
 
+/* The loan table. The early-settlement row is last and is a sentence rather
+   than a figure, because what the contract says about paying the thing off is
+   the question borrowers actually arrive with — and the answer is often that
+   the contract says nothing, which no number could carry. */
+const CR_KEYS_LOAN = [
+  ["financing_type", "cr_k_fin", "bilingual"],
+  ["principal_amount", "cr_k_principal", "money"],
+  ["profit_rate_percent", "cr_k_rate", "percent"],
+  ["term_months", "cr_k_term", "months"],
+  ["monthly_installment", "cr_k_inst", "money"],
+  ["total_cost", "cr_k_total", "money"],
+  ["early_settlement", "cr_k_early", "bilingual"],
+];
+
 /* Every value the model produced, rendered. Numbers go through fmtNum so an
    Arabic reader sees Arabic-Indic digits like everywhere else in the app. */
 function crTermValue(kt, key, how){
@@ -9462,7 +9485,11 @@ function crTermValue(kt, key, how){
   if (how === "text") return kt[key] || null;
   const n = kt[key];
   if (typeof n !== "number" || !isFinite(n)) return null;
-  if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || "SAR");
+  /* An employment review names the currency `salary_currency`, a loan review
+     names it `currency`. Both are read here rather than in two renderers. */
+  if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || kt.currency || "SAR");
+  if (how === "percent") return fmtNum(n) + "%";
+  if (how === "months") return t("cr_months").replace("{n}", fmtNum(n));
   return t(how === "days" ? "cr_days" : "cr_hours").replace("{n}", fmtNum(n));
 }
 
@@ -9519,8 +9546,15 @@ async function crRun(){
          get different findings on the same contract — passport retention,
          Iqama fees, sponsorship transfer and return airfare only apply to
          one of them, and raising them for the other is noise. */
+      /* WHICH KIND OF CONTRACT, decided here because this is where the text
+         is. docDomain() has already read it — the same classification the
+         RULES engine scopes itself by — so the server is told rather than
+         asked to guess from the document it is about to analyse. Only "loan"
+         is sent: every other domain uses the employment prompt, which is what
+         the server falls back to for anything it does not recognise. */
       body: JSON.stringify({ kind: "contract_review", text: crT.text,
-                             nat: nat === "nonsa" ? "nonsa" : "sa" })
+                             nat: nat === "nonsa" ? "nonsa" : "sa",
+                             domain: docDomain(text) === "loan" ? "loan" : "job" })
     });
     const data = await res.json().catch(() => null);
     if (!res.ok || !data || typeof data !== "object" || !Array.isArray(data.red_flags)){
@@ -9665,7 +9699,11 @@ function renderCrPanel(hostId){
   const rows = [];
   const ctype = lang === "ar" ? meta.contract_type_ar : meta.contract_type_en;
   if (ctype) rows.push([t("cr_type"), ctype]);
-  for (const [key, label, how] of CR_KEYS){
+  /* Which table this is, from the server's own answer rather than from which
+     keys happen to be non-null — a loan whose every figure was legitimately
+     dropped would otherwise render as an employment contract with nothing in
+     it, which is a different and much more confusing claim. */
+  for (const [key, label, how] of (crResult.domain === "loan" ? CR_KEYS_LOAN : CR_KEYS)){
     const v = crTermValue(kt, key, how);
     if (v) rows.push([t(label), v]);
   }

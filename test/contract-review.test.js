@@ -447,6 +447,54 @@ const base = (over) => Object.assign({
   ok(run({ red_flags: [finding()] }).risk_band === null,
      "a pasted contract with the same findings gets no band at all — sourceKnown defaults true");
 
+  /* ---- 4c. the loan domain: a different table, and no citation ever */
+  console.log("\n— a loan review returns loan terms, and cites nothing at all");
+  const LOAN_DOC = "عقد تمويل استهلاكي. مبلغ التمويل 100000 ريال. "
+    + "نسبة الربح 6.5% سنوياً. المدة 60 شهراً. القسط الشهري 2000 ريال.";
+  const loanRun = (o, opts) => gradeContractReview(
+    Object.assign(base({}), {
+      key_terms: {
+        financing_type_ar: "تمويل شخصي", financing_type_en: "Personal financing",
+        principal_amount: 100000, currency: "SAR",
+        profit_rate_percent: 6.5, term_months: 60,
+        monthly_installment: 2000, total_cost: null,
+        early_settlement_ar: "العقد لا يذكر السداد المبكر.",
+        early_settlement_en: "The contract does not mention early settlement.",
+      },
+    }, o),
+    Object.assign({ source: LOAN_DOC, rows: ROWS, domain: "loan" }, opts));
+
+  const loan = loanRun({});
+  ok(loan.domain === "loan",
+     `the response says which table it carries (${loan.domain})`);
+  ok(loan.key_terms.principal_amount === 100000 && loan.key_terms.term_months === 60,
+     "loan terms the document attests survive");
+  ok(!("salary_amount" in loan.key_terms),
+     "and the employment terms are not in the shape at all, rather than present and null");
+  ok(loan.key_terms.profit_rate_percent === 6.5,
+     "a rate written in the contract survives with its decimal intact");
+  ok(loanRun({ key_terms: Object.assign({}, loanRun({}).key_terms,
+       { profit_rate_percent: 16.5, principal_amount: 100000, currency: "SAR",
+         term_months: 60, monthly_installment: 2000, total_cost: null,
+         financing_type_ar: "تمويل", financing_type_en: "Financing",
+         early_settlement_ar: "لا شيء", early_settlement_en: "Nothing" }) })
+       .key_terms.profit_rate_percent === null,
+     "a rate the document never states is dropped — 16.5 against a contract that says 6.5");
+  /* THE ONE THAT MATTERS MOST HERE. No SAMA regulation has been verified, so a
+     loan finding must carry no reference whatever the model returned. */
+  const loanCited = loanRun({ red_flags: [finding({ law_reference: "المادة 74" })] });
+  ok(loanCited.red_flags.length === 1 && loanCited.red_flags[0].law_reference === null,
+     "a loan finding carries no citation even when the model supplied a real verified article");
+  ok(loanRun({ red_flags: [finding({ topic: "prepayment" })] }).red_flags[0].topic === "prepayment",
+     "a loan topic survives on the loan path");
+  ok(loanRun({ red_flags: [finding({ topic: "probation" })] }).red_flags[0].topic === "other",
+     "and an employment topic on a loan falls to other, rather than crossing lists");
+  ok(run({ red_flags: [finding({ topic: "prepayment" })] }).red_flags[0].topic === "other",
+     "the reverse too: a loan topic on an employment contract is not a topic");
+  ok(run({}).domain === "job" && gradeContractReview(base({}),
+       { source: DOC, rows: ROWS, domain: "<script>" }).domain === "job",
+     "an unrecognised domain falls back to employment rather than inventing a third table");
+
   /* ---- 5. nationality changes the reading */
   console.log("\n— a resident and a Saudi do not get the same reading");
   ok(run({}, { track: "Resident" }).track === "Resident" && run({}).track === "Saudi",

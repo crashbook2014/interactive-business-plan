@@ -326,7 +326,19 @@ const TOPICS = new Set([
   "payment", "delivery", "scope", "ip", "revisions",
   "notice", "noncompete", "overtime", "pay", "leave", "probation", "other",
 ]);
-const gradeTopic = (v) => (typeof v === "string" && TOPICS.has(v) ? v : "other");
+/* A loan's clauses are about things no employment topic names, and the two sets
+   are kept apart rather than merged: a merged set would accept "probation" on a
+   loan and "collateral" on an employment contract, and the topic's only job is
+   to put the right clause at the top of a screen. Validated per domain, so a
+   topic from the wrong list falls to "other" exactly as an unknown one does. */
+const TOPICS_LOAN = new Set([
+  "principal", "rate", "installment", "fees", "prepayment",
+  "default", "collateral", "guarantee", "insurance", "assignment",
+  "disclosure", "term", "other",
+]);
+const topicsFor = (domain) => (domain === "loan" ? TOPICS_LOAN : TOPICS);
+const gradeTopic = (v, domain) =>
+  (typeof v === "string" && topicsFor(domain).has(v) ? v : "other");
 
 /* The key terms table, now typed: the brief asks for numbers where the value is
    a number, because "180" and "180 days" and "one hundred eighty" are the same
@@ -349,12 +361,45 @@ const TERM_STR = [
   ["salary_currency", 12], ["contract_duration", 60],
 ];
 
-function gradeTerms(t, figures) {
+/* THE SAME DISCIPLINE, POINTED AT A LOAN. Three of these are riyal figures a
+   borrower would act on — what they are borrowing, what they pay each month,
+   and what it costs in total — so they are attested against the document
+   exactly as the salary is. The rate is not a riyal figure and `moneyAttested`
+   would never look at it, but a misread rate is the single most consequential
+   error possible here: 6.5 against a contract that says 16.5 is the difference
+   between a deal someone signs and one they walk away from. So it is attested
+   too, by its own literal form, against the same figure set. */
+const LOAN_NUM = [
+  ["principal_amount", 1e9],
+  ["monthly_installment", 1e9],
+  ["total_cost", 1e9],
+  ["profit_rate_percent", 100],
+  ["term_months", 600],
+];
+const LOAN_STR = [
+  ["financing_type_ar", 120], ["financing_type_en", 120],
+  ["currency", 12],
+  ["early_settlement_ar", 300], ["early_settlement_en", 300],
+];
+
+/* Attested like the salary: as a whole number, so 1,500 in the contract cannot
+   attest 11,500 in the output. */
+const ATTEST_WHOLE = new Set(["salary_amount", "principal_amount",
+                              "monthly_installment", "total_cost"]);
+
+const TERM_SPECS = {
+  job:  { num: TERM_NUM,  str: TERM_STR },
+  loan: { num: LOAN_NUM,  str: LOAN_STR },
+};
+const specFor = (domain) => TERM_SPECS[domain] || TERM_SPECS.job;
+
+function gradeTerms(t, figures, domain) {
   const out = {};
   const dropped = [];
   const src = t && typeof t === "object" ? t : {};
+  const { num, str } = specFor(domain);
 
-  for (const [k, max] of TERM_NUM) {
+  for (const [k, max] of num) {
     const n = Number(src[k]);
     /* Bounds are not decoration. 168 is the number of hours in a week: a
        "working_hours_per_week" of 400 is a misread, and rendering it would
@@ -363,11 +408,18 @@ function gradeTerms(t, figures) {
     /* A salary the document does not contain is invented, whatever confidence
        it arrived with. Checked as a whole number, so 1,500 in the contract
        cannot attest 11,500 in the output. */
-    if (k === "salary_amount" && !figures.has(String(Math.round(n)))) { out[k] = null; dropped.push(k); continue; }
+    if (ATTEST_WHOLE.has(k) && !figures.has(String(Math.round(n)))) { out[k] = null; dropped.push(k); continue; }
+    /* A rate carries its decimal, so it is checked in the form it was written
+       — "6.5" — and then as a whole number, because a contract writing "6" and
+       a model returning 6.0 are the same rate. */
+    if (k === "profit_rate_percent"
+        && !figures.has(String(n)) && !figures.has(String(Math.round(n)))) {
+      out[k] = null; dropped.push(k); continue;
+    }
     out[k] = n;
   }
 
-  for (const [k, max] of TERM_STR) {
+  for (const [k, max] of str) {
     const v = STR(src[k], max);
     if (!v) { out[k] = null; continue; }
     if (!moneyAttested(v, figures)) { out[k] = null; dropped.push(k); continue; }
@@ -376,8 +428,10 @@ function gradeTerms(t, figures) {
   return { terms: out, dropped };
 }
 
-const TERM_KEYS = TERM_NUM.concat(TERM_STR).map(([k]) => k);
-const NULL_TERMS = () => Object.fromEntries(TERM_KEYS.map((k) => [k, null]));
+const NULL_TERMS = (domain) => {
+  const { num, str } = specFor(domain);
+  return Object.fromEntries(num.concat(str).map(([k]) => [k, null]));
+};
 
 export const DISCLAIMER_AR =
   "هذا التحليل لأغراض معلوماتية فقط ولا يغني عن استشارة محامٍ مختص.";
@@ -391,9 +445,13 @@ export const DISCLAIMER_EN =
    See the note on CR_SCHEMA in analyze/index.ts. */
 /**
  * @param {any} parsed the model's completion, untrusted
- * @param {{ source?: string, rows?: { id: string, article: string | null, claim: string, claim_ar: string }[], track?: string, sourceKnown?: boolean }} [opts]
+ * @param {{ source?: string, rows?: { id: string, article: string | null, claim: string, claim_ar: string }[], track?: string, sourceKnown?: boolean, domain?: string }} [opts]
  */
-export function gradeContractReview(parsed, { source = "", rows = [], track = "Saudi", sourceKnown = true } = {}) {
+export function gradeContractReview(parsed, { source = "", rows = [], track = "Saudi", sourceKnown = true, domain = "job" } = {}) {
+  /* Anything that is not a domain with its own term spec reads as employment,
+     the same way an unrecognised track reads as Saudi: a malformed or hostile
+     field cannot invent a third shape for the key-terms table. */
+  const dom = TERM_SPECS[domain] ? domain : "job";
   const p = parsed && typeof parsed === "object" ? parsed : {};
   const meta = p.contract_meta && typeof p.contract_meta === "object" ? p.contract_meta : {};
   const ok = verifiedArticles(rows);
@@ -410,6 +468,12 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
 
   const shell = {
     track: track === "Resident" ? "Resident" : "Saudi",
+    /* Which key-terms shape this response carries. The client reads it to pick
+       the labels for the table — an employment review and a loan review return
+       different keys, and a renderer guessing from which keys happen to be
+       non-null would show an empty table for a contract whose terms were all
+       legitimately dropped. */
+    domain: dom,
     contract_meta: {
       contract_type_ar: hedge(STR(meta.contract_type_ar, 120)).text || null,
       contract_type_en: hedge(STR(meta.contract_type_en, 120)).text || null,
@@ -429,7 +493,7 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
      cats and coffee" acceptance test walks. */
   if (conf === "low") {
     return Object.assign(shell, {
-      key_terms: NULL_TERMS(),
+      key_terms: NULL_TERMS(dom),
       red_flags: [], negotiation_points: [], obligations: [],
       summary_ar: "", summary_en: "",
       dropped: { findings: 0, terms: [] },
@@ -438,7 +502,7 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
     });
   }
 
-  const { terms, dropped: droppedTerms } = gradeTerms(p.key_terms, figures);
+  const { terms, dropped: droppedTerms } = gradeTerms(p.key_terms, figures, dom);
 
   const gradeList = (list, fields, extra) =>
     (Array.isArray(list) ? list.slice(0, 8) : [])
@@ -446,17 +510,21 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
       .filter(Boolean);
 
   const reds = gradeList(p.red_flags, RED_FIELDS, (f) => ({
-    law_reference: gradeRef(f.law_reference, ok),
+    /* A loan review cites nothing at all — there is no verified financing
+       register to check a reference against, so the only honest value is
+       none. The prompt forbids naming a regulation; this is the half that
+       does not depend on the model having obeyed. */
+    law_reference: dom === "loan" ? null : gradeRef(f.law_reference, ok),
     severity: f.severity === "medium" ? "medium" : "high",
-    topic: gradeTopic(f.topic),
+    topic: gradeTopic(f.topic, dom),
   }));
   const negs = gradeList(p.negotiation_points, NEG_FIELDS,
-    (f) => ({ severity: "medium", topic: gradeTopic(f.topic) }));
+    (f) => ({ severity: "medium", topic: gradeTopic(f.topic, dom) }));
   /* Obligations go through the SAME grader as everything else: the hedge
      filter, the length caps and the money check all apply. "You must pay
      50,000 on exit" is exactly the kind of unattested figure this exists to
      catch, and an obligation is the last place it should get through. */
-  const obls = gradeList(p.obligations, OBL_FIELDS, (f) => ({ topic: gradeTopic(f.topic) }));
+  const obls = gradeList(p.obligations, OBL_FIELDS, (f) => ({ topic: gradeTopic(f.topic, dom) }));
 
   const kept = (l) => l.filter((x) => !x.dropped);
   const red_flags = kept(reds), negotiation_points = kept(negs), obligations = kept(obls);
