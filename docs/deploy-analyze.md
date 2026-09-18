@@ -3,12 +3,17 @@
 The app's whole AI surface is one function. This is how it goes out, why it
 has to go out as a set, and what is waiting behind it right now.
 
-**Nothing in this file has been run from the agent sandbox.** Supabase is
-denied by the environment's egress policy and the MCP deploy tool is
-approval-gated, so every deploy since version 6 has needed a human. What *is*
-verified here is the bundle itself: `test/deploy-bundle.test.js` reads the
-imports out of the entrypoint, checks each file exists, parses, and really
-exports the names the entrypoint binds. Run it before you deploy.
+**The agent sandbox still cannot deploy.** `api.supabase.com` is denied by the
+environment's egress policy, so no shell command here reaches Supabase. What
+changed is that it no longer has to: **`.github/workflows/deploy-analyze.yml`**
+runs the real CLI on a GitHub runner, which has both the network and the import
+resolution. Dispatch it and the deploy is byte-exact, repeatable, and recorded
+in the run log.
+
+What is verified locally either way is the bundle itself:
+`test/deploy-bundle.test.js` reads the imports out of the entrypoint, checks
+each file exists, parses, and really exports the names the entrypoint binds.
+The workflow runs it as a gate; run it yourself before deploying by hand.
 
 ---
 
@@ -60,9 +65,23 @@ valid JSON.
 
 ## Deploying
 
-Either route is fine; both send the same four files.
+All three routes send the same four files. Prefer the first.
 
-**Supabase CLI**, from the repository root:
+**GitHub Actions — the default route.** Actions → *deploy analyze* → *Run
+workflow*. It checks the bundle, type-checks the entrypoint, then runs the CLI.
+
+One-time setup: create a personal access token at
+<https://supabase.com/dashboard/account/tokens> and add it to the repository as
+**`SUPABASE_ACCESS_TOKEN`** under Settings → Secrets and variables → Actions.
+Without it the job stops on the first step with that instruction rather than
+failing somewhere confusing. The project ref is a workflow input, defaulted, and
+is not a secret — it is already public in the app's `ANALYZE_URL`.
+
+Note that `workflow_dispatch` only offers a workflow that exists on the default
+branch, so this file has to be on `main` before the button appears.
+
+**Supabase CLI**, from the repository root, if you would rather not wait on a
+runner:
 
 ```
 supabase functions deploy analyze --project-ref <your-project-ref>
