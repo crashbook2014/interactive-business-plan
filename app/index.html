@@ -2310,6 +2310,17 @@ const T = {
      number itself — not in a footnote. */
   cr_v:{ar:"مادة محققة",en:"Verified article"},
   cr_u:{ar:"استشهاد غير محقق — راجعه بنفسك",en:"Unverified citation — check it yourself"},
+  /* A scan has no text for Wodouh's own rules to score, so there is no
+     reproducible number here — see the note on risk_band in
+     supabase/functions/_shared/review-contract.mjs. This label deliberately
+     does not reuse src_score's wording, which asserts a reproducible
+     methodology that would not be true of this estimate. */
+  cr_risk_great:{ar:"تقدير الذكاء الاصطناعي: خطورة منخفضة",en:"AI estimate: low risk"},
+  cr_risk_good:{ar:"تقدير الذكاء الاصطناعي: خطورة متوسطة",en:"AI estimate: moderate risk"},
+  cr_risk_fair:{ar:"تقدير الذكاء الاصطناعي: خطورة مرتفعة",en:"AI estimate: elevated risk"},
+  cr_risk_poor:{ar:"تقدير الذكاء الاصطناعي: خطورة عالية",en:"AI estimate: high risk"},
+  cr_risk_note:{ar:"تقدير مبني على ما لاحظه الذكاء الاصطناعي في هذا المسح فقط — ليس تقييم وضوح القابل لإعادة الحساب من قواعده، لأنه ما كان فيه نص هنا يُحسب منه.",
+                en:"An estimate from what the AI noticed in this scan only — not the reproducible score Wodouh computes from its own rules, since there was no text here to compute one from."},
   cr_dropped:{ar:"أسقطنا {n} ملاحظة لأنها ذكرت رقمًا مو موجود في عقدك أو صاغت حكمًا قانونيًا قاطعًا.",
               en:"We dropped {n} finding(s) that stated a figure not in your contract or made a flat legal ruling."},
   /* Key-term labels. */
@@ -9556,6 +9567,24 @@ function renderCrPanel(hostId){
     const why = (lang === "ar" ? meta.extraction_notes_ar : meta.extraction_notes_en) || "";
     if (why){ const w = document.createElement("p"); w.className = "caveat"; w.textContent = why; sec.appendChild(w); }
     return;
+  }
+
+  /* Present only when gradeContractReview() had no text to check figures
+     against — i.e. risk_band is non-null only for a scan (see the function's
+     own comment). Gating on the field itself, not on hostId or a scan flag,
+     means this is structurally impossible to show next to the real device
+     score: that call path always passes sourceKnown:true, so risk_band is
+     always null there, full stop — not a convention to remember, a fact
+     about what the field can contain. */
+  if (crResult.risk_band){
+    const rb = document.createElement("p");
+    rb.className = "cr-cite unverified";
+    const tag = document.createElement("b");
+    tag.textContent = t("cr_risk_" + crResult.risk_band);
+    const note = document.createElement("span");
+    note.textContent = t("cr_risk_note");
+    rb.appendChild(tag); rb.appendChild(note);
+    sec.appendChild(rb);
   }
 
   const summary = (lang === "ar" ? crResult.summary_ar : crResult.summary_en) || "";

@@ -425,6 +425,27 @@ const base = (over) => Object.assign({
      "and no summary is shown — a confident sentence is the most misleading thing here");
   ok(!!nonsense.contract_meta.extraction_notes_en,
      "while the explanation of WHY survives, which is the useful half");
+  ok(gradeContractReview(base({
+    contract_meta: Object.assign(base({}).contract_meta, { extraction_confidence: "low" }),
+    red_flags: [finding()],
+  }), { source: DOC, rows: ROWS, sourceKnown: false }).risk_band === null,
+     "and a scan that could not even be read gets no risk band, whatever findings were attempted alongside it");
+
+  /* ---- 4b. the scan-only risk band */
+  console.log("\n— a scan gets a risk band the device score cannot compute; a pasted contract never does");
+  ok(run({}, { sourceKnown: false }).risk_band === "great",
+     "no findings at all reads as the best band");
+  ok(run({ red_flags: [finding()] }, { sourceKnown: false }).risk_band === "good",
+     "one high-severity flag (weight 2) reads as good, not great");
+  ok(run({ red_flags: [finding(), finding(), finding()] }, { sourceKnown: false }).risk_band === "poor",
+     "three high-severity flags (weight 6) reads as poor");
+  /* THE ASSERTION THAT LOCKS THE GATE AT THE SOURCE. Same findings as the
+     "good" case above, but sourceKnown defaults true here — the same call a
+     pasted contract makes. If this ever returns anything but null, the AI
+     estimate and the real device score could render on the same screen,
+     which is the one thing this feature must never do. */
+  ok(run({ red_flags: [finding()] }).risk_band === null,
+     "a pasted contract with the same findings gets no band at all — sourceKnown defaults true");
 
   /* ---- 5. nationality changes the reading */
   console.log("\n— a resident and a Saudi do not get the same reading");

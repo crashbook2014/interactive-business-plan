@@ -434,6 +434,7 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
       summary_ar: "", summary_en: "",
       dropped: { findings: 0, terms: [] },
       hedged: false,
+      risk_band: null,
     });
   }
 
@@ -460,6 +461,24 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
   const kept = (l) => l.filter((x) => !x.dropped);
   const red_flags = kept(reds), negotiation_points = kept(negs), obligations = kept(obls);
 
+  /* SCAN-ONLY RISK BAND. A photograph gives Wodouh's own rules no text to
+     compute a score from (see the note on CR_SCHEMA in analyze/index.ts). That
+     does not mean there is no signal: the model already returned red_flags and
+     negotiation_points for a different purpose, and their count and severity —
+     AFTER the money-stripping and hedge filtering above have already run — is
+     real data already in this response, not a second guess the model makes
+     about its own output. Weighted, not a raw count: a bilingual-conflict red
+     flag (forced to "high" by prompt rule 8) says more than three lawful-but-
+     suboptimal negotiation points. null when sourceKnown, on purpose — that
+     screen already carries the real, reproducible device score, and this must
+     never sit beside it. */
+  const riskBand = sourceKnown ? null : (() => {
+    const w = red_flags.filter((f) => f.severity === "high").length * 2
+            + red_flags.filter((f) => f.severity === "medium").length
+            + negotiation_points.length;
+    return w === 0 ? "great" : w <= 2 ? "good" : w <= 5 ? "fair" : "poor";
+  })();
+
   const sum = (k) => {
     const h = hedge(STR(p[k], 600));
     /* A summary carrying an invented figure or a flat legal ruling is
@@ -483,5 +502,6 @@ export function gradeContractReview(parsed, { source = "", rows = [], track = "S
       terms: droppedTerms,
     },
     hedged: [...red_flags, ...negotiation_points, ...obligations].some((f) => f.hedged),
+    risk_band: riskBand,
   });
 }

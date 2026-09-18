@@ -62,7 +62,7 @@ const PNG = () => new File([new Uint8Array([137, 80, 78, 71])], "contract.png", 
                        body: JSON.parse(r.request().postData() || "{}") };
       r.fulfill({ status: 200, contentType: "application/json",
         body: JSON.stringify({ red_flags: [{ title: "Non-compete", why: "broad" }],
-                               negotiation_points: [] }) });
+                               negotiation_points: [], risk_band: "fair" }) });
     });
     await p.goto(APP);
     await p.waitForFunction(() => typeof window.show === "function");
@@ -154,6 +154,12 @@ const PNG = () => new File([new Uint8Array([137, 80, 78, 71])], "contract.png", 
     /* A NUMBER HERE WOULD BE INVENTED. Wodouh's rules read no text. */
     ok(!/\/\s*100|من\s*100/.test(out.screenText),
        "and no score out of 100 comes back from a photograph");
+    /* The mocked response carries risk_band: "fair" (a WORD, not a number) —
+       these two assertions hold at once, which is the proof the badge below
+       is not a quiet reintroduction of the number the assertion above bans.
+       The app defaults to Arabic and this suite never switches it. */
+    ok(/خطورة مرتفعة/.test(out.panelText),
+       "and the AI-estimated risk band renders as a word, not a number");
     ok(!out.stillHeld, "the file is not kept once it has been sent");
     await p.close();
   }
