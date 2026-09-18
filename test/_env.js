@@ -108,4 +108,68 @@ const signInSrc = "(" + signInStub.toString() + ")();";
 function paywallOn(){ FREE_NOW = false; }
 const paywallSrc = "(" + paywallOn.toString() + ")();";
 
-module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC, signInStub, signInSrc, paywallOn, paywallSrc };
+/* TURN THE AI ON, FOR THE SUITES THAT EXIST TO PROVE IT WORKS.
+ *
+ * Same reasoning as paywallOn above, and the same shape. The compiled default
+ * is AI_COMPILED = false: the AI surface is dark unless the `ai_analysis` flag
+ * in app_flags says otherwise. That default exists because the flag fetch can
+ * fail — a 2 s timeout on a mobile connection is enough — and a failed fetch
+ * used to leave the AI ON, which meant the console's off switch did not reach
+ * a reader on a flaky connection.
+ *
+ * The suites cannot reach the real app_flags table (no project is configured
+ * in this environment, by design — see admin.test.js), so the flag never
+ * arrives and the compiled default holds. A suite that wants to exercise the
+ * AI path flips the switch here, exactly as a live flag would.
+ *
+ * admin.test.js deliberately does NOT call this: it is the suite that proves
+ * the fail-safe holds.
+ */
+function aiOn(){ AI_LIVE = true; }
+const aiSrc = "(" + aiOn.toString() + ")();";
+
+/* A PAGE WITH THE AI FLAG ALREADY ON, THROUGH THE APP'S OWN BOOT PATH.
+ *
+ * aiOn() above pokes the global after load, which is fine mid-test but too
+ * late for anything the app decides while booting. This seeds the flag cache
+ * BEFORE the app script runs, so ensureFlags() reads it on boot exactly as it
+ * would read a cache written by a real fetch on a previous visit — the app
+ * turns its own AI on, rather than the suite reaching in and setting a flag
+ * the app never agreed to.
+ *
+ * Use this in place of `b.newPage(...)` in any suite whose subject is the AI
+ * path. admin.test.js deliberately does not: it is the suite that proves the
+ * compiled-off default holds when no flag arrives.
+ */
+async function aiPage(b, opts){
+  const p = await b.newPage(opts);
+  /* Seed the flag cache so ensureFlags() reads "on" the moment any governed
+     surface asks — the same path a real second visit takes. */
+  await p.addInitScript(() => {
+    try {
+      localStorage.setItem("wodouh.flags.v1", JSON.stringify({
+        at: Date.now(),
+        rows: [{ key: "ai_analysis", enabled: true }],
+      }));
+    } catch(e){}
+  });
+  /* And raise the global on load, because ensureFlags() is lazy: it runs when
+     a governed surface renders, not at boot. A suite that reads AI_LIVE or
+     aiAvailable() before reaching such a surface would otherwise see the
+     compiled default and skip the very path it exists to test. */
+  p.on("load", () => {
+    p.evaluate(() => {
+      if (typeof AI_LIVE === "undefined") return;
+      AI_LIVE = true;
+      /* Exactly what applyFlags() does when the real flag lands: raise the
+         global, then re-render the copy that states whether text can leave the
+         device. Without the second half the line keeps the answer it rendered
+         at boot, which is the stale-copy bug applyFlags() now guards against. */
+      if (typeof renderPrivacyCopy === "function") renderPrivacyCopy();
+    }).catch(() => {});
+  });
+  return p;
+}
+
+module.exports = { playwright, launchOpts, BASE, APP, SHOWN_SRC, signInStub, signInSrc,
+                   paywallOn, paywallSrc, aiOn, aiSrc, aiPage };

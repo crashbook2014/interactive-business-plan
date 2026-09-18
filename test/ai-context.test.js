@@ -45,7 +45,7 @@
  */
 const fs = require("node:fs");
 const path = require("node:path");
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -153,7 +153,7 @@ async function serveWithAiCsp(page) {
      `ask mode's user block carries the question and nothing document-shaped (${askBlock.trim()})`);
 
   const b = await chromium.launch(launchOpts());
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await serveWithAiCsp(p);
 

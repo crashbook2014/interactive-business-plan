@@ -138,6 +138,68 @@ const bad = (area, msg) => fails.push(`[${area}] ${msg}`);
   if (Math.abs(eos.excNone - eos.termNone) > 0.01)
     bad('Article 87', `calculator ${eos.excNone} vs termination ${eos.termNone} — the two paths disagree`);
 
+  /* ---------- Article 81: a reduced award must not be a dead end ----------
+   *
+   * The Article 85 reduction is correct for an ordinary resignation and wrong
+   * for someone who resigned BECAUSE the employer breached the contract — that
+   * reader keeps the full Article 84 award. Measured before the fix: three
+   * years at 10,000 showed 5,000 in the free calculator while the paid
+   * termAward() with how:'forced' returned 15,000 for the same reader, and at
+   * 1.5 years the free side showed 0 with nothing on screen suggesting an
+   * exception existed at all.
+   *
+   * Asserted as a PROPERTY over the whole reduced range rather than one case:
+   * every resignation the calculator cuts must carry the route to the
+   * assessment, and no case it does not cut may carry it — a door shown to a
+   * reader whose figure is already full would be noise, and a door shown on
+   * the Article 87 path would contradict the note directly above it. */
+  const door = await p.evaluate(() => {
+    const seen = (start, end, how, exc) => {
+      nat = 'sa'; eosHow = how; eosExc87 = exc || null; renderEos();
+      document.getElementById('eosStart').value = start;
+      document.getElementById('eosEnd').value = end;
+      document.getElementById('eosWage').value = '10000';
+      calcEos();
+      const out = document.getElementById('eosOut');
+      const btn = out.querySelector('#eos81');
+      return { factor: eosData ? eosData.total / awardBase(eosData.years, 10000) : null,
+               door: !!btn,
+               /* The sentence beside the button is the reviewed one from the
+                  assessment, not a second claim written for this screen. */
+               reuses: out.textContent.includes(T.tm_s_eos_81[document.documentElement.lang === 'ar' ? 'ar' : 'en']),
+               /* An Article 81 claim on screen without Article 81 beside it
+                  would be the one thing this product never does. The register
+                  records the grounds as verified and the award consequence as
+                  Wodouh's reading, and tm_src_81 says exactly that. */
+               cited: out.textContent.includes(T.tm_src_81[document.documentElement.lang === 'ar' ? 'ar' : 'en']) };
+    };
+    const out = { reduced: [], full: [] };
+    /* Both reduction tiers and the zero tier, across the range. */
+    for (const [s, e] of [['2024-01-01','2025-07-01'], ['2024-01-01','2025-01-01'],
+                          ['2022-01-01','2025-01-01'], ['2021-01-01','2025-01-01'],
+                          ['2018-01-01','2025-01-01'], ['2017-01-01','2025-01-01']])
+      out.reduced.push(Object.assign({ s, e }, seen(s, e, 'resign')));
+    /* Ten years or more: no reduction. An Article 87 case: no reduction. An
+       employer termination: never a resignation at all. */
+    out.full.push(Object.assign({ s:'2010-01-01', e:'2025-01-01' }, seen('2010-01-01','2025-01-01','resign')));
+    out.full.push(Object.assign({ s:'2021-01-01', e:'2026-01-01' }, seen('2021-01-01','2026-01-01','resign','birth')));
+    out.full.push(Object.assign({ s:'2020-01-01', e:'2025-01-01' }, seen('2020-01-01','2025-01-01','term')));
+    return out;
+  });
+  for (const c of door.reduced) {
+    if (!(c.factor < 1))
+      bad('Article 81 door', `${c.s}->${c.e} was expected to be a reduced resignation, factor came back ${c.factor}`);
+    else if (!c.door)
+      bad('Article 81 door', `${c.s}->${c.e} cuts the award to factor ${c.factor} and offers no employer-breach route`);
+    else if (!c.reuses)
+      bad('Article 81 door', `${c.s}->${c.e} shows the route but not the reviewed tm_s_eos_81 sentence`);
+    else if (!c.cited)
+      bad('Article 81 door', `${c.s}->${c.e} states Article 81 without the tm_src_81 citation beside it`);
+  }
+  for (const c of door.full)
+    if (c.door)
+      bad('Article 81 door', `${c.s}->${c.e} is not a reduced resignation (factor ${c.factor}) yet shows the employer-breach route`);
+
   // ---------- compEstimate: Article 77, both branches ----------
   const comp = await p.evaluate(() => {
     const setup = (track,start,end,wage,termEnd) => {

@@ -16,7 +16,7 @@
  * Run with `npm test`, which starts the server for you. Set WODOUH_URL
  * to point the same assertions at the deployed site.
  */
-const { playwright, launchOpts, BASE, APP } = require("./_env.js");
+const { playwright, launchOpts, BASE, APP, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -62,7 +62,7 @@ async function serveWithAiCsp(page){
    * again, every AI surface must go fully dark, and that includes making no
    * request at all. Forced explicitly here rather than relied on as the
    * file's own default, which it no longer is. */
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
   const reqs = [];
   p.on("request", r => reqs.push(r.url()));
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
@@ -136,7 +136,7 @@ async function serveWithAiCsp(page){
   /* The shipping build itself: an endpoint is configured. Not aiAvailable()
      — that also gates on the remote ai_analysis flag, a separate switch this
      file has no business asserting the live value of. */
-  const pShip = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const pShip = await aiPage(b, { viewport: { width: 390, height: 844 } });
   pShip.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await pShip.goto(APP);
   await pShip.waitForFunction(() => typeof window.show === "function");
@@ -146,7 +146,7 @@ async function serveWithAiCsp(page){
 
   /* ---- 2. configured: consent must gate the send */
   console.log("\n— configured, with a stub endpoint");
-  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p2 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await serveWithAiCsp(p2);   /* the AI-enabled deployment's CSP */
   const sent = [];
@@ -341,7 +341,7 @@ async function serveWithAiCsp(page){
    * AI is live in production now, so this needs its own forced-empty
    * endpoint to still prove "consent alone must not be enough" — without
    * this override the page would pick up the real, deployed ANALYZE_URL. */
-  const p3 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p3 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p3.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await serveWithAiCsp(p3);   /* the AI-enabled deployment's CSP */
   await p3.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
@@ -368,7 +368,7 @@ async function serveWithAiCsp(page){
   await p3.close();
 
   /* 3b. configured: consent gates it, and the payload is exactly what we declare */
-  const p4 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p4 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p4.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await serveWithAiCsp(p4);   /* the AI-enabled deployment's CSP */
   const rvSent = [];

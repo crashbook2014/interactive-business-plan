@@ -28,7 +28,7 @@
  * The Supabase calls are stubbed. What is under test is this app's behaviour,
  * not Supabase's.
  */
-const { playwright, launchOpts, APP, SHOWN_SRC, paywallOn } = require("./_env.js");
+const { playwright, launchOpts, APP, SHOWN_SRC, paywallOn, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -82,7 +82,7 @@ const STUB = (apple) => {
 
   /* ---- 1. signed out is the whole app */
   console.log("\n— unconfigured: accounts do not exist, and nothing breaks");
-  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p0 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   const off = [];
   p0.on("request", r => { if (!/^http:\/\/(127\.|localhost)/.test(r.url())) off.push(r.url()); });
   p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
@@ -223,7 +223,7 @@ const STUB = (apple) => {
 
   /* ---- 2. configured: two buttons, and Apple only where it works */
   console.log("\n— the sign-in screen is two buttons, and Apple appears only where it works");
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
@@ -406,7 +406,7 @@ const STUB = (apple) => {
   ok(/without an account|بدون حساب/i.test(escape.label),
      `and the way out says it needs no account, without listing a subset of what is free ("${escape.label}")`);
 
-  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p2 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p2.goto(APP);
   await p2.waitForFunction(() => typeof window.show === "function");
@@ -434,7 +434,7 @@ const STUB = (apple) => {
     { label: "the project allows it",            pre: "allow",  signs: true  },
     { label: "the pre-flight throws",            pre: "throw",  signs: true  },
   ]) {
-    const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const pg = await aiPage(b, { viewport: { width: 390, height: 844 } });
     pg.on("pageerror", e => FAIL.push("pageerror: " + e.message));
     await pg.goto(APP);
     await pg.waitForFunction(() => typeof window.show === "function");
@@ -682,7 +682,7 @@ const STUB = (apple) => {
    * measuring a build where the question does not arise — the first version of
    * this guard did exactly that and reported a free second scan as success. */
   console.log("\n— the first contract is read without an account; the second asks for one");
-  const p3 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p3 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   await p3.goto(APP);
   await p3.waitForFunction(() => typeof window.show === "function");
   await p3.evaluate(paywallOn);
@@ -737,7 +737,7 @@ console.log("\n— a person can actually find and reach sign-in");
 {
   /* Its own browser: this block sits after the main one is closed. */
   const db = await chromium.launch(launchOpts());
-  const d = await db.newPage({ viewport: { width: 390, height: 844 } });
+  const d = await aiPage(db, { viewport: { width: 390, height: 844 } });
   await d.goto(APP);
   await d.waitForFunction(() => typeof window.show === "function");
   const state = await d.evaluate(() => {
@@ -801,7 +801,7 @@ console.log("\n— a sign-in provider the project has not enabled is not offered
     ["odd shape",    { something: "else" },                                       true,  false],
   ];
   for (const [name, body, wantGoogle, wantNotice] of cases) {
-    const d = await pb.newPage({ viewport: { width: 390, height: 844 } });
+    const d = await aiPage(pb, { viewport: { width: 390, height: 844 } });
     await d.route("**/auth/v1/settings", r => body
       ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) })
       : r.abort());
@@ -933,7 +933,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
 {
   console.log("\n— the reader is told where the contract is read, before it is asked for");
   const b2 = await chromium.launch(launchOpts());
-  const p2 = await b2.newPage({ viewport: { width: 390, height: 844 } });
+  const p2 = await aiPage(b2, { viewport: { width: 390, height: 844 } });
   await p2.goto(APP);
   await p2.waitForFunction(() => typeof window.show === "function");
   const seen = await p2.evaluate((shownSrc) => {
@@ -994,7 +994,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
 {
   console.log("\n— erasing the device actually empties it");
   const b5 = await chromium.launch(launchOpts());
-  const p5 = await b5.newPage({ viewport: { width: 390, height: 844 } });
+  const p5 = await aiPage(b5, { viewport: { width: 390, height: 844 } });
   await p5.goto(APP);
   await p5.waitForFunction(() => typeof window.wipeDevice === "function");
   /* Kept, and it must now stay silent: this used to be how the wipe got past
@@ -1074,7 +1074,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
      and their contracts are still on the device — the worst version of this,
      because it looks like it worked. */
   const b6 = await chromium.launch(launchOpts());
-  const p6 = await b6.newPage({ viewport: { width: 390, height: 844 } });
+  const p6 = await aiPage(b6, { viewport: { width: 390, height: 844 } });
   await p6.goto(APP);
   await p6.waitForFunction(() => typeof window.wipeDevice === "function");
   const brokenSave = await p6.evaluate(() => {
@@ -1114,7 +1114,7 @@ console.log("\n— the setup script accepts a publishable key and refuses a secr
   console.log("\n— the irreversible questions are asked by the app, not by the browser");
   const b7 = await chromium.launch(launchOpts());
   for (const L of ["ar", "en"]) {
-    const p7 = await b7.newPage({ viewport: { width: 390, height: 844 } });
+    const p7 = await aiPage(b7, { viewport: { width: 390, height: 844 } });
     p7.on("pageerror", (e) => FAIL.push("pageerror: " + e.message));
     await p7.goto(APP);
     await p7.waitForFunction(() => typeof window.askConfirm === "function");

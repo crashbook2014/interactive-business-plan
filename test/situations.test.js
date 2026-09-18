@@ -24,7 +24,7 @@
  * is unchanged — the upload box is still reachable, and reachable from the door
  * that names it. Only the route it names moved.
  */
-const { playwright, launchOpts, APP } = require("./_env.js");
+const { playwright, launchOpts, APP, aiPage } = require("./_env.js");
 const { chromium } = playwright();
 const FAIL = [];
 const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAIL ") + m); };
@@ -41,7 +41,7 @@ const SITUATIONS = ["resign", "term", "owed", "rent", "gig", "ask", "unsure"];
 
 (async () => {
   const b = await chromium.launch(launchOpts());
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p.goto(APP);
   await p.waitForFunction(() => typeof window.show === "function");
@@ -222,7 +222,7 @@ const SITUATIONS = ["resign", "term", "owed", "rent", "gig", "ask", "unsure"];
    * Proven on a page that forces that state explicitly, rather than relying
    * on it being the shipped default, which it no longer is. */
   console.log("\n— the question door only exists in a build that can answer");
-  const p0 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p0 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p0.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p0.addInitScript(() => { window.WODOUH_CONFIG = { ANALYZE_URL: "" }; });
   await p0.goto(APP);
@@ -243,7 +243,7 @@ const SITUATIONS = ["resign", "term", "owed", "rent", "gig", "ask", "unsure"];
   const onShip = await p.evaluate(() => !!analyzeUrl());
   ok(onShip === true, "the shipping build has an AI endpoint configured");
 
-  const p2 = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p2 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p2.addInitScript(() => {
     window.WODOUH_CONFIG = { ANALYZE_URL: "https://stub.supabase.co/functions/v1/analyze" };
