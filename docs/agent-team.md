@@ -169,11 +169,19 @@ Move to daily when there is daily traffic to report on.
 - `PAYMENT_LIVE = false`, `LAWYER_DESK.live = false`, `REDEEM_HASHES = []`,
   and no `config.js` — **four features ship dormant on purpose.** Dormant is
   not broken. Report it as a state, not a defect.
-- **GitHub Actions is not executing** on this account, so CI and the live
-  watchdog do not run. The pre-push gate is the only gate firing.
-- **The proxy blocks `github.io`**, so nothing here can reach the live site.
-- There is **no analytics, no auth, no database in the request path, and no
-  delete control**. See `docs/agent-team-audit-2026-08.md` §C.
+- **GitHub Actions executes normally** (re-checked 18 September 2026 against
+  the API). CI runs on real runners and the watchdog fires on schedule; see
+  `docs/operations.md`. This line said the opposite for long enough that
+  agents learned to ignore CI — if you find a claim here surprising, check it
+  before repeating it.
+- **The proxy blocks the live site.** `alwodouh.com` is refused at the gateway
+  with a 403 on CONNECT, so nothing here can load what a reader loads. The
+  watchdog is the only thing that checks the deployment.
+- There is **no analytics, no auth-free path to the paid screens, and no
+  database in the request path**. See `docs/agent-team-audit-2026-08.md` §C.
+  There IS a delete control now — `wipeDeviceNow()` and `renderWipe()` in
+  `app/index.html` — which this line denied for several cycles after it
+  shipped.
 - **The privacy principle is under review.** The brief that created this team
   permits disclosed external processing; the shipped copy makes an absolute
   on-device promise that is currently true. Until that is decided, **no agent

@@ -8,7 +8,7 @@ different failures.
 |---|---|---|---|
 | **`.githooks/pre-push`** | Nothing broken leaves the machine | Every push | Refuses the push |
 | **`npm test`** | The code is correct | On demand, and inside the hook | Your terminal |
-| **`test/watchdog.js`** | The *deployment* is working | Every 6 hours *(needs Actions)* | Opens a GitHub issue |
+| **`test/watchdog.js`** | The *deployment* is working | Every ~5 hours, on Actions | Opens a GitHub issue |
 | **The four agents** | The product is still *good* | When you ask | In conversation |
 
 **The pre-push hook is the one that actually protects you**, and it is the only
@@ -86,18 +86,29 @@ node test/watchdog.js https://alwodouh.com
 
 ---
 
-## ⚠ Actions is not currently executing on this account
+## Actions: executing normally (checked 18 September 2026)
 
-**Read this before trusting anything below.** Both workflows are registered and
-active, and GitHub creates a job for every push — but the job is never given a
-runner. It dies in about two seconds with no steps, no log, no annotation and
-`runner_id: 0`.
+**This section used to say Actions was dead. It is not, and had not been for
+some time before anyone corrected the page** — which is its own lesson: a
+warning nobody re-checks becomes a reason to stop looking at the thing it
+warns about.
 
-That is not a problem with the workflow files. A broken workflow reports
-`startup_failure` with an error; a failing test reports which test failed. This
-reports neither, because nothing ever ran.
+What was true: jobs were created for every push and never given a runner,
+dying in about two seconds with `runner_id: 0`, no steps and no log. What is
+true now, verified against the API rather than assumed:
 
-It is an **account-level setting**, and only you can clear it:
+- `tests` runs on real runners and takes about four and a half minutes
+  (run 199 on `f7edaf8`, runner `1000000876`, conclusion `success`).
+- `watchdog` has fired on schedule roughly every five hours and succeeded on
+  every run sampled from 16 September onward — 152 runs recorded in total.
+- CI has caught at least one real regression: the stale shell fingerprint
+  after the PR #3 merge, which sat red on `main` for about ten hours because
+  nobody looked at the run after merging.
+
+The exact date it recovered was not determined; only the window above was
+checked. If it stops again, the symptom to look for is the `runner_id: 0`
+two-second death described above, and the two account-level settings that
+cause it:
 
 1. **Repository → Settings → Actions → General.** Confirm "Allow all actions
    and reusable workflows" is selected.
@@ -106,14 +117,16 @@ It is an **account-level setting**, and only you can clear it:
    on a public repo where the minutes are free.
 3. Re-run the latest run from the Actions tab and confirm it gets a runner.
 
-Until that clears, **CI is not protecting `main` and the watchdog is not
-running.**
+**Check the run after you merge.** CI reports on `main` after the fact — Pages
+has already deployed by then — so a green suite locally is not the same claim
+as a green `main`. The PR #3 merge is the worked example: the suites passed on
+the branch, the merge went in, and `main` went red on a check nobody opened.
 
-This is why the pre-push hook exists and why it is listed first. It runs the
-same suites, refuses the push when they are red, and needs no runner, no
-minutes and no account. **You are not unprotected while Actions is down** —
-you are only missing the live-deployment check, which is the one thing the hook
-cannot do from here.
+The pre-push hook is still listed first, and still the layer that actually
+protects you: it refuses the push before anything leaves the machine, and
+needs no runner, no minutes and no account. CI is the second pair of eyes on
+what the hook could not see — chiefly the state of `main` after two branches
+meet.
 
 ---
 
