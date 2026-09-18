@@ -12,7 +12,7 @@
  *
  * 1. THE BEARER. upload resolves the caller through /auth/v1/user before it
  *    accepts a byte, and resolveUpload() re-checks that the row belongs to the
- *    person asking. analyzeHeaders() sends only the anon apikey, so a call
+ *    person asking. analyzeHeaders() sends only the anon key as a Bearer, so a call
  *    site added without authHeaders() returns 401 / not_your_upload. Asserted
  *    on both hops.
  * 2. THE CONSENT NAMES THE FILE. Every other AI path sends text the reader
