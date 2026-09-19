@@ -214,8 +214,18 @@ const T = {
        en:"You get: all three, saving 148 SAR against buying them separately."},
   price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — وضوح يجهّز لك ملفك قبل أن تذهب إليه.",
                 en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
-  price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة · ما أعجبك خلال 14 يومًا؟ نرجّع لك المبلغ — حتى لو استخدمته.",
-             en:"The price shown is the total you pay, no VAT added · Not happy within 14 days? We refund you — even if you already used it."},
+  /* USED TO PROMISE A 14-DAY REFUND — real prices, a real refund guarantee,
+     next to a "Try it now" button — while the app's own paywall said this was
+     a prototype with no real payment. Read together, the honest half did not
+     read as beta; it read as a lie on the way in. Founder's fix, said
+     identically here and in the app (see pw_demo in app/index.html): the
+     price is real, checkout is not built yet, and the way through it is a
+     human. Rendered through renderCheckoutNote(), not this data-t node
+     directly, because it carries a link — see the note there. */
+  price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة.",
+             en:"The price shown is the total you pay, no VAT added."},
+  price_vat_cta:{ar:"الأسعار محددة، والدفع الإلكتروني قريب يفتح — اترك رقمك وبنفتحه لك",
+                 en:"Pricing is set; checkout opens shortly — leave your number and we'll open it for you"},
   p1g:{ar:"تحصل على: التقييم، والقرار، وأول تنبيه، وحاسبة نهاية الخدمة.",
        en:"You get: the score, the decision, the first flag, and the end-of-service calculator."},
   p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
@@ -251,7 +261,8 @@ const T = {
     ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية. وعقود العمل هي الأعمق: كل ملاحظة مسندة إلى مادتها في نظام العمل، ومعها حاسبة نهاية الخدمة."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
     ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة — وضوح غير مسجَّل فيها حاليًا."],
-    ["وإذا ما عجبني الخطاب؟","نرجّع لك المبلغ خلال 14 يومًا بدون أسئلة. تدفع مقابل مخرج تستخدمه فعلًا، مو مقابل تجربة."],
+    ["وإذا ما عجبني الخطاب؟",
+     `الأسعار محددة، والدفع الإلكتروني قريب يفتح. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">اترك رقمك وبنفتحه لك</a>.`],
     ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/51 وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
@@ -262,7 +273,8 @@ const T = {
     ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign. Employment is the deepest: every point tied to its Labour Law article, with the end-of-service calculator alongside."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
     ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added — Wodouh is not currently registered for VAT."],
-    ["What if the letter isn't useful?","We refund you within 14 days, no questions. You're paying for an output you actually use, not for a trial."],
+    ["What if the letter isn't useful?",
+     `Pricing is set; checkout opens shortly. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">Leave your number and we'll open it for you</a>.`],
     ["Where does your information come from?","Official sources: the Saudi Labor Law (Royal Decree M/51 and its amendments), the Ministry of Human Resources, the Ejar network, and the Ministry of Justice. They're listed in the app with links and review dates, and we name an article number only where we've verified it."],
     ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there's a claim or a large sum involved — we say so plainly on the result screen and prepare your file before you go."]
   ]},
@@ -287,6 +299,15 @@ const T = {
   foot_id:{ar:"يُدار وضوح كنشاط سعودي مستقل بموجب وثيقة عمل حر، وليس لديه سجل تجاري. ولا نعرض أي شعار أو ترخيص أو اعتماد حكومي لا نملكه. للتواصل والشكاوى: support@alwodouh.com",
            en:"Wodouh is operated as an independent Saudi activity under a Freelance Work Certificate and does not hold a Commercial Registration. We display no licence, seal or government approval that we do not hold. Contact and complaints: support@alwodouh.com"},
 };
+
+/* Same number this page's own contact section links to further down, and the
+   same one the FAQ's checkout note above links to inline (that string has to
+   stay self-contained — copyOf() in test/landing-claims.test.js evaluates T
+   as a bare object literal with no outside dependencies, so it cannot
+   reference this constant). Kept here as the one place applyLang()'s
+   price_vat rendering reads it from. */
+const CHECKOUT_WA = "https://wa.me/966563438351?text="
+  + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.");
 
 let lang = "ar";
 const t = k => T[k][lang];
@@ -326,6 +347,12 @@ function applyLang(){
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
+  /* Not built with the generic [data-t] loop above: it carries a link, and
+     that loop overwrites textContent on every toggle. */
+  const priceVat = document.getElementById("priceVat");
+  if (priceVat){
+    priceVat.innerHTML = `${t("price_vat")} <a href="${CHECKOUT_WA}" rel="noopener" target="_blank">${t("price_vat_cta")}</a>`;
+  }
 }
 function toggleLang(){ lang = lang === "ar" ? "en" : "ar"; applyLang(); }
 /* CSP is script-src 'self' with no 'unsafe-inline', so the inline

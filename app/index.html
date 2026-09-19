@@ -581,7 +581,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     </div>
     <p class="demo-tag" data-t="vat_line"></p>
     <p class="acc-anchor" data-t="anchor_price"></p>
-    <p class="demo-tag" id="pwDemo" data-t="pw_demo"></p>
+    <div class="demo-tag checkout-note" id="pwDemo"></div>
     <p class="disclaimer" data-t="disclaimer"></p>
   </section>
 
@@ -1166,7 +1166,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <div class="free-now" id="plFree" hidden></div>
     <div class="plan-cards" id="planCards"></div>
     <p class="demo-tag" data-t="pl_enterprise"></p>
-    <p class="disclaimer" data-t="pw_demo"></p>
+    <div class="disclaimer checkout-note" id="plDemo"></div>
   </section>
 
   <!-- BUSINESS WORKSPACE — the reader's own contracts.
@@ -2485,7 +2485,19 @@ const T = {
                     en:"Your claim in figures, each line with its source"},
   pw_sh_case_docs:{ar:"قائمة مستنداتك: ما لديك وما ينقصك",
                    en:"Your document list: what you have and what is missing"},
-  pw_demo:{ar:"نموذج تجريبي — لا يوجد دفع حقيقي.",en:"Prototype — no real payment happens."},
+  /* USED TO SAY "Prototype — no real payment happens" — an honest sentence
+     that stopped being honest the moment the marketing homepage started
+     showing real prices and a 14-day refund guarantee next to a "Try it now"
+     button. A reader who read both did not conclude the product was in beta;
+     they concluded it lied on the way in. Founder's fix, said identically
+     here and on the homepage (see price_vat / T.faq in landing.js): the
+     price is real, checkout is not built yet, and the way through it is a
+     human. Rendered through renderCheckoutNote(), not this data-t node
+     directly, because it carries a link to the WhatsApp number Wodouh
+     already publishes and applyLang()'s generic [data-t] loop would
+     overwrite that with plain text on the next language toggle. */
+  pw_demo:{ar:"الأسعار محددة، والدفع الإلكتروني قريب يفتح.",en:"Pricing is set; checkout opens shortly."},
+  pw_demo_cta:{ar:"اترك رقمك وبنفتحه لك",en:"Leave your number and we'll open it for you"},
   plan_letter:{ar:"خطاب التفاوض",en:"Negotiation letter"},
   plan_letter_d:{ar:"نص كامل قابل للتعديل، بالعربي والإنجليزي، مبني على البنود التي اخترتها",
                  en:"Full editable text in Arabic and English, built from the points you chose"},
@@ -4919,6 +4931,7 @@ function applyLang(){
   renderFuture();
   renderPrivacyCopy();
   renderSigninCopy();
+  renderCheckoutNote();
   /* The "coming soon" badges are built in code rather than carried on a
      [data-t] node, so applyLang() would leave them in the previous language.
      Same reason renderSigninCopy() is called here. */
@@ -12870,6 +12883,28 @@ const PAY_MARKS = ["mada", "Apple\u00A0Pay", "STC\u00A0Pay"];
 function renderPayMarks(){
   const host = document.getElementById("payMarks");
   if (host) host.innerHTML = PAY_MARKS.map(m => `<i>${esc(m)}</i>`).join("");
+}
+
+/* THE CHECKOUT NOTE. Same number the homepage already publishes
+   (index.html's own contact section), same sentence as the homepage's own
+   checkout note (see price_vat / T.faq in assets/landing.js) \u2014 one message
+   wherever this product mentions money, rather than a different one on each
+   surface a reader happens to land on. Pre-filled text is Arabic regardless
+   of `lang`, matching the homepage's own WhatsApp link, since the number on
+   the other end answers in Arabic first. */
+const CHECKOUT_WA = "https://wa.me/966563438351?text="
+  + encodeURIComponent("\u0627\u0644\u0633\u0644\u0627\u0645 \u0639\u0644\u064A\u0643\u0645\u060C \u0623\u0628\u064A \u0623\u0639\u0631\u0641 \u0645\u062A\u0649 \u064A\u0641\u062A\u062D \u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u0641\u064A \u0648\u0636\u0648\u062D.");
+function renderCheckoutNote(){
+  /* Block-level with real padding, not an inline link trailing a sentence —
+     see the note on .art-link at srcOf(): an inline anchor after running
+     text measures whatever the text happens to wrap to, which is 14px tall
+     in Arabic and passed the 44px touch-target sweep for a citation only by
+     the coincidence of that sentence being long. A CTA cannot depend on
+     wrapping the right amount, so it gets its own row and explicit height. */
+  const html = `<span>${esc(t("pw_demo"))}</span>` +
+    `<a href="${CHECKOUT_WA}" target="_blank" rel="noopener noreferrer" ` +
+    `style="display:block;padding:13px 0">${esc(t("pw_demo_cta"))}</a>`;
+  document.querySelectorAll(".checkout-note").forEach(el => { el.innerHTML = html; });
 }
 
 /* Prices are numbers, not two hand-written strings per plan. Two strings drift;
