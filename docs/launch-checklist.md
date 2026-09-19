@@ -1,5 +1,15 @@
 # Launch — what "say launch and it all comes back" actually means
 
+> **STATUS: LAUNCHED, 5 September 2026.** `WODOUH_LAUNCHED = true` in both
+> `assets/curtain.js` and `app/index.html`; `/app/` is open to everyone. This
+> file's last edit shares a timestamp with the launch commit — it was never
+> updated afterward, so everything below describes the *procedure that was
+> run*, not the site's current state. `docs/roadmap.md` is the source of
+> truth for what is live today. The "Still off" table below is as of launch
+> day specifically; payments remain off, but do not trust the rest of that
+> table, or the prices in "the ten-minute pass," without checking
+> `docs/roadmap.md` and `app/index.html`'s compiled constants first.
+
 The product is finished and hidden. This file is the entire procedure for
 un-hiding it, and the guarantee that hiding it cost nothing.
 
