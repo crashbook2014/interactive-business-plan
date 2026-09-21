@@ -108,8 +108,8 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     /* ---- built vs intended, checked against the product rather than the page */
     const avail = r.cats.filter((c) => c.now).map((c) => c.name);
     const planned = r.cats.filter((c) => !c.now).map((c) => c.name);
-    ok(avail.length === 3, `${L}: three contract types are shown as available (${avail.join(", ")})`);
-    ok(planned.length === 2, `${L}: two are shown as planned (${planned.join(", ")})`);
+    ok(avail.length === 4, `${L}: four contract types are shown as available (${avail.join(", ")})`);
+    ok(planned.length === 1, `${L}: one is shown as planned (${planned.join(", ")})`);
 
     /* Supplier by name. The commissioning brief asserted it already existed;
        it exists nowhere in this codebase, and this assertion is what stops it
@@ -118,8 +118,16 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(!!supplier, `${L}: supplier contracts are listed`);
     ok(supplier && supplier.now === false,
        `${L}: and listed as PLANNED, because no supplier analysis exists`);
+    /* Loan used to be pinned planned here, written when the domain genuinely
+       had nothing behind it. It now clears the same bar rental and freelance
+       already clear above: docDomain() classifies a financing contract, four
+       loan-specific RULES fire on it, and it produces a demand letter — see
+       doc_loan and SAMPLES.loan in app/index.html. Pinning it planned after
+       that shipped would have been this test protecting its own past answer
+       instead of the product's real state, which is exactly the failure mode
+       this whole file exists to catch. */
     const loans = r.cats.find((c) => /financing|تمويل/i.test(c.name));
-    ok(!!loans && loans.now === false, `${L}: bank financing is listed as planned`);
+    ok(!!loans && loans.now === true, `${L}: bank financing is listed as available`);
 
     /* The progression names one step as working today and exactly one. */
     const nowSteps = r.steps.filter((s) => s.now);
@@ -138,13 +146,14 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   }
 
   /* ---- the roadmap must agree with the product's own doc kinds.
-     The page says employment, rental and freelance are supported. The product
-     is the authority on that, so it is asked rather than trusted: those three
-     doc kinds must exist in the shipped source, and a supplier one must not. */
+     The page says employment, rental, freelance and loan are supported. The
+     product is the authority on that, so it is asked rather than trusted:
+     those four doc kinds must exist in the shipped source, and a supplier
+     one must not. */
   console.log("\n— the roadmap agrees with the product it describes");
   const src = fs.readFileSync(path.join(__dirname, "..", "app", "index.html"), "utf8");
-  ok(/doc_emp:/.test(src) && /doc_rent:/.test(src) && /doc_free:/.test(src),
-     "the three types shown as available all exist as real doc kinds");
+  ok(/doc_emp:/.test(src) && /doc_rent:/.test(src) && /doc_free:/.test(src) && /doc_loan:/.test(src),
+     "the four types shown as available all exist as real doc kinds");
   ok(!/doc_supp/.test(src),
      "and there is no supplier doc kind, which is why supplier is shown as planned");
 

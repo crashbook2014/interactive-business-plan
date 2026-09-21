@@ -166,6 +166,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
   <g id="ic-pen" fill="none" stroke="var(--teal)">
     <path d="M40 10l14 14L26 52H12V38L40 10z" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
+  <g id="ic-bank" fill="none" stroke="var(--teal)">
+    <path d="M8 24L32 10l24 14" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 24h40v6H12z" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M16 30v20M26 30v20M38 30v20M48 30v20" stroke-width="5" stroke-linecap="round"/>
+    <path d="M10 50h44" stroke-width="5.5" stroke-linecap="round"/>
+  </g>
 </defs></svg>
 
 <aside class="desk-aside" aria-hidden="true">
@@ -402,6 +408,10 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <button class="sample" onclick="analyze('freelance')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-pen"/></svg></span>
         <span><b data-t="s_free"></b><span data-t="s_free_d"></span></span>
+      </button>
+      <button class="sample" onclick="analyze('loan')">
+        <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-bank"/></svg></span>
+        <span><b data-t="s_loan"></b><span data-t="s_loan_d"></span></span>
       </button>
     </div>
   </section>
@@ -1981,8 +1991,17 @@ const T = {
               en:"Read as a contract, not against rental law: we have no verified rental rules and no articles to lean on here. What's above is a reading of your own clauses — enough to document and to raise, not to settle a legal question."},
   scope_gig:{ar:"قرأنا نص عقدك نفسه، لا أنظمة العمل الحر: ما عندنا سجل موثّق لها بعد. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والمطالبة، لا في تقرير حكم نظامي.",
              en:"Read as a contract, not against freelance law: we have no verified register for it yet. What's above is a reading of your own clauses — enough to document and to claim on, not to settle a legal question."},
+  /* Loan carries no citation by design, not by gap — docs/legal-sources-loans.md
+     is a checklist nobody has verified against SAMA yet, so nothing behind this
+     domain may ever cite an article. Said plainly rather than as an absence,
+     the same honesty the rental/freelance lines already use. Before this key
+     existed, a loan contract fell through to scope_unknown — "we could not
+     tell what kind of contract this is" — which was false: docDomain() had
+     just classified it with high confidence. */
+  scope_loan:{ar:"قرأنا نص عقدك نفسه، لا تعليمات ساما: ما عندنا مواد موثّقة نستند لها هنا. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والتفاوض، لا في تقرير حكم نظامي.",
+              en:"Read as a contract, not against SAMA's rules: we have no verified articles to lean on here. What's above is a reading of your own clauses — enough to document and to negotiate on, not to settle a legal question."},
   /* The document did not identify itself, so we cannot even name what we did
-     not read it against. Says less than the two above, on purpose. */
+     not read it against. Says less than the ones above, on purpose. */
   scope_unknown:{ar:"ما قدرنا نحدد نوع العقد بثقة، فقرأنا نصّه نفسه بدون مواد نظامية. اللي فوق قراءة لبنودك.",
                  en:"We could not tell what kind of contract this is, so we read its words without article numbers. What's above is a reading of your own clauses."},
 
@@ -2139,7 +2158,14 @@ const T = {
   fu_cat_supp_d:{ar:"ما زال ما بدأ. نقوله عشان تعرف وش ناقص، لا عشان نوحي إنه موجود.",
                  en:"Not started. Listed so you know what's missing, not to imply it exists."},
   fu_cat_loan:{ar:"تمويل بنكي",en:"Bank financing"},
-  fu_cat_loan_d:{ar:"قادم — اقرأ التفاصيل فوق.",en:"Planned — see above."},
+  /* Used to say "قادم — اقرأ التفاصيل فوق" (Planned — see above) as if nothing
+     worked yet. That stopped being true once the loan domain merged: pasting
+     a financing contract classifies it, runs four financing-specific checks
+     (missing profit rate, early-settlement fee, whole-balance-due, salary
+     assignment), and produces a demand letter to the financing provider — the
+     exact bar rental and freelance clear two rows up, worded the same way. */
+  fu_cat_loan_d:{ar:"يقرأ عقدك نفسه: فحوص مخصّصة لعقود التمويل، وخطاب مطالبة للجهة الممولة. لكن ما عندنا مواد نظامية موثّقة من ساما نستند لها هنا — اللي نقوله قراءة لنص عقدك، مو لتعليمات ساما. الشرح التفصيلي بالذكاء الاصطناعي لسه ما وصل.",
+                  en:"Reads your contract itself: financing-specific checks, and a demand letter to the financing provider. But we have no verified SAMA articles behind them here — what we say is a reading of your contract's words, not of SAMA's rules. The AI-narrated explanation isn't live yet."},
 
   /* The line that keeps this screen honest. Without it a roadmap reads as a
      specification, and a reader plans around dates nobody promised. */
@@ -2330,9 +2356,13 @@ const T = {
   cr_k_prob:{ar:"فترة التجربة",en:"Probation"},
   cr_k_notice:{ar:"مدة الإشعار",en:"Notice period"},
   cr_k_hours:{ar:"ساعات العمل الأسبوعية",en:"Weekly hours"},
-  cr_days:{ar:"{n} يوم",en:"{n} days"},
-  cr_hours:{ar:"{n} ساعة",en:"{n} hours"},
-  cr_months:{ar:"{n} شهر",en:"{n} months"},
+  /* crTermValue() renders months and days through the eos_m / eos_d count
+     stems, which already carry correct Arabic dual/plural agreement — see the
+     note there. Hours has no existing stem, so it gets its own here. */
+  cr_hr_1:{ar:"ساعة واحدة",en:"1 hour"},
+  cr_hr_2:{ar:"ساعتان",en:"2 hours"},
+  cr_hr_p:{ar:"{n} ساعات",en:"{n} hours"},
+  cr_hr_m:{ar:"{n} ساعة",en:"{n} hours"},
   /* The loan key-terms table. */
   cr_k_fin:{ar:"نوع التمويل",en:"Financing type"},
   cr_k_principal:{ar:"مبلغ التمويل",en:"Amount financed"},
@@ -2377,6 +2407,7 @@ const T = {
   s_emp:{ar:"عقد عمل",en:"Employment contract"}, s_emp_d:{ar:"وظيفة بدوام كامل — نموذج تجريبي",en:"Full-time job offer — sample"},
   s_rent:{ar:"عقد إيجار",en:"Rental contract"}, s_rent_d:{ar:"شقة سكنية سنوية — نموذج تجريبي",en:"Annual apartment lease — sample"},
   s_free:{ar:"عقد عمل حر",en:"Freelance agreement"}, s_free_d:{ar:"مشروع تصميم لعميل — نموذج تجريبي",en:"Client design project — sample"},
+  s_loan:{ar:"عقد تمويل",en:"Financing agreement"}, s_loan_d:{ar:"تمويل شخصي من بنك — نموذج تجريبي",en:"Personal bank financing — sample"},
   or:{ar:"أو الصق عقدك",en:"or paste your contract"},
   paste_ph:{ar:"الصق نص العقد هنا…",en:"Paste the contract text here…"},
   analyze:{ar:"اقرأه لي",en:"Read it for me"},
@@ -2386,6 +2417,7 @@ const T = {
   load_emp:{ar:"نراجع بنود العمل: التجربة، الإشعار، وعدم المنافسة…",en:"Checking the employment terms: probation, notice, non-compete…"},
   load_rent:{ar:"نراجع بنود الإيجار: الزيادة، الصيانة، والإخلاء…",en:"Checking the lease terms: increases, maintenance, eviction…"},
   load_free:{ar:"نراجع بنود العمل الحر: الملكية، التعديلات، والسداد…",en:"Checking the freelance terms: IP, revisions, payment…"},
+  load_loan:{ar:"نراجع بنود التمويل: نسبة الربح، السداد المبكر، وحوالة الراتب…",en:"Checking the financing terms: profit rate, early settlement, and salary assignment…"},
   load_pasted:{ar:"نبحث عن البنود المعروفة في نصك…",en:"Scanning your text for known clause patterns…"},
   back_home:{ar:"عقد جديد",en:"New contract"},
   back_main:{ar:"الرئيسية",en:"Home"},
@@ -2408,8 +2440,9 @@ const T = {
   doc_emp:{ar:"عقد عمل",en:"Employment contract"},
   doc_rent:{ar:"عقد إيجار",en:"Rental contract"},
   doc_free:{ar:"عقد عمل حر",en:"Freelance agreement"},
+  doc_loan:{ar:"عقد تمويل",en:"Financing agreement"},
   doc_pasted:{ar:"عقدك",en:"Your contract"},
-  /* THE SAME FOUR, IN THE DEFINITE, FOR THE ONE PLACE THAT NEEDS IT.
+  /* THE SAME FIVE, IN THE DEFINITE, FOR THE ONE PLACE THAT NEEDS IT.
      buildLetter() writes "اطلعت على {doc} المعروض" — and with the indefinite
      form that reads "عقد عمل المعروض": an indefinite noun carrying a definite
      adjective, which is ungrammatical and which a Saudi professional reads as
@@ -2419,6 +2452,7 @@ const T = {
   doc_emp_def:{ar:"عقد العمل",en:"Employment contract"},
   doc_rent_def:{ar:"عقد الإيجار",en:"Rental contract"},
   doc_free_def:{ar:"عقد العمل الحر",en:"Freelance agreement"},
+  doc_loan_def:{ar:"عقد التمويل",en:"Financing agreement"},
   doc_pasted_def:{ar:"العقد",en:"Your contract"},
   lb_add:{ar:"أضفه لخطابي",en:"Add to my letter"},
   lb_added:{ar:"في خطابك",en:"In your letter"},
@@ -3779,8 +3813,11 @@ const T = {
  */
 const OB = [
   { title:{ar:"نقرأ عقدك كاملًا",en:"We read your whole contract"},
-    sub:{ar:"عقد عمل، إيجار، أو عمل حر — الصقه ونشرحه لك بندًا بندًا بلغة تفهمها.",
-         en:"Employment, rental, or freelance — paste it and we'll walk you through it, clause by clause, in language you understand."},
+    /* Listed only three of the four contract types this screen actually
+       reads — loan shipped after this line was written and nobody came back
+       to update the one sentence that enumerates them. */
+    sub:{ar:"عقد عمل، إيجار، عمل حر، أو تمويل بنكي — الصقه ونشرحه لك بندًا بندًا بلغة تفهمها.",
+         en:"Employment, rental, freelance, or bank financing — paste it and we'll walk you through it, clause by clause, in language you understand."},
     art:`<svg viewBox="0 0 120 120" fill="none">
       <rect x="26" y="12" width="56" height="80" rx="12" stroke="var(--teal-ink)" stroke-width="6"/>
       <path d="M42 32h24M42 46h24M42 60h14" stroke="var(--teal-ink)" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
@@ -4048,6 +4085,76 @@ const SAMPLES = {
            en:"Work is delivered in three agreed milestones, each with a fixed date."},
         p:{ar:"مراحل واضحة بتواريخ محددة — توقعات مضبوطة للطرفين.",
            en:"Clear milestones with fixed dates — well-set expectations for both sides."},
+        a:null }
+    ]},
+  /* THE SAMPLE FOR THE FOURTH DOOR THIS SCREEN OPENS, added once the loan
+     domain shipped — see s_loan in the sample-chip row above. No `src` on
+     any clause here, on purpose: loan carries no citation anywhere in this
+     app (docs/legal-sources-loans.md is an unverified checklist, not a
+     register), so a hand-authored demo may not imply one either. Every t/p/
+     ask/a/r below is copied verbatim from the four live loan RULES (see
+     DOMAIN_SIGNALS.loan and the rules that follow it) rather than
+     independently written, so a reader who tries the sample chip and a
+     reader who pastes a real financing contract get the identical advice —
+     two authored copies of the same claim is how they drift apart. */
+  loan: { score:52, doc:"doc_loan",
+    verdict:{ar:"وقّف شوي — بندان يحتاجان وقفة قبل التوقيع، وبندان يستاهلان توضيحًا.",
+             en:"Hold on — two clauses need a pause before you sign, and two more are worth clarifying."},
+    vs:{ar:"بندان يستحقان مطالبة، وبندان يستحقان توضيحًا كتابيًا من الجهة الممولة.",
+        en:"Two clauses are worth raising, and two are worth a written clarification from the financing provider."},
+    clauses:[
+      { s:"red", topic:"rate",
+        t:{ar:"لا يوجد رقم واضح لنسبة الربح",en:"No stated profit rate"},
+        q:{ar:"تُحسب نسبة الربح وفق ما تقرره الجهة الممولة من وقت لآخر، على الرصيد المتناقص.",
+           en:"The profit rate is calculated as determined by the financing provider from time to time, on a reducing balance."},
+        p:{ar:"العقد يذكر «نسبة الربح» أو ما شابه بدون رقم محدد بجانبها. بدون رقم، ما تقدر تحسب كم راح يكلفك التمويل فعليًا ولا تقارنه بعرض آخر.",
+           en:"The contract mentions a profit/interest rate without a specific number next to it. Without a number, you can't calculate what the financing actually costs you or compare it to another offer."},
+        ask:{ar:"أرجو ذكر نسبة الربح السنوية الفعلية بالكامل، ككتابة رقمية واضحة.",
+            en:"I would ask that the actual annual profit rate be stated in full, as a clear number."},
+        a:{ar:"اطلب كتابة نسبة الربح كرقم واضح قبل التوقيع.",en:"Ask for the profit rate written as a clear number before signing."},
+        r:{ar:"بدون الرقم، اطلب من الجهة الممولة كشف تكلفة التمويل الكاملة كتابةً قبل التوقيع.",
+           en:"Without the number, ask the financing provider for the full cost of financing in writing before you sign."} },
+      { s:"red", topic:"balance",
+        t:{ar:"استحقاق كامل المبلغ عند إخلال واحد",en:"Whole balance due on one missed payment"},
+        q:{ar:"يحق للجهة الممولة المطالبة بكامل المبلغ المتبقي فور تأخر المقترض عن سداد أي قسط.",
+           en:"The financing provider may demand the entire remaining balance the moment the borrower falls behind on any installment."},
+        p:{ar:"العقد يعطي الجهة الممولة حق المطالبة بكامل المبلغ المتبقي فور تأخرك عن قسط واحد. هذا شائع في عقود التمويل، لكن اعرف بالضبط متى يُفعَّل ووش يترتب عليه.",
+           en:"The contract lets the financing provider demand the entire remaining balance the moment you miss a single installment. This is common in financing contracts, but know exactly when it's triggered and what follows."},
+        ask:{ar:"أرجو معرفة عدد الأقساط المتأخرة قبل تفعيل هذا الحق، ووجود مهلة تصحيح قبله.",
+            en:"I would ask how many missed installments are needed before this right is triggered, and whether there's a grace period to catch up first."},
+        a:{ar:"اسأل عن مهلة التصحيح المتاحة قبل استحقاق كامل المبلغ.",en:"Ask what grace period exists before the whole balance becomes due."},
+        r:{ar:"لو تأخرت عن قسط، تواصل مع الجهة الممولة فورًا — كثير من الجهات تسمح بترتيب بديل قبل تفعيل هذا الحق.",
+           en:"If you fall behind on an installment, contact the financing provider immediately — many will arrange an alternative before triggering this right."} },
+      { s:"amber", topic:"early",
+        t:{ar:"رسوم السداد المبكر",en:"Early-settlement fee"},
+        q:{ar:"في حال السداد المبكر يلتزم المقترض بغرامة سداد مبكر تحددها الجهة الممولة.",
+           en:"In the event of early settlement, the borrower shall pay an early-settlement fee set by the financing provider."},
+        p:{ar:"العقد يفرض رسومًا إذا سددت التمويل قبل موعده. تأكد من الرقم أو طريقة حسابه — ومن وجود حد أعلى له.",
+           en:"The contract charges a fee if you pay off the financing early. Check the exact figure or how it's calculated — and whether it has a cap."},
+        ask:{ar:"أرجو توضيح كيف تُحسب رسوم السداد المبكر، ووضع حد أعلى لها كتابةً.",
+            en:"I would ask exactly how the early-settlement fee is calculated, and for a written cap on it."},
+        a:{ar:"اسأل عن طريقة حساب رسوم السداد المبكر وحدها الأعلى قبل التوقيع.",
+           en:"Ask how the early-settlement fee is calculated and what its cap is before signing."},
+        r:{ar:"إذا قررت السداد الكامل لاحقًا، اطلب من الجهة الممولة كشف تسوية مكتوب يبيّن المبلغ المتبقي والرسوم قبل الدفع — لا تعتمد على تقدير شفهي.",
+           en:"If you decide to pay off the loan in full later, ask the financing provider for a written settlement statement showing the remaining balance and fees before you pay — don't rely on a verbal estimate."} },
+      { s:"amber", topic:"salary",
+        t:{ar:"حوالة الراتب",en:"Salary assignment"},
+        q:{ar:"يحوّل صاحب العمل نسبة من راتب المقترض مباشرة إلى الجهة الممولة شهريًا.",
+           en:"The employer shall transfer a percentage of the borrower's salary directly to the financing provider each month."},
+        p:{ar:"العقد يحوّل جزءًا من راتبك مباشرة من صاحب العمل إلى الجهة الممولة. هذا شائع في التمويل الاستهلاكي، لكن اعرف كم النسبة المحوّلة ووش يصير لو غيّرت جهة عملك.",
+           en:"The contract routes part of your salary directly from your employer to the financing provider. This is common in consumer financing, but know the exact percentage and what happens if you change employers."},
+        ask:{ar:"أرجو معرفة النسبة المحوّلة من الراتب بالضبط، وإجراء تحديث الحوالة عند تغيير جهة العمل.",
+            en:"I would ask exactly what percentage of salary is assigned, and what the process is for updating the assignment if I change employers."},
+        a:{ar:"اسأل عن نسبة حوالة الراتب وإجراء تحديثها عند تغيير الوظيفة.",
+           en:"Ask what percentage of your salary is assigned, and how it's updated if you change jobs."},
+        r:{ar:"إذا غيّرت جهة عملك، أبلغ الجهة الممولة فورًا لتحديث حوالة الراتب — التأخير قد يُقرأ كتعثر.",
+           en:"If you change employers, tell the financing provider right away to update the salary assignment — a delay here can read as a missed payment."} },
+      { s:"green", topic:"schedule",
+        t:{ar:"جدول الأقساط",en:"Installment schedule"},
+        q:{ar:"يُسدَّد مبلغ التمويل على ستين قسطًا شهريًا متساويًا، تبدأ من تاريخ الصرف.",
+           en:"The financing amount is repaid in sixty equal monthly installments, starting from the disbursement date."},
+        p:{ar:"عدد الأقساط ومبلغها الشهري ومتى تبدأ — كلها مكتوبة بوضوح. هذا اللي نحب نشوفه.",
+           en:"The number of installments, their monthly amount, and when they start are all written plainly. Exactly what we like to see."},
         a:null }
     ]}
 };
@@ -4872,7 +4979,13 @@ function analyzePasted(text, door){
     : ambers
       ? {ar:"لا يوجد ما يقلق — لكن فيه نقاط تستحق المتابعة.",en:"Nothing alarming — but a few points are worth following up."}
       : {ar:"ما وجدنا مؤشرات خطر في النص المرسل.",en:"We found no risk signals in the submitted text."};
-  return { score, doc:"doc_pasted", verdict, vs:vsigned, clauses };
+  /* A pasted financing contract used to fall through to the same generic
+     "doc_pasted" ("Your contract") every other unclassified paste gets, even
+     though `dom` had already classified it with confidence. That flattened
+     the document label, the letter salutation, and the scope note (see
+     scope_loan) into the same "we couldn't tell what this is" copy a truly
+     unclassified paste gets — the opposite of what actually happened. */
+  return { score, doc: dom === "loan" ? "doc_loan" : "doc_pasted", verdict, vs:vsigned, clauses };
 }
 
 /* --------------------------------------------------------------- state */
@@ -5447,7 +5560,12 @@ function decide(a){
    Pasted text is only as trustworthy as the number of clauses matched, so we
    say what we matched and let the reader judge. */
 function confidence(a){
-  if (a.doc !== "doc_pasted") return { level:"high", n:a.clauses.length };
+  /* doc_loan is pasted text too — analyzePasted() gives it its own label so
+     the letter and scope note read correctly (see there), not because it is
+     a curated sample. Treating it as "high" here would have told a reader
+     their own pasted financing contract was matched with the same confidence
+     as a hand-authored demo. */
+  if (a.doc !== "doc_pasted" && a.doc !== "doc_loan") return { level:"high", n:a.clauses.length };
   const n = a.clauses.length;
   return { level: n >= 4 ? "med" : "low", n:n };
 }
@@ -5570,7 +5688,7 @@ function renderReportHead(){
   if (el) el.textContent = fmtDate(Date.now());
 }
 
-const SCOPE_OF = { doc_emp:"job", doc_clean:"job", doc_rent:"rent", doc_free:"gig" };
+const SCOPE_OF = { doc_emp:"job", doc_clean:"job", doc_rent:"rent", doc_free:"gig", doc_loan:"loan" };
 function renderScope(){
   const el = document.getElementById("scopeNote");
   if (!el) return;
@@ -5580,6 +5698,7 @@ function renderScope(){
   const key = dom === "job" ? "scope_job"
             : dom === "rent" ? "scope_rent"
             : dom === "gig" ? "scope_gig"
+            : dom === "loan" ? "scope_loan"
             : "scope_unknown";
   el.textContent = t(key);
   el.hidden = !current;
@@ -6132,7 +6251,10 @@ const FU_CATS = [
   ["fu_cat_rent", "fu_cat_rent_d", true],
   ["fu_cat_free", "fu_cat_free_d", true],
   ["fu_cat_supp", "fu_cat_supp_d", false],
-  ["fu_cat_loan", "fu_cat_loan_d", false]
+  /* true, on the same bar rental and freelance already clear: reads the
+     document itself and produces flags and a letter, with no citation behind
+     them. See fu_cat_loan_d for what that bar does and does not cover. */
+  ["fu_cat_loan", "fu_cat_loan_d", true]
 ];
 
 function renderFuture(){
@@ -9528,8 +9650,14 @@ function crTermValue(kt, key, how){
      names it `currency`. Both are read here rather than in two renderers. */
   if (how === "money") return fmtNum(n) + " " + (kt.salary_currency || kt.currency || "SAR");
   if (how === "percent") return fmtNum(n) + "%";
-  if (how === "months") return t("cr_months").replace("{n}", fmtNum(n));
-  return t(how === "days" ? "cr_days" : "cr_hours").replace("{n}", fmtNum(n));
+  /* "{n} شهر" was grammatical only for n === 1 — a 60-month loan term rendered
+     "٦٠ شهر" instead of "٦٠ شهرًا". countNoun() + the _1/_2/_p/_m stems are the
+     same fix the EOS screen already made for exactly this class of noun, so
+     this reuses eos_m / eos_d rather than re-deriving Arabic count agreement a
+     second time. Hours has no existing stem, so it gets its own. */
+  if (how === "months") return countNoun("eos_m", n);
+  if (how === "days") return countNoun("eos_d", n);
+  return countNoun("cr_hr", n);
 }
 
 /* THE REVIEW OF A PHOTOGRAPHED CONTRACT.
@@ -13145,6 +13273,9 @@ const LETTER_TO = {
   doc_emp:{ar:"إلى: قسم الموارد البشرية",en:"To: The HR department"},
   doc_rent:{ar:"إلى: المؤجّر الكريم",en:"To: The landlord"},
   doc_free:{ar:"إلى: العميل الكريم",en:"To: The client"},
+  /* Indexed directly with no fallback below, so a doc kind missing here is a
+     crash on the first letter it reaches, not a generic salutation. */
+  doc_loan:{ar:"إلى: الجهة الممولة",en:"To: The financing provider"},
   doc_pasted:{ar:"إلى: الطرف الآخر",en:"To: The other party"}
 };
 /* Point numbering for the letter and the risk summary. This was a nine-slot
