@@ -33,8 +33,17 @@ const T = {
      overstates it. Same conditional truth, same wording as the app. */
   hero_eyebrow:{ar:"يعمل على جهازك — ما يُرفع عقدك إلا بموافقتك",en:"Runs on your device — nothing is uploaded without your consent"},
   hero_h:{ar:"اعرف هل تقدر توقّع — قبل ما توقّع.",en:"Know whether you can sign — before you do."},
-  hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، ومصدر كل معلومة من نظام العمل، وخطاب جاهز ترسله. تختار سعودي أو مقيم، ونعرض لك الأنظمة اللي تنطبق عليك أنت.",
-          en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the labour-law source for every point, and a letter ready to send. Pick Saudi or resident, and we show the rules that actually apply to you."},
+  /* NAMED ONLY LABOUR LAW, AND ONLY EMPLOYMENT. This is the single sentence
+     almost every visitor reads, and it hardcoded one contract type — labour
+     law as the source, a Saudi/resident track that only the employment
+     journey asks about — on a page whose own meta description already calls
+     this "ذكاء العقود للأفراد والشركات". Rewritten to name the source only
+     where the app actually has one (rental and freelance carry no article
+     numbers; loan carries none by design — see docs/legal-sources-loans.md),
+     and to name the contract types the product actually reads today rather
+     than the one it started with. */
+  hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، مصدرها إذا كان موثّقًا، وخطاب جاهز ترسله. عقد عمل، إيجار، عمل حر، أو تمويل بنكي — نقرأ عقدك ونوضّح لك وش ينطبق عليك.",
+          en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the source behind each one where we have it, and a letter ready to send. Employment, rental, freelance, or bank financing — we read your contract and show you what applies."},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
   /* "no sign-up" was removed here once analysing a contract needed an account.
