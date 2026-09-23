@@ -388,11 +388,14 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg>
       <span data-t="privacy_line"></span>
     </button>
-    <button class="samples-toggle" id="samplesToggle" onclick="toggleSamples()">
+    <!-- OPEN BY DEFAULT. The line under the heading sends a reader without a
+         contract "below" to a sample; a folded row there was one more tap to
+         find what the sentence promised. Still foldable. -->
+    <button class="samples-toggle open" id="samplesToggle" onclick="toggleSamples()">
       <span data-t="try_sample"></span>
       <span class="chev" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 6 5-6"/></svg></span>
     </button>
-    <div class="samples" id="samplesWrap" hidden>
+    <div class="samples" id="samplesWrap">
       <button class="sample" onclick="analyze('employment')">
         <span class="ic"><svg viewBox="0 0 64 64"><use href="#ic-doc"/></svg></span>
         <span><b data-t="s_emp"></b><span data-t="s_emp_d"></span></span>
@@ -2068,9 +2071,15 @@ const T = {
   info_not_advice:{ar:"هذي معلومة نظامية عامة، مو استشارة قانونية لحالتك.",
                    en:"This is general legal information, not legal advice on your situation."},
   esc_head:{ar:"هذا يستحق محاميًا",en:"This deserves a lawyer"},
-  esc_body:{ar:"فيه بند أو أكثر قد يتحول لنزاع فعلي. وضوح يشرح ويجهّز، لكن القرار في نزاع حقيقي يحتاج محاميًا سعوديًا مرخّصًا — ونقدر نجهّز لك ملفك قبل ما تروح له.",
-            en:"One or more clauses here could become a real dispute. Wodouh explains and prepares, but a genuine dispute needs a licensed Saudi lawyer — and we can have your file ready before you go."},
-  esc_cta:{ar:"جهّز ملفي للمحامي",en:"Prepare my file for a lawyer"},
+  /* THE BUTTON SAID "PREPARE MY FILE" AND OPENED A CHAT. It calls
+     openAssist(), the question-and-answer screen; no file is assembled. Named
+     for what it does, and the sentence above it no longer promises a file the
+     button does not make. Renaming is the smaller of the two honest fixes —
+     routing it to the case builder would send someone reading a contract
+     before signing into a termination tool. */
+  esc_body:{ar:"فيه بند أو أكثر قد يتحول لنزاع فعلي. وضوح يشرح ويجهّز، لكن القرار في نزاع حقيقي يحتاج محاميًا سعوديًا مرخّصًا — وتقدر تسأل وضوح هنا عن هذه البنود قبل ما تروح له.",
+            en:"One or more clauses here could become a real dispute. Wodouh explains and prepares, but a genuine dispute needs a licensed Saudi lawyer — and you can ask Wodouh about these clauses here before you go."},
+  esc_cta:{ar:"اسأل وضوح عن هذه البنود",en:"Ask Wodouh about these clauses"},
   tab_review:{ar:"راجع",en:"Review"},
   tab_rights:{ar:"حقوقي",en:"Rights"},
   tab_remind:{ar:"تذكيراتي",en:"Reminders"},
@@ -2439,7 +2448,12 @@ const T = {
             en:["Open the file, select the text, copy it and paste it here","If you have the original Word file, export it to PDF and upload that","Or paste just the key clauses — probation, notice, non-compete"]},
   offline:{ar:"يبدو أنك غير متصل — تحقق من الاتصال وحاول مرة ثانية.",
            en:"You appear to be offline — check your connection and try again."},
-  sub:{ar:"اختر عقدًا تجريبيًا أو الصق نص عقدك، ونشرح لك كل بند بلغة واضحة.",en:"Pick a sample contract or paste your own, and we'll explain every clause in plain language."},
+  /* LED WITH THE SAMPLES, WHICH SAT AT THE BOTTOM. The line told the reader
+     to pick a sample first, and the samples were a collapsed row below the
+     paste box and the privacy line — the one instruction on the screen pointed
+     at the one thing it hid. It now leads with what is on top (their own
+     contract), and says where the samples are; they now open unfolded. */
+  sub:{ar:"ارفع عقدك أو الصق نصه، ونشرح لك كل بند بلغة واضحة. ما عندك عقد الحين؟ جرّب نموذجًا تحت.",en:"Upload your contract or paste its text, and we'll explain every clause in plain language. No contract to hand? Try a sample below."},
   s_emp:{ar:"عقد عمل",en:"Employment contract"}, s_emp_d:{ar:"وظيفة بدوام كامل — نموذج تجريبي",en:"Full-time job offer — sample"},
   s_rent:{ar:"عقد إيجار",en:"Rental contract"}, s_rent_d:{ar:"شقة سكنية سنوية — نموذج تجريبي",en:"Annual apartment lease — sample"},
   s_free:{ar:"عقد عمل حر",en:"Freelance agreement"}, s_free_d:{ar:"مشروع تصميم لعميل — نموذج تجريبي",en:"Client design project — sample"},
