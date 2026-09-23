@@ -281,6 +281,17 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
            down under a different name. The reader who has not signed yet is
            not stranded — the intake screen they land on opens with the signed
            question, correctable in one tap. -->
+      <!-- THE QUESTION DOOR LEADS, WHEN IT EXISTS. It was sixth of seven, under
+           the fold on a phone, so a returning reader who only wanted to ask
+           something scrolled past five situations that were not theirs. It is
+           the one door that fits every reader, whatever happened to them, so
+           it goes first; it still renders only where askAvailable() says the
+           build can answer. -->
+      <button class="sit-card" onclick="pickSituation('ask')" id="sitAsk" hidden>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><path d="M12 17.5h.01"/></svg></span>
+        <span><b data-t="sit_ask"></b><span data-t="sit_ask_d"></span></span>
+        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
+      </button>
       <button class="sit-card" onclick="pickSituation('resign')">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5v16h-5"/><path d="M11 8l-4 4 4 4"/><path d="M7 12h9"/></svg></span>
         <span><b data-t="sit_resign"></b><span data-t="sit_resign_d"></span></span>
@@ -309,11 +320,6 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <button class="sit-card" onclick="pickSituation('gig')">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M12 10v7M14 12h-3.2a1.4 1.4 0 0 0 0 2.8h1.6a1.4 1.4 0 0 1 0 2.8H10"/></svg></span>
         <span><b data-t="sit_gig"></b><span data-t="sit_gig_d"></span></span>
-        <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
-      </button>
-      <button class="sit-card" onclick="pickSituation('ask')" id="sitAsk" hidden>
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><path d="M12 17.5h.01"/></svg></span>
-        <span><b data-t="sit_ask"></b><span data-t="sit_ask_d"></span></span>
         <span class="go" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>
       </button>
       <button class="sit-card" onclick="pickSituation('unsure')">
@@ -2725,8 +2731,11 @@ const T = {
   desk_rights_h:{ar:"اعرف حقوقك قبل ما تحتاجها.",en:"Know your rights before you need them."},
   desk_rights_p:{ar:"إجابات قصيرة عن نظام العمل السعودي، كل وحدة ومعها مصدرها — ونقول لك بصراحة متى ما تحققنا.",
                  en:"Short answers on Saudi labour law, each with its source — and we say plainly when we have not verified one."},
-  desk_sub:{ar:"وضوح يشرح عقود العمل والإيجار والعمل الحر بلغة بسيطة، وينبّهك للمخاطر، ويعطيك خلاصة واضحة.",
-            en:"Wodouh explains employment, rental, and freelance contracts in plain language, flags the risks, and gives you a clear verdict."},
+  /* Bank financing added, in the words the onboarding card uses («تمويل
+     بنكي»). The loan reader was named on the landing page and on the splash,
+     then left off the one sentence on home that says what Wodouh reads. */
+  desk_sub:{ar:"وضوح يشرح عقود العمل والإيجار والعمل الحر والتمويل البنكي بلغة بسيطة، وينبّهك للمخاطر، ويعطيك خلاصة واضحة.",
+            en:"Wodouh explains employment, rental, freelance and bank financing contracts in plain language, flags the risks, and gives you a clear verdict."},
   /* It said "interactive prototype" — written before launch and still there
      after it, beside a product real people are using. Replaced with the thing
      that is both true and the strongest reason to trust it. */
