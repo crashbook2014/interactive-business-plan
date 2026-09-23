@@ -2015,8 +2015,14 @@ const T = {
      The rental and freelance wording is the sentence already approved inside
      this app on the roadmap screen (fu_cat_rent_d), shortened. Two phrasings
      of one truth is how two screens start disagreeing. */
-  scope_job:{ar:"قرأنا عقدك مقابل نظام العمل السعودي — كل ملاحظة مسندة لمادة، والمواد معروضة في «حسابي».",
-             en:"Read against the Saudi Labour Law — every point is tied to an article, and the articles are listed in Account."},
+  /* NO LONGER SENDS THE READER TO «حسابي». That tab is gated: a signed-out
+     reader's bar labels it «تسجيل الدخول», and pressing it opens the sign-in
+     wall, so "the articles are listed in Account" pointed the reader at a
+     screen they cannot open and a label they cannot see. The article number is
+     already printed under every flag that rests on one — that is where they
+     are, for everyone. */
+  scope_job:{ar:"قرأنا عقدك مقابل نظام العمل السعودي — وحين تستند الملاحظة لمادة، تجد رقمها مكتوبًا تحتها.",
+             en:"Read against the Saudi Labour Law — where a point rests on an article, its number is printed right under it."},
   scope_rent:{ar:"قرأنا نص عقدك نفسه، لا أنظمة الإيجار: ما عندنا قواعد موثّقة للإيجار ولا مواد نستند لها هنا. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والنقاش، لا في تقرير حكم نظامي.",
               en:"Read as a contract, not against rental law: we have no verified rental rules and no articles to lean on here. What's above is a reading of your own clauses — enough to document and to raise, not to settle a legal question."},
   scope_gig:{ar:"قرأنا نص عقدك نفسه، لا أنظمة العمل الحر: ما عندنا سجل موثّق لها بعد. اللي فوق قراءة لبنودك، وتقدر تعتمد عليها في التوثيق والمطالبة، لا في تقرير حكم نظامي.",
@@ -3887,8 +3893,14 @@ const NAT_CARD =
 /* Each clause: t (title), q (contract quote), p (plain explanation), a (advice), s (status) */
 const SAMPLES = {
   employment: { score:68, doc:"doc_emp",
-    verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
-    vs:{ar:"عقد عادل بشكل عام — بندان يستحقان المتابعة الآن.",en:"Mostly fair — two clauses are worth raising now."},
+    /* {n} IS COUNTED, NOT WRITTEN. This said "negotiate two clauses" directly
+       under a tally reading «بند أحمر و3 بنود صفراء» — one red and three amber —
+       and a reader who adds 1 + 3 gets 4, not 2. The number now comes from
+       negotiables(), the same clauses the letter is built from, and every one
+       of them is red or amber, so the sentence and the tally count one list.
+       See verdictText(). */
+    verdict:{ar:"عقد عادل بشكل عام — فاوض على {n} قبل التوقيع.",en:"Mostly fair — negotiate {n} before you sign."},
+    vs:{ar:"عقد عادل بشكل عام — ابدأ بمتابعة {n} الآن.",en:"Mostly fair — {n} worth raising now."},
     clauses:[
       { s:"red", topic:"noncompete", duty:true,
         src:{ar:"نظام العمل السعودي",en:"Saudi Labor Law"},
@@ -3948,15 +3960,30 @@ const SAMPLES = {
          which the register marks disputed. Ninety days is inside the ceiling on
          either reading, so the sample says so — and still names the point we
          could not confirm, because the sample is what a first-time reader uses
-         to decide whether to trust the product. */
+         to decide whether to trust the product.
+         IT ALSO HAD NO ACTION, and that is what made the colour lie. Amber is
+         labelled «يستاهل التفاوض» / "worth negotiating", and the text beneath
+         it said everything was fine and offered nothing to do — so the badge
+         said one thing and the words another, and the verdict's clause count
+         disagreed with the tally by exactly this clause. The colour stays
+         (surfaces.test.js forbids green on a disputed article, rightly). What
+         changes is that the text now says WHY it is amber and what the amber
+         asks of the reader: one written line that fixes the ninety days, which
+         settles the only thing we could not. It asks; it does not assert how
+         an extension works, which is the disputed mechanism. */
       { s:"amber", topic:"probation",
         src:{ar:"نظام العمل السعودي — المادة 53",en:"Saudi Labor Law — Article 53"},
         t:{ar:"فترة التجربة",en:"Probation period"},
         q:{ar:"يخضع الموظف لفترة تجربة مدتها تسعون يومًا من تاريخ مباشرة العمل.",
            en:"The employee is subject to a probation period of ninety days from the start date."},
-        p:{ar:"90 يومًا داخل الحد الأقصى (180 يومًا) على أي قراءة، وموثّقة بوضوح. ملاحظة: هل يجوز النص على 180 من البداية أو لازم تمديد مكتوب؟ لم نتحقق من الصياغة الحالية بعد تعديلات 2025.",
-           en:"Ninety days sits inside the 180-day ceiling on either reading, and it is clearly documented. Note: whether 180 may be stated from the outset or needs a written extension is something we have not confirmed against the current text after the 2025 amendments."},
-        a:null }
+        p:{ar:"90 يومًا داخل الحد الأقصى (180 يومًا) على أي قراءة، وموثّقة بوضوح. سبب اللون الأصفر: هل يجوز تمديدها لاحقًا، وبأي شرط؟ الصياغة تغيّرت مع تعديلات 2025 ولم نتحقق منها من النص الرسمي — فالأسلم تثبّت المدة كتابيًا بدل ما تفترضها.",
+           en:"Ninety days sits inside the 180-day ceiling on either reading, and it is clearly documented. Why it is amber: whether it can be extended later, and on what terms, changed with the 2025 amendments and we have not confirmed the current text — so it is safer to fix the period in writing than to assume it."},
+        ask:{ar:"أرجو التأكيد كتابيًا أن فترة التجربة تسعون يومًا، وألا تُمدَّد إلا بموافقتي المكتوبة.",
+             en:"I would ask for written confirmation that the probation period is ninety days and will not be extended without my written agreement."},
+        a:{ar:"اطلب سطرًا مكتوبًا يثبّت التسعين يومًا، وأن أي تمديد يكون بموافقتك المكتوبة.",
+           en:"Ask for one written line that fixes the ninety days, and that any extension needs your written agreement."},
+        r:{ar:"المدة المكتوبة تسعون يومًا. لو طُلب منك تمديدها، اطلب أن يكون ذلك كتابيًا واحتفظ بنسخة، ولا توقّع على تمديد قبل ما تتحقق منه.",
+           en:"The period written is ninety days. If you are asked to extend it, ask for that in writing, keep a copy, and don't sign an extension before checking it."} }
     ]},
   clean: { score:92, doc:"doc_clean",
     verdict:{ar:"عقد واضح وعادل — ما فيه شي يحتاج تفاوض.",en:"Clear and fair — nothing here needs negotiating."},
@@ -5859,6 +5886,21 @@ function applyNextStep(d){
   }
 }
 
+/* THE VERDICT LINE, WITH ITS COUNT TAKEN FROM THE CLAUSES.
+   A sample's verdict may carry {n}, filled with the number of clauses the
+   reader is told to act on — negotiables(), the same list the letter is built
+   from — so the sentence cannot say "two" beside a tally of four. Authored
+   verdicts without {n} pass through untouched. */
+function verdictText(l){
+  const want = l || lang;
+  const v = (signedMode && current.vs ? current.vs : current.verdict)[want] || "";
+  if (v.indexOf("{n}") < 0) return v;
+  const keep = lang; lang = want;
+  const n = countNoun("dc_cl", negotiables().length);
+  lang = keep;
+  return v.replace("{n}", n);
+}
+
 function renderResult(reset){
   /* Called directly in a few places as well as through show(). Same reason. */
   if (!current){ show("home"); return; }
@@ -5866,8 +5908,7 @@ function renderResult(reset){
   renderReportHead();
   renderFlagTally();
   renderDecision();
-  document.getElementById("verdict").textContent =
-    (signedMode && current.vs ? current.vs : current.verdict)[lang];
+  document.getElementById("verdict").textContent = verdictText();
   document.getElementById("docLabel").textContent = t(current.doc);
   renderScope();
   if (reset){
@@ -11070,8 +11111,8 @@ function answerSummary(){
   const amb = current.clauses.filter(c=>c.s==="amber").length;
   const grn = current.clauses.filter(c=>c.s==="green").length;
   const head = lang==="ar"
-    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من 100.\n${(signedMode&&current.vs?current.vs:current.verdict).ar}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
-    : `${t(current.doc)} — scored ${current.score} out of 100.\n${(signedMode&&current.vs?current.vs:current.verdict).en}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
+    ? `${t(current.doc)} — التقييم ${fmtNum(current.score)} من 100.\n${verdictText("ar")}\n\nراجعت ${fmtNum(current.clauses.length)} بنود: ${fmtNum(red)} تحتاج وقفة، ${fmtNum(amb)} تستاهل التفاوض، ${fmtNum(grn)} مطمئنة.`
+    : `${t(current.doc)} — scored ${current.score} out of 100.\n${verdictText("en")}\n\nI read ${current.clauses.length} clauses: ${red} need a pause, ${amb} are worth negotiating, ${grn} are fine.`;
   const lines = current.clauses.map(c=>`• ${c.t[lang]} — ${c.p[lang]}`).join("\n");
   return { text: head + "\n\n" + lines };
 }
