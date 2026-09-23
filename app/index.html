@@ -10276,7 +10276,20 @@ function buildTermDoc(){
   const secs = termSections()
     .filter(s => s.state !== "ok")
     .map(s => `• ${t(s.k)} — ${t("tm_st_" + s.state)}: ${t(s.why)}`);
-  const money$ = lines.map(l => `• ${t(l.key)}: ${money(l.amt)} ${cur}`);
+  /* EACH LINE ONCE, UNDER THE TOTAL IT BELONGS TO. This listed every line —
+     the contested Article 77 compensation included — and then gave "owed on
+     the face of it" as the sum of all but that one, and then printed the
+     compensation again as the contested figure. A reader adding up the list
+     got the certain total plus the contested one (146,490 against a stated
+     101,260 in the audit's walk), and saw one amount twice. buildTermLtr()
+     already split its list this way; the case file now does the same: the
+     certain lines, their total, then the contested lines under the sentence
+     that reserves them. A contested subtotal is added only when there is more
+     than one contested line to add up — with one, it would be that line
+     again. */
+  const certain = lines.filter(l => !l.contested), contested = lines.filter(l => l.contested);
+  const row = l => `• ${t(l.key)}: ${money(l.amt)} ${cur}`;
+  const money$ = lines.map(row);
 
   return [
     t("tm_doc_title"),
@@ -10288,16 +10301,19 @@ function buildTermDoc(){
     ...(secs.length ? secs : [t("tm_d_none")]),
     "",
     t("tm_d_h_money"),
-    ...(money$.length ? money$ : [t("tm_d_none")]),
     /* Two figures here too. The document is what reaches the employer and the
        friendly-settlement filing; a single sum there asserts as owed money
        that depends on a ruling, which is the one claim in it that could be
        thrown back at the reader. */
-    ...(money$.length ? (termTotalContested() > 0
-        ? [`• ${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`,
+    ...(!money$.length ? [t("tm_d_none")]
+        : contested.length
+        ? [...certain.map(row),
+           ...(certain.length ? [`• ${t("tm_m_total_certain")}: ${money(termTotalCertain())} ${cur}`] : []),
            t("tm_l_split_more"),
-           `• ${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`]
-        : [`• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`]) : []),
+           ...contested.map(row),
+           ...(contested.length > 1
+               ? [`• ${t("tm_m_total_contested")}: ${money(termTotalContested())} ${cur}`] : [])]
+        : [...money$, `• ${t("tm_m_total")}: ${money(termTotal())} ${cur}`]),
     /* The screen is where the honesty lives; this document is what actually
        goes to the employer, the lawyer and the friendly-settlement filing. It
        was carrying the understated total with no mention that an unanswered
