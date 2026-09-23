@@ -200,6 +200,14 @@ const T = {
   price_h:{ar:"الحقيقة مجانية. اللي تدفع عليه هو الورق اللي تستخدمه.",en:"The truth is free. You pay for the outputs."},
   price_p:{ar:"التقييم والقرار وحاسبة نهاية الخدمة مجانية دائمًا — عشان ما نكون طرفًا في قرارك. فحص كامل لكل البنود له سعره.",
            en:"The score, the verdict, and the calculator are always free — so we're never a party to your decision. A full clause-by-clause review is priced."},
+  /* The app's free_now_h / free_now_b, adapted: that sentence stands above the
+     in-app plans list and says "every feature is open to you"; here the reader
+     is not in the app yet, so it says the app. Guarded by
+     test/commerce.test.js, which requires this line while the app's FREE_NOW
+     is true and keeps its promise to warn before anything is charged. */
+  price_free_h:{ar:"كل شي مجاني الحين",en:"Everything is free right now"},
+  price_free_b:{ar:"الأسعار تحت توضّح وين رايحين، لكن ما فيه دفع الحين: كل ميزات التطبيق مفتوحة لك بالكامل ومجانًا. لو صار فيه دفع لاحقًا، بنقولها لك قبل لا يصير — ما راح نبدأ نحاسبك بدون ما تدري.",
+                en:"The prices below show where this is heading, but nothing is being charged: every feature in the app is open to you, in full, free. If paid plans start later we will tell you before that happens — you will not simply find yourself being charged."},
   p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},
   /* Wording matches plan_review_d (app/index.html) verbatim, on purpose — this
      card and the app catalogue describe the same 199 SAR product, and reusing

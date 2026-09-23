@@ -460,6 +460,29 @@ async function seedTermination(p){
        `the saving it claims (${claimed && claimed[1]}) is the catalogue's own arithmetic (${saving})`);
   }
 
+  /* ---- and while nothing is charged, the homepage says so where the prices are.
+     The app ships FREE_NOW = true and says "everything is free right now" on
+     its own plans screen; the homepage listed the same prices with no such
+     line, so a stranger read a live price list for a product that would not
+     charge them. Keyed to the app's switch, so flipping FREE_NOW off frees the
+     page to drop the line — and leaving it on keeps the line required. */
+  console.log("\n— while FREE_NOW is on, the homepage prices carry the free-now line");
+  {
+    const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    const home = readFileSync(path.join(ROOT, "index.html"), "utf8");
+    const src5 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const freeNow = /(?:const|let) FREE_NOW\s*=\s*(true|false)/.exec(src5);
+    ok(!!freeNow, `the app's FREE_NOW is readable (${freeNow && freeNow[1]})`);
+    if (freeNow && freeNow[1] === "true") {
+      const at = home.indexOf('data-t="price_free_h"'), prices = home.indexOf('class="prices"');
+      ok(at > 0 && prices > at, "the free-now line sits above the price cards, not under them");
+      const body = landing.match(/price_free_b:\{ar:"([^"]+)",\s*en:"([^"]+)"/);
+      ok(!!body, "and it is written in both languages");
+      ok(body && /قبل لا يصير/.test(body[1]) && /before that happens/.test(body[2]),
+         "with the same promise the app makes: we tell you before anything is charged");
+    }
+  }
+
   /* ---- one numeral convention across every surface a reader crosses.
      The homepage wrote ١٤٩ and م/٥١ while the app one tap away writes 149 and
      م/51 — the same price in two scripts. app/index.html settled the question

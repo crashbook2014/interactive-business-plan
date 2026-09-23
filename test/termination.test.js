@@ -230,6 +230,28 @@ async function art87Certainty(p){
     ok(!new RegExp(Math.round(split.total).toLocaleString("en-US")).test(txt),
        `the ${name} never states the merged sum as one number`);
   }
+  /* THE CASE FILE'S LIST ADDS UP TO ITS OWN TOTAL. It listed every line, the
+     contested compensation included, then gave the certain total, then printed
+     the compensation a second time as the contested figure — so the list
+     summed to certain + contested against a stated certain total, and one
+     amount appeared twice. Read off the document itself, the way a reader
+     with a calculator would: the "•" amount lines above "Owed on the face of
+     it" must sum to it, and no amount may be printed twice. */
+  {
+    const money = s => +s.replace(/,/g, "");
+    const sec = split.doc.split(/\n\s*\n/).find(b => /Owed on the face of it/.test(b)) || "";
+    const rows = sec.split("\n").filter(r => /^• .*: [\d,]+ SAR$/.test(r));
+    const at = rows.findIndex(r => /Owed on the face of it/.test(r));
+    const above = rows.slice(0, at).map(r => money(r.match(/([\d,]+) SAR$/)[1]));
+    const stated = at >= 0 ? money(rows[at].match(/([\d,]+) SAR$/)[1]) : NaN;
+    ok(at > 0 && Math.abs(above.reduce((n, x) => n + x, 0) - stated) <= above.length,
+       `the case file's certain lines sum to the total it states (${above.join(" + ")} vs ${stated})`);
+    const amts = rows.filter(r => !/Owed on the face of it|Depends on a ruling/.test(r))
+                     .map(r => r.match(/([\d,]+) SAR$/)[1]);
+    ok(amts.length > 0 && new Set(amts).size === amts.length,
+       `and every amount is listed once (${amts.join(", ")})`);
+  }
+
   /* And Wodouh's own explanation, which addresses the READER in the second
      person, never reaches the employer: the employee was telling HR that the
      figures rest on facts HR had entered. */
