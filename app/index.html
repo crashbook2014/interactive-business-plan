@@ -491,7 +491,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <h3 class="rp-meta-h" data-t="rp_meta_h"></h3>
         <p class="src-line scope" id="scopeNote" hidden></p>
         <p class="src-line method score-src" data-t="src_score"></p>
-        <p class="currency" data-t="src_stamp"></p>
+        <p class="currency" id="srcStamp" data-t="src_stamp"></p>
         <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
       </div>
       <div class="all-clear" id="allClear" hidden>
@@ -1958,6 +1958,14 @@ const T = {
   nat_gate_h:{ar:"سؤال واحد قبل ما نقرأ",en:"One question before we read it"},
   nat_gate_b:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض. عشان نعطيك الصح مو التقريبي — أنت مين؟",
               en:"The labour law treats Saudis and residents differently on contract type, notice, and compensation. So we give you the right answer rather than the near-enough one — which are you?"},
+  /* The same question at the termination, resignation and case doors, where
+     nothing is about to be read and the reader is not about to sign anything.
+     They came because a job ended or is ending; the question is asked because
+     it changes the figures we are about to work out for them, so that is the
+     reason given. */
+  nat_gate_h_start:{ar:"سؤال واحد قبل ما نبدأ",en:"One question before we start"},
+  nat_gate_b_start:{ar:"نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة الإشعار والتعويض، وهذا يغيّر الأرقام اللي نحسبها لك. أنت مين؟",
+                    en:"The labour law treats Saudis and residents differently on contract type, notice and compensation, and that changes the figures we work out for you. Which are you?"},
   /* Deliberately not a countdown. No "only N days left", no alarm. The
      obligation is the employer's; the reader's move is simply to look. */
   tm_qiwa_h:{ar:"من 6 أغسطس: كل العقود على صيغة قوى الموحدة",
@@ -5218,7 +5226,7 @@ let obIndex = 0;
    visible rather than in the abstract. */
 let pendingAfterTrack = null;
 
-function needsTrack(resume){
+function needsTrack(resume, kind){
   if (nat) return false;
   /* THE TRACK IS AN EMPLOYMENT QUESTION, so it is not asked about a lease.
      The gate says "نظام العمل يفرّق بين السعودي والمقيم في نوع العقد ومدة
@@ -5238,11 +5246,25 @@ function needsTrack(resume){
      would otherwise still be met with an employment-law question about an
      apartment, and the answer still could not change a line of the output.
      The journey remains the fallback, so nothing changes for a reader who has
-     not pasted anything yet. */
+     not pasted anything yet.
+
+     A SAMPLE IS A DOCUMENT TOO, and it was the one that slipped through. The
+     loan sample is opened from the contract door, with an empty paste box, so
+     the journey answered "employment" and a reader who tapped «عقد تمويل» was
+     asked «نظام العمل يفرّق بين السعودي والمقيم… أنت مين؟» about a bank
+     loan. A sample carries its own doc kind; SCOPE_OF names its domain, the
+     same way renderScope() already does for the line under the score. */
   const box = document.getElementById("pasteBox");
-  const dom = (box && docDomain(box.value)) || doorDomain(journey);
+  const sample = kind && kind !== "pasted" && SAMPLES[kind];
+  const dom = sample ? SCOPE_OF[sample.doc]
+            : ((box && docDomain(box.value)) || doorDomain(journey));
   if (dom && dom !== "job") return false;
   pendingAfterTrack = resume || null;
+  /* Which question the gate is standing in front of. A contract about to be
+     read says "one question before we read it"; the termination and case doors
+     have nothing to read, and a reader who has just lost their job should not
+     be greeted as someone about to sign. See renderOnboard(). */
+  natGateFor = kind ? "read" : "start";
   /* NAT_CARD is no longer in OB, so there is no index to move to — natGate
      alone selects it, and obIndex is left where the reader left it. */
   natGate = true;
@@ -5259,6 +5281,7 @@ function resumeAfterTrack(){
 }
 
 let natGate = false;
+let natGateFor = "read";
 
 /* Has the tour been completed once? Persisted, so it is not re-run. */
 let obDone = false;
@@ -5320,9 +5343,16 @@ function renderOnboard(){
   document.getElementById("obDots").hidden = natGate;
   document.getElementById("obNext").hidden = natGate;
   if (natGate){
-    document.getElementById("obTitle").textContent = t("nat_gate_h");
-    document.getElementById("obSub").textContent = t("nat_gate_b");
+    const sfx = natGateFor === "start" ? "_start" : "";
+    document.getElementById("obTitle").textContent = t("nat_gate_h" + sfx);
+    document.getElementById("obSub").textContent = t("nat_gate_b" + sfx);
   }
+  /* The screen's own heading is what show() focuses and a screen reader
+     announces. As ob_head it said «اعرف وش وقّعت عليه» — "know what you are
+     signing" — to someone who arrived through "my contract was terminated".
+     On the gate it names the gate; on the tour it is the tour's line. */
+  const obH = document.querySelector("#screen-onboard h2");
+  if (obH) obH.textContent = natGate ? document.getElementById("obTitle").textContent : t("ob_head");
   renderObPick(s);
   const dots = document.getElementById("obDots");
   dots.innerHTML = "";
@@ -5370,7 +5400,7 @@ function analyze(kind){
   if (!scanGate(kind)) return;
   /* Which rules apply depends on the track, so ask before reading rather
      than after, and come straight back here with the same contract. */
-  if (needsTrack(()=>analyze(kind))) return;
+  if (needsTrack(()=>analyze(kind), kind)) return;
   const notice = document.getElementById("offlineNotice");
   if (navigator.onLine === false){ notice.hidden = false; return; }
   notice.hidden = true;
@@ -5724,6 +5754,15 @@ function renderScope(){
             : "scope_unknown";
   el.textContent = t(key);
   el.hidden = !current;
+  /* «المراجع محدّثة حتى فبراير 2025» is the date the Labour Law amendments
+     came into force. Under a financing contract — read, as scope_loan says,
+     against no SAMA article at all — it dated references that were never
+     consulted, and read as though the loan had been checked against labour
+     law. Same for a lease or a freelance agreement. Shown only where the
+     Labour Law is what was read, or where we could not tell. style.display,
+     not hidden: .currency sets its own display and would outrank it. */
+  const stamp = document.getElementById("srcStamp");
+  if (stamp) stamp.style.display = (dom && dom !== "job") ? "none" : "";
 }
 
 function renderDecision(){
@@ -5847,6 +5886,13 @@ function renderResult(reset){
   }
   /* With nothing to negotiate, reminders become the one clear next step. */
   document.getElementById("trackTease").classList.toggle("solo", clear);
+  /* NO DEADLINES, NO DEADLINE TRACKER. A financing contract has no entry in
+     EVENTS, so the card promised «فترة التجربة، نافذة الإشعار، والتجديد» —
+     probation and notice, on a bank loan — and tapping it threw on
+     EVENTS[current.doc].map, leaving the reader on a screen that did nothing.
+     A document kind with no dates we can work out does not offer to track
+     them. Set before applyNextStep() below, which reads it. */
+  document.getElementById("trackTease").style.display = EVENTS[current.doc] ? "" : "none";
   renderTrackTease();
   if (!clear) renderTease();
   renderEscalate("result");
