@@ -415,6 +415,10 @@
     text-underline-offset:3px;text-decoration-thickness:1px}
   .foot-links a:hover{color:var(--teal-ink)}
   .price-go{margin-top:26px;text-align:center}
+  .free-now{margin:26px auto 0;max-width:62ch;background:var(--teal-soft);border:1px solid var(--teal);
+    border-radius:var(--r-xl);padding:16px 20px;text-align:start}
+  .free-now b{display:block;font-size:16.5px;color:var(--teal-ink);margin-bottom:4px}
+  .free-now p{font-size:14px;color:var(--ink);line-height:1.8}
   /* THE CURTAIN — see the head script. `.launch-only` is everything that only
      makes sense once people can actually use the thing; `.soon-only` is the
      pre-launch framing. Exactly one of the two is visible, never both, and the
@@ -586,6 +590,20 @@
     <p class="kicker" data-t="k_price"></p>
     <h2 data-t="price_h"></h2>
     <p class="sec-lede" data-t="price_p"></p>
+    <!-- EVERYTHING IS FREE RIGHT NOW, SAID WHERE THE PRICES ARE.
+         The app ships FREE_NOW = true: every door is open and nothing is
+         charged. This page listed five prices under "the truth is free, you
+         pay for the outputs" and never said so, so a stranger read a live
+         price list for a product that would not ask them for a riyal. The
+         prices stay — they are where this is heading, and hiding them would
+         make the day they apply a surprise. Same words as the app's own
+         free_now_h / free_now_b, adapted to a page that is outside the app.
+         launch-only: under the curtain nobody can use the app, so "every
+         feature is open to you" would be untrue. -->
+    <div class="free-now launch-only" id="freeNow">
+      <b data-t="price_free_h"></b>
+      <p data-t="price_free_b"></p>
+    </div>
     <div class="prices">
       <div class="price"><h3 data-t="p1"></h3><div class="amt" data-t="p1a"></div><p data-t="p1p"></p><p class="get" data-t="p1g"></p></div>
       <div class="price hi"><h3 data-t="p1b"></h3><div class="amt" id="p1ba"></div><p data-t="p1bp"></p><p class="get" data-t="p1bg"></p></div>
