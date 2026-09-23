@@ -406,6 +406,44 @@ const STUB = (apple) => {
   ok(/without an account|بدون حساب/i.test(escape.label),
      `and the way out says it needs no account, without listing a subset of what is free ("${escape.label}")`);
 
+  /* ---- THE LETTER DOOR. The one place a signed-out reader has MADE something
+   * before being asked: they add points to a letter and tap «اعرض خطابي». The
+   * wall used to say "create your free account" without mentioning the letter,
+   * and "continue without an account" dropped them on home with the letter out
+   * of sight. Driven, not inspected: build the letter, press the button, read
+   * the headline, press the way out, and check where they land and what they
+   * still hold. */
+  console.log("\n— the letter door names the letter, and declining keeps it");
+  const letterDoor = await p.evaluate(async () => {
+    obDone = true; authUser = null; nat = "sa";
+    analyze("employment");
+    /* Until the loading screen hands over, not a fixed wait: a click that
+       lands mid-load is overtaken by the result screen arriving after it. */
+    for (let i = 0; i < 100 && !document.querySelector("#screen-result.active"); i++)
+      await new Promise(r => setTimeout(r, 100));
+    addAllPoints();
+    const held = selected().length;
+    /* This page has the ai_analysis flag cached (aiPage), which is what a
+       returning reader has — and on this exact path that cache used to send
+       ensureFlags() and renderAiPanel() round each other until the stack ran
+       out, so the button did nothing. A pageerror here fails the suite. */
+    document.getElementById("bView").click();
+    const wall = (document.querySelector(".screen.active") || {}).id;
+    const title = document.getElementById("auTitle").textContent;
+    document.getElementById("auFree").click();
+    return { held, wall, title,
+             landed: (document.querySelector(".screen.active") || {}).id,
+             kept: selected().length,
+             bar: !document.getElementById("builder").hidden };
+  });
+  ok(letterDoor.wall === "screen-signin", `viewing the letter signed out reaches the wall (${letterDoor.wall})`);
+  ok(/letter|خطاب/i.test(letterDoor.title),
+     `and the wall says the letter is what an account keeps ("${letterDoor.title}")`);
+  ok(letterDoor.landed === "screen-result",
+     `declining returns the reader to their result, not home (${letterDoor.landed})`);
+  ok(letterDoor.held > 0 && letterDoor.kept === letterDoor.held && letterDoor.bar,
+     `with every point they chose still in the letter (${letterDoor.kept} of ${letterDoor.held})`);
+
   const p2 = await aiPage(b, { viewport: { width: 390, height: 844 } });
   p2.on("pageerror", e => FAIL.push("pageerror: " + e.message));
   await p2.goto(APP);

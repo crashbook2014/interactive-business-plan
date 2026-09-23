@@ -798,8 +798,12 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
          the chooser: it carries the calculator and the library the sentence
          above names, plus every other door, and it is where the tour lands
          anyone who did sign in. Same destination for both, which is the
-         point. -->
-    <button class="au-free" id="auFree" type="button" onclick="goTab('home')"></button>
+         point.
+         EXCEPT FROM THE LETTER. A reader who tapped «اعرض خطابي» built that
+         letter point by point, and "no thanks" used to drop them on home with
+         the letter nowhere in sight. signinSkip() sends them back to the
+         result they came from, points still selected. -->
+    <button class="au-free" id="auFree" type="button" onclick="signinSkip()"></button>
     <div class="tm-sec au-what">
       <p><b data-t="au_what"></b></p>
       <p data-t="au_what_b"></p>
@@ -1475,8 +1479,17 @@ function ensureFlags(){
     flagPending = Promise.resolve(false);
     return flagPending;
   }
+  /* THE CACHE IS APPLIED AFTER flagPending IS SET, NOT BEFORE. applyFlags()
+     re-renders the active screen, and on the result screen that is
+     renderAiPanel(), which calls ensureFlags() — so applying the cache first
+     re-entered this function with flagPending still null, applied the cache
+     again, and recursed until the stack ran out. It needed only a cached flag
+     and a first governed call made from the result screen: a returning reader
+     tapping «اعرض خطابي» (openPaywall() is a governed surface) got "Maximum
+     call stack size exceeded" and a button that did nothing. The fetch below
+     runs synchronously only up to its first await, so nothing it does can
+     land before the cache is applied. */
   const cached = flagCacheRead();
-  if (cached && Object.keys(cached).length){ flagValues = cached; applyFlags(); }
 
   flagPending = (async () => {
     try {
@@ -1511,6 +1524,7 @@ function ensureFlags(){
       return false;
     }
   })();
+  if (cached && Object.keys(cached).length){ flagValues = cached; applyFlags(); }
   return flagPending;
 }
 
@@ -1558,6 +1572,14 @@ const T = {
      not claim there is work to keep. The subtitle underneath then says what
      is free without one. */
   au_title_gate:{ar:"سوِّ حسابك المجاني",en:"Create your free account"},
+  /* Arriving from «اعرض خطابي». The letter exists — it was assembled from the
+     points the reader added — so the headline says so, and says what the
+     account is for: keeping it. The subtitle tells them the one thing they
+     need to decide calmly: saying no loses nothing they have built. */
+  au_title_letter:{ar:"خطابك جاهز — احفظه بحساب مجاني عشان ما يضيع",
+                   en:"Your letter is ready — save it with a free account so it isn't lost"},
+  au_sub_letter:{ar:"جمعنا النقاط اللي اخترتها في خطاب واحد. الحساب يحفظه لك وترجع له من أي جهاز. ولو تبي تكمّل بدون حساب، نرجّعك لنتيجتك والنقاط اللي اخترتها زي ما هي.",
+                 en:"We've put the points you chose into one letter. An account keeps it for you, on any device. If you'd rather carry on without one, we'll take you back to your result with your points still selected."},
   /* THE HEADLINE THAT DESCRIBED THE WRONG MOMENT — TWICE, AND THE SECOND TIME
      IS THIS EDIT.
      It first said "Save your work" to a reader who had just pressed analyse
@@ -6538,7 +6560,28 @@ let pendingNav = null;
 function authRedirect(name, back){
   pendingNav = { kind: "screen", payload: name };
   authWant = "nav";
-  openSignin(back || "home");
+  /* THE LETTER IS A DIFFERENT DOOR. The reader is not "navigating" — they
+     built something, and the wall is between them and it. Remember which
+     screen they built it on, so declining the account returns them there
+     (see signinSkip) instead of to home, where the letter is out of sight. */
+  if (name === "letter"){
+    authWant = "letter";
+    const from = (document.querySelector(".screen.active") || {}).id || "";
+    back = from === "screen-clauses" ? "clauses" : "result";
+  }
+  openSignin(typeof back === "string" ? back : "home");
+}
+
+/* "Continue without an account". Home, as it always was — except from the
+   letter, where it returns to the result the letter was built from. The
+   selection lives in letterSet, which nothing here clears, so the builder bar
+   comes back with the same count the reader left. */
+function signinSkip(){
+  const toLetter = authWant === "letter" && current &&
+                   (authBack === "result" || authBack === "clauses");
+  authWant = null;
+  if (toLetter){ pendingNav = null; show(authBack, 1); return; }
+  goTab("home");
 }
 
 /* Put them back where they were interrupted. Falls through to authBack on
@@ -6566,6 +6609,10 @@ const RESUME = {
   assist: () => openAssist(asOrigin || "home"),
   ask:    () => openAsk(),
   eos:    () => openEos(),
+  /* openPaywall() re-renders the letter from letterSet before showing it, so
+     the letter they asked to see is the one they get — in the language they
+     are reading now, not the one it was first drawn in. */
+  letter: () => openPaywall(),
 };
 function resumeAfterAuth(){
   const p = pendingNav; pendingNav = null;
@@ -6635,9 +6682,15 @@ function renderSigninCopy(){
      pressed said "review my contract free", so the first thing the product
      does after the tour is answer a different question than the one asked. */
   const gateDoor = !scanDoor && authWant === "nav";
+  /* THE FOURTH DOOR, AND THE ONE WHERE A SIGN-UP IS MOST LIKELY. The reader
+     has just built a letter and asked to see it. The generic "create your free
+     account" never mentioned it, so the wall read as a toll on the way to
+     something rather than as a way to keep it. Name the thing they made. */
+  const letterDoor = authWant === "letter";
   const ttl = document.getElementById("auTitle"), sb = document.getElementById("auSub");
-  if (ttl) ttl.textContent = t(scanDoor ? "au_title_scan" : gateDoor ? "au_title_gate" : "au_title");
-  if (sb)  sb.textContent  = t(scanDoor ? "au_sub_scan"   : "au_sub");
+  if (ttl) ttl.textContent = t(scanDoor ? "au_title_scan" : letterDoor ? "au_title_letter"
+                               : gateDoor ? "au_title_gate" : "au_title");
+  if (sb)  sb.textContent  = t(scanDoor ? "au_sub_scan" : letterDoor ? "au_sub_letter" : "au_sub");
 }
 
 /* APPLE, WHICH IS ANNOUNCED RATHER THAN HIDDEN WHILE IT IS COMING.
