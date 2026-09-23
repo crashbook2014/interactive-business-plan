@@ -2561,8 +2561,16 @@ const T = {
                en:"{n} found in your situation: {list}"},
   pw_sh_law:{ar:"‏{n} منها مسندة إلى مادة موثّقة، و{m} اجتهاد وضوح — كلٌّ منها موسوم بمصدره",
              en:"{n} of them cite a verified article, {m} {v} Wodouh's own reading — each one labelled"},
+  /* The pronoun follows the count. {n} is countNoun("cnt_item"): «بند واحد»
+     needs «تقديره», «بندين» needs «تقديرهما», and only three and up take the
+     feminine plural «تقديرها». One sentence for all three read «بند واحد لم
+     نستطع تقديرها». renderPwShape() picks the form. */
   pw_sh_gaps:{ar:"‏{n} لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
               en:"{n} we could not assess, and what each one needs: {list}"},
+  pw_sh_gaps_1:{ar:"‏{n} لم نستطع تقديره، ونقول لك ما ينقصه: {list}",
+                en:"{n} we could not assess, and what it needs: {list}"},
+  pw_sh_gaps_2:{ar:"‏{n} لم نستطع تقديرهما، ونقول لك ما ينقصهما: {list}",
+                en:"{n} we could not assess, and what each one needs: {list}"},
   pw_sh_each:{ar:"كل مبلغ يذكر القاعدة، وكيف تنطبق على أرقامك، ومصدرها، ودرجة اليقين",
               en:"Every amount states its rule, how it applies to your numbers, its source, and how certain it is"},
   pw_sh_case_claim:{ar:"مطالبتك بالأرقام، كل بند بمصدره",
@@ -2619,10 +2627,10 @@ const T = {
   acc_pack_left:{ar:"باقي لك {n} مراجعات من الباقة، تنتهي في {d}.",
                  en:"{n} reviews left in your pack. They expire on {d}."},
   pw_rev_title:{ar:"المراجعة الكاملة لعقدك",en:"The full review of your contract"},
-  pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانيون دائمًا.",
+  pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانية دائمًا.",
                en:"The score, the decision and the first flag are always free."},
   pw_pay_rev:{ar:"افتح المراجعة",en:"Unlock the review"},
-  scan_lock_t:{ar:"هذي فحص سريع",en:"That was a quick scan"},
+  scan_lock_t:{ar:"هذا فحص سريع",en:"That was a quick scan"},
   scan_lock_b:{ar:"بقية بنود عقدك — كل بند وحالته وسنده من النظام — تجيك في المراجعة الكاملة.",
                en:"The rest of your contract's clauses — each one, its state, and where it sits in the law — come with the full review."},
   scan_left1:{ar:"لك فحص مجاني واحد كل شهر.",en:"You get one free scan a month."},
@@ -2849,6 +2857,16 @@ const T = {
   th_probation:{ar:"أُنهي عقدي خلال فترة التجربة",en:"I was terminated during probation"},
   th_noreason:{ar:"أُنهي عقدي بدون سبب واضح",en:"I was terminated without a clear reason"},
   th_other:{ar:"غير ذلك",en:"Something else"},
+  /* The same seven, as they are written in a letter or a case file. The labels
+     above are the reader's own voice on a choice screen; these are the
+     document's. Keyed by TERM_HOW id, and termFacts() is the only reader. */
+  thf_employer:{ar:"إنهاء العقد من قِبل صاحب العمل",en:"Termination by the employer"},
+  thf_forced:{ar:"استقالة قُدِّمت بطلب من صاحب العمل",en:"Resignation submitted at the employer's request"},
+  thf_resigned:{ar:"استقالة من الموظف",en:"Resignation by the employee"},
+  thf_expired:{ar:"انتهاء مدة العقد دون تجديد",en:"Expiry of the contract term without renewal"},
+  thf_probation:{ar:"إنهاء العقد خلال فترة التجربة",en:"Termination during the probation period"},
+  thf_noreason:{ar:"إنهاء العقد من قِبل صاحب العمل دون بيان سبب واضح",en:"Termination by the employer without a clear stated reason"},
+  thf_other:{ar:"غير ذلك",en:"Other"},
 
   tm_q_next:{ar:"التالي",en:"Continue"},
   tm_q_done:{ar:"التالي: الأوراق",en:"Next: your documents"},
@@ -3052,7 +3070,10 @@ const T = {
   tm_conf_mod:{ar:"متوسطة",en:"Moderate"},
   tm_conf_low:{ar:"منخفضة — ينقصنا معلومات",en:"Low — information is missing"},
   tm_cs_label:{ar:"تقدير عام",en:"Overall"},
-  tm_cs_strong:{ar:"أساس واضح يستدعي المراجعة",en:"Strong basis for further review"},
+  /* "Strong" promised more than «واضح» does. The Arabic says the basis is
+     clear, not that it is strong, and the reader in either language should be
+     told the same thing. */
+  tm_cs_strong:{ar:"أساس واضح يستدعي المراجعة",en:"Clear basis for further review"},
   tm_cs_strong_w:{ar:"فيه أكثر من نقطة تستاهل البحث، ومعك ورق يسندها.",
                   en:"More than one point is worth pursuing, and you have paper behind it."},
   tm_cs_possible:{ar:"أساس محتمل يستدعي المراجعة",en:"Possible basis for further review"},
@@ -10269,6 +10290,10 @@ function aiReviewHtml(){
    accusation is worth less to the person carrying it into a settlement
    meeting, not more. */
 
+/* The answer tm_f_reason_h tells the reader to type when no reason was given,
+   in either language and the usual spellings of it. */
+const NO_REASON = /^(?:ما\s*(?:أُ|أ|ا)?عطيت\s*(?:أي\s*)?سبب|ما\s*قالوا\s*(?:أي\s*)?سبب|no\s+reason(?:\s+(?:was\s+)?given)?)[.!]?$/i;
+
 function termFacts(){
   const cur = t("eos_sar"), p = termParts();
   const d = v => v ? fmtDate(new Date(v).getTime()) : t("tm_d_unknown");
@@ -10277,9 +10302,20 @@ function termFacts(){
     `${t("tm_d_end")}: ${d(term.end)}`,
     `${t("tm_d_service")}: ${svcText(p.y, p.m, p.d)}`,
     `${t("tm_d_wage")}: ${termWage() ? money(termWage()) + " " + cur : t("tm_d_unknown")}`,
-    `${t("tm_d_how")}: ${t(termHow() ? termHow().label : "th_other")}`,
+    /* THE FORMAL NAME OF THE ENDING, NOT THE BUTTON THE READER PRESSED.
+       This printed th_employer — «صاحب العمل أنهى عقدي», the first-person
+       label on the choice screen — into a letter to HR and a case file, so a
+       formal document read «طريقة الإنهاء: صاحب العمل أنهى عقدي». thf_* is
+       the same fact in the register of the document it lands in. */
+    `${t("tm_d_how")}: ${t(termHow() ? "thf_" + termHow().id : "thf_other")}`,
     `${t("tm_d_ctype")}: ${t(termCtype() === "fixed" ? "tm_f_fixed" : termCtype() === "indef" ? "tm_f_indef" : "tm_d_unknown")}`,
-    `${t("tm_d_reason")}: ${term.reason || t("tm_d_none_given")}`
+    /* The reason field's own hint tells the reader to type «ما أُعطيت سبب» /
+       "no reason given" when there was none — which then went into the letter
+       word for word, colloquial and first-person. That answer is the formal
+       tm_d_none_given; anything else they wrote is their account and stays
+       as written. */
+    `${t("tm_d_reason")}: ${(term.reason && !NO_REASON.test(term.reason.trim()))
+                             ? term.reason : t("tm_d_none_given")}`
   ];
 }
 
@@ -13923,7 +13959,8 @@ function renderPwShape(isTerm, isCase){
     items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law))
       .replace("{m}", fmtNum(method)).replace("{v}", t(method === 1 ? "is_1" : "is_p")), false]);
     if (gaps.length)
-      items.push([fmtNum(gaps.length), t("pw_sh_gaps")
+      items.push([fmtNum(gaps.length), t(gaps.length === 1 ? "pw_sh_gaps_1"
+                                        : gaps.length === 2 ? "pw_sh_gaps_2" : "pw_sh_gaps")
         .replace("{n}", countNoun("cnt_item", gaps.length))
         .replace("{list}", gaps.map(g => t(g.key)).join(sep)), true]);
     items.push(["✓", t("pw_sh_each"), false]);
