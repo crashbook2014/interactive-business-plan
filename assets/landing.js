@@ -44,6 +44,11 @@ const T = {
      than the one it started with. */
   hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، مصدرها إذا كان موثّقًا، وخطاب جاهز ترسله. عقد عمل، إيجار، عمل حر، أو تمويل بنكي — نقرأ عقدك ونوضّح لك وش ينطبق عليك.",
           en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the source behind each one where we have it, and a letter ready to send. Employment, rental, freelance, or bank financing — we read your contract and show you what applies."},
+  /* The four contract types the hero paragraph names, drawn as chips. Same
+     four, same order, as hero_p and the app's onboarding. */
+  hero_kinds:{ar:["عقد عمل","عقد إيجار","عمل حر","تمويل بنكي"],
+              en:["Employment","Rental","Freelance","Bank financing"]},
+  hero_kinds_label:{ar:"أنواع العقود التي نقرأها",en:"Contract types we read"},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
   /* "no sign-up" was removed here once analysing a contract needed an account.
@@ -55,6 +60,17 @@ const T = {
      their own screens, and the free tier is real at one scan a month. Named up
      front rather than discovered at the first tap. */
   hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
+  /* The hero sheet. Clause text is app/index.html SAMPLES.employment `q`,
+     verbatim — the picture must be a contract the app actually reads. */
+  paper_title:{ar:"عقد عمل",en:"Employment contract"},
+  paper_page:{ar:"صفحة 2 من 6",en:"Page 2 of 6"},
+  paper_q1:{ar:"يلتزم الموظف بعدم العمل في أي نشاط مشابه داخل المملكة لمدة سنتين من تاريخ انتهاء العقد.",
+            en:"The employee shall not engage in any similar business within the Kingdom for two years after the contract ends."},
+  paper_q2:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
+            en:"Either party wishing to terminate must give the other sixty days' written notice."},
+  paper_q3:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع نهاية كل شهر ميلادي.",
+            en:"A monthly base salary plus 25% housing and 10% transport allowance, paid at the end of each Gregorian month."},
+  paper_sign:{ar:"توقيع الطرف الثاني — لم يُوقَّع بعد",en:"Employee's signature — not signed yet"},
   shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
@@ -361,6 +377,26 @@ function applyLang(){
   document.getElementById("p2a").innerHTML = "149" + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = "349" + `<small>${sar}</small>`;
   document.getElementById("p4a").innerHTML = "549" + `<small>${sar}</small>`;
+  /* The headline's second clause on its own line, in the brand colour. The
+     copy stays one string in T; only the dash that joined the two halves is
+     dropped, because on a narrow screen it opened the second line alone. */
+  /* Wrap each section heading in a span the highlighter can sweep across.
+     textContent in, a created element out — nothing is parsed as markup. */
+  document.querySelectorAll("section:not(.hero) h2").forEach((h) => {
+    const span = document.createElement("span");
+    span.className = "hl";
+    span.textContent = h.textContent;
+    h.replaceChildren(span);
+  });
+  const kinds = document.getElementById("heroKinds");
+  if (kinds){
+    kinds.setAttribute("aria-label", t("hero_kinds_label"));
+    kinds.innerHTML = T.hero_kinds[lang].map((k) => `<li>${k}</li>`).join("");
+  }
+  const h1 = document.querySelector(".hero h1");
+  const halves = t("hero_h").split(" — ");
+  if (h1 && halves.length === 2)
+    h1.innerHTML = `${halves[0]} <span class="h1-accent">${halves[1]}</span>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
@@ -391,7 +427,7 @@ function armReveals(){
   revealIO = new IntersectionObserver(es=>es.forEach(e=>{
     if (e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); }
   }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
-  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .pos-verbs, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
+  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .pos-verbs, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, .attest, details, .close h2, .close p, .close .btn")
     .forEach((el,i)=>{
       if (el.getBoundingClientRect().top < window.innerHeight * 0.9){ el.classList.add("rv","in"); return; }
       el.classList.add("rv");
