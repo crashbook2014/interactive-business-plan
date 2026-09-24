@@ -105,7 +105,10 @@
     --edge:inset 0 1px 0 rgba(255,255,255,.6);
     --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:22px; --r-2xl:28px;
     --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,sans-serif;
-    --ar:'Noto Naskh Arabic','Geeza Pro','Amiri',serif;
+    /* Nunito second, for the Latin a page in Arabic still carries — "English",
+       the phone number, the email. Noto Naskh ships no Latin glyphs here, so
+       without it those fell through to the browser's default serif (Times). */
+    --ar:'Noto Naskh Arabic','Nunito','Geeza Pro','Amiri',serif;
     /* Same rhythm as the app: entrances decelerate, confirmations overshoot. */
     --t-fast:160ms; --t:240ms; --t-slow:360ms;
     --ease-out:cubic-bezier(.22,.72,.28,1);
@@ -445,6 +448,47 @@
     animation:soonPulse 2.2s ease-in-out infinite}
   @keyframes soonPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
   @media (prefers-reduced-motion:reduce){.soon-badge::before{animation:none}}
+
+  /* ---- design pass, Sep 2026 -------------------------------------------
+     Kept together at the end of the sheet so it reads as one change and
+     comes out as one change. */
+
+  /* Buttons were underlined: `a{color:inherit}` left the browser's default
+     text-decoration on every anchor, including the ones drawn as buttons,
+     which made the primary actions read as plain links. */
+  .btn,.nav-link,.lang,.contact-num,.contact-mail{text-decoration:none}
+  .nav-link{color:var(--ink-2);font-size:14px}
+  .contact-num{color:var(--teal-ink)} .contact-mail{color:var(--teal)}
+  .contact-num:hover,.contact-mail:hover{text-decoration:underline;text-underline-offset:3px}
+
+  /* Hero: a soft light behind the score card so the object the page is
+     about sits in focus, and the second clause of the headline set on its
+     own line in the brand colour instead of a line that opened on a dash. */
+  .hero{background:
+    radial-gradient(42% 60% at 22% 48%, color-mix(in srgb, var(--card) 92%, transparent), transparent 72%)}
+  html[dir="ltr"] .hero{background:
+    radial-gradient(42% 60% at 78% 48%, color-mix(in srgb, var(--card) 92%, transparent), transparent 72%)}
+  @media (max-width:880px){ .hero{background:
+    radial-gradient(90% 38% at 50% 78%, color-mix(in srgb, var(--card) 90%, transparent), transparent 72%)} }
+  .hero h1 .h1-accent{display:block;color:var(--teal)}
+
+  /* Pricing: four across, and the bundle as one wide card under them.
+     auto-fit put four in a row and left the bundle alone on a second row,
+     which read as an afterthought — the opposite of "best value". */
+  @media (min-width:1000px){
+    .prices{grid-template-columns:repeat(4,1fr)}
+    .price.bundle{grid-column:1/-1;display:grid;grid-template-columns:1.1fr auto 1.6fr;
+      column-gap:28px;align-items:center;padding:28px 26px}
+    .price.bundle .amt{margin:0}
+    .price.bundle p{margin:0}
+    .price.bundle .get{margin:6px 0 0;padding-top:6px}
+    .price.bundle > h3{grid-column:1} .price.bundle > .amt{grid-column:2;grid-row:1 / span 2}
+    .price.bundle > p:not(.get){grid-column:3;grid-row:1} .price.bundle > .get{grid-column:3;grid-row:2;border-top:0}
+  }
+  .price.bundle{background:var(--teal-soft);border-color:var(--teal)}
+  .price.hi{transform:translateY(-4px)}
+  /* "مجاني" is Arabic set in the numeral font; give it an Arabic face. */
+  .price .amt{font-family:'Nunito','Noto Naskh Arabic',sans-serif}
 </style>
 <script src="assets/curtain.js"></script>
 </head>
@@ -613,7 +657,7 @@
            before opening it. A reader adding 199 + 149 + 349 in their head and
            deciding it is too much was never shown the number that answers
            them. -->
-      <div class="price"><span class="tag" data-t="p4t"></span><h3 data-t="p4"></h3><div class="amt" id="p4a"></div><p data-t="p4p"></p><p class="get" data-t="p4g"></p></div>
+      <div class="price bundle"><span class="tag" data-t="p4t"></span><h3 data-t="p4"></h3><div class="amt" id="p4a"></div><p data-t="p4p"></p><p class="get" data-t="p4g"></p></div>
     </div>
     <p class="anchor" data-t="price_anchor"></p>
     <p class="vat" id="priceVat"></p>

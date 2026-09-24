@@ -361,6 +361,13 @@ function applyLang(){
   document.getElementById("p2a").innerHTML = "149" + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = "349" + `<small>${sar}</small>`;
   document.getElementById("p4a").innerHTML = "549" + `<small>${sar}</small>`;
+  /* The headline's second clause on its own line, in the brand colour. The
+     copy stays one string in T; only the dash that joined the two halves is
+     dropped, because on a narrow screen it opened the second line alone. */
+  const h1 = document.querySelector(".hero h1");
+  const halves = t("hero_h").split(" — ");
+  if (h1 && halves.length === 2)
+    h1.innerHTML = `${halves[0]} <span class="h1-accent">${halves[1]}</span>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
