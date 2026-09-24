@@ -380,6 +380,14 @@ function applyLang(){
   /* The headline's second clause on its own line, in the brand colour. The
      copy stays one string in T; only the dash that joined the two halves is
      dropped, because on a narrow screen it opened the second line alone. */
+  /* Wrap each section heading in a span the highlighter can sweep across.
+     textContent in, a created element out — nothing is parsed as markup. */
+  document.querySelectorAll("section:not(.hero) h2").forEach((h) => {
+    const span = document.createElement("span");
+    span.className = "hl";
+    span.textContent = h.textContent;
+    h.replaceChildren(span);
+  });
   const kinds = document.getElementById("heroKinds");
   if (kinds){
     kinds.setAttribute("aria-label", t("hero_kinds_label"));
@@ -419,7 +427,7 @@ function armReveals(){
   revealIO = new IntersectionObserver(es=>es.forEach(e=>{
     if (e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); }
   }), { threshold:.12, rootMargin:"0px 0px -8% 0px" });
-  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .pos-verbs, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, details, .close h2, .close p, .close .btn")
+  document.querySelectorAll("section:not(.hero) .kicker, section:not(.hero) h2, .sec-lede, .pos-verbs, .quote, .step, .feat, .price, .anchor, .vat, .trust-item, .attest, details, .close h2, .close p, .close .btn")
     .forEach((el,i)=>{
       if (el.getBoundingClientRect().top < window.innerHeight * 0.9){ el.classList.add("rv","in"); return; }
       el.classList.add("rv");

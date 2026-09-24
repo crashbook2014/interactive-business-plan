@@ -569,6 +569,89 @@
     .note,.seal{animation:none;opacity:1;transform:none}
     .seal{transform:rotate(-9deg)}
   }
+
+  /* ---- The rest of the page as the same annotated contract ---------------
+     One motif carried through: paper, highlighter, margin notes, stamps and a
+     signature. Rotations use the independent `rotate` property so they never
+     fight the reveal's `transform`, and only on wide screens, where a tilted
+     card cannot push past the edge of a phone. */
+
+  /* Every section heading gets a highlighter pass when it scrolls in. */
+  h2 .hl{background-image:linear-gradient(color-mix(in srgb,var(--amber) 26%,transparent),color-mix(in srgb,var(--amber) 26%,transparent));
+    background-repeat:no-repeat;background-position:100% 88%;background-size:0% 34%;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;padding:0 3px;
+    transition:background-size .9s .25s var(--ease-out)}
+  html[dir="ltr"] h2 .hl{background-position:0 88%}
+  h2.in .hl,h2:not(.rv) .hl{background-size:100% 34%}
+
+  /* 1 · the preamble: a cover page, double rule on top */
+  .pos{border-radius:6px;border-top:4px double var(--ink);
+    background-image:repeating-linear-gradient(to bottom,transparent 0 33px,rgba(190,173,136,.14) 33px 34px)}
+
+  /* 2 · the problem: the things people tell us, pinned up as notes */
+  .quote{border-radius:4px;position:relative;padding-top:30px}
+  .quote::before{content:"";position:absolute;top:-9px;left:50%;width:76px;height:20px;margin-left:-38px;
+    background:color-mix(in srgb,var(--amber-bg) 80%,transparent);border:1px solid rgba(168,120,34,.18);rotate:-3deg}
+  @media (min-width:881px){
+    .quote:nth-child(1){rotate:1.2deg} .quote:nth-child(2){rotate:-.8deg} .quote:nth-child(3){rotate:.9deg}
+  }
+
+  /* 3 · how it works: numbered sub-clauses on one dotted rule */
+  .steps{position:relative}
+  @media (min-width:881px){
+    .steps::before{content:"";position:absolute;top:0;inset-inline:60px;border-top:2px dashed var(--line)}
+  }
+  .step{border-radius:6px}
+  .step::before{border-radius:6px;rotate:-6deg;box-shadow:0 0 0 4px var(--sand)}
+
+  /* 4 · what you get: each feature a clause on ruled paper, corner folded */
+  .feat{border-radius:6px;position:relative;
+    background-image:repeating-linear-gradient(to bottom,transparent 0 27px,rgba(190,173,136,.13) 27px 28px);
+    background-position:0 70px}
+  .feat::after{content:"";position:absolute;top:-1px;inset-inline-end:-1px;width:22px;height:22px;
+    background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%);
+    border-bottom-left-radius:4px;box-shadow:-1px 1px 2px rgba(74,60,40,.08)}
+  html[dir="rtl"] .feat::after{background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%);
+    border-bottom-left-radius:0;border-bottom-right-radius:4px;box-shadow:1px 1px 2px rgba(74,60,40,.08)}
+
+  /* 5 · pricing: a schedule of fees — tickets with a perforation, the bundle
+     stamped rather than tagged, the free-now line as a memo clipped on top */
+  .price{border-radius:6px}
+  .price .get{border-top:2px dashed var(--line)}
+  .price .tag{background:var(--card);color:var(--teal);border:2px solid var(--teal);border-radius:4px;
+    rotate:-5deg;font-weight:800;letter-spacing:.04em;box-shadow:0 0 0 3px var(--card)}
+  .free-now{border-style:dashed;border-radius:6px;position:relative}
+  .free-now::before{content:"";position:absolute;top:-12px;inset-inline-start:26px;width:14px;height:30px;
+    border:2.5px solid var(--ink-2);border-radius:8px;border-bottom-color:transparent;opacity:.55}
+
+  /* 6 · trust: a declaration, signed */
+  .attest{display:flex;align-items:flex-end;justify-content:flex-end;gap:14px;margin-top:34px;color:var(--teal)}
+  .attest .signed{display:flex;flex-direction:column;align-items:center;min-width:200px}
+  .attest .sig{width:180px;height:34px;margin:0 0 2px}
+  .attest .by{display:flex;align-items:center;justify-content:center;gap:8px;align-self:stretch;border-top:1.5px dashed var(--ink-2);padding-top:8px;
+    font-size:13px;color:var(--ink-2)}
+  .attest .by svg{width:18px;height:18px}
+  .attest .sig path{animation:none;stroke-dashoffset:640;transition:stroke-dashoffset 1.6s .2s cubic-bezier(.45,.05,.25,1)}
+  .attest.in .sig path,.attest:not(.rv) .sig path{stroke-dashoffset:0}
+
+  /* 7 · questions: footnotes, not a stack of cards */
+  .faq{counter-reset:fn;gap:0;border-top:1.5px solid var(--ink)}
+  details{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+  summary{padding:18px 4px}
+  summary::before{counter-increment:fn;content:counter(fn);font-family:var(--en);font-size:11px;font-weight:800;
+    color:var(--teal);border:1.5px solid var(--teal);border-radius:50%;width:22px;height:22px;flex:none;
+    display:inline-flex;align-items:center;justify-content:center}
+  details p{padding:0 38px 18px 4px}
+  html[dir="rtl"] details p{padding:0 4px 18px 38px}
+
+  /* 9 · the close: the signature block the whole page has been leading to */
+  .close .wrap{max-width:720px;background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:clamp(28px,5vw,48px) clamp(20px,4vw,40px);box-shadow:var(--e2),var(--edge);position:relative;
+    background-image:repeating-linear-gradient(to bottom,transparent 0 33px,rgba(190,173,136,.14) 33px 34px)}
+  .close .btn{position:relative}
+  .sign-here{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:22px;color:var(--ink-2)}
+  .sign-here::before,.sign-here::after{content:"";height:0;flex:1;max-width:160px;border-top:1.5px dashed var(--ink-2)}
+  .sign-here svg{width:22px;height:22px;color:var(--teal)}
 </style>
 <script src="assets/curtain.js"></script>
 </head>
@@ -760,6 +843,11 @@
       <div class="trust-item"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg><span data-t="t2"></span></h3><p data-t="t2p"></p></div>
       <div class="trust-item"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span data-t="t3"></span></h3><p data-t="t3p"></p></div>
     </div>
+    <div class="attest" aria-hidden="true">
+      <div class="signed"><svg class="sig" viewBox="0 0 300 38" aria-hidden="true"><path d="M4 26c14-10 26-16 34-10 7 5-6 14 2 13 11-1 17-19 27-18 8 1 1 14 9 13 10-1 14-12 22-11 9 1 6 10 15 9 12-1 19-9 30-8s14 8 25 7c14-1 24-9 40-8 14 1 26 6 40 3 12-2 22-8 42-9"/></svg>
+        <div class="by"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark"/></svg><span lang="ar">وضوح</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -810,6 +898,7 @@
     <p class="soon-only" data-t="close_p_soon"></p>
     <a class="btn launch-only" href="app/index.html" data-t="close_cta"></a>
     <a class="btn soon-only" href="#contact" data-t="soon_cta"></a>
+    <div class="sign-here" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l3 3"/></svg></div>
   </div>
 </section>
 </main>
