@@ -461,16 +461,34 @@
   .contact-num{color:var(--teal-ink)} .contact-mail{color:var(--teal)}
   .contact-num:hover,.contact-mail:hover{text-decoration:underline;text-underline-offset:3px}
 
-  /* Hero: a soft light behind the score card so the object the page is
-     about sits in focus, and the second clause of the headline set on its
-     own line in the brand colour instead of a line that opened on a dash. */
-  .hero{background:
-    radial-gradient(42% 60% at 22% 48%, color-mix(in srgb, var(--card) 92%, transparent), transparent 72%)}
-  html[dir="ltr"] .hero{background:
-    radial-gradient(42% 60% at 78% 48%, color-mix(in srgb, var(--card) 92%, transparent), transparent 72%)}
-  @media (max-width:880px){ .hero{background:
-    radial-gradient(90% 38% at 50% 78%, color-mix(in srgb, var(--card) 90%, transparent), transparent 72%)} }
-  .hero h1 .h1-accent{display:block;color:var(--teal)}
+  /* Hero: a deep-teal band instead of sand-on-sand. The page's first screen
+     was the same colour as every other section, so nothing said "start here".
+     Colours are fixed rather than tokens on purpose — the band is the one
+     surface that stays dark in both themes. Contrast, measured: cream on the
+     band 9.6:1, the gold accent 7.1:1, the muted lede 6.4:1. */
+  .hero{--hb:#134B44;--hc:#F6F0E3;--hm:#D3DDD9;--hg:#E9C77B;
+    background:radial-gradient(60% 80% at 20% 30%, rgba(255,255,255,.07), transparent 70%),
+      linear-gradient(165deg,#1A5C53 0%,var(--hb) 55%,#0F3C36 100%);
+    color:var(--hc);padding-bottom:clamp(48px,7vw,96px);border-bottom:1px solid #0F3C36}
+  html[dir="ltr"] .hero{background:radial-gradient(60% 80% at 80% 30%, rgba(255,255,255,.07), transparent 70%),
+      linear-gradient(195deg,#1A5C53 0%,var(--hb) 55%,#0F3C36 100%)}
+  .hero h1{color:var(--hc);font-size:clamp(34px,6vw,64px);line-height:1.25}
+  .hero h1 .h1-accent{display:block;color:var(--hg)}
+  .hero .lede{color:var(--hm)}
+  .hero .eyebrow{background:rgba(255,255,255,.1);color:var(--hc);border:1px solid rgba(255,255,255,.14)}
+  .hero .btn{background:var(--hc);color:var(--hb);box-shadow:0 10px 26px rgba(0,0,0,.22)}
+  .hero .btn.ghost{background:transparent;color:var(--hc);border:1.5px solid rgba(246,240,227,.55);box-shadow:none}
+  .hero .btn.ghost:hover{border-color:var(--hc)}
+  .hero .hero-note{color:var(--hm)} .hero .hero-note svg{color:var(--hg)}
+  .hero .shot{box-shadow:0 30px 70px rgba(0,0,0,.32),0 2px 0 rgba(255,255,255,.4) inset;border-color:transparent}
+  /* What it reads, as four things you can see at a glance rather than the
+     tail of a paragraph. */
+  .kinds{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;list-style:none}
+  @media (max-width:880px){ .kinds{justify-content:center} }
+  .kinds li{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--hc);
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 13px}
+  html[lang="ar"] .kinds li{font-size:14.5px}
+  .kinds li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hg);flex:none}
 
   /* Pricing: four across, and the bundle as one wide card under them.
      auto-fit put four in a row and left the bundle alone on a second row,
@@ -533,6 +551,7 @@
         <a class="btn soon-only" href="#contact" data-t="soon_cta"></a>
         <a class="btn ghost" href="#how" data-t="hero_cta2"></a>
       </div>
+      <ul class="kinds" id="heroKinds" aria-label=""></ul>
       <p class="hero-note soon-only" data-t="soon_note"></p>
       <p class="hero-note launch-only">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>

@@ -44,6 +44,11 @@ const T = {
      than the one it started with. */
   hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، مصدرها إذا كان موثّقًا، وخطاب جاهز ترسله. عقد عمل، إيجار، عمل حر، أو تمويل بنكي — نقرأ عقدك ونوضّح لك وش ينطبق عليك.",
           en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the source behind each one where we have it, and a letter ready to send. Employment, rental, freelance, or bank financing — we read your contract and show you what applies."},
+  /* The four contract types the hero paragraph names, drawn as chips. Same
+     four, same order, as hero_p and the app's onboarding. */
+  hero_kinds:{ar:["عقد عمل","عقد إيجار","عمل حر","تمويل بنكي"],
+              en:["Employment","Rental","Freelance","Bank financing"]},
+  hero_kinds_label:{ar:"أنواع العقود التي نقرأها",en:"Contract types we read"},
   hero_cta:{ar:"حلّل عقدًا مجانًا",en:"Analyze a contract free"},
   hero_cta2:{ar:"كيف يشتغل؟",en:"How it works"},
   /* "no sign-up" was removed here once analysing a contract needed an account.
@@ -364,6 +369,11 @@ function applyLang(){
   /* The headline's second clause on its own line, in the brand colour. The
      copy stays one string in T; only the dash that joined the two halves is
      dropped, because on a narrow screen it opened the second line alone. */
+  const kinds = document.getElementById("heroKinds");
+  if (kinds){
+    kinds.setAttribute("aria-label", t("hero_kinds_label"));
+    kinds.innerHTML = T.hero_kinds[lang].map((k) => `<li>${k}</li>`).join("");
+  }
   const h1 = document.querySelector(".hero h1");
   const halves = t("hero_h").split(" — ");
   if (h1 && halves.length === 2)
