@@ -60,6 +60,17 @@ const T = {
      their own screens, and the free tier is real at one scan a month. Named up
      front rather than discovered at the first tap. */
   hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
+  /* The hero sheet. Clause text is app/index.html SAMPLES.employment `q`,
+     verbatim — the picture must be a contract the app actually reads. */
+  paper_title:{ar:"عقد عمل",en:"Employment contract"},
+  paper_page:{ar:"صفحة 2 من 6",en:"Page 2 of 6"},
+  paper_q1:{ar:"يلتزم الموظف بعدم العمل في أي نشاط مشابه داخل المملكة لمدة سنتين من تاريخ انتهاء العقد.",
+            en:"The employee shall not engage in any similar business within the Kingdom for two years after the contract ends."},
+  paper_q2:{ar:"على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.",
+            en:"Either party wishing to terminate must give the other sixty days' written notice."},
+  paper_q3:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع نهاية كل شهر ميلادي.",
+            en:"A monthly base salary plus 25% housing and 10% transport allowance, paid at the end of each Gregorian month."},
+  paper_sign:{ar:"توقيع الطرف الثاني — لم يُوقَّع بعد",en:"Employee's signature — not signed yet"},
   shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
