@@ -227,7 +227,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     ok(!/^\s*(مدعوم|Supported)/.test(c.free),
        `${l}: nor the freelance row`);
     /* And it must name the limit, not merely avoid the word. */
-    const names = l === "ar" ? /ما عندنا قواعد|ولا مواد نظامية/ : /no rules written|no article numbers/i;
+    const names = l === "ar" ? /ما عندنا قواعد|ولا مواد نظامية/ : /no written rules|no articles/i;
     ok(names.test(c.rent), `${l}: the rental row names what is missing`);
     ok(names.test(c.free), `${l}: the freelance row names what is missing`);
     /* Employment may still say it, because it can back it. */

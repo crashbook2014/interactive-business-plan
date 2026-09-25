@@ -814,7 +814,7 @@ async function seedTermination(p){
   ok(draft.shown, "contract drafting is listed on the catalogue");
   ok(draft.price, "with its real price");
   ok(draft.disabled, "and its button cannot be pressed");
-  ok(/not yet|قريب/i.test(draft.text), "and it says why");
+  ok(/not yet|coming soon|قريب/i.test(draft.text), "and it says why");
 
   /* The annual toggle went with the consumer subscription. Leaving it would
      have offered a yearly figure nobody ever set. */
@@ -887,9 +887,9 @@ async function seedTermination(p){
   ok(empty.lines === 0, "the reproduction still produces an assessment with no lines");
   ok(!empty.onPaywall && empty.onResult,
      "a reader with nothing computed is not routed to a paywall");
-  ok(/not asking you to pay for an assessment that found nothing/i.test(empty.money),
+  ok(/not ask you to pay for an assessment that found nothing/i.test(empty.money),
      "they are told plainly that there is nothing to charge them for");
-  ok(/doesn.t mean nothing is owed/i.test(empty.money),
+  ok(/does(?:n.t| not) mean nothing is owed/i.test(empty.money),
      "and the result still says so — nothing found is not nothing owed, and it stays on screen");
   ok(!/We can't show this assessment/i.test(empty.verdict),
      "the result itself is not suppressed: an empty assessment is an answer, not a failure");

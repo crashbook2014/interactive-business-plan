@@ -2031,4 +2031,128 @@
    * `.x[hidden]{display:none}` patches already exist above, added one at a
    * time as someone noticed each symptom. This is the rule that makes an
    * eleventh unnecessary. */
+  /* ---------------------------------------------------- THE PAPER LAYER
+   *
+   * The landing page draws Wodouh as what it is: a contract being read, with a
+   * pen. This carries the same idiom into the product, so the page a reader
+   * lands on and the screens they then use are one document, not two brands.
+   * Five marks, used sparingly and always from the palette tokens so dark mode
+   * follows for free:
+   *   · a highlighter under screen titles (.hl, wrapped in markHeads())
+   *   · the clause quote highlighted in its own severity colour
+   *   · documents (report, letter, case file) as sheets with a second sheet
+   *     showing beneath
+   *   · the score drawn as a seal, with a dashed inner ring
+   *   · dashed rules and index-card corners where the app used hairlines and
+   *     rounded pills
+   * Nothing here moves layout or changes a tap target: every mark is a
+   * background, a border style or a pseudo-element. */
+  :root{--hl:color-mix(in srgb,var(--amber) 26%,transparent)}
+  .hl{background-image:linear-gradient(var(--hl),var(--hl));background-repeat:no-repeat;
+    background-size:100% 34%;background-position:100% 88%;padding:0 3px;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  html[dir="ltr"] .hl{background-position:0 88%}
+
+  /* Documents are sheets: squarer corners, and a second sheet beneath. */
+  .score-card,.letter{position:relative;isolation:isolate;border-radius:8px}
+  .score-card::after,.letter::after{content:"";position:absolute;inset:8px -6px -8px 6px;z-index:-1;
+    background:var(--card);border:1px solid var(--line);border-radius:8px;transform:rotate(.8deg);
+    box-shadow:var(--e1);pointer-events:none}
+  html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:8px 6px -8px -6px;transform:rotate(-.8deg)}
+  /* On a phone the report runs thousands of pixels tall, and any rotation
+     swings its far end out past the screen edge. The second sheet just sits
+     lower there, square to the page. */
+  @media (max-width:880px){
+    .score-card::after,.letter::after,
+    html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:7px 3px -7px 3px;transform:none}
+  }
+  .rp-head,.letterhead{border-bottom:3px double var(--line)}
+  .rp-meta,.acc-sec{border-top-style:dashed}
+
+  /* The seal. The ring keeps its geometry; only a dashed ring is drawn round it. */
+  .score-card .ring::before{content:"";position:absolute;inset:-9px;border-radius:50%;
+    border:1.5px dashed color-mix(in srgb,var(--band) 55%,transparent);pointer-events:none}
+
+  /* The quote is the reader's own clause, so it is marked the way the landing
+     sheet marks one: a highlighter stroke in the finding's colour, upright,
+     not an italic aside in a grey box. */
+  .flag .quote,.clause .quote{background:transparent;border-inline-start:0;padding:4px 0;font-style:normal;
+    color:var(--ink);line-height:2}
+  .quote mark{color:inherit;background-color:transparent;background-repeat:no-repeat;
+    background-image:linear-gradient(var(--qm,var(--hl)),var(--qm,var(--hl)));padding:1px 2px;border-radius:3px;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .flag.red,.clause.red{--qm:color-mix(in srgb,var(--red) 22%,transparent)}
+  .flag.amber,.clause.amber{--qm:color-mix(in srgb,var(--amber) 24%,transparent)}
+  .flag.green,.clause.green{--qm:color-mix(in srgb,var(--green) 20%,transparent)}
+  .quote[data-own]{border-inline-start:0}
+
+  /* Index cards: the doors on home and the answers in the library get a
+     turned-down corner and paper corners. */
+  .sit-card,.lib-item,.pcard{border-radius:8px;position:relative}
+  .sit-card::after{content:"";position:absolute;top:-1px;inset-inline-end:-1px;width:18px;height:18px;
+    border-start-end-radius:8px;pointer-events:none;
+    background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+  html[dir="rtl"] .sit-card::after{background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+  .lib-a{border-top:1px dashed var(--line);padding-top:12px}
+
+  /* Plans read as tickets: a perforation between the price and what you get,
+     and the recommended tag stamped rather than printed. */
+  .pcard ul{border-top:1.5px dashed var(--line);padding-top:14px}
+  .pcard .tag{transform:rotate(-3deg);border:1.5px solid currentColor}
+  html[dir="ltr"] .pcard .tag{transform:rotate(3deg)}
+
+  /* The upload card on home is pinned to the page with a strip of tape. */
+  .hm-up{position:relative;border-radius:8px}
+  .hm-up::before{content:"";position:absolute;top:-8px;left:50%;width:64px;height:18px;margin-left:-32px;
+    background:color-mix(in srgb,var(--amber-bg) 80%,transparent);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);
+    transform:rotate(-2deg);pointer-events:none}
+
+  /* Letters are written on ruled paper, and end on a line for the signature. */
+  .letter .body{background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
+    color-mix(in srgb,var(--line) 36%,transparent) calc(1lh - 1px));background-size:100% 1lh;background-repeat:repeat-y}
+  @media print{ .letter .body{background:none} .letter::after,.score-card::after{display:none} }
+  .letter .sign-line{justify-content:flex-start;margin-top:26px}
+  .letter .sign-line span{flex:none}
+
+  /* Findings are numbered the way a contract numbers its clauses. */
+  .flags{counter-reset:clause}
+  .flag h4::before{counter-increment:clause;content:counter(clause);
+    font-family:var(--en);font-weight:800;font-size:12px;color:var(--ink-2);margin-inline-end:8px;
+    display:inline-block;min-width:20px;padding:0 5px;line-height:18px;text-align:center;vertical-align:2px;
+    border:1px solid color-mix(in srgb,var(--ink-2) 45%,transparent);border-radius:4px}
+
+  /* The decision reads as a stamp: a dashed double edge in its own colour,
+     set a degree off true the way a hand-pressed stamp lands. */
+  .decision{border:2px dashed color-mix(in srgb,var(--dc) 55%,transparent);border-radius:10px;
+    outline:1px solid color-mix(in srgb,var(--dc) 22%,transparent);outline-offset:3px;transform:rotate(-.6deg)}
+  html[dir="ltr"] .decision{transform:rotate(.6deg)}
+
+  /* Sub-headings are kickers with a short pen rule, as on the landing page. */
+  .biz-h{display:flex;align-items:center;gap:10px}
+  .biz-h::after{content:"";flex:1;max-width:90px;border-top:1.5px dashed var(--line)}
+
+  /* The report is signed at its foot. */
+  .rp-signed{margin-top:22px}
+  .rp-signed .by{min-width:150px}
+
+  /* Home's headline: the answer half in teal, a signature drawn beneath it. */
+  .hm-accent{color:var(--teal)}
+  .hm-sig{display:block;color:var(--teal);margin-top:2px}
+  .hm-sig .sig{display:block;width:min(220px,60%);height:28px;overflow:visible}
+  html[dir="rtl"] .hm-sig .sig{transform:scaleX(-1);margin-inline-start:0}
+  .hm-sig path{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:640;stroke-dashoffset:640;animation:sign 1.6s .4s cubic-bezier(.45,.05,.25,1) forwards}
+  @keyframes sign{to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){ .hm-sig path{animation:none;stroke-dashoffset:0} }
+
+  /* Signature blocks: where Wodouh stands behind a page, it signs it. */
+  .signed-by{display:flex;flex-direction:column;align-items:flex-end;margin-top:18px;color:var(--teal)}
+  .signed-by svg.sig{width:150px;height:30px;overflow:visible}
+  .signed-by svg.sig path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  html[dir="rtl"] .signed-by svg.sig{transform:scaleX(-1)}
+  .signed-by .by{min-width:170px;border-top:1.5px dashed var(--ink-2);padding-top:6px;text-align:center;
+    font-size:12px;color:var(--ink-2)}
+  .sign-line{display:flex;align-items:center;gap:10px;margin:18px 0 0;color:var(--ink-2);font-size:12px}
+  .sign-line::after{content:"";flex:1;border-top:1.5px dashed var(--ink-2);max-width:220px}
+
   [hidden]{display:none !important}

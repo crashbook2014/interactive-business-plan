@@ -3,11 +3,11 @@ const T = {
      someone who has a contract problem right now pick up the phone. The
      product is described in the present tense because it exists and works —
      what is "soon" is the day they can open it themselves, not the thing. */
-  soon_eyebrow:{ar:"قريبًا — وضوح يفتح أبوابه",en:"Launching soon"},
+  soon_eyebrow:{ar:"قريبًا، وضوح يفتح أبوابه",en:"Launching soon"},
   soon_cta:{ar:"كلّمنا الحين",en:"Talk to us now"},
   soon_nav_cta:{ar:"تواصل",en:"Contact"},
-  soon_note:{ar:"جاهز، ونراجعه مراجعة أخيرة قبل ما نفتحه للكل. إذا عندك عقد أو مشكلة الحين — لا تنتظر، كلّمنا.",
-             en:"It's built, and getting its final review before we open it to everyone. If you have a contract or a problem right now, don't wait — talk to us."},
+  soon_note:{ar:"جاهز، ونراجعه مراجعة أخيرة قبل ما نفتحه للكل. إذا عندك عقد أو مشكلة الحين، لا تنتظر وكلّمنا.",
+             en:"It is built, and in its final review before we open it to everyone. If you have a contract or a problem right now, do not wait. Talk to us."},
   soon_k_contact:{ar:"تواصل",en:"Get in touch"},
   soon_contact_h:{ar:"عندك سؤال، أو تبي تحجز مكانك؟",en:"Have a question, or want your place at launch?"},
   soon_contact_p:{ar:"نرد بأنفسنا، مو بردود جاهزة. اسأل عن حالتك، أو احجز سعر الافتتاح، أو خذ رأينا في عقد قدّامك اليوم.",
@@ -16,7 +16,7 @@ const T = {
   soon_call:{ar:"اتصل بنا",en:"Call us"},
   soon_mail:{ar:"راسلنا",en:"Email us"},
   soon_price_note:{ar:"هذي أسعار الافتتاح، وهي وش بندفعه إحنا كذلك أول ما نطلق.",
-                   en:"These are the launch prices — the same ones we'll be paying ourselves when we open."},
+                   en:"These are the launch prices, the same ones we will charge when we open."},
   soon_price_cta:{ar:"احجز سعر الافتتاح",en:"Reserve launch pricing"},
 
   nav_cta:{ar:"جرّبه الآن",en:"Try it now"},
@@ -31,8 +31,8 @@ const T = {
      scanned contracts do get uploaded with consent. The page people read
      BEFORE handing over an employment contract cannot be the one place that
      overstates it. Same conditional truth, same wording as the app. */
-  hero_eyebrow:{ar:"يعمل على جهازك — ما يُرفع عقدك إلا بموافقتك",en:"Runs on your device — nothing is uploaded without your consent"},
-  hero_h:{ar:"اعرف هل تقدر توقّع — قبل ما توقّع.",en:"Know whether you can sign — before you do."},
+  hero_eyebrow:{ar:"يعمل على جهازك، وما يُرفع عقدك إلا بموافقتك",en:"Runs on your device. Nothing is uploaded without your consent"},
+  hero_h:{ar:"اعرف موقفك، قبل ما توقّع.",en:"Know where you stand, before you sign."},
   /* NAMED ONLY LABOUR LAW, AND ONLY EMPLOYMENT. This is the single sentence
      almost every visitor reads, and it hardcoded one contract type — labour
      law as the source, a Saudi/resident track that only the employment
@@ -42,8 +42,8 @@ const T = {
      numbers; loan carries none by design — see docs/legal-sources-loans.md),
      and to name the contract types the product actually reads today rather
      than the one it started with. */
-  hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا — ومعه البنود اللي وراء القرار، مصدرها إذا كان موثّقًا، وخطاب جاهز ترسله. عقد عمل، إيجار، عمل حر، أو تمويل بنكي — نقرأ عقدك ونوضّح لك وش ينطبق عليك.",
-          en:"One clear answer: sign, negotiate, or see a lawyer — with the clauses behind it, the source behind each one where we have it, and a letter ready to send. Employment, rental, freelance, or bank financing — we read your contract and show you what applies."},
+  hero_p:{ar:"جواب واحد واضح: وقّع، أو فاوض، أو راجع محاميًا. ومعه البنود اللي وراء القرار، ومصدر كل بند إذا كان موثّقًا، وخطاب جاهز ترسله. عقد عمل أو إيجار أو عمل حر أو تمويل بنكي: نقرأ عقدك ونوضّح لك وش ينطبق عليك.",
+          en:"One clear answer: sign, negotiate or consult a lawyer. With it come the clauses behind the decision, the source for each one where we hold it, and a letter ready to send. Employment, rental, freelance or bank financing: we read your contract and show you what applies."},
   /* The four contract types the hero paragraph names, drawn as chips. Same
      four, same order, as hero_p and the app's onboarding. */
   hero_kinds:{ar:["عقد عمل","عقد إيجار","عمل حر","تمويل بنكي"],
@@ -59,7 +59,7 @@ const T = {
      contract needs a free account, those two surfaces do not and say so on
      their own screens, and the free tier is real at one scan a month. Named up
      front rather than discovered at the first tap. */
-  hero_note:{ar:"التقييم والتنبيهات مجانية — فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free — one scan a month with a free account."},
+  hero_note:{ar:"التقييم والتنبيهات مجانية: فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free: one scan a month with a free account."},
   /* The hero sheet. Clause text is app/index.html SAMPLES.employment `q`,
      verbatim — the picture must be a contract the app actually reads. */
   paper_title:{ar:"عقد عمل",en:"Employment contract"},
@@ -70,8 +70,8 @@ const T = {
             en:"Either party wishing to terminate must give the other sixty days' written notice."},
   paper_q3:{ar:"راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪ يُدفع نهاية كل شهر ميلادي.",
             en:"A monthly base salary plus 25% housing and 10% transport allowance, paid at the end of each Gregorian month."},
-  paper_sign:{ar:"توقيع الطرف الثاني — لم يُوقَّع بعد",en:"Employee's signature — not signed yet"},
-  shot_verdict:{ar:"عقد عادل بشكل عام — فاوض على بندين قبل التوقيع.",en:"Mostly fair — negotiate two clauses before you sign."},
+  paper_sign:{ar:"توقيع الطرف الثاني (لم يُوقَّع بعد)",en:"Employee's signature (not yet signed)"},
+  shot_verdict:{ar:"عقد عادل بشكل عام، فاوض على بندين قبل التوقيع.",en:"Mostly fair. Negotiate two clauses before you sign."},
   shot_r1:{ar:"بند عدم المنافسة",en:"Non-compete clause"},
   shot_r2:{ar:"مدة الإشعار",en:"Notice period"},
   shot_r3:{ar:"الراتب والبدلات",en:"Salary & benefits"},
@@ -114,8 +114,8 @@ const T = {
      describe the outcome. "Contract intelligence" is a thing you get. "AI"
      is how. */
   k_pos:{ar:"وش هو وضوح",en:"What Wodouh is"},
-  pos_h:{ar:"وضوح — ذكاء العقود",
-         en:"Wodouh — Contract Intelligence"},
+  pos_h:{ar:"وضوح: ذكاء العقود",
+         en:"Wodouh: Contract Intelligence"},
   /* The audience line. Individuals first because that is who the product is
      deepest for today and who every door on home is written for; businesses
      named in the same breath because the workspace is real enough to look at
@@ -146,21 +146,21 @@ const T = {
    * So the paragraph leads with what all three get — which is real — and then
    * claims employment depth outright instead of framing it as rental's
    * absence. Same facts, stated by what we have. */
-  pos_p:{ar:"أي عقد قدّامك — عمل أو إيجار أو عمل حر — تفتحه في وضوح وتطلع منه فاهم: تقييمه، والبنود اللي تنتبه لها، ووش يلزمك فيها، وخطاب تفاوض جاهز إذا حبيت ترد. وفي عقود العمل نوصل لأعمق نقطة: كل ملاحظة مسندة إلى مادتها في نظام العمل، ومستحقاتك محسوبة إذا انتهى العقد. القرار قرارك، ودورنا إنك تاخذه وأنت داري.",
-         en:"Any contract in front of you — employment, rental or freelance — you open it in Wodouh and come out understanding it: the score, the clauses to watch, what they oblige you to, and a negotiation letter ready if you want to answer back. On employment we go all the way down: every point tied to its article in the Labour Law, and what you're owed calculated if the contract ends. The decision stays yours; our job is that you make it knowing."},
+  pos_p:{ar:"أي عقد قدّامك، سواء كان عقد عمل أو إيجار أو عمل حر، تفتحه في وضوح وتطلع منه فاهم: تقييمه، والبنود اللي تنتبه لها، ووش يلزمك فيها، وخطاب تفاوض جاهز إذا حبيت ترد. وفي عقود العمل نوصل لأعمق نقطة: كل ملاحظة مسندة إلى مادتها في نظام العمل، ومستحقاتك محسوبة إذا انتهى العقد. القرار قرارك، ودورنا إنك تاخذه وأنت داري.",
+         en:"Whatever contract is in front of you, whether employment, rental or freelance, you open it in Wodouh and come away understanding it: the score, the clauses to watch, what they oblige you to do, and a negotiation letter ready if you want to respond. On employment contracts we go further: every point is tied to its article in the Labor Law, and what you are owed is calculated if the contract ends. The decision stays yours; our job is to make sure you take it fully informed."},
 
   k_problem:{ar:"المشكلة",en:"The problem"},
   problem_h:{ar:"العقود مكتوبة عشان تُوقَّع، مو عشان تُفهَم.",en:"Contracts are written to be signed, not to be understood."},
-  problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط — لأن السؤال يجي في وقت ما فيه مجال للتردد. هذي مواقف نسمعها كثيرًا:",
-             en:"Most of us sign without knowing exactly what we agreed to — because the question arrives at the moment there's least room to hesitate. Situations we hear often:"},
+  problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط، لأن السؤال يجي في وقت ما فيه مجال للتردد. هذي مواقف نسمعها كثيرًا:",
+             en:"Most of us sign without knowing exactly what we agreed to, because the question arrives when there is least room to hesitate. Situations we hear often:"},
   q1:{ar:"«وقّعت وأنا واثق… وبعد سنة اكتشفت إن بند عدم المنافسة يمنعني أشتغل في مجالي كامل.»",
-      en:"“I signed confidently — a year later I found the non-compete blocked my whole field.”"},
+      en:"“I signed with confidence. A year later I found the non-compete blocked my entire field.”"},
   q1s:{ar:"موظف",en:"An employee"},
   q2:{ar:"«المالك طلب مني الإخلاء خلال أسبوع. ما كنت أدري إن البند اللي وقّعت عليه يعطيه هذا الحق.»",
       en:"“The landlord asked me to leave within a week. I didn't know the clause I signed gave him that right.”"},
   q2s:{ar:"مستأجر",en:"A tenant"},
-  q2note:{ar:"وهذا النوع من البنود قابل للاعتراض غالبًا — عقدك المسجّل في إيجار هو سندك.",
-          en:"A clause like that is usually contestable — your Ejar-registered contract is your proof."},
+  q2note:{ar:"وهذا النوع من البنود قابل للاعتراض غالبًا، وعقدك المسجّل في إيجار هو سندك.",
+          en:"A clause like that is usually contestable. Your Ejar-registered contract is your proof."},
   q3:{ar:"«سلّمت المشروع وانتظرت 60 يومًا عشان أستلم. الاتفاق كان يقول كذا فعلًا.»",
       en:"“I delivered and waited sixty days to get paid. The agreement did say so.”"},
   q3s:{ar:"مستقل",en:"A freelancer"},
@@ -182,17 +182,17 @@ const T = {
   f1:{ar:"تقييم العقد",en:"Contract score"},
   f1p:{ar:"رقم واضح وخلاصة صريحة، مع شرح كل بند وسبب تصنيفه.",en:"A clear number and an honest verdict, with every clause explained and why it's flagged."},
   f2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
-  f2p:{ar:"يُبنى وأنت تقرأ — صيغة جاهزة بالعربي والإنجليزي ترسلها للطرف الآخر.",en:"Built as you read — ready bilingual wording to send the other party."},
+  f2p:{ar:"يُبنى وأنت تقرأ: صيغة جاهزة بالعربي والإنجليزي ترسلها للطرف الآخر.",en:"Built as you read: ready wording in Arabic and English to send to the other party."},
   f3:{ar:"تذكيرات المواعيد",en:"Deadline reminders"},
   /* Named the mechanism rather than promising a service. Wodouh sends no
      notifications — the .ics it generates carries alarms at fourteen days and
      one day, and the reader's own calendar fires them. Kept in step with the
      app's tr_sub by test/availability.test.js. */
-  f3p:{ar:"فترة التجربة، نافذة الإشعار، التجديد — نحسبها لك ونحفظها في تقويمك، مع تنبيه قبلها بأسبوعين وبيوم.",en:"Probation, notice windows, renewals — we work out the dates and put them in your calendar, set to alert you two weeks and a day before."},
+  f3p:{ar:"فترة التجربة، ونافذة الإشعار، والتجديد: نحسبها لك ونحفظها في تقويمك، مع تنبيه قبلها بأسبوعين وبيوم.",en:"Probation, notice windows and renewals: we calculate the dates and add them to your calendar, with alerts two weeks and one day before."},
   f4:{ar:"حاسبة نهاية الخدمة",en:"End-of-service calculator"},
   f4p:{ar:"رقم دقيق بالحساب خطوة بخطوة، وكل مبلغ بمصدره ودرجة يقينه.",en:"An exact figure with the arithmetic shown, each amount with its source and how certain it is."},
   f5:{ar:"المساعد القانوني",en:"Legal assistant"},
-  f5p:{ar:"مساعد مدعوم بالذكاء الاصطناعي: اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"An AI-assisted helper: ask about any clause or law in your own words — and it tells you when you genuinely need a lawyer."},
+  f5p:{ar:"مساعد مدعوم بالذكاء الاصطناعي: اسأل بلغتك العادية عن أي بند أو نظام، ويقول لك متى تحتاج محاميًا فعلًا.",en:"An AI-assisted helper: ask about any clause or law in your own words, and it tells you when you genuinely need a lawyer."},
   /* THE CARD IS PART REAL NOW, AND SAYS WHICH PART.
      It used to carry a Preview chip because the whole screen behind it was a
      mockup: an invented company, invented contracts, invented team seats. The
@@ -205,8 +205,8 @@ const T = {
      now. test/landing-claims.test.js holds this card to the roadmap, so
      neither can quietly graduate here without being built there. */
   f6:{ar:"وضوح للأعمال",en:"Wodouh for Business"},
-  f6p:{ar:"عقودكم في مكان واحد: كل عقد بتقييمه وتاريخه، وتتبعكم على أي جهاز تسجّلون الدخول منه. أما مقاعد الفريق وقراءة قوالبكم الصادرة من وجهة نظر الطرف الآخر، فما زالتا قادمتين — تلقونهما في «إلى وين ماشي وضوح».",
-       en:"Every contract you review in one place, each with its score and date, following you to any device you sign in on. Team seats and reading your outgoing templates from the other side are still to come — both are on the roadmap."},
+  f6p:{ar:"عقودكم في مكان واحد: كل عقد بتقييمه وتاريخه، وتتبعكم على أي جهاز تسجّلون الدخول منه. أما مقاعد الفريق وقراءة قوالبكم الصادرة من وجهة نظر الطرف الآخر، فما زالتا قادمتين، وتلقونهما في «إلى وين ماشي وضوح».",
+       en:"Every contract you review in one place, each with its score and date, available on any device you sign in on. Team seats, and reading your outgoing templates from the other side, are still to come; both are on the roadmap."},
 
   k_price:{ar:"الأسعار",en:"Pricing"},
   /* "المخرجات" is software jargon — nobody in Saudi says "outputs" about a
@@ -214,39 +214,39 @@ const T = {
      Arabic was the derivative, on the pricing headline of an Arabic-first
      product. */
   price_h:{ar:"الحقيقة مجانية. اللي تدفع عليه هو الورق اللي تستخدمه.",en:"The truth is free. You pay for the outputs."},
-  price_p:{ar:"التقييم والقرار وحاسبة نهاية الخدمة مجانية دائمًا — عشان ما نكون طرفًا في قرارك. فحص كامل لكل البنود له سعره.",
-           en:"The score, the verdict, and the calculator are always free — so we're never a party to your decision. A full clause-by-clause review is priced."},
+  price_p:{ar:"التقييم والقرار وحاسبة نهاية الخدمة مجانية دائمًا، عشان ما نكون طرفًا في قرارك. والفحص الكامل لكل البنود له سعره.",
+           en:"The score, the verdict and the calculator are always free, so we are never a party to your decision. A full clause-by-clause review is priced."},
   /* The app's free_now_h / free_now_b, adapted: that sentence stands above the
      in-app plans list and says "every feature is open to you"; here the reader
      is not in the app yet, so it says the app. Guarded by
      test/commerce.test.js, which requires this line while the app's FREE_NOW
      is true and keeps its promise to warn before anything is charged. */
   price_free_h:{ar:"كل شي مجاني الحين",en:"Everything is free right now"},
-  price_free_b:{ar:"الأسعار تحت توضّح وين رايحين، لكن ما فيه دفع الحين: كل ميزات التطبيق مفتوحة لك بالكامل ومجانًا. لو صار فيه دفع لاحقًا، بنقولها لك قبل لا يصير — ما راح نبدأ نحاسبك بدون ما تدري.",
-                en:"The prices below show where this is heading, but nothing is being charged: every feature in the app is open to you, in full, free. If paid plans start later we will tell you before that happens — you will not simply find yourself being charged."},
+  price_free_b:{ar:"الأسعار تحت توضّح وين رايحين، لكن ما فيه دفع الحين: كل ميزات التطبيق مفتوحة لك بالكامل ومجانًا. لو صار فيه دفع لاحقًا، بنقولها لك قبل لا يصير، وما راح نبدأ نحاسبك بدون ما تدري.",
+                en:"The prices below show where this is heading, but nothing is being charged: every feature in the app is open to you, in full, at no cost. If paid plans start later, we will tell you before that happens. You will never be charged without knowing."},
   p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},
   /* Wording matches plan_review_d (app/index.html) verbatim, on purpose — this
      card and the app catalogue describe the same 199 SAR product, and reusing
      the sentence is what stops the two from drifting apart again. */
   p1b:{ar:"المراجعة الكاملة",en:"Full contract review"},
-  p1bp:{ar:"كل بند، وكل ملاحظة، مع مصدرها من النظام — لعقد واحد.",en:"Every clause, every flag, each with its source in the law — for one contract."},
+  p1bp:{ar:"كل بند، وكل ملاحظة، مع مصدرها من النظام، لعقد واحد.",en:"Every clause and every flag, each with its source in the law, for one contract."},
   p1bg:{ar:"تحصل على: تقييم كامل لكل بند، ومصدر كل ملاحظة من النظام.",
         en:"You get: a full review of every clause, with each note's source in the law."},
   p1p:{ar:"فحص مجاني واحد كل شهر: تقييمك، والقرار، وأخطر تنبيه.",en:"One free scan a month: your score, the verdict, and the most serious flag."},
   p2:{ar:"خطاب التفاوض",en:"Negotiation letter"},
-  p2p:{ar:"لكل عقد — صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract — ready wording built from your own clauses, in both languages."},
+  p2p:{ar:"لكل عقد: صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract: ready wording built from your own clauses, in both languages."},
   p3:{ar:"ملف القضية",en:"Case file"},
-  p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد — جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file — ready for settlement or a lawyer."},
+  p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد، جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file, ready for a settlement or a lawyer."},
   /* Wording tracks plan_bundle / plan_bundle_d in the app catalogue, and the
      price is asserted equal to it by test/commerce.test.js. */
   p4:{ar:"الحزمة الكاملة",en:"Full bundle"},
   p4t:{ar:"الأفضل قيمة",en:"Best value"},
-  p4p:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض — أقل من مجموعها.",
-       en:"The full review, the case file and the negotiation letter — for less than their sum."},
+  p4p:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض، بسعر أقل من مجموعها.",
+       en:"The full review, the case file and the negotiation letter, for less than the three separately."},
   p4g:{ar:"تحصل على: الثلاثة كاملة، وتوفّر 148 ر.س عن شرائها منفصلة.",
        en:"You get: all three, saving 148 SAR against buying them separately."},
-  price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا — وضوح يجهّز لك ملفك قبل أن تذهب إليه.",
-                en:"A lawyer's time costs more than this, and you may still need one afterward — Wodouh gets your file ready before you go."},
+  price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا، ووضوح يجهّز لك ملفك قبل أن تذهب إليه.",
+                en:"A lawyer's time costs more than this, and you may still need one afterwards. Wodouh prepares your file before you go."},
   /* USED TO PROMISE A 14-DAY REFUND — real prices, a real refund guarantee,
      next to a "Try it now" button — while the app's own paywall said this was
      a prototype with no real payment. Read together, the honest half did not
@@ -257,8 +257,8 @@ const T = {
      directly, because it carries a link — see the note there. */
   price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة.",
              en:"The price shown is the total you pay, no VAT added."},
-  price_vat_cta:{ar:"الأسعار محددة، والدفع الإلكتروني قريب يفتح — اترك رقمك وبنفتحه لك",
-                 en:"Pricing is set; checkout opens shortly — leave your number and we'll open it for you"},
+  price_vat_cta:{ar:"الأسعار محددة، والدفع الإلكتروني قريب يفتح. اترك رقمك وبنفتحه لك",
+                 en:"Pricing is set; checkout opens shortly. Leave your number and we'll open it for you"},
   p1g:{ar:"تحصل على: التقييم، والقرار، وأول تنبيه، وحاسبة نهاية الخدمة.",
        en:"You get: the score, the decision, the first flag, and the end-of-service calculator."},
   p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
@@ -267,10 +267,10 @@ const T = {
        en:"You get: a file with the facts, the claim in figures, and your document list."},
 
   k_trust:{ar:"الثقة",en:"Trust"},
-  trust_h:{ar:"نقول لك بالضبط وش نسوي — ووش ما نسويه.",en:"We tell you exactly what we do — and what we don't."},
+  trust_h:{ar:"نقول لك بالضبط وش نسوي، ووش ما نسويه.",en:"We tell you exactly what we do, and what we do not."},
   t1:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
-  t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق، وما نخزّنه ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية، وما تصير إلا بموافقتك — ومنها رفع العقود الممسوحة ضوئيًا عشان نقدر نقرأها.",
-       en:"It's read and analyzed inside the app, and we don't store it or share it. The only exceptions are optional and happen only with your consent — including uploading scanned contracts so they can be read at all."},
+  t1p:{ar:"يُقرأ ويُحلَّل داخل التطبيق، وما نخزّنه ولا نشاركه مع أحد. الاستثناءات الوحيدة اختيارية وما تصير إلا بموافقتك، ومنها رفع العقود الممسوحة ضوئيًا عشان نقدر نقرأها.",
+       en:"It is read and analyzed inside the app, and we do not store or share it. The only exceptions are optional and happen only with your consent, including uploading scanned contracts so they can be read at all."},
   t2:{ar:"محتوانا يراجعه محامٍ مرخّص",en:"Reviewed by a licensed lawyer"},
   /* NO LAWYER PROMISE HERE. This said "for complex matters we connect you
      with a licensed Saudi lawyer" while LAWYER_COMPILED is false and the
@@ -281,38 +281,38 @@ const T = {
   t2p:{ar:"يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة: نشرح ونساعدك تفهم وتقرر، وإذا كانت حالتك تحتاج رأيًا مهنيًا نقول لك ذلك بوضوح.",
        en:"Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm: we explain and help you understand and decide, and when your situation needs professional judgement, we tell you so plainly."},
   t3:{ar:"نقول لك كيف حكمنا",en:"We show our reasoning"},
-  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي — وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق. المراجع محدّثة حتى فبراير 2025، تاريخ نفاذ آخر تعديلات النظام.",
-       en:"Every flag carries its reason and its reference in the Saudi Labor Law — and every source is published, with its official link and review date, on our how-we-verify page. References are current to February 2025, when the latest amendments came into force."},
+  t3p:{ar:"كل بند مُعلَّم مع سببه ومرجعه من نظام العمل السعودي، وكل مصدر منشور برابطه الرسمي وتاريخ مراجعته في صفحة كيف نتحقق. المراجع محدّثة حتى فبراير 2025، تاريخ نفاذ آخر تعديلات النظام.",
+       en:"Every flag carries its reason and its reference in the Saudi Labor Law, and every source is published with its official link and review date on our how-we-verify page. References are current to February 2025, when the latest amendments came into force."},
 
   k_faq:{ar:"أسئلة",en:"Questions"},
   faq_h:{ar:"اللي يسألونه عادة",en:"What people usually ask"},
   faq:{ar:[
-    ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، وما نخزّنه. الاستثناءات الوحيدة اختيارية وما تصير إلا بطلبك — العقد الممسوح ضوئيًا لازم يُرفع عشان نقدر نقرأه أصلًا، ونقول لك قبلها. ولو حذفت التطبيق راح معه كل شيء عندك."],
-    ["وقّعت بالفعل، أو انتهى عقدي — فات الأوان؟","لا. وضوح يقرأ العقد الموقّع ويوضّح وش ملزم ووش قابل للاعتراض، ويحسب مستحقاتك عند الإنهاء. والدعوى العمالية لا تُسمع بعد 12 شهرًا من انتهاء العلاقة (نظام العمل، المادة 222)، فالوقت يهم."],
-    ["هل يغني عن المحامي؟","لا. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره، وهذه المراجعة هي ما يقف خلف المواد التي نستشهد بها — لكن وضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا خاصًا بك، ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
+    ["هل عقدي محفوظ عندكم؟","لا. يُقرأ العقد ويُحلَّل داخل التطبيق على جهازك، وما نخزّنه. الاستثناءات الوحيدة اختيارية وما تصير إلا بطلبك: العقد الممسوح ضوئيًا لازم يُرفع عشان نقدر نقرأه أصلًا، ونقول لك قبلها. ولو حذفت التطبيق راح معه كل شيء عندك."],
+    ["وقّعت بالفعل، أو انتهى عقدي. هل فات الأوان؟","لا. وضوح يقرأ العقد الموقّع ويوضّح وش ملزم ووش قابل للاعتراض، ويحسب مستحقاتك عند الإنهاء. والدعوى العمالية لا تُسمع بعد 12 شهرًا من انتهاء العلاقة (نظام العمل، المادة 222)، فالوقت يهم."],
+    ["هل يغني عن المحامي؟","لا. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره، وهذه المراجعة هي ما يقف خلف المواد التي نستشهد بها، لكن وضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا. عند النزاع الفعلي أو المبالغ الكبيرة تحتاج محاميًا خاصًا بك، ووضوح يجهّز لك ملفك قبل أن تذهب إليه."],
     ["يشتغل على العقود العربية؟","نعم، عربي وإنجليزي. بعض ملفات PDF العربية المصوّرة تحتاج نسخ النص يدويًا، وسنقول لك بصراحة إذا ما قدرنا نقرأ الملف."],
-    ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا — وهي الأكثر توقيعًا في السعودية. وعقود العمل هي الأعمق: كل ملاحظة مسندة إلى مادتها في نظام العمل، ومعها حاسبة نهاية الخدمة."],
+    ["وش أنواع العقود المدعومة؟","عقود العمل، والإيجار، والعمل الحر حاليًا، وهي الأكثر توقيعًا في السعودية. وعقود العمل هي الأعمق: كل ملاحظة مسندة إلى مادتها في نظام العمل، ومعها حاسبة نهاية الخدمة."],
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
-    ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة — وضوح غير مسجَّل فيها حاليًا."],
+    ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة، لأن وضوح غير مسجَّل فيها حاليًا."],
     ["وإذا ما عجبني الخطاب؟",
      `الأسعار محددة، والدفع الإلكتروني قريب يفتح. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">اترك رقمك وبنفتحه لك</a>.`],
     ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/51 وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
-    ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون في مطالبة أو مبلغ كبير — نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
+    ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون فيه مطالبة أو مبلغ كبير، نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
-    ["Do you keep my contract?","No. It's read and analyzed inside the app on your device, and we don't store it. The only exceptions are optional and happen only when you ask for them — a scanned contract has to be uploaded to be read at all, and we tell you before it is. Delete the app and everything we hold on your device goes with it."],
-    ["I already signed, or my contract ended — is it too late?","No. Wodouh reads a signed contract and shows what binds you and what remains contestable, and calculates what you're owed on termination. A labour claim is not heard after 12 months from the end of the relationship (Labor Law, Article 222), so timing matters."],
-    ["Does this replace a lawyer?","No. Our legal content is reviewed by a licensed Saudi lawyer before publication, which is what stands behind the articles we cite — but Wodouh itself is not a law firm and does not provide legal representation. For a real dispute or large sums you need a lawyer of your own; Wodouh gets your file ready before you go."],
+    ["Do you keep my contract?","No. It is read and analyzed inside the app on your device, and we do not store it. The only exceptions are optional and happen only when you ask for them: a scanned contract has to be uploaded to be read at all, and we tell you before it is. Delete the app and everything we hold on your device goes with it."],
+    ["I have already signed, or my contract has ended. Is it too late?","No. Wodouh reads a signed contract and shows what binds you and what remains contestable, and calculates what you're owed on termination. A labour claim is not heard after 12 months from the end of the relationship (Labor Law, Article 222), so timing matters."],
+    ["Does this replace a lawyer?","No. Our legal content is reviewed by a licensed Saudi lawyer before publication, which is what stands behind the articles we cite. Wodouh itself, however, is not a law firm and does not provide legal representation. For a real dispute or large sums you need a lawyer of your own; Wodouh prepares your file before you go."],
     ["Does it work on Arabic contracts?","Yes, Arabic and English. Some scanned Arabic PDFs need the text pasted manually, and we'll tell you plainly when we can't read a file."],
-    ["Which contracts are supported?","Employment, rental, and freelance for now — the ones most people in Saudi Arabia actually sign. Employment is the deepest: every point tied to its Labour Law article, with the end-of-service calculator alongside."],
+    ["Which contracts are supported?","Employment, rental and freelance contracts for now, the ones most people in Saudi Arabia actually sign. Employment is covered in the most depth: every point is tied to its Labor Law article, with the end-of-service calculator alongside."],
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
-    ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added — Wodouh is not currently registered for VAT."],
+    ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added, because Wodouh is not currently registered for VAT."],
     ["What if the letter isn't useful?",
      `Pricing is set; checkout opens shortly. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">Leave your number and we'll open it for you</a>.`],
     ["Where does your information come from?","Official sources: the Saudi Labor Law (Royal Decree M/51 and its amendments), the Ministry of Human Resources, the Ejar network, and the Ministry of Justice. They're listed in the app with links and review dates, and we name an article number only where we've verified it."],
-    ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there's a claim or a large sum involved — we say so plainly on the result screen and prepare your file before you go."]
+    ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there is a claim or a large sum involved, we say so plainly on the result screen and prepare your file before you go."]
   ]},
 
-  close_h:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign — let's read it together."},
+  close_h:{ar:"قبل ما توقّع… خلنا نقرأه معك.",en:"Before you sign, let us read it with you."},
   /* .launch-only — see below for the .soon-only twin. This one promises
      instant analysis; under the curtain the only button next to it is a
      contact link, so someone reading this and then pressing that button
@@ -321,12 +321,12 @@ const T = {
            en:"Analyze your contract now. A free scan every month, read on your device."},
   close_p_soon:{ar:"ما فتحناه للكل بعد. عندك عقد قدّامك اليوم؟ كلّمنا ونقرأه معك.",
                 en:"We haven't opened to everyone yet. Have a contract in front of you today? Talk to us and we'll read it with you."},
-  close_cta:{ar:"اعرف وضع عقدي مجانًا",en:"See where my contract stands — free"},
+  close_cta:{ar:"اعرف وضع عقدي مجانًا",en:"See where my contract stands, free"},
   /* The disclosure every other surface makes and this page did not: it sold
      an AI assistant without the word "AI" appearing anywhere on it, in either
      language. Wording reused from terms/index.html rather than newly written. */
-  foot:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا، وما ينتجه الذكاء الاصطناعي قد يكون خاطئًا — وما يغني عن الاستشارة القانونية عند الحاجة.",
-        en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm and does not provide legal representation, and AI output can be wrong — it does not replace legal advice when you need it."},
+  foot:{ar:"وضوح منصّة تقنية تقدّم معلومات قانونية عامة وأدوات مدعومة بالذكاء الاصطناعي. يراجع محامٍ سعودي مرخّص محتوانا النظامي قبل نشره. ووضوح نفسه ليس مكتب محاماة ولا يقدّم تمثيلًا قانونيًا، وما ينتجه الذكاء الاصطناعي قد يكون خاطئًا، وما يغني عن الاستشارة القانونية عند الحاجة.",
+        en:"Wodouh is a technology platform providing general legal information and AI-assisted tools. Our legal content is reviewed by a licensed Saudi lawyer before publication. Wodouh itself is not a law firm and does not provide legal representation, and AI output can be wrong; it does not replace legal advice when you need it."},
   /* Reused verbatim from the legal pages' identification block, so the
      operator is described the same way everywhere. */
   foot_id:{ar:"يُدار وضوح كنشاط سعودي مستقل بموجب وثيقة عمل حر، وليس لديه سجل تجاري. ولا نعرض أي شعار أو ترخيص أو اعتماد حكومي لا نملكه. للتواصل والشكاوى: support@alwodouh.com",
@@ -394,9 +394,10 @@ function applyLang(){
     kinds.innerHTML = T.hero_kinds[lang].map((k) => `<li>${k}</li>`).join("");
   }
   const h1 = document.querySelector(".hero h1");
-  const halves = t("hero_h").split(" — ");
-  if (h1 && halves.length === 2)
-    h1.innerHTML = `${halves[0]} <span class="h1-accent">${halves[1]}</span>`;
+  /* The accent is the clause after the comma: «قبل ما توقّع» / "before you sign". */
+  const hh = t("hero_h"), cut = hh.search(/[،,]\s/);
+  if (h1 && cut > 0)
+    h1.innerHTML = `${hh.slice(0, cut + 1)} <span class="h1-accent">${hh.slice(cut + 2)}</span>`;
   document.getElementById("faq").innerHTML = T.faq[lang].map(([q,a]) =>
     `<details><summary>${q}<svg class="m" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></summary><div class="ans"><div><p>${a}</p></div></div></details>`
   ).join("");
