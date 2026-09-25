@@ -2116,9 +2116,10 @@
 
   /* Findings are numbered the way a contract numbers its clauses. */
   .flags{counter-reset:clause}
-  .flag h4::before{counter-increment:clause;content:counter(clause) ".";
-    font-family:var(--en);font-weight:800;font-size:13px;color:var(--ink-2);margin-inline-end:6px;
-    display:inline-block;direction:ltr;unicode-bidi:isolate}
+  .flag h4::before{counter-increment:clause;content:counter(clause);
+    font-family:var(--en);font-weight:800;font-size:12px;color:var(--ink-2);margin-inline-end:8px;
+    display:inline-block;min-width:20px;padding:0 5px;line-height:18px;text-align:center;vertical-align:2px;
+    border:1px solid color-mix(in srgb,var(--ink-2) 45%,transparent);border-radius:4px}
 
   /* The decision reads as a stamp: a dashed double edge in its own colour,
      set a degree off true the way a hand-pressed stamp lands. */
