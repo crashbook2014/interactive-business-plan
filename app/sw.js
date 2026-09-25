@@ -73,7 +73,7 @@
  * in would change the file and invalidate the hash it just recorded. It does
  * not need to be — the browser updates a worker by byte-comparing the worker
  * script itself, which is the one file that already has a working mechanism. */
-const SHELL_HASH = "8de2e137bd93";
+const SHELL_HASH = "fa6731c85acc";
 const CACHE = "wodouh-shell-" + SHELL_HASH;
 
 /* Everything needed to open the app with the network off. Relative, so the

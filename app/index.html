@@ -251,6 +251,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
            The screen's heading is the chooser question below; this is the
            pitch above it. -->
       <p class="hm-hero-h" id="hmHeroH"></p>
+      <span class="hm-sig" aria-hidden="true"><svg class="sig" viewBox="0 0 300 38" aria-hidden="true"><path d="M4 26c14-10 26-16 34-10 7 5-6 14 2 13 11-1 17-19 27-18 8 1 1 14 9 13 10-1 14-12 22-11 9 1 6 10 15 9 12-1 19-9 30-8s14 8 25 7c14-1 24-9 40-8 14 1 26 6 40 3 12-2 22-8 42-9"/></svg></span>
       <p id="hmHeroP"></p>
     </div>
     <!-- DOOR ONE, WITH AN AFFORDANCE. Deliberately a row and not a drop zone:
@@ -917,6 +918,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
            way to reach a person. No registration number, no VAT number and no
            badge — none of those exist to state. -->
       <p class="legal-id" data-t="acc_identity"></p>
+      <div class="signed-by" aria-hidden="true"><svg class="sig" viewBox="0 0 300 38" aria-hidden="true"><path d="M4 26c14-10 26-16 34-10 7 5-6 14 2 13 11-1 17-19 27-18 8 1 1 14 9 13 10-1 14-12 22-11 9 1 6 10 15 9 12-1 19-9 30-8s14 8 25 7c14-1 24-9 40-8 14 1 26 6 40 3 12-2 22-8 42-9"/></svg><span class="by" lang="ar">وضوح · Wodouh</span></div>
     </div>
     <!-- THE CONTROL THAT TESTS THE PROMISE ABOVE.
          Everything this app says about privacy is a claim that the reader's
@@ -4891,7 +4893,7 @@ function quoteHtml(c){
   /* Marked when it is the reader's own text, so "from your contract" can be
      said rather than implied. */
   const own = typeof c.q === "string" ? ` data-own="1" data-label="${esc(t("q_own"))}"` : "";
-  return `<div class="quote"${own}>${m[0]}${esc(raw)}${m[1]}</div>`;
+  return `<div class="quote"${own}><mark>${m[0]}${esc(raw)}${m[1]}</mark></div>`;
 }
 
 function tidyQuote(sc){
@@ -5122,9 +5124,10 @@ function esc(s){
 function applyLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang==="ar" ? "rtl" : "ltr";
-  document.title = lang==="ar" ? "وضوح — Wodouh" : "Wodouh — وضوح";
+  document.title = lang==="ar" ? "وضوح | Wodouh" : "Wodouh | وضوح";
   document.getElementById("langToggle").textContent = lang==="ar" ? "English" : "عربي";
   document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = t(el.dataset.t); });
+  markHeads();
   document.getElementById("pasteBox").placeholder = t("paste_ph");
   const h = new Date().getHours();
   document.getElementById("greet").textContent =
@@ -5178,9 +5181,20 @@ function applyLang(){
 /* Language is a pure re-render. It must never re-run boot: doing so re-read
    localStorage into TRACKED and re-bound the scroll, drag-drop and pointer
    listeners once per toggle. */
+/* The highlighter under each screen title, the same stroke the landing page
+   draws under its headings. Re-applied after every language switch because
+   applyLang() just reset each title's text. */
+function markHeads(){
+  document.querySelectorAll(".section-title, h1.hello, .lib-h").forEach(h=>{
+    if (h.querySelector(".hl") || !h.textContent.trim()) return;
+    const span = document.createElement("span"); span.className = "hl";
+    span.textContent = h.textContent; h.replaceChildren(span);
+  });
+}
 function toggleLang(){ lang = lang==="ar" ? "en" : "ar"; applyLang(); }
 
 function show(name, back){
+  requestAnimationFrame(markHeads);
   /* A SCREEN BUILT FROM AN ANALYSIS CANNOT RENDER WITHOUT ONE.
      `current` is deliberately not persisted — the contract never survives a
      reload — so any route back to the result after state is lost dereferences
@@ -5276,7 +5290,18 @@ function renderDeskAside(name){
      contract they signed years ago — the defect fixed on the intake headline
      in 71ce2d0, which this kept making one screen earlier. */
   const hh = document.getElementById("hmHeroH"), hp = document.getElementById("hmHeroP");
-  if (hh && hp){ hh.textContent = h; hp.textContent = p; }
+  if (hh && hp){
+    /* The second half of the line is set in teal, the way the landing page
+       sets its headline: the question, then the answer. */
+    const at = h.search(/[؟?،,]\s|\s(?=قبل ما|before you)/);
+    if (at > 0){
+      const cut = /\s/.test(h[at]) ? at : at + 1;
+      hh.replaceChildren(document.createTextNode(h.slice(0, cut) + " "));
+      const acc = document.createElement("span"); acc.className = "hm-accent";
+      acc.textContent = h.slice(cut).trim(); hh.appendChild(acc);
+    } else hh.textContent = h;
+    hp.textContent = p;
+  }
 }
 
 /* Haptics where a real device would buzz: a decision landed, not every tap. */
