@@ -454,8 +454,8 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     const stated = Object.entries(WORDS[L]).find(([w]) =>
       L === "en" ? new RegExp(`there are ${w} exceptions`, "i").test(text)
                  : text.includes(`فيه ${w} استثناءات`));
-    /* Each exception is introduced as "1 — ", "2 — " and so on. */
-    const listed = (text.match(/(^|\s)(\d)\s+—/g) || []).length;
+    /* Each exception is introduced as "1. ", "2. " and so on. */
+    const listed = (text.match(/(^|\s)(\d)\.\s/g) || []).length;
     ok(!!stated, `${L}: the copy states how many exceptions there are`);
     ok(!!stated && stated[1] === listed,
        `${L}: it says ${stated ? stated[1] : "?"} and enumerates ${listed} — these must be the same number`);
@@ -592,7 +592,7 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
    * is refunded is only the case where nothing came back at all. */
   ok(failed.after === failed.before,
      `a failure that produced no answer costs nothing (${failed.before} → ${failed.after})`);
-  ok(/didn't count that attempt|ما احتسبنا/i.test(failed.text),
+  ok(/was not counted|ما احتسبنا/i.test(failed.text),
      "and the reader is TOLD it was not counted, rather than left guessing");
   ok(/survive a failure/.test(failed.box || failed.kept),
      "the question they typed is still there — they do not retype it from memory");

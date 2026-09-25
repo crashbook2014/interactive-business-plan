@@ -102,7 +102,7 @@ async function serveWithAiCsp(page){
                        different screen. That it is REACHABLE is asserted separately. */
                     return b ? b.closest(".acc-sec").textContent : ""; })() };
   });
-  ok(/never leaves it/i.test(claim.home) && /don't upload/i.test(claim.acc),
+  ok(/never leaves it/i.test(claim.home) && /do not upload/i.test(claim.acc),
      "unconfigured: the unconditional privacy promise is kept, because it is true");
 
   /* Try to force it. An unconfigured build must not call out even if asked. */
@@ -271,7 +271,7 @@ async function serveWithAiCsp(page){
   const saysUpload = /sends the FILE itself|يرسل الملف نفسه/i.test(claim2.acc);
   ok(hasUploadCall === saysUpload,
      `the call site and the disclosure agree (call site ${hasUploadCall}, page says ${saysUpload})`);
-  ok(!hasUploadCall || /deleted after an hour|يُحذف الملف بعد ساعة/i.test(claim2.acc),
+  ok(!hasUploadCall || /deleted after one hour|يُحذف الملف بعد ساعة/i.test(claim2.acc),
      "and where it uploads, the page says how long the file lives");
   ok(/reason field/i.test(claim2.acc),
      "configured: it still says the reason text is sent by the review");

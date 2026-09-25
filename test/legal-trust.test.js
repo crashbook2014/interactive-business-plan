@@ -92,7 +92,7 @@ ok(slugs.length > 20, `the answers library was read (${slugs.length} pages)`);
    citations naming the Saudi Labour Law count: the app also cites the
    Implementing Regulations, the Social Insurance Law, Qiwa, Najiz, Ejar, GOSI
    and SANED, and none of those is this library's subject. */
-const LABOUR_EN = /Saudi Labor Law — Article (\d+)/g;
+const LABOUR_EN = /Saudi Labor Law, Article (\d+)/g;
 const cited = new Set();
 for (const m of app.matchAll(LABOUR_EN)) cited.add(Number(m[1]));
 ok(cited.size > 10, `the app's Labour Law citations were parsed (${[...cited].sort((a,b)=>a-b).join(", ")})`);
@@ -170,7 +170,7 @@ ok(anchored >= 2 && closed >= 2,
 
 const DECOYS = [
   ["نظام التأمينات الاجتماعية مع المادتين 84 و85", "Social Insurance Law read with Articles 84 and 85"],
-  ["اللائحة التنفيذية لنظام العمل — المادة 6", "Labor Law Implementing Regulations — Article 6"],
+  ["اللائحة التنفيذية لنظام العمل، المادة 6", "Labor Law Implementing Regulations, Article 6"],
   ["شبكة إيجار", "Ejar network"],
 ];
 for (const [ar, en] of DECOYS) {
