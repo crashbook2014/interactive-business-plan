@@ -503,6 +503,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
         <p class="src-line method score-src" data-t="src_score"></p>
         <p class="currency" id="srcStamp" data-t="src_stamp"></p>
         <button class="how-built" onclick="goTab('account')" data-t="how_built"></button>
+        <div class="signed-by rp-signed" aria-hidden="true"><svg class="sig" viewBox="0 0 300 38" aria-hidden="true"><path d="M4 26c14-10 26-16 34-10 7 5-6 14 2 13 11-1 17-19 27-18 8 1 1 14 9 13 10-1 14-12 22-11 9 1 6 10 15 9 12-1 19-9 30-8s14 8 25 7c14-1 24-9 40-8 14 1 26 6 40 3 12-2 22-8 42-9"/></svg><span class="by" data-t="rp_signed"></span></div>
       </div>
       <div class="all-clear" id="allClear" hidden>
         <span class="ac-tick"><svg class="draw" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
@@ -619,6 +620,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
       <div class="body" id="letterBody"></div>
       <div class="letterfoot" id="letterFoot"></div>
+      <div class="sign-line" aria-hidden="true"><span data-t="sign_here"></span></div>
     </div>
     </div>
     <!-- What to DO with it, beside the letter rather than under it: copy,
@@ -1160,6 +1162,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <div class="letterhead"><svg viewBox="0 0 64 64" stroke="var(--teal)"><use href="#mark-lens"/></svg><span>Wodouh</span></div>
       <div class="body" id="termLtrBody"></div>
       <div class="letterfoot" id="termLtrFoot"></div>
+      <div class="sign-line" aria-hidden="true"><span data-t="sign_here"></span></div>
     </div>
     <div class="letter-actions">
       <button class="ghost" id="termLtrCopy" onclick="copyTermLtr()"></button>
@@ -1681,6 +1684,8 @@ const T = {
   /* THE WAY OUT IS NAMED AND IS THE DEFAULT. On a question whose yes cannot be
      undone, the safe answer is the one that should be one keystroke away and
      the one the focus lands on. */
+  sign_here:{ar:"التوقيع",en:"Signature"},
+  rp_signed:{ar:"قراءة وضوح",en:"Read by Wodouh"},
   dlg_cancel:{ar:"إلغاء",en:"Cancel"},
   au_err:{ar:"ما ضبط تسجيل الدخول. جرّب مرة ثانية.",en:"Sign-in did not work. Please try again."},
   /* Said when the project itself refuses the provider, which is a different

@@ -2059,6 +2059,13 @@
     background:var(--card);border:1px solid var(--line);border-radius:8px;transform:rotate(.8deg);
     box-shadow:var(--e1);pointer-events:none}
   html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:8px 6px -8px -6px;transform:rotate(-.8deg)}
+  /* On a phone the report runs thousands of pixels tall, and any rotation
+     swings its far end out past the screen edge. The second sheet just sits
+     lower there, square to the page. */
+  @media (max-width:880px){
+    .score-card::after,.letter::after,
+    html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:7px 3px -7px 3px;transform:none}
+  }
   .rp-head,.letterhead{border-bottom:3px double var(--line)}
   .rp-meta,.acc-sec{border-top-style:dashed}
 
@@ -2099,6 +2106,33 @@
   .hm-up::before{content:"";position:absolute;top:-8px;left:50%;width:64px;height:18px;margin-left:-32px;
     background:color-mix(in srgb,var(--amber-bg) 80%,transparent);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);
     transform:rotate(-2deg);pointer-events:none}
+
+  /* Letters are written on ruled paper, and end on a line for the signature. */
+  .letter .body{background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
+    color-mix(in srgb,var(--line) 36%,transparent) calc(1lh - 1px));background-size:100% 1lh;background-repeat:repeat-y}
+  @media print{ .letter .body{background:none} .letter::after,.score-card::after{display:none} }
+  .letter .sign-line{justify-content:flex-start;margin-top:26px}
+  .letter .sign-line span{flex:none}
+
+  /* Findings are numbered the way a contract numbers its clauses. */
+  .flags{counter-reset:clause}
+  .flag h4::before{counter-increment:clause;content:counter(clause) ".";
+    font-family:var(--en);font-weight:800;font-size:13px;color:var(--ink-2);margin-inline-end:6px;
+    display:inline-block;direction:ltr;unicode-bidi:isolate}
+
+  /* The decision reads as a stamp: a dashed double edge in its own colour,
+     set a degree off true the way a hand-pressed stamp lands. */
+  .decision{border:2px dashed color-mix(in srgb,var(--dc) 55%,transparent);border-radius:10px;
+    outline:1px solid color-mix(in srgb,var(--dc) 22%,transparent);outline-offset:3px;transform:rotate(-.6deg)}
+  html[dir="ltr"] .decision{transform:rotate(.6deg)}
+
+  /* Sub-headings are kickers with a short pen rule, as on the landing page. */
+  .biz-h{display:flex;align-items:center;gap:10px}
+  .biz-h::after{content:"";flex:1;max-width:90px;border-top:1.5px dashed var(--line)}
+
+  /* The report is signed at its foot. */
+  .rp-signed{margin-top:22px}
+  .rp-signed .by{min-width:150px}
 
   /* Home's headline: the answer half in teal, a signature drawn beneath it. */
   .hm-accent{color:var(--teal)}
