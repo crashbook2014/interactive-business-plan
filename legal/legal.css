@@ -150,3 +150,37 @@ footer{
   h2{page-break-after:avoid}
   .box,.key{page-break-inside:avoid}
 }
+
+/* ------------------------------------------------ THE PAPER LAYER
+   The same annotated-contract idiom as the landing page and the app: each
+   policy is a sheet with a second sheet beneath, its title underlined with a
+   highlighter, its sections numbered as clauses, and its key box pinned on
+   with tape. Tokens only, so dark mode follows. */
+[data-lang]{position:relative; isolation:isolate; background:var(--card); border:1px solid var(--line);
+  border-radius:8px; padding:30px 28px 26px; box-shadow:0 1px 2px rgba(43,50,48,.06),0 8px 24px rgba(43,50,48,.07);
+  counter-reset:clause}
+[data-lang]::after{content:""; position:absolute; inset:8px 4px -8px 4px; z-index:-1; background:var(--card);
+  border:1px solid var(--line); border-radius:8px; pointer-events:none}
+@media (min-width:800px){
+  [data-lang]::after{inset:9px -7px -9px 7px; transform:rotate(.6deg)}
+  html[dir="rtl"] [data-lang]::after{inset:9px 7px -9px -7px; transform:rotate(-.6deg)}
+}
+@media (max-width:520px){ [data-lang]{padding:24px 18px 20px} }
+h1{display:inline; background-image:linear-gradient(color-mix(in srgb,var(--amber) 26%,transparent),color-mix(in srgb,var(--amber) 26%,transparent));
+  background-repeat:no-repeat; background-size:100% 34%; background-position:100% 88%; padding:0 3px;
+  -webkit-box-decoration-break:clone; box-decoration-break:clone}
+html[dir="ltr"] h1{background-position:0 88%}
+.updated{margin-top:12px; padding-bottom:16px; border-bottom:3px double var(--line)}
+h2{border-top-style:dashed; counter-increment:clause}
+h2::before{content:"البند " counter(clause); display:block; font-size:12px; font-weight:400;
+  letter-spacing:.02em; color:var(--teal); margin-bottom:4px}
+html[lang="en"] h2::before{content:"Clause " counter(clause)}
+.key{position:relative; border-radius:6px}
+.key::before{content:""; position:absolute; top:-9px; left:50%; width:64px; height:18px; margin-left:-32px;
+  background:color-mix(in srgb,var(--amber-bg) 80%,transparent); border:1px solid color-mix(in srgb,var(--line) 60%,transparent);
+  transform:rotate(-2deg)}
+.box{position:relative; border-radius:6px}
+.box::after{content:""; position:absolute; top:-1px; inset-inline-end:-1px; width:16px; height:16px;
+  background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+html[dir="rtl"] .box::after{background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+@media print{ [data-lang]{border:0; box-shadow:none; padding:0} [data-lang]::after,.key::before{display:none} }

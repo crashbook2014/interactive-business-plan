@@ -2155,4 +2155,71 @@
   .sign-line{display:flex;align-items:center;gap:10px;margin:18px 0 0;color:var(--ink-2);font-size:12px}
   .sign-line::after{content:"";flex:1;border-top:1.5px dashed var(--ink-2);max-width:220px}
 
+  /* ------------------------------------------- THE PAPER LAYER, EVERYWHERE
+   *
+   * The first pass dressed the screens a reader shows to someone else (the
+   * report, the letter, the plans). Every other screen kept the soft app
+   * card, so the product read as two designs. This makes paper the default:
+   * squarer corners across every card, control and field; sheets beneath the
+   * figures a reader came for; clause-numbered kickers; stamped badges; ruled
+   * writing surfaces; dashed perforations where a hairline used to divide.
+   * Still tokens only, still no layout or tap-target change. */
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{
+    --r-sm:6px; --r-md:8px; --r-lg:8px; --r-xl:10px; --r-2xl:10px}
+
+  /* The figures a reader came for are sheets, with a second sheet beneath. */
+  .eos-card,.tm-hero,.tm-money,.triage,.claim-card{position:relative;isolation:isolate}
+  .eos-card::after,.tm-hero::after{content:"";position:absolute;inset:7px 4px -7px 4px;z-index:-1;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);pointer-events:none}
+  @media (min-width:881px){
+    .eos-card::after,.tm-hero::after{inset:8px -6px -8px 6px;transform:rotate(.7deg)}
+    html[dir="rtl"] .eos-card::after,html[dir="rtl"] .tm-hero::after{inset:8px 6px -8px -6px;transform:rotate(-.7deg)}
+  }
+  .eos-card .svc,.tm-money .r{border-bottom-style:dashed}
+  .tm-hero .alt{border-top-style:dashed}
+  .tm-money .r.tot{border-top-style:double;border-top-width:3px}
+  .rows .r.tot{border-top:3px double var(--line)}
+
+  /* Index-card corners on every card a reader picks or files. */
+  .sample,.src,.tl-card,.fu-card,.fu-cat,.doc,.claim-card,.brow,.up-main{position:relative}
+  .sample::after,.src::after,.tl-card::after,.fu-card::after,.fu-cat::after,.doc::after,.claim-card::after,.brow::after{
+    content:"";position:absolute;top:-1px;inset-inline-end:-1px;width:16px;height:16px;pointer-events:none;
+    border-start-end-radius:var(--r-md);
+    background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+  html[dir="rtl"] :is(.sample,.src,.tl-card,.fu-card,.fu-cat,.doc,.claim-card,.brow)::after{
+    background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+
+  /* The upload card is taped down here too. */
+  .up-main::before{content:"";position:absolute;top:-8px;left:50%;width:56px;height:16px;margin-left:-28px;
+    background:color-mix(in srgb,var(--amber-bg) 80%,transparent);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);
+    transform:rotate(2deg);pointer-events:none}
+
+  /* Writing surfaces are ruled, aligned to their own line height. */
+  textarea{line-height:1.9;background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
+    color-mix(in srgb,var(--line) 34%,transparent) calc(1lh - 1px));background-size:100% 1lh;
+    background-attachment:local;background-position:0 14px}
+
+  /* Group headings read as clause kickers: «البند 2 · وأنت على رأس العمل». */
+  .lib-list,#libList,.screen{counter-reset:kick}
+  .lib-g{counter-increment:kick}
+  .lib-g::before{content:"البند " counter(kick) " ·";width:auto;height:auto;border-radius:0;background:none;
+    font-weight:400;color:var(--teal)}
+  html[lang="en"] .lib-g::before{content:"Clause " counter(kick) " ·"}
+  .lib-g{border-top-style:dashed}
+  .fu-h{display:flex;align-items:center;gap:10px}
+  .fu-h::after{content:"";flex:1;max-width:90px;border-top:1.5px dashed var(--line)}
+  .fu-step + .fu-step{border-top-style:dashed}
+
+  /* Badges are stamped rather than printed. */
+  .fu-card .badge,.fu-cat .badge,.fu-step .badge,.plan .badge,.up-photo .badge{
+    border:1.5px dashed currentColor;transform:rotate(-3deg);border-radius:4px}
+  html[dir="ltr"] :is(.fu-card,.fu-cat,.fu-step,.plan,.up-photo) .badge{transform:rotate(3deg)}
+
+  /* Onboarding: the illustration sits on a ruled sheet, not a halo. */
+  .ob-art::before{inset:-4% 2%;border-radius:6px;background:var(--card);border:1px solid var(--line);
+    transform:rotate(-4deg);box-shadow:var(--e1);
+    background-image:linear-gradient(to bottom,transparent 21px,color-mix(in srgb,var(--line) 34%,transparent) 21px 22px);
+    background-size:100% 22px}
+  html[dir="ltr"] .ob-art::before{transform:rotate(4deg)}
+
   [hidden]{display:none !important}
