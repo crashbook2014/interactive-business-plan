@@ -5190,7 +5190,7 @@ function applyLang(){
    draws under its headings. Re-applied after every language switch because
    applyLang() just reset each title's text. */
 function markHeads(){
-  document.querySelectorAll(".section-title, h1.hello, .lib-h").forEach(h=>{
+  document.querySelectorAll(".section-title, h1.hello, .lib-h, .ob-title").forEach(h=>{
     if (h.querySelector(".hl") || !h.textContent.trim()) return;
     const span = document.createElement("span"); span.className = "hl";
     span.textContent = h.textContent; h.replaceChildren(span);

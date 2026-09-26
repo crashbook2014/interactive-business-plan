@@ -2055,17 +2055,10 @@
 
   /* Documents are sheets: squarer corners, and a second sheet beneath. */
   .score-card,.letter{position:relative;isolation:isolate;border-radius:8px}
-  .score-card::after,.letter::after{content:"";position:absolute;inset:8px -6px -8px 6px;z-index:-1;
-    background:var(--card);border:1px solid var(--line);border-radius:8px;transform:rotate(.8deg);
-    box-shadow:var(--e1);pointer-events:none}
-  html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:8px 6px -8px -6px;transform:rotate(-.8deg)}
-  /* On a phone the report runs thousands of pixels tall, and any rotation
-     swings its far end out past the screen edge. The second sheet just sits
-     lower there, square to the page. */
-  @media (max-width:880px){
-    .score-card::after,.letter::after,
-    html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:7px 3px -7px 3px;transform:none}
-  }
+  /* The second sheet is drawn as a shadow, so it sits truly beneath the page
+     and can never show an edge through it or push past the screen. */
+  .score-card,.letter{box-shadow:var(--e2),6px 7px 0 -1px var(--card),6px 7px 0 0 var(--line)}
+  html[dir="rtl"] .score-card,html[dir="rtl"] .letter{box-shadow:var(--e2),-6px 7px 0 -1px var(--card),-6px 7px 0 0 var(--line)}
   .rp-head,.letterhead{border-bottom:3px double var(--line)}
   .rp-meta,.acc-sec{border-top-style:dashed}
 
@@ -2110,7 +2103,7 @@
   /* Letters are written on ruled paper, and end on a line for the signature. */
   .letter .body{background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
     color-mix(in srgb,var(--line) 36%,transparent) calc(1lh - 1px));background-size:100% 1lh;background-repeat:repeat-y}
-  @media print{ .letter .body{background:none} .letter::after,.score-card::after{display:none} }
+  @media print{ .letter .body{background:none} .score-card,.letter{box-shadow:none} }
   .letter .sign-line{justify-content:flex-start;margin-top:26px}
   .letter .sign-line span{flex:none}
 
@@ -2154,5 +2147,91 @@
     font-size:12px;color:var(--ink-2)}
   .sign-line{display:flex;align-items:center;gap:10px;margin:18px 0 0;color:var(--ink-2);font-size:12px}
   .sign-line::after{content:"";flex:1;border-top:1.5px dashed var(--ink-2);max-width:220px}
+
+  /* ------------------------------------------- THE PAPER LAYER, EVERYWHERE
+   *
+   * The first pass dressed the screens a reader shows to someone else (the
+   * report, the letter, the plans). Every other screen kept the soft app
+   * card, so the product read as two designs. This makes paper the default:
+   * squarer corners across every card, control and field; sheets beneath the
+   * figures a reader came for; clause-numbered kickers; stamped badges; ruled
+   * writing surfaces; dashed perforations where a hairline used to divide.
+   * Still tokens only, still no layout or tap-target change. */
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{
+    --r-sm:6px; --r-md:8px; --r-lg:8px; --r-xl:10px; --r-2xl:10px}
+
+  /* The figures a reader came for are sheets, with a second sheet beneath. */
+  .eos-card,.tm-hero,.tm-money,.triage,.claim-card{position:relative;isolation:isolate}
+  .eos-card,.tm-hero{box-shadow:var(--e1),5px 6px 0 -1px var(--card),5px 6px 0 0 var(--line)}
+  html[dir="rtl"] .eos-card,html[dir="rtl"] .tm-hero{box-shadow:var(--e1),-5px 6px 0 -1px var(--card),-5px 6px 0 0 var(--line)}
+  .eos-card .svc,.tm-money .r{border-bottom-style:dashed}
+  .tm-hero .alt{border-top-style:dashed}
+  .tm-money .r.tot{border-top-style:double;border-top-width:3px}
+  .rows .r.tot{border-top:3px double var(--line)}
+
+  /* Index-card corners on every card a reader picks or files. */
+  .sample,.src,.tl-card,.fu-card,.fu-cat,.doc,.claim-card,.brow,.up-main{position:relative}
+  .sample::after,.src::after,.tl-card::after,.fu-card::after,.fu-cat::after,.doc::after,.claim-card::after,.brow::after{
+    content:"";position:absolute;top:-1px;inset-inline-end:-1px;width:16px;height:16px;pointer-events:none;
+    border-start-end-radius:var(--r-md);
+    background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+  html[dir="rtl"] :is(.sample,.src,.tl-card,.fu-card,.fu-cat,.doc,.claim-card,.brow)::after{
+    background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
+
+  /* The upload card is taped down here too. */
+  .up-main::before{content:"";position:absolute;top:-8px;left:50%;width:56px;height:16px;margin-left:-28px;
+    background:color-mix(in srgb,var(--amber-bg) 80%,transparent);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);
+    transform:rotate(2deg);pointer-events:none}
+
+  /* Writing surfaces are ruled, aligned to their own line height. */
+  textarea{line-height:1.9;background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
+    color-mix(in srgb,var(--line) 34%,transparent) calc(1lh - 1px));background-size:100% 1lh;
+    background-attachment:local;background-position:0 14px}
+
+  /* Group headings read as clause kickers: «البند 2 · وأنت على رأس العمل». */
+  .lib-list,#libList,.screen{counter-reset:kick}
+  .lib-g{counter-increment:kick}
+  .lib-g::before{content:"البند " counter(kick) " ·";width:auto;height:auto;border-radius:0;background:none;
+    font-weight:400;color:var(--teal)}
+  html[lang="en"] .lib-g::before{content:"Clause " counter(kick) " ·"}
+  .lib-g{border-top-style:dashed}
+  .fu-h{display:flex;align-items:center;gap:10px}
+  .fu-h::after{content:"";flex:1;max-width:90px;border-top:1.5px dashed var(--line)}
+  .fu-step + .fu-step{border-top-style:dashed}
+
+  /* Badges are stamped rather than printed. */
+  .fu-card .badge,.fu-cat .badge,.fu-step .badge,.plan .badge,.up-photo .badge{
+    border:1.5px dashed currentColor;transform:rotate(-3deg);border-radius:4px}
+  html[dir="ltr"] :is(.fu-card,.fu-cat,.fu-step,.plan,.up-photo) .badge{transform:rotate(3deg)}
+
+  /* Onboarding: the illustration sits on a ruled sheet, not a halo. */
+  .ob-art::before{inset:-4% 2%;border-radius:6px;background:var(--card);border:1px solid var(--line);
+    transform:rotate(-4deg);box-shadow:var(--e1);
+    background-image:linear-gradient(to bottom,transparent 21px,color-mix(in srgb,var(--line) 34%,transparent) 21px 22px);
+    background-size:100% 22px}
+  html[dir="ltr"] .ob-art::before{transform:rotate(4deg)}
+
+  /* ---------------------------------------------------- READING, SHOWN
+   * The loading screen was a grey skeleton of a result. It is now the thing
+   * actually happening: a contract on a ruled sheet, a highlighter passing
+   * down its lines one after another, the score's seal waiting at the top. */
+  .skel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px 20px 20px;gap:12px;
+    box-shadow:var(--e1),-5px 6px 0 -1px var(--card),-5px 6px 0 0 var(--line)}
+  html[dir="ltr"] .skel{box-shadow:var(--e1),5px 6px 0 -1px var(--card),5px 6px 0 0 var(--line)}
+  .skel-ring{width:64px;height:64px;border-width:3px;border-style:dashed;opacity:.7;margin-bottom:4px}
+  .sk{height:9px !important;border-radius:2px;background:color-mix(in srgb,var(--ink-2) 22%,transparent);opacity:1;
+    margin:0 !important;justify-self:start}
+  .sk.l1{width:88%} .sk.l2{width:64%} .sk.row{width:94%} .sk.row + .sk.row{width:76%} .sk.row + .sk.row + .sk.row{width:84%}
+  .sk::after{inset:-4px -2px;border-radius:3px;transform:scaleX(0);transform-origin:right;
+    background:color-mix(in srgb,var(--amber) 30%,transparent);animation:hl-pass 3.2s var(--ease-out) infinite}
+  html[dir="ltr"] .sk::after{transform-origin:left}
+  .sk.l2::after{animation-delay:.35s} .sk.row::after{animation-delay:.7s}
+  .sk.row + .sk.row::after{animation-delay:1.05s} .sk.row + .sk.row + .sk.row::after{animation-delay:1.4s}
+  @keyframes hl-pass{0%{transform:scaleX(0)} 35%,80%{transform:scaleX(1)} 100%{transform:scaleX(1);opacity:0}}
+
+  /* The tab you are on is marked the way a reader marks a page: a stroke of
+     highlighter under its name. */
+  .tab.on span{background-image:linear-gradient(var(--hl),var(--hl));background-repeat:no-repeat;
+    background-size:100% 40%;background-position:0 90%;padding:0 2px}
 
   [hidden]{display:none !important}
