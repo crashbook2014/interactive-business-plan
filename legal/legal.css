@@ -157,14 +157,9 @@ footer{
    highlighter, its sections numbered as clauses, and its key box pinned on
    with tape. Tokens only, so dark mode follows. */
 [data-lang]{position:relative; isolation:isolate; background:var(--card); border:1px solid var(--line);
-  border-radius:8px; padding:30px 28px 26px; box-shadow:0 1px 2px rgba(43,50,48,.06),0 8px 24px rgba(43,50,48,.07);
+  border-radius:8px; padding:30px 28px 26px; box-shadow:0 1px 2px rgba(43,50,48,.06),0 8px 24px rgba(43,50,48,.07),6px 7px 0 -1px var(--card),6px 7px 0 0 var(--line);
   counter-reset:clause}
-[data-lang]::after{content:""; position:absolute; inset:8px 4px -8px 4px; z-index:-1; background:var(--card);
-  border:1px solid var(--line); border-radius:8px; pointer-events:none}
-@media (min-width:800px){
-  [data-lang]::after{inset:9px -7px -9px 7px; transform:rotate(.6deg)}
-  html[dir="rtl"] [data-lang]::after{inset:9px 7px -9px -7px; transform:rotate(-.6deg)}
-}
+html[dir="rtl"] [data-lang]{box-shadow:0 1px 2px rgba(43,50,48,.06),0 8px 24px rgba(43,50,48,.07),-6px 7px 0 -1px var(--card),-6px 7px 0 0 var(--line)}
 @media (max-width:520px){ [data-lang]{padding:24px 18px 20px} }
 h1{display:inline; background-image:linear-gradient(color-mix(in srgb,var(--amber) 26%,transparent),color-mix(in srgb,var(--amber) 26%,transparent));
   background-repeat:no-repeat; background-size:100% 34%; background-position:100% 88%; padding:0 3px;
@@ -183,4 +178,4 @@ html[lang="en"] h2::before{content:"Clause " counter(clause)}
 .box::after{content:""; position:absolute; top:-1px; inset-inline-end:-1px; width:16px; height:16px;
   background:linear-gradient(225deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
 html[dir="rtl"] .box::after{background:linear-gradient(135deg,var(--sand) 50%,color-mix(in srgb,var(--line) 55%,var(--card)) 50%)}
-@media print{ [data-lang]{border:0; box-shadow:none; padding:0} [data-lang]::after,.key::before{display:none} }
+@media print{ [data-lang]{border:0; box-shadow:none !important; padding:0} .key::before{display:none} }

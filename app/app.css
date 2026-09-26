@@ -2055,17 +2055,10 @@
 
   /* Documents are sheets: squarer corners, and a second sheet beneath. */
   .score-card,.letter{position:relative;isolation:isolate;border-radius:8px}
-  .score-card::after,.letter::after{content:"";position:absolute;inset:8px -6px -8px 6px;z-index:-1;
-    background:var(--card);border:1px solid var(--line);border-radius:8px;transform:rotate(.8deg);
-    box-shadow:var(--e1);pointer-events:none}
-  html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:8px 6px -8px -6px;transform:rotate(-.8deg)}
-  /* On a phone the report runs thousands of pixels tall, and any rotation
-     swings its far end out past the screen edge. The second sheet just sits
-     lower there, square to the page. */
-  @media (max-width:880px){
-    .score-card::after,.letter::after,
-    html[dir="rtl"] .score-card::after,html[dir="rtl"] .letter::after{inset:7px 3px -7px 3px;transform:none}
-  }
+  /* The second sheet is drawn as a shadow, so it sits truly beneath the page
+     and can never show an edge through it or push past the screen. */
+  .score-card,.letter{box-shadow:var(--e2),6px 7px 0 -1px var(--card),6px 7px 0 0 var(--line)}
+  html[dir="rtl"] .score-card,html[dir="rtl"] .letter{box-shadow:var(--e2),-6px 7px 0 -1px var(--card),-6px 7px 0 0 var(--line)}
   .rp-head,.letterhead{border-bottom:3px double var(--line)}
   .rp-meta,.acc-sec{border-top-style:dashed}
 
@@ -2110,7 +2103,7 @@
   /* Letters are written on ruled paper, and end on a line for the signature. */
   .letter .body{background-image:linear-gradient(to bottom,transparent calc(1lh - 1px),
     color-mix(in srgb,var(--line) 36%,transparent) calc(1lh - 1px));background-size:100% 1lh;background-repeat:repeat-y}
-  @media print{ .letter .body{background:none} .letter::after,.score-card::after{display:none} }
+  @media print{ .letter .body{background:none} .score-card,.letter{box-shadow:none} }
   .letter .sign-line{justify-content:flex-start;margin-top:26px}
   .letter .sign-line span{flex:none}
 
@@ -2169,12 +2162,8 @@
 
   /* The figures a reader came for are sheets, with a second sheet beneath. */
   .eos-card,.tm-hero,.tm-money,.triage,.claim-card{position:relative;isolation:isolate}
-  .eos-card::after,.tm-hero::after{content:"";position:absolute;inset:7px 4px -7px 4px;z-index:-1;
-    background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);pointer-events:none}
-  @media (min-width:881px){
-    .eos-card::after,.tm-hero::after{inset:8px -6px -8px 6px;transform:rotate(.7deg)}
-    html[dir="rtl"] .eos-card::after,html[dir="rtl"] .tm-hero::after{inset:8px 6px -8px -6px;transform:rotate(-.7deg)}
-  }
+  .eos-card,.tm-hero{box-shadow:var(--e1),5px 6px 0 -1px var(--card),5px 6px 0 0 var(--line)}
+  html[dir="rtl"] .eos-card,html[dir="rtl"] .tm-hero{box-shadow:var(--e1),-5px 6px 0 -1px var(--card),-5px 6px 0 0 var(--line)}
   .eos-card .svc,.tm-money .r{border-bottom-style:dashed}
   .tm-hero .alt{border-top-style:dashed}
   .tm-money .r.tot{border-top-style:double;border-top-width:3px}
@@ -2221,5 +2210,28 @@
     background-image:linear-gradient(to bottom,transparent 21px,color-mix(in srgb,var(--line) 34%,transparent) 21px 22px);
     background-size:100% 22px}
   html[dir="ltr"] .ob-art::before{transform:rotate(4deg)}
+
+  /* ---------------------------------------------------- READING, SHOWN
+   * The loading screen was a grey skeleton of a result. It is now the thing
+   * actually happening: a contract on a ruled sheet, a highlighter passing
+   * down its lines one after another, the score's seal waiting at the top. */
+  .skel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px 20px 20px;gap:12px;
+    box-shadow:var(--e1),-5px 6px 0 -1px var(--card),-5px 6px 0 0 var(--line)}
+  html[dir="ltr"] .skel{box-shadow:var(--e1),5px 6px 0 -1px var(--card),5px 6px 0 0 var(--line)}
+  .skel-ring{width:64px;height:64px;border-width:3px;border-style:dashed;opacity:.7;margin-bottom:4px}
+  .sk{height:9px !important;border-radius:2px;background:color-mix(in srgb,var(--ink-2) 22%,transparent);opacity:1;
+    margin:0 !important;justify-self:start}
+  .sk.l1{width:88%} .sk.l2{width:64%} .sk.row{width:94%} .sk.row + .sk.row{width:76%} .sk.row + .sk.row + .sk.row{width:84%}
+  .sk::after{inset:-4px -2px;border-radius:3px;transform:scaleX(0);transform-origin:right;
+    background:color-mix(in srgb,var(--amber) 30%,transparent);animation:hl-pass 3.2s var(--ease-out) infinite}
+  html[dir="ltr"] .sk::after{transform-origin:left}
+  .sk.l2::after{animation-delay:.35s} .sk.row::after{animation-delay:.7s}
+  .sk.row + .sk.row::after{animation-delay:1.05s} .sk.row + .sk.row + .sk.row::after{animation-delay:1.4s}
+  @keyframes hl-pass{0%{transform:scaleX(0)} 35%,80%{transform:scaleX(1)} 100%{transform:scaleX(1);opacity:0}}
+
+  /* The tab you are on is marked the way a reader marks a page: a stroke of
+     highlighter under its name. */
+  .tab.on span{background-image:linear-gradient(var(--hl),var(--hl));background-repeat:no-repeat;
+    background-size:100% 40%;background-position:0 90%;padding:0 2px}
 
   [hidden]{display:none !important}
