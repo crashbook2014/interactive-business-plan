@@ -108,10 +108,10 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
   ok(gate === "screen-paywall", "the assessment is gated");
 
   const paid = await p.evaluate(() => {
-    /* The full tier, because this walk goes on to open the case file and the
-       letter. The cheaper tier deliberately does not include them — that
-       separation is exercised in commerce.test.js. */
-    document.querySelectorAll("#plans .plan")[1].click();
+    /* The case file: since September 2026 it is the one product on the
+       dispute path, and it carries the assessment and the employer letter
+       this walk goes on to open. */
+    document.querySelectorAll("#plans .plan")[0].click();
     /* A settled charge, not a click: with FREE_NOW off the pay button goes
        to Tap, which this suite has no business calling. What a captured
        charge ends in is grantAndGo(), so that is the step walked here. */

@@ -2589,7 +2589,7 @@ const T = {
   back:{ar:"رجوع",en:"Back"},
   back_case:{ar:"الحاسبة",en:"Back to calculator"},
   back_ev:{ar:"المستندات",en:"Back to documents"},
-  pw_up_title:{ar:"أضف الملف والخطاب",en:"Add the case file and letter"},
+  pw_up_title:{ar:"أضف خطاب التفاوض",en:"Add the negotiation letter"},
   /* The lawyer desk. Not one of these strings names a turnaround: the app
      states one only when LAWYER_DESK.turnaround has been set to something we
      can actually meet. */
@@ -2654,10 +2654,13 @@ const T = {
   plan_reviews5:{ar:"باقة خمس مراجعات",en:"Five-review pack"},
   plan_reviews5_d:{ar:"خمس مراجعات كاملة تستخدمها وقت ما تبي، صالحة 12 شهرًا",
                    en:"Five full reviews, used whenever you like, valid for 12 months"},
-  plan_biz:{ar:"وضوح أعمال",en:"Wodouh for business"},
-  plan_biz_d:{ar:"مراجعات بلا حد لمستخدم واحد، لفرق الموارد البشرية والوسطاء والمكاتب",
-              en:"Unlimited reviews for one seat, for HR teams, brokers and firms"},
-  plan_month:{ar:"شهريًا",en:"/month"},
+  plan_biz:{ar:"وضوح أعمال، 30 يوم",en:"Wodouh for business, 30 days"},
+  plan_biz_d:{ar:"مراجعات بلا حد لمستخدم واحد لمدة 30 يوم، تدفعها مرة وحدة وما تتجدد تلقائيًا.",
+              en:"Unlimited reviews for one seat for 30 days, paid once. It does not renew on its own."},
+  plan_30d:{ar:"لـ 30 يوم",en:"for 30 days"},
+  plan_review_letter:{ar:"المراجعة والخطاب",en:"Review and letter"},
+  plan_review_letter_d:{ar:"المراجعة الكاملة لعقدك، وخطاب التفاوض المبني عليها، بسعر أقل من شرائهم منفصلين",
+                        en:"The full review of your contract and the negotiation letter built on it, for less than the two separately"},
   plan_bundle:{ar:"الحزمة الكاملة",en:"Full bundle"},
   plan_bundle_d:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض، أقل من مجموعها",
                  en:"The full review, the case file and the negotiation letter, for less than the three separately"},
@@ -6166,16 +6169,16 @@ function renderResult(reset){
      bundle at 0 in all three modes without anyone noticing.
 
      Here is where it belongs, and the copy says so: pw_up_title reads "Add the
-     case file and letter", which is the bundle offered to someone who has just
-     paid for the review and holds neither of the other two. They are shown the
-     difference, not 549 a second time.
+     negotiation letter", which is review + letter offered to someone who has
+     just paid for the review and does not hold the letter. They are shown the
+     difference (100), not 299 a second time.
 
      Guarded on the PRICE, not on the tiers held — upgradeCost() returning 0
      means unpriceable or already covered, and neither is a thing to sell.
      activePlans() carries the same guard, so a mistake here cannot give the
      catalogue away either. */
-  if (full && sellable(BUNDLE) && !has("letter") && !has("case")){
-    const diff = upgradeCost("review", "plan_bundle");
+  if (full && sellable(BUNDLE) && !has("letter")){
+    const diff = upgradeCost("review", "plan_review_letter");
     if (diff > 0){
       const up = document.createElement("button");
       up.className = "letter-tease";
@@ -6191,12 +6194,12 @@ function renderResult(reset){
            "أضف الملف والخطابأضف الملف والخطاب", the title twice in a row.
            Caught by reading the rendered text, not the source. */
         `<span><b>${esc(t("pw_up_title"))}</b>` +
-        `<span>${esc(t("plan_bundle_d"))} · ${esc(priceLabel(diff))}</span></span>` +
+        `<span>${esc(t("plan_review_letter_d"))} · ${esc(priceLabel(diff))}</span></span>` +
         `<span class="go" aria-hidden="true">` +
           `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" ` +
                `stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 5-6 5"/></svg></span>`;
       wrap.appendChild(up);
-      up.onclick = () => openUpgrade("review", "plan_bundle", "result");
+      up.onclick = () => openUpgrade("review", "plan_review_letter", "result");
     }
   }
   /* Red flags are the reason the user opened the app — they stay open by
@@ -10665,13 +10668,13 @@ let pwUpgrade = null;
    defer the read, not to duplicate the number. */
 const PLANS_T = [
   { id:"free", name:"pl_basic", desc:"pl_free_d", m:0,
-    on:["f_score","f_scan1","f_qfree"], off:["f_full","f_draft","f_case"] },
+    on:["f_score","f_scan1","f_qfree"], off:["f_full","f_case"] },
   { id:"pack", name:"plan_reviews5", desc:"plan_reviews5_d",
     m:() => PLANS_REVIEW[1].amt, once:true, hi:true, tag:"plan_best",
     on:["f_full","f_5reviews","f_12mo"], off:["f_seats","f_unlimited"] },
-  { id:"draft", name:"plan_draft", desc:"plan_draft_d",
-    m:() => PLANS_DRAFT[0].amt, once:true, soon:true, tag:"plan_soon",
-    on:["f_draft"], off:[] },
+  /* Contract drafting is not listed here any more: a price for something
+     that cannot be bought only adds a card to rule out. PLANS_DRAFT keeps its
+     figure for ladderBreaks(), and it comes back here when it is built. */
   { id:"biz",  name:"plan_biz",  desc:"plan_biz_d",
     m:() => PLANS_REVIEW[2].amt, biz:true, seat:true, tag:"pl_teams",
     on:["f_unlimited","f_full","f_case","f_seat1"], off:[] }
@@ -13322,7 +13325,8 @@ function renderCheckoutNote(){
    a number can be checked. See ladderBreaks() below, and the invariant it
    enforces: no bundle may ever cost less than something it contains. */
 function priceLabel(amt, monthly){
-  return fmtNum(amt) + " " + t("eos_sar") + (monthly ? " " + t("plan_month") : "");
+  /* plan_biz is one 30-day charge, not a subscription, so it says so. */
+  return fmtNum(amt) + " " + t("eos_sar") + (monthly ? " " + t("plan_30d") : "");
 }
 
 /* THE CATALOGUE — August 2026. Founder decision; see docs/pricing.md for the
@@ -13388,10 +13392,25 @@ const PLANS_DRAFT = [
    price nobody sees. Offered where the reader already is — deciding whether
    one document is worth 149 — is also where "all three for 549" is a real
    question rather than an advert. */
-const BUNDLE = { name:"plan_bundle", desc:"plan_bundle_d", amt:549, tag:"plan_best",
-                 contains:["plan_review","plan_case","plan_letter"],
-                 grants:{ review:"plan_review", case:"plan_case", letter:"plan_letter" } };
+/* SEPTEMBER 2026: ONE PACKAGE PER SITUATION. The 549 bundle crossed two
+   moments: a reader checking an offer before signing needs the review and the
+   letter, a reader who has been let go needs the case file, and the bundle
+   made each of them pay for the other's product to get the saving. It is
+   replaced by review + letter at 299, offered only on the before-you-sign
+   path. The case file stands alone on the dispute path; it already carries
+   the assessment and the employer letter. */
+const BUNDLE = { name:"plan_review_letter", desc:"plan_review_letter_d", amt:299, tag:"plan_best",
+                 contains:["plan_review","plan_letter"],
+                 grants:{ review:"plan_review", letter:"plan_letter" } };
 const PLANS_BUNDLE = [BUNDLE];
+/* RETIRED, NOT DELETED. Nobody can buy it any more, but a reader who paid
+   for it before September 2026 still holds an order row saying so, and
+   grantPurchasedPlan() must still honour it on restore. */
+const RETIRED_PLANS = [
+  { name:"plan_bundle", desc:"plan_bundle_d", amt:549, retired:true,
+    contains:["plan_review","plan_case","plan_letter"],
+    grants:{ review:"plan_review", case:"plan_case", letter:"plan_letter" } }
+];
 
 /* IT IS NOT SPLICED INTO THE FLOW ARRAYS, and that was the first attempt.
    Those arrays are an ORDINAL LADDER — has() and upgradeCost() read position
@@ -13459,8 +13478,13 @@ function wodouhCatalogue(){
    the tier not yet held). */
 function offeredPlans(mode){
   const set = (PLAN_SETS[mode] || PLANS).slice();
-  if (mode !== "bundle" && PLAN_SETS[mode]) set.push(BUNDLE);
-  return set;
+  /* Before-you-sign paths only. The dispute path (case) sells the case file
+     alone: review + letter is no use to someone already let go. */
+  if (mode === "review" || mode === "letter") set.push(BUNDLE);
+  /* The five-review pack is for the reader with several offers on the table.
+     It goes last and renders quieter (.plan.alt), so the main choice on this
+     screen stays two cards: one contract, or one contract and its letter. */
+  return set.filter(p => !p.credits).concat(set.filter(p => p.credits));
 }
 function activePlans(){
   /* BUSINESS IS NOT A CONSUMER DECISION.
@@ -13981,7 +14005,8 @@ function renderPaywall(){
        real weight. Before this the recommendation existed only as a small
        amber badge on a card identical to its neighbours — an opinion stated
        in the smallest type on the screen. */
-    b.className = "plan" + (i===pwPlan ? " sel" : "") + (pl.pop && !pl.soon ? " rec" : "");
+    b.className = "plan" + (i===pwPlan ? " sel" : "") + (pl.pop && !pl.soon ? " rec" : "")
+                + (pl.credits ? " alt" : "");
     const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>
@@ -14186,9 +14211,10 @@ function planModeOf(id){
    as grantAndGo(): a cheaper tier never replaces a dearer one. The caller
    has to have seen status "paid" on the reader's own order row first. */
 function grantPurchasedPlan(planId){
-  const all = [].concat(PLANS_REVIEW, PLANS, PLANS_CASE, PLANS_BUNDLE);
+  const all = [].concat(PLANS_REVIEW, PLANS, PLANS_CASE, PLANS_BUNDLE, RETIRED_PLANS);
   const plan = all.find(p => p.name === planId);
-  if (!plan || !buyable(plan)) return false;
+  /* A retired plan is not buyable, but an order already paid for it is. */
+  if (!plan || (!buyable(plan) && !plan.retired)) return false;
   if (plan.grants){
     Object.keys(plan.grants).forEach(mode => {
       const id = plan.grants[mode], held = owned[mode];

@@ -429,7 +429,7 @@ async function seedTermination(p){
       ["p1ba", "plan_review"],
       ["p2a", "plan_letter"],
       ["p3a", "plan_case"],
-      ["p4a", "plan_bundle"],
+      ["p4a", "plan_review_letter"],
     ];
     for (const [el, plan] of SHOWN) {
       const real = catalogue(plan);
@@ -452,8 +452,8 @@ async function seedTermination(p){
        derived from four prices, and a second copy with nothing comparing it
        to the first is how every price defect in this file started. */
     const priceOf = n => catalogue(n);
-    const saving = priceOf("plan_review") + priceOf("plan_letter") + priceOf("plan_case")
-                 - priceOf("plan_bundle");
+    const saving = priceOf("plan_review") + priceOf("plan_letter")
+                 - priceOf("plan_review_letter");
     const claimed = landing.match(/p4g:[\s\S]{0,200}?saving (\d+) SAR/);
     ok(!!claimed, "the bundle card states what it saves");
     ok(claimed && +claimed[1] === saving,
@@ -769,7 +769,7 @@ async function seedTermination(p){
   ok(/\d/.test(paid.why), `and the breakdown returns (${paid.why})`);
 
   /* ------------------------------------------------------- the bundle */
-  console.log("\n— the bundle grants everything it names, across flows");
+  console.log("\n— review + letter grants both products it names, across flows");
 
   const bundle = await p.evaluate(() => {
     owned = { review:null, letter:null, case:null };
@@ -781,8 +781,8 @@ async function seedTermination(p){
      that crosses what used to be separate flows. Writing owned[pwMode] alone
      would have set owned.bundle — a mode nothing asks about — and granted the
      buyer none of the three things they paid for. */
-  ok(bundle.r === "plan_review" && bundle.l === "plan_letter" && bundle.c === "plan_case",
-     `the bundle grants review, letter and case together (${bundle.r}, ${bundle.l}, ${bundle.c})`);
+  ok(bundle.r === "plan_review" && bundle.l === "plan_letter" && !bundle.c,
+     `review + letter grants those two and not the case file (${bundle.r}, ${bundle.l}, ${bundle.c})`);
 
   const single = await p.evaluate(() => {
     owned = { review:null, letter:null, case:null };
@@ -794,30 +794,20 @@ async function seedTermination(p){
      "and buying one part grants only that part");
 
   /* --------------------------------------- a product that cannot be bought */
-  console.log("\n— a listed-but-unbuilt product cannot be bought");
+  console.log("\n— an unbuilt product is not listed for sale");
 
-  /* On the CATALOGUE screen, not in a paywall: contract drafting has no flow
-     to gate, and a paywall mode with no entry point is dead code that looks
-     like a feature. */
+  /* Contract drafting used to sit on the catalogue with a "soon" badge and a
+     dead button. September 2026: a price for something nobody can buy is one
+     more card to rule out, so it is not listed until it is built. */
   const draft = await p.evaluate(() => {
     renderPlans();
     const cards = [...document.querySelectorAll("#planCards .pcard")];
-    /* Matched on the HEADING, not the card text. Searching the whole card for
-       "drafting" found the free tier, which lists "Letter and document
-       drafting" among the things it does NOT include — a substring match
-       against a feature list picking the wrong card entirely. */
-    const card = cards.find(c => {
+    return { shown: cards.some(c => {
       const h = c.querySelector("h3");
       return h && /^(contract drafting|صياغة عقد)$/i.test(h.textContent.trim());
-    });
-    if (!card) return { shown:false };
-    return { shown:true, disabled: !!card.querySelector(".cta").disabled,
-             text: card.textContent, price: /249|٢٤٩/.test(card.textContent) };
+    }) };
   });
-  ok(draft.shown, "contract drafting is listed on the catalogue");
-  ok(draft.price, "with its real price");
-  ok(draft.disabled, "and its button cannot be pressed");
-  ok(/not yet|coming soon|قريب/i.test(draft.text), "and it says why");
+  ok(!draft.shown, "contract drafting is not listed on the catalogue");
 
   /* The annual toggle went with the consumer subscription. Leaving it would
      have offered a yearly figure nobody ever set. */
@@ -1181,14 +1171,14 @@ async function seedTermination(p){
   const pack = await p.evaluate(() => {
     owned = { review:null, letter:null, case:null }; packUntil = 0; packLeft = 0;
     pwMode = "review"; pwOrigin = "review"; pwUpgrade = null;
-    pwPlan = PLANS_REVIEW.findIndex(x => x.name === "plan_reviews5");
+    pwPlan = activePlans().findIndex(x => x.name === "plan_reviews5");
     grantAndGo();
     const first = { held: owned.review, live: packLive(), left: packLeft };
 
     /* A year passes and the window lapses — exactly what the copy promises
        will happen. Then they come back with a new contract and buy again. */
     packUntil = Date.now() - 86400000;
-    pwPlan = PLANS_REVIEW.findIndex(x => x.name === "plan_reviews5");
+    pwPlan = activePlans().findIndex(x => x.name === "plan_reviews5");
     grantAndGo();
     return { first, second: { held: owned.review, live: packLive(), left: packLeft,
                               days: Math.round((packUntil - Date.now()) / 86400000) } };
@@ -1382,17 +1372,18 @@ async function seedTermination(p){
   ok(topup.afterSecondPack === 10,
      `but buying the pack again really does add five (${topup.afterSecondPack})`);
 
-  console.log("\n— the bundle is never priced at nothing");
+  console.log("\n— review + letter is never priced at nothing");
   /* THE DEFECT: upgradeCost() resolved the wanted tier in PLAN_SETS, which
      deliberately excludes the bundle, so planIndex returned -1 and the function
      fell through to `return 0`. activePlans() then offered 549 for free. */
   const bundlePrice = await p.evaluate(() => {
     owned = { review:null, letter:null, case:null };
-    const scratch = { review: upgradeCost("review","plan_bundle"),
-                      letter: upgradeCost("letter","plan_bundle"),
-                      case:   upgradeCost("case","plan_bundle") };
+    const scratch = { review: upgradeCost("review","plan_review_letter"),
+                      letter: upgradeCost("letter","plan_review_letter"),
+                      /* not offered on the dispute path at all */
+                      case:   upgradeCost("case","plan_review_letter") };
     owned.review = "plan_review";
-    const holdingReview = upgradeCost("review","plan_bundle");
+    const holdingReview = upgradeCost("review","plan_review_letter");
     /* Every offer in every mode, checked for a zero — the property, not the
        one instance that broke. */
     const zeros = [];
@@ -1400,23 +1391,24 @@ async function seedTermination(p){
       pwMode = m; pwUpgrade = null;
       activePlans().forEach(x => { if (!(x.amt > 0)) zeros.push(m + "/" + x.name); });
     });
-    pwMode = "review"; pwUpgrade = "plan_bundle";
+    pwMode = "review"; pwUpgrade = "plan_review_letter";
     const offered = activePlans().map(x => x.name + ":" + x.amt);
     pwUpgrade = null;
     return { scratch, holdingReview, zeros, offered, full: BUNDLE.amt };
   });
   ok(bundlePrice.scratch.review === bundlePrice.full &&
-     bundlePrice.scratch.letter === bundlePrice.full &&
-     bundlePrice.scratch.case === bundlePrice.full,
-     `holding nothing, the bundle costs its full price in every mode (${JSON.stringify(bundlePrice.scratch)})`);
+     bundlePrice.scratch.letter === bundlePrice.full,
+     `holding nothing, review + letter costs its full price on both before-you-sign paths (${JSON.stringify(bundlePrice.scratch)})`);
+  ok(bundlePrice.scratch.case === 0,
+     "and it is not offered on the dispute path, where the case file stands alone");
   ok(bundlePrice.holdingReview === BUNDLE_LESS_REVIEW,
      `holding the 199 review it costs the difference, ${BUNDLE_LESS_REVIEW} (${bundlePrice.holdingReview})`);
   ok(bundlePrice.zeros.length === 0,
      `no plan in any mode is offered at zero${bundlePrice.zeros.length ? " — " + bundlePrice.zeros.join(", ") : ""}`);
-  ok(!/plan_bundle:0\b/.test(bundlePrice.offered.join(" ")),
+  ok(!/plan_review_letter:0\b/.test(bundlePrice.offered.join(" ")),
      `and the upgrade offer carries a real price (${bundlePrice.offered.join(", ")})`);
 
-  console.log("\n— the upgrade has a door, and it grants all three products");
+  console.log("\n— the upgrade has a door, and it adds the letter");
   /* THE DEFECT: openUpgrade() was called from nowhere in the product, so every
      branch downstream of pwUpgrade was unreachable — which is how the bundle
      came to price at zero without anyone noticing. */
@@ -1436,19 +1428,19 @@ async function seedTermination(p){
       out.landed = (document.querySelector(".screen.active") || {}).id;
     }
     /* Nothing left to add — the row must not appear. */
-    owned = { review:"plan_review", letter:"plan_letter", case:"plan_case" };
+    owned = { review:"plan_review", letter:"plan_letter", case:null };
     renderResult();
     out.shownWhenComplete = !!document.getElementById("bundleUp");
     return out;
   });
-  ok(upsell.shown, "a reader holding only the review is offered the rest");
-  ok(upsell.upgrade === "plan_bundle", `the control opens the bundle upgrade (${upsell.upgrade})`);
+  ok(upsell.shown, "a reader holding only the review is offered the letter");
+  ok(upsell.upgrade === "plan_review_letter", `the control opens the review + letter upgrade (${upsell.upgrade})`);
   ok(JSON.stringify(upsell.priced) === JSON.stringify([BUNDLE_LESS_REVIEW]),
      `at the difference and not the full price (${JSON.stringify(upsell.priced)})`);
-  ok(upsell.owned && upsell.owned.review && upsell.owned.letter && upsell.owned.case,
-     `and paying grants all three (${JSON.stringify(upsell.owned)})`);
+  ok(upsell.owned && upsell.owned.review && upsell.owned.letter,
+     `and paying grants the letter alongside the review (${JSON.stringify(upsell.owned)})`);
   ok(!upsell.shownWhenComplete,
-     "a reader who already holds all three is not sold them again");
+     "a reader who already holds the letter is not sold it again");
   /* The rendered text, because this is where a duplicated copy key showed up:
      pw_up_title and pw_pay_up are the same six words in Arabic, so using both
      printed the title twice. Only visible by reading the output. */

@@ -643,6 +643,9 @@
   .plan b{display:block;font-size:15px;color:var(--ink)}
   .plan span{font-size:12px;color:var(--ink-2);line-height:1.5;display:block}
   .plan .price{margin-inline-start:auto;font-family:var(--en);font-weight:800;font-size:16.5px;color:var(--teal-ink);white-space:nowrap}
+  .plan.alt{padding:9px 15px;border-style:dashed;background:transparent}
+  .plan.alt b{font-size:14px}
+  .plan.alt .price{font-size:14px}
   .plan .badge{display:inline-block;font-size:12px;font-weight:700;color:var(--amber-ink);background:var(--amber-bg);border-radius:99px;padding:1px 8px;margin-inline-start:6px;vertical-align:middle}
   .pay-methods{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
       font-size:12px;color:var(--ink-2);flex-wrap:wrap}
