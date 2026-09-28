@@ -225,7 +225,7 @@ ok(unchanged(B, `update public.contracts set original_filename='mine-now.pdf';`,
    `select original_filename from public.contracts;`, "A-contract.pdf"),
    "B's update reaches nothing — A's row is unchanged");
 
-console.log("\n— a reader can see their own Moyasar order and cannot mark it paid");
+console.log("\n— a reader can see their own Tap order and cannot mark it paid");
 psql(`insert into public.orders (user_id, plan_id, amount, currency, status, mode)
       values ('${A}', 'plan_review', 19900, 'SAR', 'pending', 'test');`);
 ok(psql(asUser(A, `select count(*) from public.orders;`)).trim() === "1",
@@ -238,7 +238,7 @@ ok(!!refused(asUser(A,
 ok(unchanged(A, `update public.orders set status='paid';`,
    `select status from public.orders where user_id='${A}';`, "pending"),
    "A cannot mark their own order paid");
-ok(!!refused(asUser(A, `select * from public.moyasar_events;`)),
+ok(!!refused(asUser(A, `select * from public.tap_events;`)),
    "webhook events are closed to the reader");
 ok(!!refused(`set role anon;\nselect * from public.orders;\nreset role;`),
    "a signed-out visitor cannot read orders");

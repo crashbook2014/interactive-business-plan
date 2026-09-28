@@ -751,7 +751,6 @@
       ["Google Cloud credentials", "https://console.cloud.google.com/apis/credentials"],
       ["Google OAuth consent", "https://console.cloud.google.com/auth/branding"],
       ["Apple Developer", "https://developer.apple.com/account"],
-      ["Moyasar", "https://dashboard.moyasar.com"],
       ["Tap Payments", "https://business.tap.company"]
     ]);
 

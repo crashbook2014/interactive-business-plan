@@ -35,6 +35,6 @@
     "types/deno.d.ts",
     "supabase/functions/analyze/index.ts",
     "supabase/functions/create-payment/index.ts",
-    "supabase/functions/moyasar-webhook/index.ts"
+    "supabase/functions/tap-webhook/index.ts"
   ]
 }

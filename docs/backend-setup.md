@@ -179,8 +179,8 @@ functions the outside world calls:
 | `upload` | **on** | Same, and it requires a signed-in user in its own code as well |
 | `webhook` | **off** | Zid and Salla POST with an HMAC signature and no JWT. Left on, the gateway returns 401, the function never runs, **its signature check never executes**, and the integration fails silently while looking configured |
 | `oauth-callback` | **off** | A browser redirect from the merchant's storefront. Secured by a signed, expiring `state` parameter it verifies itself |
-| `create-payment` | **on** | Called by the app with the reader's access token. Prices the Moyasar invoice on the server |
-| `moyasar-webhook` | **off** | Moyasar POSTs with `secret_token` in the body and no JWT. Left on, the gateway 401s and that check never runs. Separate from the Zid/Salla `webhook` |
+| `create-payment` | **on** | Called by the app with the reader's access token. Prices the Tap charge on the server |
+| `tap-webhook` | **off** | Tap POSTs the charge with a `hashstring` header and no JWT. Left on, the gateway 401s and that check never runs. Separate from the Zid/Salla `webhook` |
 
 Turning it off does not make those open — each authenticates its own caller
 by a method appropriate to who is calling. The gateway check is simply the
@@ -204,7 +204,7 @@ you are getting:
 | `0009_scans.sql` | `scan_events` — one row per free scan, so the monthly limit survives clearing storage |
 | `0010_prune_schedule.sql` | schedules `prune_scan_events()` daily via `pg_cron`, so the thirteen-month retention the privacy policy promises is actually enforced rather than merely written |
 | `0011_admin_counts.sql` | `admin_counts()` — the four console totals as a `security definer` function guarded by `is_admin()`. Two of those rows used to read "unreadable" because `uploads` is revoked from every client role, and the other two silently counted the operator's own rows. A count returns no identifier, so `0004`'s guarantee that no `file_id` reaches a browser is untouched |
-| `0012_orders.sql` | `orders` and `moyasar_events` — Moyasar checkouts. Readers can select their own orders and cannot write them. Webhook events are service-role only. See `docs/payments-moyasar.md` |
+| `0012_orders.sql` | `orders` and `tap_events` — Tap checkouts. Readers can select their own orders and cannot write them. Webhook events are service-role only. See `docs/payments-tap.md` |
 
 ### Becoming an operator
 

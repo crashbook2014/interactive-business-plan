@@ -109,10 +109,10 @@ message_service_sid = "env(TWILIO_MESSAGE_SERVICE_SID)"
 #                  JWT. Its security is a signed, expiring `state` parameter,
 #                  which it verifies itself.
 #
-#   moyasar-webhook  Moyasar POSTs payment events with secret_token in the
-#                    body and no Supabase JWT. Same failure as webhook if
-#                    verify_jwt stays on: the gateway 401s and the signature
-#                    check never runs. It does not share the Zid/Salla route.
+#   tap-webhook      Tap POSTs the charge with a hashstring header and no
+#                    Supabase JWT. Same failure as webhook if verify_jwt stays
+#                    on: the gateway 401s and the signature check never runs.
+#                    It does not share the Zid/Salla route.
 #
 # Turning verify_jwt off does NOT make these open: each one authenticates its
 # own caller, in code, by a method appropriate to who is calling. The gateway
@@ -137,5 +137,5 @@ verify_jwt = false
 [functions.create-payment]
 verify_jwt = true
 
-[functions.moyasar-webhook]
+[functions.tap-webhook]
 verify_jwt = false

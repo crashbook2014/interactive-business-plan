@@ -1,12 +1,12 @@
-/* Wodouh — Moyasar checkout, in the browser.
+/* Wodouh — Tap checkout, in the browser.
  *
  * WHAT THIS FILE IS ALLOWED TO KNOW
  *
  * The create-payment URL, the reader's session, and a plan id. It never
- * sees MOYASAR_SECRET_KEY and it never sends an amount. The server prices
- * the invoice. The amount that comes back is halalas, and we refuse to
+ * sees TAP_SECRET_KEY and it never sends an amount. The server prices
+ * the charge. The amount that comes back is halalas, and we refuse to
  * follow the link unless it matches the price already on screen and the
- * host is moyasar.com.
+ * host is an https tap.company host.
  *
  * WHEN IT DOES NOTHING
  *
@@ -22,8 +22,8 @@
 (function (global) {
   "use strict";
 
-  var APPLIED = "wodouh.moyasar.applied";
-  var PENDING = "wodouh.moyasar.pending";
+  var APPLIED = "wodouh.tap.applied";
+  var PENDING = "wodouh.tap.pending";
   var busy = false;
 
   function cfg() { return global.WODOUH_CONFIG || {}; }
@@ -52,7 +52,7 @@
 
   function say(key) {
     var text = typeof global.t === "function" ? global.t(key) : "";
-    ["moyasarStatus", "moyasarMsg"].forEach(function (id) {
+    ["tapStatus", "tapMsg"].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.hidden = !text;
@@ -64,9 +64,10 @@
     var u;
     try { u = new URL(String(url)); } catch (e) { return null; }
     if (u.username || u.password) return null;
-    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    if (u.protocol !== "https:") return null;
     var host = u.hostname.toLowerCase();
-    if (host !== "moyasar.com" && host.slice(-12) !== ".moyasar.com") return null;
+    var suffix = ".tap.company";
+    if (host !== "tap.company" && host.slice(-suffix.length) !== suffix) return null;
     return u.toString();
   }
 
@@ -89,7 +90,7 @@
   }
 
   function needSignIn(orderId) {
-    say("moyasar_signin");
+    say("tap_signin");
     if (orderId) {
       try { sessionStorage.setItem(PENDING, orderId); } catch (e) {}
     }
@@ -101,9 +102,9 @@
   function start(planId, expectedSar) {
     if (!configured() || busy) return;
     if (!signedIn()) { needSignIn(null); return; }
-    if (typeof global.authHeaders !== "function") { say("moyasar_fail"); return; }
+    if (typeof global.authHeaders !== "function") { say("tap_fail"); return; }
     busy = true;
-    say("moyasar_busy");
+    say("tap_busy");
     var pay = document.getElementById("payBtn");
     if (pay) pay.disabled = true;
 
@@ -121,20 +122,23 @@
     }).then(function (out) {
       busy = false;
       var data = out.data;
-      if (out.status === 503) { say("moyasar_off"); if (pay) pay.disabled = false; return; }
+      if (out.status === 503) { say("tap_off"); if (pay) pay.disabled = false; return; }
       if (out.status === 401) { if (pay) pay.disabled = false; needSignIn(null); return; }
-      if (out.status === 429) { say("moyasar_fail"); if (pay) pay.disabled = false; return; }
+      if (out.status === 400 && data.error === "needs_email") {
+        say("tap_email"); if (pay) pay.disabled = false; return;
+      }
+      if (out.status === 429) { say("tap_fail"); if (pay) pay.disabled = false; return; }
       var url = safeCheckoutUrl(data.checkout_url);
       var halalas = typeof expectedSar === "number" ? Math.round(expectedSar * 100) : NaN;
       if (!url || data.currency !== "SAR" || data.amount !== halalas || data.plan_id !== planId) {
-        say(data && data.amount && data.amount !== halalas ? "moyasar_mismatch" : "moyasar_fail");
+        say(data && data.amount && data.amount !== halalas ? "tap_mismatch" : "tap_fail");
         if (pay) pay.disabled = false;
         return;
       }
       location.assign(url);
     }).catch(function () {
       busy = false;
-      say("moyasar_fail");
+      say("tap_fail");
       if (pay) pay.disabled = false;
     });
   }
@@ -144,18 +148,18 @@
     var list = typeof global.activePlans === "function" ? global.activePlans() : [];
     var chosen = list[selectedPlanIndex()];
     if (!chosen || (typeof global.buyable === "function" && !global.buyable(chosen))) {
-      say("moyasar_fail");
+      say("tap_fail");
       return;
     }
     /* An upgrade on screen is a difference. The server sells the catalogue
        price of the plan, and sending the reader to pay a different number
        than the button shows is not a checkout. */
-    if (chosen.up) { say("moyasar_upgrade"); return; }
+    if (chosen.up) { say("tap_upgrade"); return; }
     start(chosen.name, chosen.amt);
   }
 
   function mount() {
-    var slot = document.getElementById("moyasarSlot");
+    var slot = document.getElementById("tapSlot");
     if (!slot) return;
     if (!configured() || typeof global.t !== "function" || typeof global.wodouhCatalogue !== "function") {
       slot.hidden = true;
@@ -166,19 +170,19 @@
     slot.textContent = "";
 
     var h = document.createElement("h3");
-    h.textContent = global.t("moyasar_h");
+    h.textContent = global.t("tap_h");
     var p = document.createElement("p");
-    p.textContent = global.t("moyasar_b");
+    p.textContent = global.t("tap_b");
     slot.appendChild(h);
     slot.appendChild(p);
     if (productIsFree()) {
       var free = document.createElement("p");
-      free.textContent = global.t("moyasar_free");
+      free.textContent = global.t("tap_free");
       slot.appendChild(free);
     }
 
     var list = document.createElement("div");
-    list.className = "moyasar-plans";
+    list.className = "tap-plans";
     global.wodouhCatalogue().forEach(function (plan) {
       var b = document.createElement("button");
       b.type = "button";
@@ -193,7 +197,7 @@
     slot.appendChild(list);
 
     var msg = document.createElement("p");
-    msg.id = "moyasarMsg";
+    msg.id = "tapMsg";
     msg.setAttribute("role", "status");
     msg.hidden = true;
     slot.appendChild(msg);
@@ -217,32 +221,32 @@
 
   function confirm(orderId, attempt, back) {
     if (!global.WodouhAuth || typeof global.WodouhAuth.api !== "function") {
-      say("moyasar_fail");
+      say("tap_fail");
       return;
     }
-    say("moyasar_wait");
+    say("tap_wait");
     if (typeof global.show === "function") global.show("account");
     global.WodouhAuth.api(
       "/rest/v1/orders?id=eq." + orderId + "&select=id,plan_id,status,amount,currency"
     ).then(function (rows) {
       var row = Array.isArray(rows) ? rows[0] : null;
-      if (!row) { say("moyasar_pending"); return; }
+      if (!row) { say("tap_pending"); return; }
       if (row.status === "paid") {
         applyPaid(row);
         try { sessionStorage.removeItem(PENDING); } catch (e) {}
-        say("moyasar_paid");
+        say("tap_paid");
         return;
       }
       if (row.status === "failed" || row.status === "canceled") {
-        say("moyasar_bad");
+        say("tap_bad");
         return;
       }
       if (!back && attempt < 6) {
         setTimeout(function () { confirm(orderId, attempt + 1, false); }, 2000);
         return;
       }
-      say("moyasar_pending");
-    }).catch(function () { say("moyasar_pending"); });
+      say("tap_pending");
+    }).catch(function () { say("tap_pending"); });
   }
 
   function takePending() {
@@ -256,17 +260,16 @@
   function resume() {
     var params;
     try { params = new URLSearchParams(global.location.search); } catch (e) { return; }
-    var id = params.get("moyasar_order");
-    var back = params.get("moyasar_back") === "1";
+    var id = params.get("tap_order");
     if (id && /^[0-9a-f-]{36}$/i.test(id)) {
       try {
         var u = new URL(global.location.href);
-        u.searchParams.delete("moyasar_order");
-        u.searchParams.delete("moyasar_back");
+        u.searchParams.delete("tap_order");
+        u.searchParams.delete("tap_id");
         global.history.replaceState(null, "", u.pathname + u.search + u.hash);
       } catch (e) {}
       if (!signedIn()) { needSignIn(id); return; }
-      confirm(id, 0, back);
+      confirm(id, 0, false);
       return;
     }
     takePending();
@@ -278,7 +281,7 @@
     });
   }
 
-  global.WodouhMoyasar = {
+  global.WodouhTap = {
     configured: configured,
     payFromWall: payFromWall,
     mount: mount,

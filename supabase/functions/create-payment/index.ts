@@ -1,4 +1,4 @@
-/* Wodouh — start a Moyasar invoice for a catalogue plan.
+/* Wodouh — start a Tap hosted charge for a catalogue plan.
  *
  * POST { plan_id, lang?: "ar" | "en" }
  *   -> { order_id, checkout_url, amount, currency, plan_id, mode }
@@ -6,42 +6,54 @@
  * `amount` in the response is halalas, echoed so the browser can refuse to
  * redirect if it does not match the price on screen. It is not an input.
  * A body field named amount is ignored. The price comes from
- * _shared/moyasar.mjs, which is the same table the tests check against
- * app/index.html.
+ * _shared/tap.mjs, which is the same table the tests check against
+ * app/index.html. Tap itself is charged in riyals (199), not halalas.
  *
- * The secret key stays here. The browser receives a hosted invoice URL on
- * a moyasar.com host and nothing else. Card numbers never touch this app.
+ * The secret key stays here. The browser receives transaction.url on an
+ * https tap.company host and nothing else. Card numbers never touch this app.
+ * source.id is src_all, Tap's hosted page for every method on the account.
  *
  * Missing keys return 503 not_configured. A live key while PAYMENT_MODE is
  * test (the default), or the reverse, returns 503 misconfigured and does
- * not call Moyasar. FREE_NOW is a client switch; this function does not
- * grant entitlement. The webhook does the paid mark, after it has fetched
- * the payment back from Moyasar and checked the amount.
+ * not call Tap. FREE_NOW is a client switch; this function does not grant
+ * entitlement. The webhook does the paid mark, after it has fetched the
+ * charge back from Tap and checked the amount.
  *
- * Secrets: MOYASAR_SECRET_KEY, PAYMENT_MODE (test|live, default test),
+ * Secrets: TAP_SECRET_KEY, PAYMENT_MODE (test|live, default test),
  * ALLOWED_ORIGIN, and the Supabase URL and service role (injected).
- * MOYASAR_PUBLISHABLE_KEY is optional for this invoice flow. If it is set,
- * it must be the same mode as the secret key.
+ * TAP_PUBLIC_KEY is optional for this hosted flow. If it is set, it must
+ * be the same mode as the secret key. It is not sent to the browser.
+ *
+ * Tap requires a customer email on the charge. A signed-in account with no
+ * email gets 400 needs_email. We do not invent one.
  */
 
 import {
+  isChargeId,
   isUuid,
   modeAgrees,
   paymentMode,
   planById,
   safeCheckoutUrl,
-} from "../_shared/moyasar.mjs";
+  toMinor,
+} from "../_shared/tap.mjs";
 
-const SECRET = Deno.env.get("MOYASAR_SECRET_KEY") ?? "";
-const PUBLISHABLE = Deno.env.get("MOYASAR_PUBLISHABLE_KEY") ?? "";
+const SECRET = Deno.env.get("TAP_SECRET_KEY") ?? "";
+const PUBLISHABLE = Deno.env.get("TAP_PUBLIC_KEY") ?? "";
 const MODE = paymentMode(Deno.env.get("PAYMENT_MODE"));
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 
-const MOYASAR = "https://api.moyasar.com/v1/invoices";
+const TAP_CHARGES = "https://api.tap.company/v2/charges";
 const RATE_MAX = 8;
 const RATE_WINDOW = "00:10:00";
+
+interface Caller {
+  id: string;
+  email: string;
+  name: string;
+}
 
 function cors(extra: Record<string, string> = {}) {
   return {
@@ -69,6 +81,7 @@ function appOrigin(): string | null {
 
 function configured(): { ok: true; origin: string } | { ok: false; error: string } {
   if (!SECRET || !SERVICE_KEY || !SUPABASE_URL) return { ok: false, error: "not_configured" };
+  if (!SUPABASE_URL.startsWith("https://")) return { ok: false, error: "not_configured" };
   const origin = appOrigin();
   if (!origin) return { ok: false, error: "not_configured" };
   if (!modeAgrees(MODE, SECRET, PUBLISHABLE)) return { ok: false, error: "misconfigured" };
@@ -76,7 +89,20 @@ function configured(): { ok: true; origin: string } | { ok: false; error: string
   return { ok: true, origin };
 }
 
-async function callerId(req: Request): Promise<string | null> {
+function firstName(user: Record<string, unknown>, email: string): string {
+  const meta = user.user_metadata && typeof user.user_metadata === "object"
+    ? user.user_metadata as Record<string, unknown>
+    : {};
+  const raw = [meta.first_name, meta.full_name, meta.name].find(
+    (v) => typeof v === "string" && v.trim().length > 0,
+  );
+  const cleaned = String(raw || "").trim().slice(0, 40);
+  if (cleaned && !cleaned.includes("@")) return cleaned;
+  const local = email.split("@")[0].replace(/[^A-Za-z\u0600-\u06FF ]/g, "").trim().slice(0, 40);
+  return local || "Wodouh";
+}
+
+async function caller(req: Request): Promise<Caller | null> {
   const auth = req.headers.get("authorization") ?? "";
   if (!/^Bearer\s+\S+$/i.test(auth)) return null;
   const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
@@ -84,7 +110,10 @@ async function callerId(req: Request): Promise<string | null> {
   });
   if (!res.ok) return null;
   const u = await res.json().catch(() => null);
-  return u && typeof u.id === "string" && isUuid(u.id) ? u.id : null;
+  if (!u || typeof u.id !== "string" || !isUuid(u.id)) return null;
+  const email = typeof u.email === "string" ? u.email.trim() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return { id: u.id, email: "", name: "" };
+  return { id: u.id, email, name: firstName(u, email) };
 }
 
 function rest(path: string, opts: RequestInit = {}) {
@@ -99,10 +128,6 @@ function rest(path: string, opts: RequestInit = {}) {
   });
 }
 
-function basic(secret: string): string {
-  return "Basic " + btoa(secret + ":");
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -110,15 +135,16 @@ Deno.serve(async (req) => {
   const cfg = configured();
   if (!cfg.ok) return json({ error: cfg.error }, 503);
 
-  const uid = await callerId(req);
-  if (!uid) return json({ error: "sign_in_required" }, 401);
+  const who = await caller(req);
+  if (!who) return json({ error: "sign_in_required" }, 401);
+  if (!who.email) return json({ error: "needs_email" }, 400);
 
   const limited = await rest("rpc/bump_rate_limit", {
     method: "POST",
-    body: JSON.stringify({ p_bucket: `pay:${uid}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
+    body: JSON.stringify({ p_bucket: `pay:${who.id}`, p_limit: RATE_MAX, p_window: RATE_WINDOW }),
   }).then((r) => r.ok ? r.json().catch(() => null) : "unavailable", () => "unavailable");
-  /* Fail closed. This call creates an invoice. A limiter we cannot reach
-     must not become an unlimited invoice factory. */
+  /* Fail closed. This call creates a charge. A limiter we cannot reach
+     must not become an unlimited charge factory. */
   if (limited === "unavailable") return json({ error: "unavailable" }, 503);
   if (limited === false) return json({ error: "rate_limited" }, 429);
 
@@ -139,7 +165,7 @@ Deno.serve(async (req) => {
 
   const since = new Date(Date.now() - 30 * 60_000).toISOString();
   const reuse = await rest(
-    "orders?user_id=eq." + uid +
+    "orders?user_id=eq." + who.id +
       "&plan_id=eq." + plan.id +
       "&status=eq.pending&mode=eq." + MODE +
       "&amount=eq." + plan.halalas +
@@ -167,7 +193,7 @@ Deno.serve(async (req) => {
     method: "POST",
     headers: { prefer: "return=representation" },
     body: JSON.stringify({
-      user_id: uid,
+      user_id: who.id,
       plan_id: plan.id,
       amount: plan.halalas,
       currency: "SAR",
@@ -179,41 +205,56 @@ Deno.serve(async (req) => {
   const created = (await inserted.json().catch(() => null))?.[0];
   if (!created?.id || !isUuid(created.id)) return json({ error: "store_failed" }, 500);
 
-  const back = `${cfg.origin}/app/index.html?moyasar_order=${created.id}&moyasar_back=1`;
-  const success = `${cfg.origin}/app/index.html?moyasar_order=${created.id}`;
-  const expired = new Date(Date.now() + 24 * 60 * 60_000).toISOString();
+  const redirect = `${cfg.origin}/app/index.html?tap_order=${created.id}`;
+  const hook = `${SUPABASE_URL.replace(/\/$/, "")}/functions/v1/tap-webhook`;
 
-  let invoice: Record<string, unknown> | null = null;
+  let charge: Record<string, unknown> | null = null;
   try {
-    const res = await fetch(MOYASAR, {
+    const res = await fetch(TAP_CHARGES, {
       method: "POST",
       headers: {
-        authorization: basic(SECRET),
+        authorization: `Bearer ${SECRET}`,
         "content-type": "application/json",
+        lang_code: lang,
       },
       body: JSON.stringify({
-        amount: plan.halalas,
+        amount: plan.sar,
         currency: "SAR",
+        customer_initiated: true,
+        threeDSecure: true,
+        save_card: false,
         description: lang === "en" ? plan.en : plan.ar,
-        success_url: success,
-        back_url: back,
-        expired_at: expired,
         metadata: {
           order_id: created.id,
-          user_id: uid,
+          user_id: who.id,
           plan_id: plan.id,
         },
+        reference: {
+          transaction: created.id,
+          order: created.id,
+          idempotent: created.id,
+        },
+        receipt: { email: false, sms: false },
+        customer: { first_name: who.name, email: who.email },
+        source: { id: "src_all" },
+        redirect: { url: redirect },
+        post: { url: hook },
       }),
       signal: AbortSignal.timeout(12_000),
     });
-    if (res.ok) invoice = await res.json().catch(() => null);
+    if (res.ok) charge = await res.json().catch(() => null);
   } catch {
-    invoice = null;
+    charge = null;
   }
 
-  const checkout = invoice ? safeCheckoutUrl(invoice.url) : null;
-  const invoiceId = invoice && typeof invoice.id === "string" ? invoice.id : "";
-  if (!checkout || !isUuid(invoiceId) || Number(invoice?.amount) !== plan.halalas || invoice?.currency !== "SAR") {
+  const tx = charge && charge.transaction && typeof charge.transaction === "object"
+    ? charge.transaction as Record<string, unknown>
+    : null;
+  const checkout = tx ? safeCheckoutUrl(tx.url) : null;
+  const chargeId = charge && typeof charge.id === "string" ? charge.id : "";
+  const minor = charge ? toMinor(charge.amount, charge.currency) : null;
+  const liveOk = charge?.live_mode === (MODE === "live");
+  if (!checkout || !isChargeId(chargeId) || minor !== plan.halalas || charge?.currency !== "SAR" || !liveOk) {
     await rest("orders?id=eq." + created.id + "&status=eq.pending", {
       method: "PATCH",
       body: JSON.stringify({ status: "canceled" }),
@@ -224,11 +265,9 @@ Deno.serve(async (req) => {
   const saved = await rest("orders?id=eq." + created.id, {
     method: "PATCH",
     headers: { prefer: "return=representation" },
-    body: JSON.stringify({ moyasar_id: invoiceId, checkout_url: checkout }),
+    body: JSON.stringify({ tap_id: chargeId, checkout_url: checkout }),
   });
-  if (!saved.ok) {
-    return json({ error: "store_failed" }, 500);
-  }
+  if (!saved.ok) return json({ error: "store_failed" }, 500);
 
   return json({
     order_id: created.id,

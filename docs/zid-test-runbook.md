@@ -18,7 +18,7 @@ That is a deliberate trade. For a test whose purpose is to learn whether people
 will pay at all, it is fine — the people who bypass it were never going to pay,
 and there are few enough buyers that the loss is nil. As a launch mechanism it
 is not acceptable, and it must be replaced with server-side verification
-(Moyasar, Tap, or the Supabase functions in `supabase/`) before any real
+(Tap, via the functions in `supabase/`) before any real
 volume.
 
 **Do not describe this to anyone as a payment integration.**
@@ -125,5 +125,5 @@ Replace it the moment any of these is true:
 - Someone bypasses it and you notice
 - You want subscriptions, refunds, or receipts
 
-At that point the honest options are Moyasar or Tap in-app, or standing up the
-Supabase functions and having Zid webhooks unlock server-side.
+At that point the path is Tap in-app (`docs/payments-tap.md`), or standing up
+the Supabase functions and having Zid webhooks unlock server-side.
