@@ -27,18 +27,29 @@ Do not paste keys into git. Tap publishes sample test keys in their docs; those 
 
 ## Secrets
 
-Set these on the Supabase project. They are listed in `.env.example`. Do not put the secret key in `app/` or `supabase/config.js`.
+Set these on the Supabase project `nkgjgpageqohalerccfu`. They are listed in `.env.example`. Do not put any key, test or live, in `app/`, `supabase/config.js`, or git.
+
+The code default is **test**. `PAYMENT_MODE` unset, empty, or `test` refuses an `sk_live_` key. `PAYMENT_MODE=live` is supported and refuses an `sk_test_` key. If the secret is missing, both functions return **503** `not_configured` and do not charge. A live key left on the test default returns **503** `misconfigured` and does not charge either. Set the mode and the secret in the same step.
+
+`TAP_PUBLIC_KEY` is **optional**. Hosted checkout sends `source.id: src_all` and authenticates with the secret key only. Tap's public key is for their browser card SDK, which this app does not load. Leave the public key unset, or set it only when it matches the mode (`pk_test_` with test, `pk_live_` with live). A mismatch is `503 misconfigured`.
+
+Sandbox:
 
 ```bash
-supabase secrets set PAYMENT_MODE=test
-supabase secrets set TAP_SECRET_KEY=sk_test_your_key
-supabase secrets set TAP_PUBLIC_KEY=pk_test_your_key
-supabase secrets set ALLOWED_ORIGIN=https://alwodouh.com
+supabase secrets set PAYMENT_MODE=test --project-ref nkgjgpageqohalerccfu
+supabase secrets set TAP_SECRET_KEY=sk_test_your_key --project-ref nkgjgpageqohalerccfu
+supabase secrets set ALLOWED_ORIGIN=https://alwodouh.com --project-ref nkgjgpageqohalerccfu
 ```
 
-`PAYMENT_MODE` defaults to `test` when unset. `test` refuses an `sk_live_` key, and `live` refuses an `sk_test_` key. If the secret is missing, both functions return **503** `not_configured` and the app does not grant a purchase.
+Production uses the same functions. Only the secrets change. Do not commit the live values.
 
-`TAP_PUBLIC_KEY` is optional. The hosted charge is created with the secret key. The public key is what Tap's card SDK would use in a browser; this build does not embed that SDK. If you set the public key, it must match `PAYMENT_MODE`.
+```bash
+supabase secrets set PAYMENT_MODE=live --project-ref nkgjgpageqohalerccfu
+supabase secrets set TAP_SECRET_KEY=sk_live_your_key --project-ref nkgjgpageqohalerccfu
+supabase secrets set ALLOWED_ORIGIN=https://alwodouh.com --project-ref nkgjgpageqohalerccfu
+# optional, and only a pk_live_ key:
+# supabase secrets set TAP_PUBLIC_KEY=pk_live_your_key --project-ref nkgjgpageqohalerccfu
+```
 
 `TAP_WEBHOOK_SECRET` stays empty. Tap's `hashstring` is HMAC-SHA256 of a fixed field string, keyed with the **secret API key** ([webhook docs](https://developers.tap.company/docs/webhook)). Set `TAP_WEBHOOK_SECRET` only if Tap gave you a different signing secret. A random value rejects every real delivery.
 
@@ -98,14 +109,20 @@ How to walk it:
 
 ## Go-live checklist / قائمة التشغيل
 
-Do these before `PAYMENT_MODE=live`. Until then the functions reject a live secret key.
+The functions already accept `PAYMENT_MODE=live`. Nothing in the repo switches that on. Production secrets do.
 
-1. Live keys from the same dashboard (`sk_live_…`, `pk_live_…`). Deposits can still be pending; do not block the code on them. Confirm with Tap that live charges will actually settle.
-2. Ask Tap for the live percentage. Write that number down where the business keeps fees. Do not copy a guess into the product.
-3. `supabase secrets set PAYMENT_MODE=live` together with the live secret key.
-4. Confirm `ALLOWED_ORIGIN` is `https://alwodouh.com` (live refuses an `http://` origin).
-5. Pay a small live charge with a real card, confirm the order row, then refund it from the Tap dashboard and confirm the row becomes `refunded` if Tap posts the charge as `REFUNDED`.
-6. Decide separately whether `FREE_NOW` stays on. Live keys do not, by themselves, close the free doors.
+1. Apply `supabase/migrations/0012_orders.sql` on project `nkgjgpageqohalerccfu` if it is not there yet.
+2. Deploy both functions (the analyze workflow does not deploy them):
+
+   ```bash
+   supabase functions deploy create-payment --project-ref nkgjgpageqohalerccfu
+   supabase functions deploy tap-webhook --no-verify-jwt --project-ref nkgjgpageqohalerccfu
+   ```
+
+3. Set `PAYMENT_MODE=live` and `TAP_SECRET_KEY` to the live secret in the same step, as in the production block above. `TAP_PUBLIC_KEY` stays optional. Confirm `ALLOWED_ORIGIN` is `https://alwodouh.com` (live refuses an `http://` origin).
+4. Deposits can still be pending. Confirm with Tap that a live charge will be accepted. Ask Tap for the live percentage and write it down where the business keeps fees. Do not copy a guess into the product.
+5. Uncomment `CREATE_PAYMENT_URL` in `app/index.html` only after the function answers. Until that line is set, the site does not call Tap. `FREE_NOW` stays on unless you change it separately.
+6. Pay a small live charge with a real card, confirm the order row is `paid`, then refund it from the Tap dashboard and confirm the row becomes `refunded` if Tap posts the charge as `REFUNDED`.
 
 ## What this does not do
 

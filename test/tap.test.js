@@ -113,6 +113,8 @@ function charge(over = {}) {
   ok(tap.modeAgrees("test", "sk_test_abc", "") === true, "a test secret with no public key is test");
   ok(tap.modeAgrees("test", "sk_live_abc", "") === false, "a live secret is refused while mode is test");
   ok(tap.modeAgrees("live", "sk_test_abc", "") === false, "a test secret is refused while mode is live");
+  ok(tap.modeAgrees("live", "sk_live_abc", "") === true, "a live secret with no public key is allowed");
+  ok(tap.modeAgrees("live", "sk_live_abc", "pk_live_abc") === true, "a live public key agrees with a live secret");
   ok(tap.modeAgrees("live", "sk_live_abc", "pk_test_abc") === false, "a test public key cannot ride along with a live secret");
 
   console.log("\n— the secret stays off the client, and the client does not set the price");
