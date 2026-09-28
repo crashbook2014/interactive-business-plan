@@ -19,7 +19,9 @@
  * https://developers.tap.company/docs/webhook.
  *
  * The riyal figures are the August 2026 catalogue in app/index.html
- * (PLANS_REVIEW, PLANS, PLANS_CASE, BUNDLE). Lawyer tiers and contract
+ * (PLANS_REVIEW, PLANS, PLANS_CASE, BUNDLE). The 549 plan_bundle was retired
+ * in September 2026 and replaced by plan_review_letter at 299; it is no longer
+ * chargeable, though old paid orders for it stay valid. Lawyer tiers and contract
  * drafting are absent on purpose: the app will not sell them
  * (sellable() / soon), and a server that will is a second catalogue.
  *
@@ -32,8 +34,8 @@ export const PLANS = {
   plan_reviews5: { sar: 699, ar: "وضوح — خمس مراجعات", en: "Wodouh — five reviews" },
   plan_letter:   { sar: 149, ar: "وضوح — خطاب التفاوض", en: "Wodouh — negotiation letter" },
   plan_case:     { sar: 349, ar: "وضوح — ملف القضية", en: "Wodouh — case file" },
-  plan_bundle:   { sar: 549, ar: "وضوح — المراجعة والملف والخطاب", en: "Wodouh — review, case file and letter" },
-  plan_biz:      { sar: 799, monthly: true, ar: "وضوح — أعمال، شهر واحد", en: "Wodouh — Business, one month" },
+  plan_review_letter: { sar: 299, ar: "وضوح — المراجعة والخطاب", en: "Wodouh — review and letter" },
+  plan_biz:      { sar: 799, monthly: true, ar: "وضوح — أعمال، 30 يوم", en: "Wodouh — Business, 30 days" },
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

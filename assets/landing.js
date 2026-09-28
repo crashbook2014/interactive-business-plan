@@ -234,14 +234,14 @@ const T = {
   p2p:{ar:"لكل عقد: صيغة جاهزة مبنية على بنودك، بالعربي والإنجليزي.",en:"Per contract: ready wording built from your own clauses, in both languages."},
   p3:{ar:"ملف القضية",en:"Case file"},
   p3p:{ar:"مطالبتك ومستنداتك ووقائعك في ملف واحد، جاهز للتسوية أو للمحامي.",en:"Your claim, documents and facts in one file, ready for a settlement or a lawyer."},
-  /* Wording tracks plan_bundle / plan_bundle_d in the app catalogue, and the
-     price is asserted equal to it by test/commerce.test.js. */
-  p4:{ar:"الحزمة الكاملة",en:"Full bundle"},
+  /* Wording tracks plan_review_letter / plan_review_letter_d in the app
+     catalogue, and the price is asserted equal to it by test/commerce.test.js. */
+  p4:{ar:"المراجعة والخطاب",en:"Review and letter"},
   p4t:{ar:"الأفضل قيمة",en:"Best value"},
-  p4p:{ar:"المراجعة الكاملة، وملف القضية، وخطاب التفاوض، بسعر أقل من مجموعها.",
-       en:"The full review, the case file and the negotiation letter, for less than the three separately."},
-  p4g:{ar:"تحصل على: الثلاثة كاملة، وتوفّر 148 ر.س عن شرائها منفصلة.",
-       en:"You get: all three, saving 148 SAR against buying them separately."},
+  p4p:{ar:"قبل ما توقّع: المراجعة الكاملة لعقدك، وخطاب التفاوض المبني عليها.",
+       en:"Before you sign: the full review of your contract, and the negotiation letter built on it."},
+  p4g:{ar:"تحصل على: الاثنين كاملين، وتوفّر 49 ر.س عن شرائهم منفصلين.",
+       en:"You get: both in full, saving 49 SAR against buying them separately."},
   price_anchor:{ar:"وقت المحامي أغلى من هذا، وقد تحتاجه بعد ذلك أيضًا، ووضوح يجهّز لك ملفك قبل أن تذهب إليه.",
                 en:"A lawyer's time costs more than this, and you may still need one afterwards. Wodouh prepares your file before you go."},
   /* USED TO PROMISE A 14-DAY REFUND — real prices, a real refund guarantee,
@@ -373,7 +373,7 @@ function applyLang(){
   document.getElementById("p1ba").innerHTML = "199" + `<small>${sar}</small>`;
   document.getElementById("p2a").innerHTML = "149" + `<small>${sar}</small>`;
   document.getElementById("p3a").innerHTML = "349" + `<small>${sar}</small>`;
-  document.getElementById("p4a").innerHTML = "549" + `<small>${sar}</small>`;
+  document.getElementById("p4a").innerHTML = "299" + `<small>${sar}</small>`;
   /* The headline's second clause on its own line, in the brand colour. The
      copy stays one string in T; only the dash that joined the two halves is
      dropped, because on a narrow screen it opened the second line alone. */

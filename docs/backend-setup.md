@@ -205,6 +205,7 @@ you are getting:
 | `0010_prune_schedule.sql` | schedules `prune_scan_events()` daily via `pg_cron`, so the thirteen-month retention the privacy policy promises is actually enforced rather than merely written |
 | `0011_admin_counts.sql` | `admin_counts()` — the four console totals as a `security definer` function guarded by `is_admin()`. Two of those rows used to read "unreadable" because `uploads` is revoked from every client role, and the other two silently counted the operator's own rows. A count returns no identifier, so `0004`'s guarantee that no `file_id` reaches a browser is untouched |
 | `0012_orders.sql` | `orders` and `tap_events` — Tap checkouts. Readers can select their own orders and cannot write them. Webhook events are service-role only. See `docs/payments-tap.md` |
+| `0013_review_letter_plan.sql` | Allows `plan_review_letter` (review + letter, 299 SAR) in `orders.plan_id`. `plan_bundle` stays allowed so old paid orders remain valid |
 
 ### Becoming an operator
 

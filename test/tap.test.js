@@ -43,8 +43,9 @@ function charge(over = {}) {
   const html = read("app/index.html");
   const expected = {
     plan_review: 199, plan_reviews5: 699, plan_letter: 149,
-    plan_case: 349, plan_bundle: 549, plan_biz: 799,
+    plan_case: 349, plan_review_letter: 299, plan_biz: 799,
   };
+  ok(!tap.planById("plan_bundle"), "the retired 549 bundle can no longer be charged");
   for (const [id, sar] of Object.entries(expected)) {
     const found = html.match(new RegExp('name:\\s*"' + id + '"[\\s\\S]{0,320}?amt:\\s*(\\d+)'));
     ok(!!found && Number(found[1]) === sar, `${id} is ${sar} SAR in the app`);
@@ -226,7 +227,14 @@ function charge(over = {}) {
     return { yes, review: owned.review, letter: owned.letter, case: owned.case };
   });
   ok(granted.yes && granted.review === "plan_review" && granted.letter === "plan_letter" && granted.case === "plan_case",
-     "a paid bundle unlocks the three products it names");
+     "an old paid 549 bundle order still unlocks the three products it named");
+  const pair = await page.evaluate(() => {
+    owned = { review: null, letter: null, case: null };
+    const yes = grantPurchasedPlan("plan_review_letter");
+    return { yes, review: owned.review, letter: owned.letter, case: owned.case };
+  });
+  ok(pair.yes && pair.review === "plan_review" && pair.letter === "plan_letter" && !pair.case,
+     "review + letter unlocks exactly those two, and not the case file");
   ok(await page.evaluate(() => grantPurchasedPlan("plan_lawyer")) === false,
      "a lawyer plan id does not unlock anything");
 

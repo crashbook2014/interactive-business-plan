@@ -311,7 +311,9 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
              cardText: document.getElementById("planCards").textContent,
              bizText: document.getElementById("screen-biz").textContent };
   });
-  ok(biz.cards === 4, `the catalogue renders 4 cards (got ${biz.cards})`);
+  /* Free, the pack, Business. Contract drafting left the catalogue in
+     September 2026 until it can actually be bought. */
+  ok(biz.cards === 3, `the catalogue renders 3 cards (got ${biz.cards})`);
   /* The monthly/annual toggle went with the consumer subscription: the pack is
      bought once and Business is monthly, so there is no annual figure to show
      and inventing one would have been the price screen's first lie. */
