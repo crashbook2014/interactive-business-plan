@@ -55,6 +55,14 @@ window.WODOUH_CONFIG = {
    * ANALYZE_URL: "https://YOUR-PROJECT-REF.supabase.co/functions/v1/analyze"
    */
 
+  /* OPTIONAL — Moyasar checkout. Leave unset and the app does not charge.
+   * The value is this project's create-payment function, nothing else.
+   * The secret key (sk_…) does not belong in this file. See
+   * docs/payments-moyasar.md.
+   *
+   * CREATE_PAYMENT_URL: "https://YOUR-PROJECT-REF.supabase.co/functions/v1/create-payment"
+   */
+
   /* OPTIONAL — Apple sign-in.
    *
    * A SEPARATE SWITCH FROM SUPABASE ITSELF, because Apple Sign-In needs an

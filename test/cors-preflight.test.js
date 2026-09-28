@@ -75,7 +75,7 @@ ok(!sent.has("apikey"),
    "and does not send apikey, which the deployed preflight has never allowed");
 
 /* ------------------------------------------- what each function will accept */
-for (const f of ["analyze", "upload"]) {
+for (const f of ["analyze", "upload", "create-payment"]) {
   const src = fs.readFileSync(R("supabase", "functions", f, "index.ts"), "utf8");
   const m = src.match(/["']access-control-allow-headers["']\s*:\s*["']([^"']+)["']/);
   ok(!!m, `${f}: the preflight allowlist was found`);

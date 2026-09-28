@@ -225,6 +225,24 @@ ok(unchanged(B, `update public.contracts set original_filename='mine-now.pdf';`,
    `select original_filename from public.contracts;`, "A-contract.pdf"),
    "B's update reaches nothing — A's row is unchanged");
 
+console.log("\n— a reader can see their own Moyasar order and cannot mark it paid");
+psql(`insert into public.orders (user_id, plan_id, amount, currency, status, mode)
+      values ('${A}', 'plan_review', 19900, 'SAR', 'pending', 'test');`);
+ok(psql(asUser(A, `select count(*) from public.orders;`)).trim() === "1",
+   "A sees their own order");
+ok(psql(asUser(B, `select count(*) from public.orders;`)).trim() === "0",
+   "B sees none of A's orders");
+ok(!!refused(asUser(A,
+   `insert into public.orders (user_id, plan_id, amount) values ('${A}','plan_letter',14900);`)),
+   "A cannot insert an order — the Edge Function is the only writer");
+ok(unchanged(A, `update public.orders set status='paid';`,
+   `select status from public.orders where user_id='${A}';`, "pending"),
+   "A cannot mark their own order paid");
+ok(!!refused(asUser(A, `select * from public.moyasar_events;`)),
+   "webhook events are closed to the reader");
+ok(!!refused(`set role anon;\nselect * from public.orders;\nreset role;`),
+   "a signed-out visitor cannot read orders");
+
 console.log("\n— the secrets table is closed to every client, by privilege and by policy");
 ok(!!refused(asUser(A, `select * from public.integration_secrets;`)),
    "a signed-in user cannot read integration_secrets at all");
@@ -349,7 +367,7 @@ for (const addr of FOUNDERS) {
    design — asserting otherwise would be asserting a property this project
    does not have. */
 console.log("\n— a migration someone may paste twice survives being pasted twice");
-for (const f of ["0007_blockers.sql", "0008_operator_allowlist.sql"]) {
+for (const f of ["0007_blockers.sql", "0008_operator_allowlist.sql", "0012_orders.sql"]) {
   let err = null;
   try {
     psql(require("node:fs").readFileSync(path.join(ROOT, "supabase/migrations", f), "utf8"));

@@ -150,7 +150,7 @@ const fns = require("node:fs")
 /* Called by machines that have never heard of Supabase and carry no JWT. Each
    authenticates its own caller: webhook by HMAC over the raw body,
    oauth-callback by a signed expiring state parameter. */
-const EXTERNAL = new Set(["webhook", "oauth-callback"]);
+const EXTERNAL = new Set(["webhook", "oauth-callback", "moyasar-webhook"]);
 
 for (const fn of fns){
   const block = toml.match(new RegExp(`\\[functions\\.${fn}\\][\\s\\S]*?verify_jwt\\s*=\\s*(true|false)`));

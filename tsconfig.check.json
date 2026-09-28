@@ -31,5 +31,10 @@
        typing it against Node's globals would let a Node-only API pass. */
     "types": []
   },
-  "files": ["types/deno.d.ts", "supabase/functions/analyze/index.ts"]
+  "files": [
+    "types/deno.d.ts",
+    "supabase/functions/analyze/index.ts",
+    "supabase/functions/create-payment/index.ts",
+    "supabase/functions/moyasar-webhook/index.ts"
+  ]
 }

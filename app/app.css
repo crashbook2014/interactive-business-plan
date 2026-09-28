@@ -2234,4 +2234,9 @@
   .tab.on span{background-image:linear-gradient(var(--hl),var(--hl));background-repeat:no-repeat;
     background-size:100% 40%;background-position:0 90%;padding:0 2px}
 
+  /* Moyasar plan list. Hidden with the slot until checkout is configured. */
+  #moyasarSlot .moyasar-plans{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+  #moyasarSlot .moyasar-plans button{width:100%;text-align:start}
+  #moyasarSlot a{display:inline-block;margin-top:8px;color:var(--teal-ink);font-weight:700}
+
   [hidden]{display:none !important}
