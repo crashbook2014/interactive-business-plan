@@ -205,7 +205,13 @@ function charge(over = {}) {
     cfg: (window.WODOUH_CONFIG || {}).TAP_PUBLIC_KEY,
     mod: WodouhTap.publicKey()
   }));
-  ok(seenKey.cfg === "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn" && seenKey.mod === seenKey.cfg,
+  /* Compared against the value shipped in app/index.html rather than a
+     literal here: the publishable key is public by design, but a second
+     copy of a live-key-shaped string in a test file is what secret scanners
+     are right to flag. */
+  const shipped = (fs.readFileSync(path.join(__dirname, "..", "app", "index.html"), "utf8")
+    .match(/TAP_PUBLIC_KEY:\s*"(pk_live_[A-Za-z0-9]+)"/) || [])[1];
+  ok(!!shipped && seenKey.cfg === shipped && seenKey.mod === seenKey.cfg,
      "the running page exposes the live public key and nothing else");
 
   const granted = await page.evaluate(() => {

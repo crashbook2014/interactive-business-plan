@@ -873,7 +873,7 @@
      touched admin/, so forgetting fails the suite instead of quietly
      producing a misleading diagnostic. If the line reports an old date, the
      answer is a hard reload, not another theory. */
-  var BUILD = "2026-09-13a";
+  var BUILD = "2026-09-28a";
 
   function renderConn() {
     var host = el("conn");
