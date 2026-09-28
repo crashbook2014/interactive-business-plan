@@ -112,8 +112,11 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
        letter. The cheaper tier deliberately does not include them — that
        separation is exercised in commerce.test.js. */
     document.querySelectorAll("#plans .plan")[1].click();
-    document.getElementById("payBtn").click();
-    return new Promise(r => setTimeout(() => r(document.querySelector(".screen.active").id), 1200));
+    /* A settled charge, not a click: with FREE_NOW off the pay button goes
+       to Tap, which this suite has no business calling. What a captured
+       charge ends in is grantAndGo(), so that is the step walked here. */
+    grantAndGo();
+    return new Promise(r => setTimeout(() => r(document.querySelector(".screen.active").id), 300));
   });
   ok(paid === "screen-termres", "paying lands on the assessment");
 

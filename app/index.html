@@ -1391,13 +1391,12 @@ window.WODOUH_CONFIG = Object.assign({
   /* Tap's public key. Public by design: it names the merchant and cannot
      charge a card by itself. The secret key is not in this file. Checkout
      stays off until CREATE_PAYMENT_URL below is set. */
-  TAP_PUBLIC_KEY: "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn"
+  TAP_PUBLIC_KEY: "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn",
 
-  /* OPTIONAL — Tap checkout. Leave this unset and nothing is charged:
-     the pay button stays the prototype, and the account slot stays hidden.
-     The secret key never goes here. See docs/payments-tap.md.
-       CREATE_PAYMENT_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/create-payment"
-  */
+  /* Tap checkout is LIVE. Without this line and with FREE_NOW false,
+     pwPay() refuses rather than granting anything.
+     The secret key never goes here. See docs/payments-tap.md. */
+  CREATE_PAYMENT_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/create-payment"
 
   /* PHONE_SIGNIN is DELIBERATELY ABSENT, which means off.
    *
@@ -13534,7 +13533,7 @@ function planIndex(mode, id){
  * untested is a paywall that quietly rots until the day it is needed, and that
  * day is a bad one to discover it. See paywallOn() in test/_env.js.
  */
-let FREE_NOW = true;
+let FREE_NOW = false;   /* founder, Sept 2026: off when Tap checkout went live */
 
 function has(mode, tier){
   /* Free, so everything is held. Deliberately above the owned[] lookup: the
@@ -14264,10 +14263,19 @@ function grantAndGo(){
 }
 
 function pwPay(){
-  /* Tap, only when CREATE_PAYMENT_URL is set. Otherwise this stays the
-     prototype: a short pause and a local grant, and no charge. */
+  /* Tap, whenever CREATE_PAYMENT_URL is set and the checkout script loaded. */
   if (window.WodouhTap && WodouhTap.configured()){
     WodouhTap.payFromWall();
+    return;
+  }
+  /* NEVER A FREE GRANT WHILE THE PAYWALL IS ON. The prototype below hands
+     over the product after a pause. That is harmless while FREE_NOW gives it
+     away anyway; with FREE_NOW off, a checkout script that failed to load (or
+     a missing CREATE_PAYMENT_URL) would turn this button into a free unlock.
+     Refuse, and say nothing was charged. */
+  if (!FREE_NOW){
+    const st = document.getElementById("tapStatus");
+    if (st){ st.hidden = false; st.textContent = t("tap_fail"); }
     return;
   }
   const pay = document.getElementById("payBtn");

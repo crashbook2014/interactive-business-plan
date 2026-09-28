@@ -86,16 +86,20 @@ function signInStub(){
        a suite asserting the Bearer is attached would have been asserting
        against its own omission. */
     WodouhAuth.token = () => "test-access-token";
+    /* And the REST helper, answering nothing. With FREE_NOW off a scan is
+       counted against the account (useScan → scan_events); no project is
+       reachable from the suites, so the write is a no-op that resolves. */
+    WodouhAuth.api = () => Promise.resolve(null);
   }
 }
 const signInSrc = "(" + signInStub.toString() + ")();";
 
 /* TURN THE PAYWALL BACK ON, FOR THE SUITES THAT EXIST TO PROVE IT WORKS.
  *
- * The shipped build has FREE_NOW = true (see app/index.html): every door is
- * open and nothing is charged, by the founder's decision while the product is
- * pre-launch. That is a switch, not a deletion — the gates, the prices and the
- * entitlement ladder are all still there, waiting.
+ * The shipped build has FREE_NOW = false since Tap checkout went live (Sep
+ * 2026), so this is now a no-op on the shipped value. It stays because
+ * FREE_NOW is a switch the founder can turn back on, and the paid suites must
+ * keep exercising the gates whichever way it is set.
  *
  * Which means they can rot. A paywall nobody exercises is one that fails the
  * day it is switched back on, and by then the failure is a revenue bug found

@@ -51,9 +51,11 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
 - `renderWipe()` — erase-my-data panel
 
 ## Compiled constants (app/index.html ~line 12639–12863)
-- `PAYMENT_COMPILED = false` — payments off; `FREE_NOW = true` — free mode
+- `PAYMENT_COMPILED = false` (the `payments` app_flags row is `true` in prod)
+- `FREE_NOW = false` — Tap checkout is live (Sep 2026). `CREATE_PAYMENT_URL`
+  is set in `WODOUH_CONFIG`; `pwPay()` refuses rather than granting when
+  checkout cannot run. Tap secrets live in Supabase, never in the repo.
 - `LAWYER_COMPILED = false` — lawyer desk off
-- **`FREE_NOW` must stay `true`** until payments are live
 - `ANALYZE_URL` hardcoded at line 1343 (AI is live)
 - `UPLOAD_URL` hardcoded at line 1356 (scan upload is live)
 - `AI_COMPILED = false` + `AI_LIVE` (line ~12699) — the AI surface compiles OFF

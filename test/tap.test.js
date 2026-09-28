@@ -200,7 +200,13 @@ function charge(over = {}) {
     const el = document.getElementById("tapSlot");
     return !!el && getComputedStyle(el).display === "none";
   });
-  ok(hidden, "the account slot is hidden while CREATE_PAYMENT_URL is unset");
+  const cfgPay = await page.evaluate(() => (window.WODOUH_CONFIG || {}).CREATE_PAYMENT_URL || "");
+  if (cfgPay) {
+    ok(cfgPay === await page.evaluate(() => WODOUH_CONFIG.SUPABASE_URL.replace(/\/$/, "") + "/functions/v1/create-payment"),
+       "CREATE_PAYMENT_URL is this project's create-payment function and nothing else");
+  } else {
+    ok(hidden, "the account slot is hidden while CREATE_PAYMENT_URL is unset");
+  }
   const seenKey = await page.evaluate(() => ({
     cfg: (window.WODOUH_CONFIG || {}).TAP_PUBLIC_KEY,
     mod: WodouhTap.publicKey()
@@ -234,7 +240,11 @@ function charge(over = {}) {
              text: document.getElementById("tapSlot").textContent };
   });
   ok(bodyExpect.n === 6, `six sellable plans are offered (${bodyExpect.n})`);
-  ok(/مجانية/.test(bodyExpect.text), "while FREE_NOW, the slot says the product is still free");
+  if (await page.evaluate(() => FREE_NOW)) {
+    ok(/مجانية/.test(bodyExpect.text), "while FREE_NOW, the slot says the product is still free");
+  } else {
+    ok(!/مجانية/.test(bodyExpect.text), "with FREE_NOW off, the slot no longer says the product is free");
+  }
   ok(!bodyExpect.ids.includes("plan_lawyer") && !bodyExpect.ids.includes("plan_draft"),
      "unsellable plans are not offered");
 

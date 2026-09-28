@@ -73,6 +73,9 @@ const STUB = (apple) => {
       return Promise.resolve(window.__pushFails ? { sent: 0, failed: 1 } : { sent: 3, failed: 0 });
     },
     shape: real.shape,
+    /* The scan counter (useScan → scan_events) runs once FREE_NOW is off.
+       Recorded, and answered with nothing. */
+    api: (path, opts) => { window.__sent.push({ fn: "api", path }); return Promise.resolve(null); },
     deleteAccount: () => Promise.resolve()
   };
 };
@@ -423,6 +426,10 @@ const STUB = (apple) => {
       await new Promise(r => setTimeout(r, 100));
     addAllPoints();
     const held = selected().length;
+    /* A reader who already holds the letter, so the door under test is the
+       account wall and not the paywall in front of it (FREE_NOW is off once
+       checkout is live; commerce.test.js covers the paywall). */
+    owned.letter = "plan_letter";
     /* This page has the ai_analysis flag cached (aiPage), which is what a
        returning reader has — and on this exact path that cache used to send
        ensureFlags() and renderAiPanel() round each other until the stack ran

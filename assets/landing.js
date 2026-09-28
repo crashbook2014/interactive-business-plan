@@ -221,9 +221,6 @@ const T = {
      is not in the app yet, so it says the app. Guarded by
      test/commerce.test.js, which requires this line while the app's FREE_NOW
      is true and keeps its promise to warn before anything is charged. */
-  price_free_h:{ar:"كل شي مجاني الحين",en:"Everything is free right now"},
-  price_free_b:{ar:"الأسعار تحت توضّح وين رايحين، لكن ما فيه دفع الحين: كل ميزات التطبيق مفتوحة لك بالكامل ومجانًا. لو صار فيه دفع لاحقًا، بنقولها لك قبل لا يصير، وما راح نبدأ نحاسبك بدون ما تدري.",
-                en:"The prices below show where this is heading, but nothing is being charged: every feature in the app is open to you, in full, at no cost. If paid plans start later, we will tell you before that happens. You will never be charged without knowing."},
   p1:{ar:"وضوح الأساسي",en:"Wodouh Basic"}, p1a:{ar:"مجاني",en:"Free"},
   /* Wording matches plan_review_d (app/index.html) verbatim, on purpose — this
      card and the app catalogue describe the same 199 SAR product, and reusing
