@@ -466,7 +466,7 @@ async function seedTermination(p){
      line, so a stranger read a live price list for a product that would not
      charge them. Keyed to the app's switch, so flipping FREE_NOW off frees the
      page to drop the line — and leaving it on keeps the line required. */
-  console.log("\n— while FREE_NOW is on, the homepage prices carry the free-now line");
+  console.log("\n— the homepage free-now line follows FREE_NOW");
   {
     const landing = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
     const home = readFileSync(path.join(ROOT, "index.html"), "utf8");
@@ -480,6 +480,9 @@ async function seedTermination(p){
       ok(!!body, "and it is written in both languages");
       ok(body && /قبل لا يصير/.test(body[1]) && /before that happens/.test(body[2]),
          "with the same promise the app makes: we tell you before anything is charged");
+    } else {
+      ok(!/price_free_h|id="freeNow"/.test(home) && !/price_free_[hb]:/.test(landing),
+         "with checkout live, the homepage no longer says everything is free");
     }
   }
 
@@ -1554,49 +1557,69 @@ async function seedTermination(p){
   ok(!/<i>mada<\/i>|<i>Apple/.test(app),
      "no payment method is hard-coded in the markup any more");
 
-  /* ---- FREE_NOW: the paywall is switched off, and that must be true in the
-     shipped build rather than only in a comment.
+  /* ---- FREE_NOW, whichever way the shipped build has it.
      Everything above this point runs with paywallOn(), which proves the gates
-     still work. This block is the other half: with the switch left alone, the
-     doors are actually open. Both matter — a build that claims to be free and
-     still gates one flow charges nobody and frustrates everybody. */
-  console.log("\n— free for everyone, while FREE_NOW says so");
+     work. This block checks the switch as shipped, with nothing flipped:
+     free means every door is actually open; not free means nothing is handed
+     over without a settled charge. Both matter. A build that claims to be
+     free and still gates a flow frustrates everybody, and a paid build whose
+     pay button still runs the prototype grant gives the product away. */
+  const shippedFree = /let FREE_NOW\s*=\s*true\s*;/.test(readFileSync(path.join(ROOT, "app/index.html"), "utf8"));
+  console.log(`\n— the shipped switch, as shipped (FREE_NOW = ${shippedFree})`);
   {
     const pg = await b.newPage({ viewport: { width: 390, height: 844 } });
-    pg.on("pageerror", e => FAIL.push("pageerror(free): " + e.message));
+    pg.on("pageerror", e => FAIL.push("pageerror(shipped): " + e.message));
     await pg.goto(APP);
     await pg.waitForFunction(() => typeof window.show === "function");
     await pg.evaluate(signInStub);          /* NB: no paywallOn() here, on purpose */
-    const free = await pg.evaluate(() => {
+    const st = await pg.evaluate(() => {
       nat = "sa"; obDone = true;
       owned = { review: null, letter: null, case: null };   /* has bought nothing */
       return {
         flag: FREE_NOW,
         review: has("review"), letter: has("letter"), caseFile: has("case"),
-        top: has("review", "plan_biz"),      /* even the highest rung */
+        top: has("review", "plan_biz"),
         unlocked: reviewUnlocked(),
         scan: scanGate("emp")
       };
     });
-    ok(free.flag === true, "the shipped build has the paywall switched off");
-    ok(free.review && free.letter && free.caseFile,
-       "a reader who has bought nothing holds every entitlement");
-    ok(free.top === true, "including the top of the ladder, not just the first rung");
-    ok(free.unlocked === true, "the full review is unlocked rather than the one-scan teaser");
-    ok(free.scan === true, "and the scan gate lets them straight through");
-
-    /* A price list standing over an open door needs a sentence, or it tells
-       the reader the opposite of what the app is doing. */
+    ok(st.flag === shippedFree, "the running page reads the switch the source ships");
     const banner = await pg.evaluate(() => {
       show("plans"); renderPlans();
       const el = document.getElementById("plFree");
       return { shown: !!el && !el.hidden, text: el ? el.textContent : "" };
     });
-    ok(banner.shown === true, "the plans screen says plainly that nothing is being charged");
-    ok(/free|مجاني/i.test(banner.text), "in the reader's own language");
-    /* The promise that makes it safe to say "free" without trapping anyone. */
-    ok(/before that happens|قبل لا يصير/i.test(banner.text),
-       "and promises warning before that ever changes");
+    if (shippedFree){
+      ok(st.review && st.letter && st.caseFile,
+         "a reader who has bought nothing holds every entitlement");
+      ok(st.top === true, "including the top of the ladder, not just the first rung");
+      ok(st.unlocked === true, "the full review is unlocked rather than the one-scan teaser");
+      ok(st.scan === true, "and the scan gate lets them straight through");
+      ok(banner.shown === true, "the plans screen says plainly that nothing is being charged");
+      ok(/free|مجاني/i.test(banner.text), "in the reader's own language");
+      ok(/before that happens|قبل لا يصير/i.test(banner.text),
+         "and promises warning before that ever changes");
+    } else {
+      ok(!st.review && !st.letter && !st.caseFile && !st.top,
+         "a reader who has bought nothing holds no paid entitlement");
+      ok(st.unlocked === false, "the full review stays locked until it is paid for");
+      ok(banner.shown === false, "and the plans screen no longer says it is free");
+      /* The hole this closes: with checkout unavailable (script blocked, or
+         no CREATE_PAYMENT_URL), the pay button used to fall through to the
+         prototype, which grants after a pause. */
+      const hole = await pg.evaluate(() => {
+        window.WodouhTap = undefined;
+        show("plans"); renderPlans();
+        try { pwPay(); } catch (e) {}
+        return new Promise(r => setTimeout(() => r({
+          owned: Object.values(owned).filter(Boolean).length,
+          msg: (document.getElementById("tapStatus") || {}).textContent || ""
+        }), 1300));
+      });
+      ok(hole.owned === 0, "a pay button with no working checkout grants nothing");
+      ok(/لم يُخصم|nothing was charged|not charged/i.test(hole.msg),
+         `and says nothing was charged (${hole.msg})`);
+    }
     await pg.close();
   }
 

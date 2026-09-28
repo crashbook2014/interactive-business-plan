@@ -130,6 +130,9 @@ const DEADLINE = /fifteen days|خمسة عشر يومًا/;
       end: "2026-01-01", wage: 10000, docs: ["d_contract"] });
     renderTermLtr();
     const employer = (document.getElementById("termLtrFoot") || {}).textContent || "";
+    /* The case file renders only for someone who holds it (FREE_NOW is off
+       once checkout is live), so this reader has bought it. */
+    owned.case = "plan_case";
     renderTermDoc();
     const caseDoc = (document.getElementById("termDocFoot") || {}).textContent || "";
     return { demand, employer, caseDoc };

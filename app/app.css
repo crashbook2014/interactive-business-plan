@@ -2237,6 +2237,6 @@
   /* Tap plan list. Hidden with the slot until checkout is configured. */
   #tapSlot .tap-plans{display:flex;flex-direction:column;gap:8px;margin:8px 0}
   #tapSlot .tap-plans button{width:100%;text-align:start}
-  #tapSlot a{display:inline-block;margin-top:8px;color:var(--teal-ink);font-weight:700}
+  #tapSlot a{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;color:var(--teal-ink);font-weight:700}
 
   [hidden]{display:none !important}
