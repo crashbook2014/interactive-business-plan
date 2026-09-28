@@ -1386,7 +1386,12 @@ window.WODOUH_CONFIG = Object.assign({
 
      Leave this unset and the scan offer never appears — the same shipped-inert
      rule ANALYZE_URL follows. */
-  UPLOAD_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/upload"
+  UPLOAD_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/upload",
+
+  /* Tap's public key. Public by design: it names the merchant and cannot
+     charge a card by itself. The secret key is not in this file. Checkout
+     stays off until CREATE_PAYMENT_URL below is set. */
+  TAP_PUBLIC_KEY: "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn"
 
   /* OPTIONAL — Tap checkout. Leave this unset and nothing is charged:
      the pay button stays the prototype, and the account slot stays hidden.

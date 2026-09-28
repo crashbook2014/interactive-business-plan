@@ -27,7 +27,9 @@ Do not paste keys into git. Tap publishes sample test keys in their docs; those 
 
 ## Secrets
 
-Set these on the Supabase project `nkgjgpageqohalerccfu`. They are listed in `.env.example`. Do not put any key, test or live, in `app/`, `supabase/config.js`, or git.
+Set these on the Supabase project `nkgjgpageqohalerccfu`. They are listed in `.env.example`. Do not put the **secret** key in `app/`, `supabase/config.js`, or git.
+
+The **public** key is in the client on purpose: `TAP_PUBLIC_KEY` in `window.WODOUH_CONFIG` inside `app/index.html`. Hosted checkout still does not send it. The charge is created with the secret key on the server. `payments-tap.js` only accepts a `pk_test_` or `pk_live_` value.
 
 The code default is **test**. `PAYMENT_MODE` unset, empty, or `test` refuses an `sk_live_` key. `PAYMENT_MODE=live` is supported and refuses an `sk_test_` key. If the secret is missing, both functions return **503** `not_configured` and do not charge. A live key left on the test default returns **503** `misconfigured` and does not charge either. Set the mode and the secret in the same step.
 

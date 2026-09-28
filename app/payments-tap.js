@@ -41,6 +41,15 @@
     return typeof pwPlan === "number" ? pwPlan : 0;
   }
 
+  /* Tap's publishable key. Only a pk_test_ / pk_live_ value is accepted.
+     The charge itself is still created on the server. This key is not posted. */
+  function publicKey() {
+    var key = cfg().TAP_PUBLIC_KEY;
+    if (typeof key !== "string") return "";
+    if (!/^pk_(test|live)_[A-Za-z0-9]+$/.test(key)) return "";
+    return key;
+  }
+
   function configured() {
     var c = cfg();
     var base = c.SUPABASE_URL;
@@ -283,6 +292,7 @@
 
   global.WodouhTap = {
     configured: configured,
+    publicKey: publicKey,
     payFromWall: payFromWall,
     mount: mount,
     resume: resume

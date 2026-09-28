@@ -140,6 +140,11 @@ function charge(over = {}) {
   ok(/not_configured/.test(create) && /not_configured/.test(hook), "both functions answer not_configured");
   ok(/hashstring/.test(hook) && /hmacHex\(/.test(hook), "the webhook checks Tap's hashstring");
   ok(/decideCharge\(/.test(hook), "the webhook uses the shared paid/not-paid decision");
+  const PUB = "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn";
+  ok(html.includes('TAP_PUBLIC_KEY: "' + PUB + '"'), "the live public key is in the app config");
+  ok(read("supabase/config.example.js").includes(PUB), "the example client config carries the same public key");
+  ok(!/sk_(test|live)_[A-Za-z0-9]{8,}/.test(html + client), "the secret key is not next to the public key");
+  ok(/function publicKey\(/.test(client) && /TAP_PUBLIC_KEY/.test(client), "the Tap module reads the public key");
   ok(/CREATE_PAYMENT_URL/.test(client) && !/sk_/.test(client), "the browser knows the function URL and no secret");
   ok(/plan_id: planId/.test(client) && !/amount:/.test(client), "the browser posts a plan id and no amount");
   ok(/chosen\.up/.test(client), "an upgrade difference is not charged");
@@ -196,6 +201,12 @@ function charge(over = {}) {
     return !!el && getComputedStyle(el).display === "none";
   });
   ok(hidden, "the account slot is hidden while CREATE_PAYMENT_URL is unset");
+  const seenKey = await page.evaluate(() => ({
+    cfg: (window.WODOUH_CONFIG || {}).TAP_PUBLIC_KEY,
+    mod: WodouhTap.publicKey()
+  }));
+  ok(seenKey.cfg === "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn" && seenKey.mod === seenKey.cfg,
+     "the running page exposes the live public key and nothing else");
 
   const granted = await page.evaluate(() => {
     owned = { review: null, letter: null, case: null };
