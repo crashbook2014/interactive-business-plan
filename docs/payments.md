@@ -1,8 +1,10 @@
 # Wodouh — payments
 
-**Status: no gateway chosen, and no payment code exists.** The entire
-implementation today is a 900 ms `setTimeout` in `pwPay()` that grants access
-without charging anything. The paywall carries a demo tag saying so.
+**Status: Tap is the gateway.** Sandbox checkout lives in
+`docs/payments-tap.md`. `FREE_NOW` is still on, and with the Tap secrets
+unset the pay button stays the prototype (`pwPay()` grants locally and
+charges nothing). The August note below, which said to ship whichever of
+Tap or Moyasar approved first, is superseded: Moyasar is not integrated.
 
 That is worth stating plainly because it makes the decision cheap: switching
 between candidates costs nothing right now, and will cost a week once one is
@@ -10,9 +12,10 @@ integrated.
 
 ---
 
-## The decision, 22 August 2026
+## The decision, 22 August 2026 — superseded
 
-**Apply to both Tap and Moyasar. Use whichever approves first.**
+**Tap is the gateway.** Moyasar is not used. The integration is
+`docs/payments-tap.md`.
 
 Merchant approval is a third-party duration measured in weeks, it sits on the
 critical path of a launch that includes payments, and neither approval is

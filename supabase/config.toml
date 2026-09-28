@@ -109,13 +109,18 @@ message_service_sid = "env(TWILIO_MESSAGE_SERVICE_SID)"
 #                  JWT. Its security is a signed, expiring `state` parameter,
 #                  which it verifies itself.
 #
+#   tap-webhook      Tap POSTs the charge with a hashstring header and no
+#                    Supabase JWT. Same failure as webhook if verify_jwt stays
+#                    on: the gateway 401s and the signature check never runs.
+#                    It does not share the Zid/Salla route.
+#
 # Turning verify_jwt off does NOT make these open: each one authenticates its
 # own caller, in code, by a method appropriate to who is calling. The gateway
 # check is simply the wrong check for them.
 #
-# analyze and upload stay at the default. They are called by the app with the
-# anon key, and requiring it is a free first filter on functions that cost real
-# money per call.
+# analyze, upload, and create-payment stay at the default. They are called by
+# the app. create-payment also resolves the signed-in user itself, and it
+# prices the invoice from the server catalogue.
 
 [functions.analyze]
 verify_jwt = true
@@ -127,4 +132,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.oauth-callback]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = true
+
+[functions.tap-webhook]
 verify_jwt = false

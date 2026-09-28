@@ -586,6 +586,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
     <p class="guarantee" id="pwGuarantee" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/></svg><span data-t="guarantee"></span></p>
     <div class="plans" id="plans"></div>
     <button class="primary" id="payBtn" onclick="pwPay()"></button>
+    <p class="pw-note" id="tapStatus" role="status" hidden></p>
     <div class="redeem" id="redeem" hidden>
       <button type="button" class="rd-open" id="rdOpen" onclick="toggleRedeem()" data-t="rd_have"></button>
       <div class="rd-form" id="rdForm" hidden>
@@ -890,6 +891,9 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
       <p data-t="acc_pay_paid"></p>
       <p class="anchor" data-t="anchor_price"></p>
     </div>
+    <!-- Tap. Empty and hidden unless CREATE_PAYMENT_URL is set.
+         payments-tap.js fills it; with the URL unset it stays blank. -->
+    <div class="acc-sec" id="tapSlot" hidden></div>
     <div class="acc-sec">
       <h3 data-t="acc_privacy"></h3>
       <!-- THE PROMISE STAYS OPEN; THE FOUR EXCEPTIONS FOLD.
@@ -1324,6 +1328,7 @@ if (!window.WODOUH_LAUNCHED && !WODOUH_KEY && !WODOUH_CALLBACK) {
      this file talks to Supabase over plain fetch instead of importing an SDK
      from a CDN. It does nothing at all until SUPABASE_URL is configured. -->
 <script src="./auth.js"></script>
+<script src="./payments-tap.js"></script>
 <script>
 /* ============================================ RUNTIME CONFIGURATION
  *
@@ -1381,7 +1386,18 @@ window.WODOUH_CONFIG = Object.assign({
 
      Leave this unset and the scan offer never appears — the same shipped-inert
      rule ANALYZE_URL follows. */
-  UPLOAD_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/upload"
+  UPLOAD_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/upload",
+
+  /* Tap's public key. Public by design: it names the merchant and cannot
+     charge a card by itself. The secret key is not in this file. Checkout
+     stays off until CREATE_PAYMENT_URL below is set. */
+  TAP_PUBLIC_KEY: "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn"
+
+  /* OPTIONAL — Tap checkout. Leave this unset and nothing is charged:
+     the pay button stays the prototype, and the account slot stays hidden.
+     The secret key never goes here. See docs/payments-tap.md.
+       CREATE_PAYMENT_URL: "https://nkgjgpageqohalerccfu.supabase.co/functions/v1/create-payment"
+  */
 
   /* PHONE_SIGNIN is DELIBERATELY ABSENT, which means off.
    *
@@ -2545,6 +2561,28 @@ const T = {
   pw_pay_term:{ar:"اعرض تقييمي كامل",en:"Show my full assessment"},
   pw_pay_up:{ar:"أضف الملف والخطاب",en:"Add the file and letter"},
   pw_paying:{ar:"جارٍ الدفع…",en:"Processing…"},
+  tap_h:{ar:"ادفع عبر تاب",en:"Pay with Tap"},
+  tap_b:{ar:"يفتح صفحة تاب بالمبلغ المبيّن. لا يُخصم شيء قبل أن تتم الدفع هناك.",
+         en:"Opens Tap at the amount shown. Nothing is charged before you finish paying there."},
+  tap_free:{ar:"كل الميزات مجانية الآن. الدفع هنا اختياري، وإذا اكتمل يُسجَّل طلبًا.",
+            en:"Every feature is free right now. Paying here is optional, and a completed payment is recorded as an order."},
+  tap_off:{ar:"الدفع غير مُعدّ بعد. لن يُخصم شيء.",
+           en:"Payments are not set up yet. Nothing will be charged."},
+  tap_upgrade:{ar:"فرق الترقية لا يُحاسب عبر تاب. الفاتورة تكون بسعر الخطة كاملًا من صفحة الحساب.",
+               en:"The upgrade difference is not billed through Tap. An invoice is the full plan price, from the account page."},
+  tap_email:{ar:"أضف بريدًا إلى الحساب قبل الدفع. لم يُخصم شيء.",
+             en:"Add an email to the account before paying. Nothing was charged."},
+  tap_signin:{ar:"سجّل الدخول أولًا.",en:"Sign in first."},
+  tap_busy:{ar:"جارٍ فتح صفحة الدفع…",en:"Opening the payment page…"},
+  tap_fail:{ar:"تعذّر بدء الدفع. لم يُخصم شيء.",
+            en:"Could not start the payment. Nothing was charged."},
+  tap_mismatch:{ar:"المبلغ العائد من الخادم لا يطابق السعر المعروض. أُلغي التحويل.",
+                en:"The amount from the server does not match the price shown. The redirect was cancelled."},
+  tap_wait:{ar:"نؤكد الدفع…",en:"Confirming the payment…"},
+  tap_paid:{ar:"تم استلام الدفع.",en:"Payment received."},
+  tap_pending:{ar:"لم يُؤكد الدفع بعد. إذا أتممته، انتظر لحظة ثم حدّث الصفحة.",
+               en:"The payment is not confirmed yet. If you finished, wait a moment and refresh."},
+  tap_bad:{ar:"لم ينجح الدفع.",en:"The payment did not go through."},
   /* Back labels that name where the button actually goes. "Back to score" sat
      on a paywall that returns to the evidence step or the calculator. */
   /* The sign-in screen asked for a key that does not exist, so t() returned ""
@@ -5171,6 +5209,7 @@ function applyLang(){
   renderPaywall();
   renderDesk(); renderLawyerTease();
   renderInstallHintThenTimely();
+  if (window.WodouhTap) WodouhTap.mount();
   /* Language is a pure re-render, so every live termination screen redraws
      from the same state rather than keeping stale strings. */
   if (term){
@@ -13400,6 +13439,20 @@ function ladderBreaks(){
    would be misled by seeing it. */
 function sellable(p){ return !p.lawyer || LAWYER_DESK.live; }
 function buyable(p){ return sellable(p) && !p.soon; }
+/* The plans Tap is allowed to charge, read from the same objects the
+   paywall prices. Lawyer and "soon" tiers are absent because buyable() is. */
+function wodouhCatalogue(){
+  const rows = [];
+  const push = (p) => {
+    if (!buyable(p)) return;
+    rows.push({ id: p.name, amt: p.amt, monthly: !!p.monthly });
+  };
+  PLANS_REVIEW.forEach(push);
+  PLANS.forEach(push);
+  PLANS_CASE.forEach(push);
+  push(BUNDLE);
+  return rows;
+}
 /* What a flow offers = its own ladder, plus the bundle. Kept separate from
    PLAN_SETS because that is the ladder entitlement is computed against; see
    the note above BUNDLE. The bundle is not offered in its own `bundle` mode
@@ -13465,11 +13518,12 @@ function planIndex(mode, id){
  * rather than by deleting the gates: a paywall removed by deletion has to be
  * rebuilt, and rebuilt from memory it comes back subtly different.
  *
- * IT IS READ IN EXACTLY TWO PLACES, because the product only has two gates:
+ * THE GATES READ IT IN EXACTLY TWO PLACES, because the product only has two:
  *   - has()             — owns the review / letter / case entitlements
  *   - reviewUnlocked()  — owns the free-scan limit and the full-review unlock
- * Everything paid in this app funnels through one of those two. Nothing else
- * needs to know, and nothing else should be taught to.
+ * Everything paid in this app funnels through one of those two. The Tap
+ * checkout slot reads it too, only to say the product is still free. That
+ * sentence is not a gate.
  *
  * WHAT IT DOES NOT DO: it does not touch the payments flag, the catalogue, or
  * a single price. Money still cannot move — `payments` is false in app_flags —
@@ -14123,6 +14177,35 @@ function creditPack(bought){
   }
 }
 
+function planModeOf(id){
+  if (PLANS_REVIEW.some(p => p.name === id)) return "review";
+  if (PLANS.some(p => p.name === id)) return "letter";
+  if (PLANS_CASE.some(p => p.name === id)) return "case";
+  return null;
+}
+/* A confirmed Tap order unlocks the plan it names. Same monotonic rule
+   as grantAndGo(): a cheaper tier never replaces a dearer one. The caller
+   has to have seen status "paid" on the reader's own order row first. */
+function grantPurchasedPlan(planId){
+  const all = [].concat(PLANS_REVIEW, PLANS, PLANS_CASE, PLANS_BUNDLE);
+  const plan = all.find(p => p.name === planId);
+  if (!plan || !buyable(plan)) return false;
+  if (plan.grants){
+    Object.keys(plan.grants).forEach(mode => {
+      const id = plan.grants[mode], held = owned[mode];
+      if (!held || planIndex(mode, id) >= planIndex(mode, held)) owned[mode] = id;
+    });
+  } else {
+    const mode = planModeOf(planId);
+    if (!mode) return false;
+    const held = owned[mode];
+    if (!held || planIndex(mode, planId) >= planIndex(mode, held)) owned[mode] = planId;
+  }
+  creditPack(planId);
+  saveState();
+  return true;
+}
+
 function grantAndGo(){
   /* THE SINGLE ROUTE INTO THE PAID STATE, so the refusal belongs here too.
      "Do not sell an assessment that found nothing" was enforced on the pay
@@ -14181,6 +14264,12 @@ function grantAndGo(){
 }
 
 function pwPay(){
+  /* Tap, only when CREATE_PAYMENT_URL is set. Otherwise this stays the
+     prototype: a short pause and a local grant, and no charge. */
+  if (window.WodouhTap && WodouhTap.configured()){
+    WodouhTap.payFromWall();
+    return;
+  }
   const pay = document.getElementById("payBtn");
   pay.disabled = true;
   pay.textContent = t("pw_paying");
@@ -14521,6 +14610,7 @@ window.addEventListener("resize", moveTabIndicator, { passive:true });
  * already signed into. authReady starts resolved, so an unconfigured build and
  * a reader with no stored session both route on the very next microtask. */
 if (obDone) authReady.then(() => show("home"));
+authReady.then(() => { if (window.WodouhTap) WodouhTap.resume(); });
 requestAnimationFrame(()=>{ armReveals(); moveTabIndicator(); });
 </script>
 </body>

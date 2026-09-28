@@ -17,3 +17,9 @@ useDefault = true
 [allowlist]
 description = "Synthetic key fixtures in the key-classification test"
 paths = ['''test/accounts\.test\.js''']
+
+# Tap's PUBLISHABLE key. It is public by design: it ships in the page source
+# (window.WODOUH_CONFIG.TAP_PUBLIC_KEY) to every visitor and cannot create or
+# read a charge. Allowlisted as this one exact string, not as a shape, so any
+# other pk_/sk_ value, and every secret key, is still caught.
+regexes = ['''pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn''']

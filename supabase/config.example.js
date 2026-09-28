@@ -55,6 +55,20 @@ window.WODOUH_CONFIG = {
    * ANALYZE_URL: "https://YOUR-PROJECT-REF.supabase.co/functions/v1/analyze"
    */
 
+  /* Tap's public key. Public by design, same as SUPABASE_ANON_KEY.
+   * The live value is also in app/index.html. The secret key does not
+   * belong in this file. See docs/payments-tap.md.
+   */
+  TAP_PUBLIC_KEY: "pk_live_f6UaSj8gmLvbTWANpu5Iz9MJEY1Bn",
+
+  /* OPTIONAL — Tap checkout. Leave unset and the app does not charge.
+   * The value is this project's create-payment function, nothing else.
+   * The secret key does not belong in this file. See
+   * docs/payments-tap.md.
+   *
+   * CREATE_PAYMENT_URL: "https://YOUR-PROJECT-REF.supabase.co/functions/v1/create-payment"
+   */
+
   /* OPTIONAL — Apple sign-in.
    *
    * A SEPARATE SWITCH FROM SUPABASE ITSELF, because Apple Sign-In needs an

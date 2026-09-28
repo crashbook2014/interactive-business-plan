@@ -73,7 +73,7 @@ each is off for a reason:
 
 | Still off | Where | What it needs |
 |---|---|---|
-| **Payments** | `PAYMENT_LIVE = false` in `app/index.html` | Merchant approval from a payment gateway — Tap and Moyasar are both applied for, first one wins; see `docs/payments.md`. Then the server work. Until then a reader can reach a paywall and cannot pay — decide whether to launch free-only or wait |
+| **Payments** | `FREE_NOW = true` and `CREATE_PAYMENT_URL` unset | Tap is the gateway. Sandbox setup is `docs/payments-tap.md`. Until the secrets are set, the pay button stays the prototype and nothing is charged |
 | **Subscriptions** | `SUBSCRIPTIONS_LIVE = false` | Same |
 | **The lawyer desk** | `LAWYER_DESK.live = false` | A real lawyer, a real turnaround time, and an answer to who reviewed the 29 claims |
 | **The AI** | `ANALYZE_URL: ""` | `docs/enable-ai-runbook.md` — a Supabase project, an Anthropic key, and a CSP edit |

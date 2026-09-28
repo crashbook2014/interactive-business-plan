@@ -1,0 +1,44 @@
+# Wodouh — payments smoke check.
+#
+# The agent sandbox cannot reach *.supabase.co, so this runs the check from
+# GitHub. It never sends a secret and never creates a charge.
+#
+# What each answer means:
+#   tap-webhook, unsigned POST
+#     503 not_configured  -> TAP_SECRET_KEY (or the service role) is not set
+#     503 misconfigured   -> key mode and PAYMENT_MODE / TAP_PUBLIC_KEY disagree
+#     401 bad_signature   -> configured: secrets present, modes agree, and an
+#                            unsigned delivery is refused, as it must be
+#   create-payment, no user session
+#     404                 -> not deployed
+#     401                 -> deployed and refusing anonymous callers
+name: payments smoke
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the payment endpoints
+        env:
+          BASE: https://nkgjgpageqohalerccfu.supabase.co/functions/v1
+        run: |
+          set -u
+          hook=$(curl -s -o hook.json -w '%{http_code}' -X POST "$BASE/tap-webhook" \
+                   -H 'content-type: application/json' -d '{"id":"chg_smoke0000000000"}')
+          echo "tap-webhook: HTTP $hook $(cat hook.json)"
+          pay=$(curl -s -o pay.json -w '%{http_code}' -X POST "$BASE/create-payment" \
+                  -H 'content-type: application/json' -d '{"plan_id":"plan_review"}')
+          echo "create-payment (anonymous): HTTP $pay $(cat pay.json)"
+          {
+            echo "### Payments smoke"
+            echo "- tap-webhook: \`$hook\` \`$(cat hook.json)\`"
+            echo "- create-payment (anonymous): \`$pay\` \`$(cat pay.json)\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$pay" = "404" ]; then echo "::error::create-payment is not deployed"; exit 1; fi
+          if grep -q not_configured hook.json; then echo "::error::payment secrets are not set"; exit 1; fi
+          if grep -q misconfigured hook.json; then echo "::error::key mode and PAYMENT_MODE disagree"; exit 1; fi
+          if [ "$hook" != "401" ]; then echo "::error::unexpected webhook answer"; exit 1; fi
+          echo "Configured: secrets set, modes agree, unsigned deliveries refused."

@@ -34,6 +34,7 @@ const ORDER = [
   "scan.test.js",
   "deploy-bundle.test.js",
   "schema.test.js",
+  "tap.test.js",
   "rls.test.js",
   "calc-fuzz.test.js",
   "routing.test.js",

@@ -95,7 +95,10 @@ for (const t of tables) {
      limit the table exists to record. Erasure is at account granularity, which
      cascades from auth.users. */
                     admins: 1, app_flags: 2, flag_audit: 1,
-                    launch_blockers: 2, scan_events: 2 };
+                    launch_blockers: 2, scan_events: 2,
+  /* orders: the reader may see their own checkouts. Writes are the Edge
+     Functions, so there is no insert/update/delete policy. */
+                    orders: 1 };
   const need = PARTIAL[t] || 4;
   ok(ops.length >= need,
      `${t}: reachable by clients, so it carries ${ops.length}/${need} policies (${ops.join(", ") || "none"})`);

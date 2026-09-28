@@ -182,6 +182,9 @@ function editCsp(file, label) {
 function edit(file, label) {
   const before = readFileSync(file, "utf8");
 
+  /* A Tap public key already in the block is public by design. Keep it.
+     A secret key must not be copied forward; only pk_test_ / pk_live_. */
+  const keptPub = (before.match(/TAP_PUBLIC_KEY:\s*"(pk_(?:test|live)_[A-Za-z0-9]+)"/) || [])[1];
   let after = before.replace(CFG, (m, open, close) =>
     open + "\n" +
     "  SUPABASE_URL: " + q(host) + ",\n" +
@@ -190,7 +193,9 @@ function edit(file, label) {
     "  /* Uncomment once supabase/functions/analyze is deployed AND you have read\n" +
     "     docs/claude-analysis.md - it changes what the privacy copy must say.\n" +
     "  ANALYZE_URL: " + q(host + "/functions/v1/analyze") + ", */\n" +
-    "  ANALYZE_URL: \"\"\n" + close);
+    "  ANALYZE_URL: \"\"" + (keptPub ? ",\n" : "\n") +
+    (keptPub ? "  TAP_PUBLIC_KEY: " + q(keptPub) + "\n" : "") +
+    close);
 
   after = after.replace(CSP, (m, lead, current) => lead + cspValue(current, host));
 
