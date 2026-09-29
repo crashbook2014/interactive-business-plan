@@ -209,10 +209,13 @@ async function seedTermination(p){
     const src2 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
     const sub = src2.match(/name:"(\w+)"[^}]*sub:true/);
     ok(!!sub, `the catalogue does sell a subscription (${sub && sub[1]})`);
+    /* Business is sold as one payment for 30 days since September 2026
+       (plan_biz keeps its internal `sub` flag so consumer paywalls filter it
+       out). What the Terms owe the buyer is the term and the fact that it
+       does not renew. */
     for (const [what, en, ar] of [
-      ["the recurring charge", /subscription|recurring/i, /اشتراك/],
-      ["its billing period",   /each calendar month|monthly/i, /كل شهر|شهري/],
-      ["how to cancel",        /cancel/i, /إلغاء|تلغيه/],
+      ["the Business term",    /paid once for 30 days/i, /مرة واحدة لمدة 30 يومًا/],
+      ["that it does not renew", /does not renew/i, /لا يتجدّد تلقائيًا/],
       ["the pack's expiry",    /twelve months/i, /اثني عشر شهرًا/],
       ["that unused reviews lapse", /expire/i, /ينتهي|تنتهي/],
     ]) {
@@ -221,8 +224,8 @@ async function seedTermination(p){
          (en.test(terms) ? "" : " — missing in English") +
          (ar.test(terms) ? "" : " — missing in Arabic"));
     }
-    ok(/renews automatically|until you cancel/i.test(terms),
-       "and that it renews until cancelled rather than lapsing on its own");
+    ok(!/renews automatically|until you cancel/i.test(terms),
+       "and nowhere still says it renews until cancelled");
   }
 
   /* ---- the trust surface says only what is true.
@@ -673,21 +676,17 @@ async function seedTermination(p){
     ok(/one-time code/i.test(terms) && /برمز لمرة واحدة/.test(terms),
        "and name email sign-in alongside Google and Apple");
 
-    ok(!/Cancellation takes effect immediately/i.test(terms) && !/ويسري فور طلبه/.test(terms),
-       "the Terms no longer say cancellation takes effect immediately while also saying access continues");
-    /* Both documents must describe the end of a subscription the same way. */
-    for (const [what, re] of [
-      ["access continues to the end of the paid period", /end of the period you (have )?(already )?paid for/i],
-      ["a fourteen-day full refund of the first payment", /fourteen days/i],
-    ]) {
-      ok(re.test(terms),  `the Terms state ${what}`);
-      ok(re.test(refund), `and so does the Refund Policy`);
-    }
-    /* The exception has to be reachable from the rule, not merely true
-       somewhere else — the contradiction was that Terms stated the rule flatly
-       and never mentioned the carve-out. */
-    ok(/Refund Policy<\/a>: cancel within fourteen days/i.test(terms),
-       "and the Terms link the Refund Policy at the point the exception applies");
+    /* Business stopped being a subscription in September 2026: one payment
+       for 30 days, no renewal. Both documents must say so, and neither may
+       still describe an automatic monthly charge. */
+    ok(/paid once for 30 days/i.test(terms) && /paid once for 30 days/i.test(refund),
+       "the Terms and the Refund Policy both describe Business as paid once for 30 days");
+    ok(/does not renew/i.test(terms) && /does not renew/i.test(refund),
+       "and both say it does not renew");
+    ok(!/renews automatically|recurring monthly subscription/i.test(terms),
+       "and the Terms no longer describe an automatic monthly charge");
+    ok(/fourteen days|14 days/i.test(terms) && /14 days/i.test(refund),
+       "and both state the fourteen-day window for an unused pass");
   }
 
   /* --------------------------------- the pricing doc names every real price */
@@ -1325,14 +1324,26 @@ async function seedTermination(p){
     ok(app.includes(`href="../${name}/"`), `the app links to /${name}/`);
   }
 
-  /* ---- the refund page and the paywall are the same promise, twice */
-  console.log("\n— the refund page does not contradict the guarantee on the paywall");
+  /* ---- the refund page and the paywall are the same promise, twice.
+     September 2026, the founder's rule: every request is reviewed, a mistake
+     of ours is always refunded in full, and a product delivered as described
+     is not refunded for disliking the outcome. The paywall and the page must
+     make that same promise, and neither may still say "no questions". */
+  console.log("\n— the refund page and the paywall make the same promise");
   const guarantee = await p.evaluate(() => ({ ar: T.guarantee.ar, en: T.guarantee.en }));
   const refundAr = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
-  ok(/no questions/i.test(guarantee.en) && /no questions/i.test(refundAr),
-     "both say 'no questions' — the page honours the promise rather than quietly narrowing it");
-  ok(!/non-refundable|غير قابل للاسترجاع|لا يُسترجع/i.test(refundAr),
-     "and the refund page contains no blanket non-refundable clause that would contradict it");
+  ok(/we got it wrong/i.test(guarantee.en) && /If we got it wrong, we refund you in full/i.test(refundAr),
+     "both promise a full refund when the mistake is ours");
+  ok(/الخطأ منّا/.test(guarantee.ar) && /إذا كان الخطأ منّا، نرجّع لك المبلغ كاملًا/.test(refundAr),
+     "in Arabic too, in the same words");
+  ok(!/no questions|بدون أسئلة/i.test(guarantee.en + guarantee.ar + refundAr),
+     "and neither still promises a refund with no questions");
+  ok(/reviewed by a person/i.test(refundAr) && /يقرأه شخص منّا/.test(refundAr),
+     "the page says every request is reviewed");
+  ok(/did not like the outcome/i.test(refundAr),
+     "and says plainly that disliking a delivered outcome is not refunded");
+  ok(/statutory rights/i.test(refundAr) && /حقوقك النظامية/.test(refundAr),
+     "while statutory consumer rights still stand, in both languages");
   ok(/14/.test(refundAr), "the refund window is stated as a number rather than left vague");
 
   /* ================================================================
