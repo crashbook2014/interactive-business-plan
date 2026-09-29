@@ -682,8 +682,16 @@
       width:6px;height:6px;border-radius:99px;background:var(--teal)}
   .letterfoot{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);
       font-size:12px;color:var(--ink-2);text-align:center}
-  .letter-actions{display:flex;gap:10px;margin-top:14px}
-  .letter-actions .primary{margin-top:0;flex:1}
+  /* The secondary actions share one row as equal thirds and the primary
+     action takes the full width under them. Four buttons abreast wrapped
+     "Print or save as PDF" onto four lines on a phone. */
+  /* The free end-of-service figure on the termination paywall: set apart
+     from "What paying unlocks" so it reads as given, not sold. */
+  .pw-free-eos{margin:0 0 14px;padding:12px 14px;border-radius:var(--r-md);background:var(--teal-soft);
+               color:var(--teal-ink);font-size:14px;line-height:1.7;font-weight:600}
+  .letter-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .letter-actions > *{flex:1 1 0;min-width:0}
+  .letter-actions .primary{margin-top:0;flex-basis:100%}
   .ghost{flex:1;border:2px solid var(--teal);color:var(--teal);border-radius:var(--r-lg);padding:13px;font-weight:700;font-size:15px}
 
   /* greeting + notices */

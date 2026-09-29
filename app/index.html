@@ -2550,7 +2550,7 @@ const T = {
   lt_sub:{ar:"صيغة جاهزة ترسلها للطرف الآخر، بأسلوب مهذب وواثق",en:"Polite, confident wording you can send as is"},
   lt_ready:{ar:"خطابك جاهز، انسخه وأرسله",en:"Ready to copy and send"},
   pw_title:{ar:"خطاب التفاوض",en:"The negotiation letter"},
-  pw_free_note:{ar:"تقييمك والتنبيهات مجانية دائمًا، الخطاب إضافة اختيارية.",en:"Your score and flags are always free. The letter is an optional extra."},
+  pw_free_note:{ar:"تقييمك وأخطر تنبيه مجانيان دائمًا، والخطاب إضافة اختيارية.",en:"Your score and your most serious flag are always free. The letter is an optional extra."},
   pw_lock:{ar:"النص الكامل يفتح بعد الدفع، جاهز للإرسال",en:"The full text is available after payment, ready to send"},
   /* One key for all three modes asked a reader buying a 325 SAR case file to
      confirm a purchase of a letter. The most consequential button in the
@@ -2662,6 +2662,7 @@ const T = {
               en:"Unlimited reviews for one seat for 30 days, paid once. It does not renew on its own."},
   plan_30d:{ar:"لـ 30 يوم",en:"for 30 days"},
   plan_review_letter:{ar:"المراجعة والخطاب",en:"Review and letter"},
+  plan_save:{ar:"توفّر {amt}",en:"Save {amt}"},
   plan_review_letter_d:{ar:"المراجعة الكاملة لعقدك، وخطاب التفاوض المبني عليها، بسعر أقل من شرائهم منفصلين",
                         en:"The full review of your contract and the negotiation letter built on it, for less than the two separately"},
   plan_bundle:{ar:"الحزمة الكاملة",en:"Full bundle"},
@@ -2683,6 +2684,10 @@ const T = {
   acc_pack_left:{ar:"باقي لك {n} مراجعات من الباقة، تنتهي في {d}.",
                  en:"{n} reviews left in your pack. They expire on {d}."},
   pw_rev_title:{ar:"المراجعة الكاملة لعقدك",en:"The full review of your contract"},
+  pw_sh_eos:{ar:"مكافأة نهاية الخدمة: {amt} تقريبًا، مجانًا، بنفس حسبة الحاسبة. باقي حقوقك ومجموعها والملف وخطاب صاحب العمل في التقييم الكامل.",
+             en:"End-of-service award: about {amt}, free, worked out the same way as the calculator. Your other entitlements, their total, the case file and the employer letter are in the full assessment."},
+  pw_sh_eos_c:{ar:"مكافأة نهاية الخدمة: {amt} تقريبًا، مجانًا، إذا قُبل وصف إنهاء عقدك كما أدخلته. باقي حقوقك ومجموعها والملف وخطاب صاحب العمل في التقييم الكامل.",
+               en:"End-of-service award: about {amt}, free, if the way your contract ended is accepted as you entered it. Your other entitlements, their total, the case file and the employer letter are in the full assessment."},
   pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانية دائمًا.",
                en:"The score, the decision and the first flag are always free."},
   pw_pay_rev:{ar:"افتح المراجعة",en:"Unlock the review"},
@@ -2792,8 +2797,8 @@ const T = {
   desk_meta:{ar:"عقدك يُقرأ على جهازك",en:"Your contract is read on your device"},
   paste_hint:{ar:"الصق نص العقد كاملًا، 40 حرفًا على الأقل.",en:"Paste the full contract text (at least 40 characters)."},
   pl_title:{ar:"الخطط والأسعار",en:"Plans and pricing"},
-  pl_sub:{ar:"التقييم والتنبيهات مجانية دائمًا. ادفع فقط لما تحتاج مخرجات أو فريقًا.",
-          en:"Scores and flags are always free. You pay only when you need the outputs or a team account."},
+  pl_sub:{ar:"التقييم وأخطر تنبيه مجانيان دائمًا. ادفع فقط لما تحتاج المراجعة كاملة أو مخرجات أو حساب فريق.",
+          en:"Your score and your most serious flag are always free. You pay only for the full review, the documents, or a team account."},
   pl_month:{ar:"شهري",en:"Monthly"}, pl_year:{ar:"سنوي",en:"Annual"},
   pl_save:{ar:"شهران مجانًا",en:"2 months free"},
   pl_current:{ar:"خطتك الحالية",en:"Your plan"},
@@ -13478,6 +13483,14 @@ function ladderBreaks(){
    be bought, because its price is honest information about what is coming and
    nothing about it is promised for today. The difference is whether the reader
    would be misled by seeing it. */
+/* What review + letter saves against the two bought separately, derived
+   from the catalogue so the badge cannot drift from the prices. Zero for
+   every other plan, and for an upgrade priced at the difference. */
+function pairSaving(p){
+  if (!p || p.name !== BUNDLE.name || p.up) return 0;
+  const one = n => ([].concat(PLANS_REVIEW, PLANS).find(x => x.name === n) || {}).amt || 0;
+  return Math.max(0, one("plan_review") + one("plan_letter") - BUNDLE.amt);
+}
 function sellable(p){ return !p.lawyer || LAWYER_DESK.live; }
 function buyable(p){ return sellable(p) && !p.soon; }
 /* The plans Tap is allowed to charge, read from the same objects the
@@ -14033,7 +14046,7 @@ function renderPaywall(){
     const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>
-       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
+       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:pairSaving(pl)?`<span class="badge save">${t("plan_save").replace("{amt}", priceLabel(pairSaving(pl)))}</span>`:""}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
        <span class="price">${priceLabel(pl.amt, pl.monthly)}</span>`;
     /* An unbuyable card is inert rather than absent: it can be read and not
        selected, so its price informs without becoming a dead control that
@@ -14083,6 +14096,9 @@ function renderPwShape(isTerm, isCase){
   if (!host) return;
   if (!isTerm && !isCase){ host.hidden = true; host.innerHTML = ""; return; }
   const items = [];
+  /* Shown ABOVE "What paying unlocks", not in its list: it is the part that
+     is free, and filing it under the lock would say the opposite. */
+  let freeLine = "";
   if (isTerm){
     const lines = termLines(), gaps = termUnassessed();
     const law = lines.filter(l => l.kind === "law").length;
@@ -14092,6 +14108,17 @@ function renderPwShape(isTerm, isCase){
        Nothing found means there is nothing to describe, so the shape is empty
        and the pay button beside it is disabled. */
     if (!lines.length){ host.hidden = true; host.innerHTML = ""; return; }
+    /* THE END-OF-SERVICE FIGURE IS FREE HERE, as it is in the calculator.
+       Founder's decision, September 2026: someone who has just been let go
+       should not be asked for 349 SAR before seeing a single riyal, and the
+       one figure the free calculator already gives away is the honest one to
+       show. Everything else stays behind the lock: the other claims, their
+       total, the case file and the employer letter. */
+    const eosLine = lines.find(l => l.key === "tm_m_eos");
+    if (eosLine){
+      freeLine = t(eosLine.contested ? "pw_sh_eos_c" : "pw_sh_eos")
+        .replace("{amt}", fmtNum(Math.round(eosLine.amt)) + " " + t("eos_sar"));
+    }
     items.push([fmtNum(lines.length), t("pw_sh_found")
       .replace("{n}", countNoun("cnt_ent", lines.length))
       .replace("{list}", lines.map(l => t(l.key)).join(sep)), false]);
@@ -14110,7 +14137,8 @@ function renderPwShape(isTerm, isCase){
     items.push(["✓", t("pw_sh_each"), false]);
   }
   host.hidden = false;
-  host.innerHTML = `<h4>${t("pw_sh_head")}</h4><ul>` +
+  host.innerHTML = (freeLine ? `<p class="pw-free-eos">${esc(freeLine)}</p>` : "") +
+    `<h4>${t("pw_sh_head")}</h4><ul>` +
     items.map(([n, text, dim]) =>
       `<li class="${dim ? "dim" : ""}"><span>${n}</span><span>${text}</span></li>`).join("") +
     `</ul>`;

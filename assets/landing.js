@@ -59,7 +59,7 @@ const T = {
      contract needs a free account, those two surfaces do not and say so on
      their own screens, and the free tier is real at one scan a month. Named up
      front rather than discovered at the first tap. */
-  hero_note:{ar:"التقييم والتنبيهات مجانية: فحص واحد كل شهر بحساب مجاني.",en:"The score and flags are free: one scan a month with a free account."},
+  hero_note:{ar:"التقييم وأخطر تنبيه مجانيان: فحص واحد كل شهر بحساب مجاني.",en:"The score and your most serious flag are free: one scan a month with a free account."},
   /* The hero sheet. Clause text is app/index.html SAMPLES.employment `q`,
      verbatim — the picture must be a contract the app actually reads. */
   paper_title:{ar:"عقد عمل",en:"Employment contract"},
@@ -254,8 +254,10 @@ const T = {
      directly, because it carries a link — see the note there. */
   price_vat:{ar:"السعر المعروض هو المبلغ النهائي، ولا تُضاف ضريبة.",
              en:"The price shown is the total you pay, no VAT added."},
-  price_vat_cta:{ar:"الأسعار محددة، والدفع الإلكتروني قريب يفتح. اترك رقمك وبنفتحه لك",
-                 en:"Pricing is set; checkout opens shortly. Leave your number and we'll open it for you"},
+  /* Checkout is live (Tap, September 2026), so this links to the app where
+     the purchase happens, not to a waiting list. */
+  price_vat_cta:{ar:"ادفع داخل التطبيق بمدى أو Apple Pay أو STC Pay",
+                 en:"Pay inside the app with mada, Apple Pay or STC Pay"},
   p1g:{ar:"تحصل على: التقييم، والقرار، وأول تنبيه، وحاسبة نهاية الخدمة.",
        en:"You get: the score, the decision, the first flag, and the end-of-service calculator."},
   p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
@@ -292,7 +294,7 @@ const T = {
     ["ليش التقييم مجاني؟","لأن المنتج كله قايم على إنك تثق فينا. لو كسبنا من إظهار مخاطر أكثر، ما عاد لتقييمنا معنى."],
     ["هل تُضاف ضريبة على السعر؟","لا. السعر المعروض هو المبلغ النهائي، ولا تُضاف عليه ضريبة قيمة مضافة، لأن وضوح غير مسجَّل فيها حاليًا."],
     ["وإذا ما عجبني الخطاب؟",
-     `الأسعار محددة، والدفع الإلكتروني قريب يفتح. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">اترك رقمك وبنفتحه لك</a>.`],
+     `كل طلب استرجاع نقرأه وننظر فيه. إذا كان الخطأ منّا، مثل رقم خطأ أو خطاب ناقص أو خلل منعك من استخدامه، نرجّع لك المبلغ كاملًا. وإذا وصلك الخطاب كما هو موصوف ثم ما عجبك، فقد حصلت عليه ولا يُرد المبلغ. التفاصيل في <a href="refund/">سياسة الاسترجاع</a>.`],
     ["من وين تجيبون معلوماتكم؟","من المصادر الرسمية: نظام العمل السعودي (المرسوم الملكي م/51 وتعديلاته)، ووزارة الموارد البشرية، وشبكة إيجار، ووزارة العدل. المصادر معروضة داخل التطبيق بروابطها وتاريخ مراجعتها، ونذكر رقم المادة فقط حين نتحقق منه."],
     ["متى تنصحوني بمحامي؟","حين نلقى بندًا أحمر، أو حين يكون فيه مطالبة أو مبلغ كبير، نقولها لك صراحة في شاشة النتيجة ونجهّز ملفك قبل ما تروح للمحامي."]
   ], en:[
@@ -304,7 +306,7 @@ const T = {
     ["Why is the score free?","Because the whole product rests on you trusting it. If we earned more by finding more risk, the score would stop meaning anything."],
     ["Is VAT added to the price?","No. The price shown is the total you pay, and no VAT is added, because Wodouh is not currently registered for VAT."],
     ["What if the letter isn't useful?",
-     `Pricing is set; checkout opens shortly. <a href="${"https://wa.me/966563438351?text=" + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.")}" rel="noopener" target="_blank">Leave your number and we'll open it for you</a>.`],
+     `We review every refund request. If the mistake is ours, such as a wrong figure, an incomplete letter, or a fault that stopped you using it, we refund you in full. If you received the letter as described and did not like it, you have had it and the payment is not refunded. The details are in our <a href="refund/">Refund Policy</a>.`],
     ["Where does your information come from?","Official sources: the Saudi Labor Law (Royal Decree M/51 and its amendments), the Ministry of Human Resources, the Ejar network, and the Ministry of Justice. They're listed in the app with links and review dates, and we name an article number only where we've verified it."],
     ["When do you tell me to get a lawyer?","Whenever we find a red flag, or there is a claim or a large sum involved, we say so plainly on the result screen and prepare your file before you go."]
   ]},
@@ -330,14 +332,6 @@ const T = {
            en:"Wodouh is operated as an independent Saudi activity under a Freelance Work Certificate and does not hold a Commercial Registration. We display no licence, seal or government approval that we do not hold. Contact and complaints: support@alwodouh.com"},
 };
 
-/* Same number this page's own contact section links to further down, and the
-   same one the FAQ's checkout note above links to inline (that string has to
-   stay self-contained — copyOf() in test/landing-claims.test.js evaluates T
-   as a bare object literal with no outside dependencies, so it cannot
-   reference this constant). Kept here as the one place applyLang()'s
-   price_vat rendering reads it from. */
-const CHECKOUT_WA = "https://wa.me/966563438351?text="
-  + encodeURIComponent("السلام عليكم، أبي أعرف متى يفتح الدفع الإلكتروني في وضوح.");
 
 let lang = "ar";
 const t = k => T[k][lang];
@@ -402,7 +396,7 @@ function applyLang(){
      that loop overwrites textContent on every toggle. */
   const priceVat = document.getElementById("priceVat");
   if (priceVat){
-    priceVat.innerHTML = `${t("price_vat")} <a href="${CHECKOUT_WA}" rel="noopener" target="_blank">${t("price_vat_cta")}</a>`;
+    priceVat.innerHTML = `${t("price_vat")} <a href="app/">${t("price_vat_cta")}</a>`;
   }
 }
 function toggleLang(){ lang = lang === "ar" ? "en" : "ar"; applyLang(); }
