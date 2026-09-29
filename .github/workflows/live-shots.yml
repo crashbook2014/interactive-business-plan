@@ -1,0 +1,31 @@
+# Screenshots of the live site, pushed to the live-shots branch so they can be
+# read back without downloading an artifact. Manual only.
+name: live screenshots
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Site to capture"
+        default: "https://alwodouh.com"
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Capture
+        run: node tools/live-shots.js "${{ github.event.inputs.url }}" shots
+      - name: Push to live-shots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan live-shots
+          git rm -rq --cached . 
+          git add -f shots
+          git commit -qm "live screenshots $(date -u +%FT%TZ)"
+          git push -qf origin live-shots
