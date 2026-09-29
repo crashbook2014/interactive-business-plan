@@ -42,3 +42,30 @@ jobs:
           if grep -q misconfigured hook.json; then echo "::error::key mode and PAYMENT_MODE disagree"; exit 1; fi
           if [ "$hook" != "401" ]; then echo "::error::unexpected webhook answer"; exit 1; fi
           echo "Configured: secrets set, modes agree, unsigned deliveries refused."
+
+      # What the live site is serving, as a browser without a cached copy
+      # sees it. Answers "is the paywall on in production?" from the bytes,
+      # not from main: FREE_NOW, the checkout URL, the service-worker shell
+      # hash, and the homepage's price for review + letter.
+      - name: Check what alwodouh.com serves
+        run: |
+          set -u
+          app=$(curl -sL -H 'cache-control: no-cache' "https://alwodouh.com/app/?nocache=$(date +%s)")
+          sw=$(curl -sL -H 'cache-control: no-cache' "https://alwodouh.com/app/sw.js?nocache=$(date +%s)")
+          land=$(curl -sL -H 'cache-control: no-cache' "https://alwodouh.com/assets/landing.js?nocache=$(date +%s)")
+          free=$(printf '%s' "$app" | grep -o 'let FREE_NOW = [a-z]*' | head -1)
+          pay=$(printf '%s' "$app" | grep -o 'CREATE_PAYMENT_URL: "[^"]*"' | head -1)
+          shell=$(printf '%s' "$sw" | grep -o 'SHELL_HASH = "[a-f0-9]*"' | head -1)
+          p4=$(printf '%s' "$land" | grep -o 'getElementById("p4a").innerHTML = "[0-9]*"' | head -1)
+          echo "app:     ${free:-FREE_NOW not found}"
+          echo "app:     ${pay:-CREATE_PAYMENT_URL not set}"
+          echo "sw:      ${shell:-SHELL_HASH not found}"
+          echo "landing: ${p4:-p4a price not found}"
+          {
+            echo "### alwodouh.com"
+            echo "- \`${free:-FREE_NOW not found}\`"
+            echo "- \`${pay:-CREATE_PAYMENT_URL not set}\`"
+            echo "- \`${shell:-SHELL_HASH not found}\`"
+            echo "- \`${p4:-p4a price not found}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$free" in *false*) echo "Paywall is on in production." ;; *) echo "::error::production is not serving FREE_NOW = false"; exit 1 ;; esac
