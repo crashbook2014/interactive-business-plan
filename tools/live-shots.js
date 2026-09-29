@@ -32,6 +32,44 @@ fs.mkdirSync(OUT, { recursive: true });
       await p.close();
     }
   }
+  /* THE PAYWALLS. Reaching one on the live site normally takes a signed-in
+     reader with a scan behind them. The walk below uses the live page's own
+     functions to get there: the first free scan of the built-in sample
+     contract, then the letter, review and termination paywalls. The only
+     stand-in is a local signed-in marker so navigation is not redirected to
+     the sign-in screen; nothing is sent to any server and no checkout opens.
+     What renders is the live catalogue, prices and copy. */
+  for (const lang of ["ar", "en"]) {
+    for (const mode of ["letter", "review", "case"]) {
+      const p = await b.newPage({ viewport: { width: 430, height: 932 }, deviceScaleFactor: 2,
+                                  colorScheme: "light", serviceWorkers: "block" });
+      await p.goto(BASE + "/app/?shots=" + Date.now(), { waitUntil: "networkidle", timeout: 60000 });
+      await p.waitForFunction(() => typeof show === "function", null, { timeout: 30000 });
+      const served = await p.evaluate(async ([L, mode]) => {
+        obDone = true; nat = "sa"; lang = L; applyLang();
+        authUser = { id: "00000000-0000-0000-0000-000000000000", email: "preview@alwodouh.com" };
+        authReady = Promise.resolve();
+        if (typeof WodouhAuth !== "undefined") { WodouhAuth.user = () => authUser; WodouhAuth.api = () => Promise.resolve(null); }
+        if (mode === "case") {
+          term = Object.assign(blankTerm(), { how: "employer", start: "2020-01-01", end: "2026-01-01", wage: 10000, docs: ["d_contract"] });
+        } else {
+          current = SAMPLES.employment; renderResult(); addAllPoints();
+        }
+        pwMode = mode; pwOrigin = mode === "case" ? "term" : mode; pwUpgrade = null; pwPlan = 0;
+        await new Promise(r => setTimeout(r, 1500));   /* flags arrive from the live project */
+        const ok = renderPaywall(); if (ok) show("paywall");
+        return { ok, free: FREE_NOW, live: PAYMENT_LIVE,
+                 plans: activePlans().map(x => x.name + ":" + x.amt),
+                 guarantee: !document.getElementById("pwGuarantee").hidden };
+      }, [lang, mode]);
+      await p.waitForTimeout(500);
+      await p.evaluate(() => document.getElementById("plans").scrollIntoView({ block: "center" }));
+      const file = `${OUT}/paywall-${mode}-${lang}.png`;
+      await p.screenshot({ path: file });
+      shots.push({ file, ...served });
+      await p.close();
+    }
+  }
   fs.writeFileSync(`${OUT}/served.json`, JSON.stringify({ base: BASE, at: new Date().toISOString(), shots }, null, 2));
   console.log(JSON.stringify(shots, null, 2));
   await b.close();
