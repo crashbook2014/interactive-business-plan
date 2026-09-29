@@ -56,14 +56,19 @@ fs.mkdirSync(OUT, { recursive: true });
           current = SAMPLES.employment; renderResult(); addAllPoints();
         }
         pwMode = mode; pwOrigin = mode === "case" ? "term" : mode; pwUpgrade = null; pwPlan = 0;
-        await new Promise(r => setTimeout(r, 1500));   /* flags arrive from the live project */
+        /* What openPaywall() does first: load the live flags from the project.
+           Skipping this renders the compiled default ("checkout opens
+           shortly") instead of what a real visitor sees. */
+        const flagsLoaded = await Promise.race([ensureFlags(), new Promise(r => setTimeout(() => r("timeout"), 8000))]);
         const ok = renderPaywall(); if (ok) show("paywall");
-        return { ok, free: FREE_NOW, live: PAYMENT_LIVE,
+        window.__flagsLoaded = flagsLoaded;
+        return { ok, flags: String(window.__flagsLoaded), free: FREE_NOW, live: PAYMENT_LIVE,
                  plans: activePlans().map(x => x.name + ":" + x.amt),
                  guarantee: !document.getElementById("pwGuarantee").hidden };
       }, [lang, mode]);
       await p.waitForTimeout(500);
-      await p.evaluate(() => document.getElementById("plans").scrollIntoView({ block: "center" }));
+      await p.evaluate(() => document.getElementById("pwGuarantee").scrollIntoView({ block: "start" }));
+      await p.evaluate(() => window.scrollBy(0, -40));
       const file = `${OUT}/paywall-${mode}-${lang}.png`;
       await p.screenshot({ path: file });
       shots.push({ file, ...served });
