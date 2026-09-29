@@ -6443,18 +6443,37 @@ const FU_ARC = [
   ["fu_a3", "fu_a3d", false],
   ["fu_a4", "fu_a4d", false]
 ];
+/* Line icons for the roadmap cards, drawn in the same 24px stroke as the tab
+   bar rather than emoji: an emoji is a different typeface on every phone and
+   reads as a chat message, not as a firm's document. Static markup, never
+   reader text, which is why it may go through innerHTML. */
+const FU_ICONS = {
+  scan:  '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  vault: '<path d="M3 4h18v4H3z"/><path d="M4.5 8v12h15V8"/><path d="M10 12h4"/>',
+  ask:   '<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M10 9a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1v.4"/><path d="M12 14.2h.01"/>',
+  alert: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  diff:  '<path d="M4 4h7v11H4z"/><path d="M13 9h7v11h-7z"/><path d="M6.5 8h2M6.5 11h2M15.5 13h2M15.5 16h2"/>',
+  rights:'<path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>',
+  time:  '<path d="M4 6h16v14H4z"/><path d="M4 10h16M8 3v4M16 3v4"/><path d="M8 14h3"/>',
+  watch: '<path d="M12 4l9 16H3z"/><path d="M12 10v4.5"/><path d="M12 17.3h.01"/>',
+  nego:  '<path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/>',
+  docs:  '<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/><path d="M13 20h7"/>',
+  loan:  '<path d="M3 9l9-5 9 5z"/><path d="M5.5 9v8.5M10 9v8.5M14 9v8.5M18.5 9v8.5"/><path d="M3 20h18"/>',
+  seats: '<circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 14.4A5.5 5.5 0 0 1 20.5 20"/>',
+  tmpl:  '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7"/>'
+};
 const FU_CARDS = [
-  ["📸", "fu_scan",   "fu_scan_d"],
-  ["🗂️", "fu_vault",  "fu_vault_d"],
-  ["🧠", "fu_ask",    "fu_ask_d"],
-  ["🔔", "fu_alert",  "fu_alert_d"],
-  ["🔄", "fu_diff",   "fu_diff_d"],
-  ["⚖️", "fu_rights", "fu_rights_d"],
-  ["📅", "fu_time",   "fu_time_d"],
-  ["🚨", "fu_watch",  "fu_watch_d"],
-  ["🤝", "fu_nego",   "fu_nego_d"],
-  ["✍️", "fu_docs",   "fu_docs_d"],
-  ["🏦", "fu_loan",   "fu_loan_d"],
+  ["scan", "fu_scan",   "fu_scan_d"],
+  ["vault", "fu_vault",  "fu_vault_d"],
+  ["ask", "fu_ask",    "fu_ask_d"],
+  ["alert", "fu_alert",  "fu_alert_d"],
+  ["diff", "fu_diff",   "fu_diff_d"],
+  ["rights", "fu_rights", "fu_rights_d"],
+  ["time", "fu_time",   "fu_time_d"],
+  ["watch", "fu_watch",  "fu_watch_d"],
+  ["nego", "fu_nego",   "fu_nego_d"],
+  ["docs", "fu_docs",   "fu_docs_d"],
+  ["loan", "fu_loan",   "fu_loan_d"],
   /* MOVED HERE OUT OF THE BUSINESS WORKSPACE, where both were drawn as if they
      already worked. Neither is a data problem. Seats need a multi-tenant
      backend that does not exist — every policy in the schema is one user's
@@ -6464,8 +6483,8 @@ const FU_CARDS = [
      working" into what it means for the company issuing it is a different
      reading, not a bigger one. This screen is where the product keeps what it
      has not built. */
-  ["👥", "fu_seats",  "fu_seats_d"],
-  ["📄", "fu_tmpl",   "fu_tmpl_d"]
+  ["seats", "fu_seats",  "fu_seats_d"],
+  ["tmpl", "fu_tmpl",   "fu_tmpl_d"]
 ];
 /* `true` means it works TODAY and must never carry a "soon" badge. The four
    that do are the reason this list is here: a roadmap that leaves a reader
@@ -6528,7 +6547,8 @@ function renderFuture(){
     card.className = "fu-card";
     const ic = document.createElement("div");
     ic.className = "fu-ic";
-    ic.textContent = icon;
+    ic.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ` +
+                   `stroke-linecap="round" stroke-linejoin="round">${FU_ICONS[icon] || ""}</svg>`;
     ic.setAttribute("aria-hidden", "true");
     const body = document.createElement("div");
     const b = document.createElement("b");
