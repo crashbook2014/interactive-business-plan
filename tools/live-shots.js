@@ -75,6 +75,55 @@ fs.mkdirSync(OUT, { recursive: true });
       await p.close();
     }
   }
+  /* CONVERSION WALK (branch claude/conversion-shots): the free surfaces and
+     the journey screens, full page, ar+en. Each shot is independent; a
+     failure is recorded, not fatal. Same local signed-in marker as above. */
+  const walk = [
+    ["home", `show("home")`],
+    ["result", `current = SAMPLES.employment; renderResult(); show("result")`],
+    ["clauses", `current = SAMPLES.employment; renderResult(); addAllPoints(); renderClauses(); show("clauses")`],
+    ["letter", `current = SAMPLES.employment; renderResult(); addAllPoints(); show("letter"); try{renderLetter()}catch(e){}`],
+    ["term", `term = blankTerm(); show("term"); try{renderTermHow()}catch(e){}`],
+    ["termres", `term = Object.assign(blankTerm(), { how: "employer", start: "2020-01-01", end: "2026-01-01", wage: 10000, docs: ["d_contract"] }); show("termres"); renderTermResult()`],
+    ["eos", `show("eos"); try{renderEos()}catch(e){}`],
+    ["rights", `show("rights")`],
+    ["plans", `await ensureFlags().catch(()=>{}); renderPlans(); show("plans")`],
+    ["account", `show("account")`],
+  ];
+  for (const lang of ["ar", "en"]) {
+    for (const [name, code] of walk) {
+      const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
+                                  colorScheme: "light", serviceWorkers: "block" });
+      try {
+        await p.goto(BASE + "/app/?shots=" + Date.now(), { waitUntil: "networkidle", timeout: 60000 });
+        await p.waitForFunction(() => typeof show === "function", null, { timeout: 30000 });
+        const r = await p.evaluate(async ([L, code]) => {
+          obDone = true; nat = "sa"; lang = L; applyLang();
+          authUser = { id: "00000000-0000-0000-0000-000000000000", email: "preview@alwodouh.com" };
+          authReady = Promise.resolve();
+          if (typeof WodouhAuth !== "undefined") { WodouhAuth.user = () => authUser; WodouhAuth.api = () => Promise.resolve(null); }
+          try { await (new Function("return (async()=>{" + code + "})()"))(); } catch (e) { return { err: String(e) }; }
+          const a = document.querySelector(".screen.active");
+          return { active: a && a.id, text: a ? a.innerText.slice(0, 6000) : "" };
+        }, [lang, code]);
+        await p.waitForTimeout(900);
+        const file = `${OUT}/walk-${name}-${lang}.png`;
+        await p.screenshot({ path: file, fullPage: true });
+        shots.push({ file, ...r });
+      } catch (e) { shots.push({ file: `walk-${name}-${lang}`, err: String(e) }); }
+      await p.close();
+    }
+  }
+  for (const pg of ["refund", "terms"]) {
+    const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, serviceWorkers: "block" });
+    try {
+      await p.goto(BASE + "/" + pg + "/?shots=" + Date.now(), { waitUntil: "networkidle", timeout: 60000 });
+      const text = await p.evaluate(() => document.body.innerText);
+      await p.screenshot({ path: `${OUT}/policy-${pg}.png`, fullPage: true });
+      shots.push({ file: `${OUT}/policy-${pg}.png`, text: text.slice(0, 20000) });
+    } catch (e) { shots.push({ file: `policy-${pg}`, err: String(e) }); }
+    await p.close();
+  }
   fs.writeFileSync(`${OUT}/served.json`, JSON.stringify({ base: BASE, at: new Date().toISOString(), shots }, null, 2));
   console.log(JSON.stringify(shots, null, 2));
   await b.close();
