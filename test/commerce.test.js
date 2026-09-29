@@ -833,15 +833,24 @@ async function seedTermination(p){
     if (lang === "ar") toggleLang();
     await openTermResult();
     const scr = document.getElementById("screen-paywall");
+    const eos = termLines().find(l => l.key === "tm_m_eos");
     return { text: scr.textContent, html: scr.innerHTML,
              shape: document.getElementById("pwShape").textContent,
-             hidden: document.getElementById("pwShape").hidden };
+             hidden: document.getElementById("pwShape").hidden,
+             eos: eos ? Math.round(eos.amt) : 0,
+             others: termLines().filter(l => l.key !== "tm_m_eos").map(l => Math.round(l.amt)),
+             total: Math.round(termTotal()) };
   });
-  /* The termination assessment's own figures, in both numeral systems. The
-     wage is an input the reader gave us; the computed amounts are not. */
-  const AMOUNTS = ["66,000", "٦٦٬٠٠٠", "24,000", "٢٤٬٠٠٠", "4,000", "٤٬٠٠٠"];
-  const leaked = AMOUNTS.filter(a => before.text.includes(a) || before.html.includes(a));
-  ok(leaked.length === 0, `no computed amount is in the paywall DOM${leaked.length ? " — " + leaked.join(", ") : ""}`);
+  /* September 2026, founder's decision: the end-of-service award is shown
+     free on this paywall, as it already is in the free calculator. Every
+     OTHER computed figure, and the total, must still stay behind the lock.
+     Checked in both numeral systems. */
+  const fmt = n => [n.toLocaleString("en-US"), n.toLocaleString("ar-SA").replace(/\u066C|,/g, "٬")];
+  ok(before.eos > 0 && fmt(before.eos).some(x => before.shape.includes(x)),
+     `the end-of-service award is shown free (${before.eos})`);
+  const locked = [...before.others, before.total].filter(n => n > 0 && n !== before.eos);
+  const leaked = locked.flatMap(fmt).filter(a => before.text.includes(a) || before.html.includes(a));
+  ok(leaked.length === 0, `no other computed amount, and no total, is in the paywall DOM${leaked.length ? " — " + leaked.join(", ") : ""}`);
   ok(!before.hidden && before.shape.length > 40,
      "the paywall describes what is behind the lock rather than showing the reader their own answers back");
   ok(/entitlement/i.test(before.shape), "the shape block names how many entitlements were found");
