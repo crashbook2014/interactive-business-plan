@@ -2217,6 +2217,9 @@
   .fu-card .badge,.fu-cat .badge,.fu-step .badge,.plan .badge,.up-photo .badge{
     border:1.5px dashed currentColor;transform:rotate(-3deg);border-radius:4px}
   html[dir="ltr"] :is(.fu-card,.fu-cat,.fu-step,.plan,.up-photo) .badge{transform:rotate(3deg)}
+  /* The saving sits beside the recommendation on the 299 card: teal, so it
+     reads as a fact about the price rather than a second opinion. */
+  .plan .badge.save{color:var(--teal-ink);background:var(--teal-soft);transform:none}
 
   /* Onboarding: the illustration sits on a ruled sheet, not a halo. */
   .ob-art::before{inset:-4% 2%;border-radius:6px;background:var(--card);border:1px solid var(--line);

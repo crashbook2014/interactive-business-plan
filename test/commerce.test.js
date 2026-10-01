@@ -1428,6 +1428,41 @@ async function seedTermination(p){
   ok(!/plan_review_letter:0\b/.test(bundlePrice.offered.join(" ")),
      `and the upgrade offer carries a real price (${bundlePrice.offered.join(", ")})`);
 
+  console.log("\n— review + letter is the recommended option");
+  /* Founder, October 2026: the 299 package carries "We recommend this" and is
+     preselected where the reader has not picked a price yet. The result
+     screen's own "Unlock the full review 199" button keeps 199 selected,
+     because that is the offer the reader just pressed. */
+  const rec = await p.evaluate(() => {
+    const out = {};
+    nat = "saudi"; current = SAMPLES.employment; current.srcText = null;
+    owned = { review:null, letter:null, case:null };
+    const look = () => {
+      const cards = [...document.querySelectorAll("#plans .plan")];
+      const recCard = cards.find(c => c.classList.contains("rec"));
+      return { recs: cards.filter(c => c.classList.contains("rec")).length,
+               rec: recCard ? recCard.textContent : "",
+               selected: (activePlans()[pwPlan] || {}).name,
+               pay: document.getElementById("payBtn").textContent };
+    };
+    letterSet = new Set(); addAllPoints(); openPaywall(); out.letter = look();
+    pwMode = "review"; pwOrigin = "review"; pwUpgrade = null; pwUpBack = null;
+    pwPlan = Math.max(0, activePlans().findIndex(x => x.pop)); renderPaywall(); out.review = look();
+    pwPlan = 0; renderPaywall(); out.scanBuy = look();
+    return out;
+  });
+  for (const k of ["letter", "review"]) {
+    ok(rec[k].recs === 1 && /Review and letter|المراجعة والخطاب/.test(rec[k].rec),
+       `${k} paywall: exactly one recommended card, and it is review + letter`);
+    ok(/recommend|نوصي/i.test(rec[k].rec) && /Save|توفّر/.test(rec[k].rec),
+       `${k} paywall: it carries both the recommendation and the saving`);
+    ok(rec[k].selected === "plan_review_letter", `${k} paywall: and it is preselected (${rec[k].selected})`);
+    ok(/review and letter|المراجعة والخطاب/i.test(rec[k].pay) && /299/.test(rec[k].pay.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))),
+       `${k} paywall: the pay button names the package (${rec[k].pay})`);
+  }
+  ok(rec.scanBuy.selected === "plan_review",
+     `the "Unlock the full review 199" entry still lands on 199 (${rec.scanBuy.selected})`);
+
   console.log("\n— the upgrade has a door, and it adds the letter");
   /* THE DEFECT: openUpgrade() was called from nowhere in the product, so every
      branch downstream of pwUpgrade was unreachable — which is how the bundle
