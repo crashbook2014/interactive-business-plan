@@ -1338,6 +1338,22 @@ async function seedTermination(p){
      of ours is always refunded in full, and a product delivered as described
      is not refunded for disliking the outcome. The paywall and the page must
      make that same promise, and neither may still say "no questions". */
+  /* The part-used review + letter refunds are worked out on the page, and
+     must be the catalogue's own arithmetic: the bundle less the single price
+     of the part that was used. */
+  {
+    const cat = await p.evaluate(() => {
+      const one = n => [].concat(PLANS_REVIEW, PLANS).find(x => x.name === n).amt;
+      return { pair: BUNDLE.amt, review: one("plan_review"), letter: one("plan_letter") };
+    });
+    const refundPage = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
+    const backAfterReview = cat.pair - cat.review, backAfterLetter = cat.pair - cat.letter;
+    ok(refundPage.includes(`${backAfterReview} SAR</strong> back`) && refundPage.includes(`${backAfterLetter} SAR</strong> back`),
+       `the refund page works out a part-used review + letter from the catalogue (${backAfterReview}, ${backAfterLetter})`);
+    ok(refundPage.includes(`${backAfterReview} ر.س`) && refundPage.includes(`${backAfterLetter} ر.س`),
+       "in Arabic too");
+  }
+
   console.log("\n— the refund page and the paywall make the same promise");
   const guarantee = await p.evaluate(() => ({ ar: T.guarantee.ar, en: T.guarantee.en }));
   const refundAr = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
@@ -1427,6 +1443,41 @@ async function seedTermination(p){
      `no plan in any mode is offered at zero${bundlePrice.zeros.length ? " — " + bundlePrice.zeros.join(", ") : ""}`);
   ok(!/plan_review_letter:0\b/.test(bundlePrice.offered.join(" ")),
      `and the upgrade offer carries a real price (${bundlePrice.offered.join(", ")})`);
+
+  console.log("\n— second conversion review: promises the product keeps");
+  {
+    const src = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
+    const landingSrc = readFileSync(path.join(ROOT, "assets/landing.js"), "utf8");
+    const paid = await p.evaluate(() => [T.acc_pay_paid.ar, T.acc_pay_paid.en].join(" "));
+    ok(!/unlimited|بلا حدود/i.test(paid),
+       "the account screen no longer promises unlimited assistant questions (askLeft caps everyone)");
+    const free = await p.evaluate(() => [T.pw_rev_free.en, T.pw_free_note.en].join(" "));
+    ok(!/first flag/i.test(free) && !/first flag/i.test(landingSrc.replace(/\/\*[\s\S]*?\*\//g, "")),
+       "neither the app nor the homepage still says \"first flag\"");
+    ok(!/launch pricing|سعر الافتتاح/.test((landingSrc.match(/soon_contact_p:[^}]*\}/) || [""])[0]),
+       "the always-visible contact block no longer sells launch pricing");
+    /* One option is not a recommendation. */
+    const single = await p.evaluate(async () => {
+      if (lang === "ar") toggleLang();
+      term = Object.assign(blankTerm(), { how:"employer", start:"2020-01-01", end:"2026-01-01", wage:10000, docs:["d_contract"] });
+      owned = { review:null, letter:null, case:null };
+      pwMode = "case"; pwOrigin = "term"; pwUpgrade = null; pwPlan = 0;
+      renderPaywall();
+      const cards = [...document.querySelectorAll("#plans .plan")];
+      const shape = document.getElementById("pwShape").textContent;
+      return { n: cards.length, rec: cards.filter(c => c.classList.contains("rec")).length,
+               badge: cards.some(c => /recommend/i.test(c.textContent)), shape,
+               needs: needList(["ctype", "termEnd"]) };
+    });
+    ok(single.n === 1 && single.rec === 0 && !single.badge,
+       `a paywall with one option carries no "We recommend this" (${single.n} card, ${single.rec} rec)`);
+    ok(/case file/i.test(single.shape) && /letter to your employer/i.test(single.shape),
+       "the case paywall names what the 349 buys: the case file and the employer letter");
+    ok(!/\b0 are Wodouh/.test(single.shape) && !/1 of them cite\b/.test(single.shape),
+       "and no \"0 are Wodouh's own reading\" or \"1 of them cite\"");
+    ok(!/،/.test(single.needs) && single.needs.split(", ").every(Boolean) && single.needs.split(", ").length === 2,
+       `an English list of missing inputs uses English commas and names every input (${single.needs})`);
+  }
 
   console.log("\n— review + letter is the recommended option");
   /* Founder, October 2026: the 299 package carries "We recommend this" and is

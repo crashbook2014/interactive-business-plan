@@ -640,7 +640,10 @@
   .plan .radio{flex:none;width:20px;height:20px;border-radius:99px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
   .plan.sel .radio{border-color:var(--teal)}
   .plan.sel .radio::after{content:"";width:10px;height:10px;border-radius:99px;background:var(--teal)}
-  .plan b{display:block;font-size:15px;color:var(--ink)}
+  /* Badges wrap under the title instead of squeezing it: the 299 card
+     carries two ("We recommend this" and "Save 49 SAR"). */
+  .plan b{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:15px;color:var(--ink)}
+  .plan b .badge{margin-inline-start:0}
   .plan span{font-size:12px;color:var(--ink-2);line-height:1.5;display:block}
   .plan .price{margin-inline-start:auto;font-family:var(--en);font-weight:800;font-size:16.5px;color:var(--teal-ink);white-space:nowrap}
   .plan.alt{padding:9px 15px;border-style:dashed;background:transparent}
