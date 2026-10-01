@@ -209,10 +209,13 @@ async function seedTermination(p){
     const src2 = readFileSync(path.join(ROOT, "app/index.html"), "utf8");
     const sub = src2.match(/name:"(\w+)"[^}]*sub:true/);
     ok(!!sub, `the catalogue does sell a subscription (${sub && sub[1]})`);
+    /* Business is sold as one payment for 30 days since September 2026
+       (plan_biz keeps its internal `sub` flag so consumer paywalls filter it
+       out). What the Terms owe the buyer is the term and the fact that it
+       does not renew. */
     for (const [what, en, ar] of [
-      ["the recurring charge", /subscription|recurring/i, /اشتراك/],
-      ["its billing period",   /each calendar month|monthly/i, /كل شهر|شهري/],
-      ["how to cancel",        /cancel/i, /إلغاء|تلغيه/],
+      ["the Business term",    /paid once for 30 days/i, /مرة واحدة لمدة 30 يومًا/],
+      ["that it does not renew", /does not renew/i, /لا يتجدّد تلقائيًا/],
       ["the pack's expiry",    /twelve months/i, /اثني عشر شهرًا/],
       ["that unused reviews lapse", /expire/i, /ينتهي|تنتهي/],
     ]) {
@@ -221,8 +224,8 @@ async function seedTermination(p){
          (en.test(terms) ? "" : " — missing in English") +
          (ar.test(terms) ? "" : " — missing in Arabic"));
     }
-    ok(/renews automatically|until you cancel/i.test(terms),
-       "and that it renews until cancelled rather than lapsing on its own");
+    ok(!/renews automatically|until you cancel/i.test(terms),
+       "and nowhere still says it renews until cancelled");
   }
 
   /* ---- the trust surface says only what is true.
@@ -673,21 +676,17 @@ async function seedTermination(p){
     ok(/one-time code/i.test(terms) && /برمز لمرة واحدة/.test(terms),
        "and name email sign-in alongside Google and Apple");
 
-    ok(!/Cancellation takes effect immediately/i.test(terms) && !/ويسري فور طلبه/.test(terms),
-       "the Terms no longer say cancellation takes effect immediately while also saying access continues");
-    /* Both documents must describe the end of a subscription the same way. */
-    for (const [what, re] of [
-      ["access continues to the end of the paid period", /end of the period you (have )?(already )?paid for/i],
-      ["a fourteen-day full refund of the first payment", /fourteen days/i],
-    ]) {
-      ok(re.test(terms),  `the Terms state ${what}`);
-      ok(re.test(refund), `and so does the Refund Policy`);
-    }
-    /* The exception has to be reachable from the rule, not merely true
-       somewhere else — the contradiction was that Terms stated the rule flatly
-       and never mentioned the carve-out. */
-    ok(/Refund Policy<\/a>: cancel within fourteen days/i.test(terms),
-       "and the Terms link the Refund Policy at the point the exception applies");
+    /* Business stopped being a subscription in September 2026: one payment
+       for 30 days, no renewal. Both documents must say so, and neither may
+       still describe an automatic monthly charge. */
+    ok(/paid once for 30 days/i.test(terms) && /paid once for 30 days/i.test(refund),
+       "the Terms and the Refund Policy both describe Business as paid once for 30 days");
+    ok(/does not renew/i.test(terms) && /does not renew/i.test(refund),
+       "and both say it does not renew");
+    ok(!/renews automatically|recurring monthly subscription/i.test(terms),
+       "and the Terms no longer describe an automatic monthly charge");
+    ok(/fourteen days|14 days/i.test(terms) && /14 days/i.test(refund),
+       "and both state the fourteen-day window for an unused pass");
   }
 
   /* --------------------------------- the pricing doc names every real price */
@@ -834,15 +833,24 @@ async function seedTermination(p){
     if (lang === "ar") toggleLang();
     await openTermResult();
     const scr = document.getElementById("screen-paywall");
+    const eos = termLines().find(l => l.key === "tm_m_eos");
     return { text: scr.textContent, html: scr.innerHTML,
              shape: document.getElementById("pwShape").textContent,
-             hidden: document.getElementById("pwShape").hidden };
+             hidden: document.getElementById("pwShape").hidden,
+             eos: eos ? Math.round(eos.amt) : 0,
+             others: termLines().filter(l => l.key !== "tm_m_eos").map(l => Math.round(l.amt)),
+             total: Math.round(termTotal()) };
   });
-  /* The termination assessment's own figures, in both numeral systems. The
-     wage is an input the reader gave us; the computed amounts are not. */
-  const AMOUNTS = ["66,000", "٦٦٬٠٠٠", "24,000", "٢٤٬٠٠٠", "4,000", "٤٬٠٠٠"];
-  const leaked = AMOUNTS.filter(a => before.text.includes(a) || before.html.includes(a));
-  ok(leaked.length === 0, `no computed amount is in the paywall DOM${leaked.length ? " — " + leaked.join(", ") : ""}`);
+  /* September 2026, founder's decision: the end-of-service award is shown
+     free on this paywall, as it already is in the free calculator. Every
+     OTHER computed figure, and the total, must still stay behind the lock.
+     Checked in both numeral systems. */
+  const fmt = n => [n.toLocaleString("en-US"), n.toLocaleString("ar-SA").replace(/\u066C|,/g, "٬")];
+  ok(before.eos > 0 && fmt(before.eos).some(x => before.shape.includes(x)),
+     `the end-of-service award is shown free (${before.eos})`);
+  const locked = [...before.others, before.total].filter(n => n > 0 && n !== before.eos);
+  const leaked = locked.flatMap(fmt).filter(a => before.text.includes(a) || before.html.includes(a));
+  ok(leaked.length === 0, `no other computed amount, and no total, is in the paywall DOM${leaked.length ? " — " + leaked.join(", ") : ""}`);
   ok(!before.hidden && before.shape.length > 40,
      "the paywall describes what is behind the lock rather than showing the reader their own answers back");
   ok(/entitlement/i.test(before.shape), "the shape block names how many entitlements were found");
@@ -1325,14 +1333,26 @@ async function seedTermination(p){
     ok(app.includes(`href="../${name}/"`), `the app links to /${name}/`);
   }
 
-  /* ---- the refund page and the paywall are the same promise, twice */
-  console.log("\n— the refund page does not contradict the guarantee on the paywall");
+  /* ---- the refund page and the paywall are the same promise, twice.
+     September 2026, the founder's rule: every request is reviewed, a mistake
+     of ours is always refunded in full, and a product delivered as described
+     is not refunded for disliking the outcome. The paywall and the page must
+     make that same promise, and neither may still say "no questions". */
+  console.log("\n— the refund page and the paywall make the same promise");
   const guarantee = await p.evaluate(() => ({ ar: T.guarantee.ar, en: T.guarantee.en }));
   const refundAr = readFileSync(path.join(ROOT, "refund/index.html"), "utf8");
-  ok(/no questions/i.test(guarantee.en) && /no questions/i.test(refundAr),
-     "both say 'no questions' — the page honours the promise rather than quietly narrowing it");
-  ok(!/non-refundable|غير قابل للاسترجاع|لا يُسترجع/i.test(refundAr),
-     "and the refund page contains no blanket non-refundable clause that would contradict it");
+  ok(/we got it wrong/i.test(guarantee.en) && /If we got it wrong, we refund you in full/i.test(refundAr),
+     "both promise a full refund when the mistake is ours");
+  ok(/الخطأ منّا/.test(guarantee.ar) && /إذا كان الخطأ منّا، نرجّع لك المبلغ كاملًا/.test(refundAr),
+     "in Arabic too, in the same words");
+  ok(!/no questions|بدون أسئلة/i.test(guarantee.en + guarantee.ar + refundAr),
+     "and neither still promises a refund with no questions");
+  ok(/reviewed by a person/i.test(refundAr) && /يقرأه شخص منّا/.test(refundAr),
+     "the page says every request is reviewed");
+  ok(/did not like the outcome/i.test(refundAr),
+     "and says plainly that disliking a delivered outcome is not refunded");
+  ok(/statutory rights/i.test(refundAr) && /حقوقك النظامية/.test(refundAr),
+     "while statutory consumer rights still stand, in both languages");
   ok(/14/.test(refundAr), "the refund window is stated as a number rather than left vague");
 
   /* ================================================================
@@ -1407,6 +1427,41 @@ async function seedTermination(p){
      `no plan in any mode is offered at zero${bundlePrice.zeros.length ? " — " + bundlePrice.zeros.join(", ") : ""}`);
   ok(!/plan_review_letter:0\b/.test(bundlePrice.offered.join(" ")),
      `and the upgrade offer carries a real price (${bundlePrice.offered.join(", ")})`);
+
+  console.log("\n— review + letter is the recommended option");
+  /* Founder, October 2026: the 299 package carries "We recommend this" and is
+     preselected where the reader has not picked a price yet. The result
+     screen's own "Unlock the full review 199" button keeps 199 selected,
+     because that is the offer the reader just pressed. */
+  const rec = await p.evaluate(() => {
+    const out = {};
+    nat = "saudi"; current = SAMPLES.employment; current.srcText = null;
+    owned = { review:null, letter:null, case:null };
+    const look = () => {
+      const cards = [...document.querySelectorAll("#plans .plan")];
+      const recCard = cards.find(c => c.classList.contains("rec"));
+      return { recs: cards.filter(c => c.classList.contains("rec")).length,
+               rec: recCard ? recCard.textContent : "",
+               selected: (activePlans()[pwPlan] || {}).name,
+               pay: document.getElementById("payBtn").textContent };
+    };
+    letterSet = new Set(); addAllPoints(); openPaywall(); out.letter = look();
+    pwMode = "review"; pwOrigin = "review"; pwUpgrade = null; pwUpBack = null;
+    pwPlan = Math.max(0, activePlans().findIndex(x => x.pop)); renderPaywall(); out.review = look();
+    pwPlan = 0; renderPaywall(); out.scanBuy = look();
+    return out;
+  });
+  for (const k of ["letter", "review"]) {
+    ok(rec[k].recs === 1 && /Review and letter|المراجعة والخطاب/.test(rec[k].rec),
+       `${k} paywall: exactly one recommended card, and it is review + letter`);
+    ok(/recommend|نوصي/i.test(rec[k].rec) && /Save|توفّر/.test(rec[k].rec),
+       `${k} paywall: it carries both the recommendation and the saving`);
+    ok(rec[k].selected === "plan_review_letter", `${k} paywall: and it is preselected (${rec[k].selected})`);
+    ok(/review and letter|المراجعة والخطاب/i.test(rec[k].pay) && /299/.test(rec[k].pay.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))),
+       `${k} paywall: the pay button names the package (${rec[k].pay})`);
+  }
+  ok(rec.scanBuy.selected === "plan_review",
+     `the "Unlock the full review 199" entry still lands on 199 (${rec.scanBuy.selected})`);
 
   console.log("\n— the upgrade has a door, and it adds the letter");
   /* THE DEFECT: openUpgrade() was called from nowhere in the product, so every

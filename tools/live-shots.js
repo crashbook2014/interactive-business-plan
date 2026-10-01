@@ -55,7 +55,11 @@ fs.mkdirSync(OUT, { recursive: true });
         } else {
           current = SAMPLES.employment; renderResult(); addAllPoints();
         }
-        pwMode = mode; pwOrigin = mode === "case" ? "term" : mode; pwUpgrade = null; pwPlan = 0;
+        pwMode = mode; pwOrigin = mode === "case" ? "term" : mode; pwUpgrade = null;
+        /* The plan the app itself preselects on this paywall (the one marked
+           recommended), not a forced first card, so the capture shows what
+           a visitor actually lands on. */
+        pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));
         /* What openPaywall() does first: load the live flags from the project.
            Skipping this renders the compiled default ("checkout opens
            shortly") instead of what a real visitor sees. */
@@ -64,6 +68,7 @@ fs.mkdirSync(OUT, { recursive: true });
         window.__flagsLoaded = flagsLoaded;
         return { ok, flags: String(window.__flagsLoaded), free: FREE_NOW, live: PAYMENT_LIVE,
                  plans: activePlans().map(x => x.name + ":" + x.amt),
+                 selected: (activePlans()[pwPlan] || {}).name || null,
                  guarantee: !document.getElementById("pwGuarantee").hidden };
       }, [lang, mode]);
       await p.waitForTimeout(500);

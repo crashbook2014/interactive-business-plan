@@ -1,6 +1,6 @@
 # The Wodouh agent team
 
-Four agents. One shared vocabulary, so a defect found twice is recognisably one
+Five agents. One shared vocabulary, so a defect found twice is recognisably one
 defect and nobody has to translate between reports.
 
 | Agent | Asks | Invoke for |
@@ -9,13 +9,14 @@ defect and nobody has to translate between reports.
 | `wodouh-experience` | Does the reader understand and trust it? | Before anything user-facing ships |
 | `wodouh-redteam` | How does it fail or get abused? | Before money moves, before AI goes live, periodically |
 | `wodouh-growth` | What does the market want, and what should we say? | Weekly, and when planning content |
+| `wodouh-conversion` | Will people pay, and does it look worth it? | Before a pricing or design change, after a big release, on request |
 
-Run one at a time. Four reports on the same day is a stack nobody reads —
+Run one at a time. Five reports on the same day is a stack nobody reads —
 see "Cadence" below.
 
 ---
 
-## The rules all four obey
+## The rules all five obey
 
 These are not suggestions. An agent that breaks one has done harm, not work.
 
@@ -109,7 +110,7 @@ WODOUH CYCLE REPORT — <date> — <agent>
   Qualified leads      NOT MEASURED
   Signups              NOT APPLICABLE — no accounts exist
   Analyses             NOT MEASURED
-  Paid conversions     NOT APPLICABLE — payments are not live
+  Paid conversions     NOT MEASURED — no analytics exists (Tap checkout is live)
   Revenue attributed   NOT APPLICABLE
 
 P0: …
