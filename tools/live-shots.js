@@ -119,14 +119,26 @@ fs.mkdirSync(OUT, { recursive: true });
       await p.close();
     }
   }
-  for (const pg of ["refund", "terms"]) {
+  for (const pg of ["refund", "terms", "privacy"]) for (const L of ["ar", "en"]) {
     const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, serviceWorkers: "block" });
     try {
       await p.goto(BASE + "/" + pg + "/?shots=" + Date.now(), { waitUntil: "networkidle", timeout: 60000 });
+      if (L === "en") { await p.click('[data-set="en"]').catch(() => {}); await p.waitForTimeout(400); }
       const text = await p.evaluate(() => document.body.innerText);
-      await p.screenshot({ path: `${OUT}/policy-${pg}.png`, fullPage: true });
-      shots.push({ file: `${OUT}/policy-${pg}.png`, text: text.slice(0, 20000) });
-    } catch (e) { shots.push({ file: `policy-${pg}`, err: String(e) }); }
+      await p.screenshot({ path: `${OUT}/policy-${pg}-${L}.png`, fullPage: true });
+      shots.push({ file: `${OUT}/policy-${pg}-${L}.png`, text: text.slice(0, 20000) });
+    } catch (e) { shots.push({ file: `policy-${pg}-${L}`, err: String(e) }); }
+    await p.close();
+  }
+  for (const L of ["ar", "en"]) {
+    const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, serviceWorkers: "block" });
+    try {
+      await p.goto(BASE + "/?shots=" + Date.now(), { waitUntil: "networkidle", timeout: 60000 });
+      if (L === "en") { await p.evaluate(() => { if (typeof lang !== "undefined" && lang !== "en") toggleLang(); }).catch(() => {}); await p.waitForTimeout(400); }
+      const text = await p.evaluate(() => document.body.innerText);
+      await p.screenshot({ path: `${OUT}/landing-${L}.png`, fullPage: true });
+      shots.push({ file: `${OUT}/landing-${L}.png`, text: text.slice(0, 20000) });
+    } catch (e) { shots.push({ file: `landing-${L}`, err: String(e) }); }
     await p.close();
   }
   fs.writeFileSync(`${OUT}/served.json`, JSON.stringify({ base: BASE, at: new Date().toISOString(), shots }, null, 2));
