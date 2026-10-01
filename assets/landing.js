@@ -9,9 +9,11 @@ const T = {
   soon_note:{ar:"جاهز، ونراجعه مراجعة أخيرة قبل ما نفتحه للكل. إذا عندك عقد أو مشكلة الحين، لا تنتظر وكلّمنا.",
              en:"It is built, and in its final review before we open it to everyone. If you have a contract or a problem right now, do not wait. Talk to us."},
   soon_k_contact:{ar:"تواصل",en:"Get in touch"},
-  soon_contact_h:{ar:"عندك سؤال، أو تبي تحجز مكانك؟",en:"Have a question, or want your place at launch?"},
-  soon_contact_p:{ar:"نرد بأنفسنا، مو بردود جاهزة. اسأل عن حالتك، أو احجز سعر الافتتاح، أو خذ رأينا في عقد قدّامك اليوم.",
-                  en:"You'll reach a person, not a form. Ask about your situation, lock in launch pricing, or get our read on a contract in front of you today."},
+  /* Shown launched or not (the section has no .soon-only class), so it is
+     written for a live product: no "launch pricing", no place in a queue. */
+  soon_contact_h:{ar:"عندك سؤال عن حالتك؟",en:"Have a question about your situation?"},
+  soon_contact_p:{ar:"نرد بأنفسنا، مو بردود جاهزة. اسأل عن حالتك، أو خذ رأينا في عقد قدّامك اليوم.",
+                  en:"You'll reach a person, not a form. Ask about your situation, or get our read on a contract in front of you today."},
   soon_wa:{ar:"واتساب",en:"WhatsApp"},
   soon_call:{ar:"اتصل بنا",en:"Call us"},
   soon_mail:{ar:"راسلنا",en:"Email us"},
@@ -151,8 +153,8 @@ const T = {
 
   k_problem:{ar:"المشكلة",en:"The problem"},
   problem_h:{ar:"العقود مكتوبة عشان تُوقَّع، مو عشان تُفهَم.",en:"Contracts are written to be signed, not to be understood."},
-  problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط، لأن السؤال يجي في وقت ما فيه مجال للتردد. هذي مواقف نسمعها كثيرًا:",
-             en:"Most of us sign without knowing exactly what we agreed to, because the question arrives when there is least room to hesitate. Situations we hear often:"},
+  problem_p:{ar:"أغلبنا يوقّع وهو ما يدري وش وافق عليه بالضبط، لأن السؤال يجي في وقت ما فيه مجال للتردد. مواقف شائعة:",
+             en:"Most of us sign without knowing exactly what we agreed to, because the question arrives when there is least room to hesitate. Common situations:"},
   q1:{ar:"«وقّعت وأنا واثق… وبعد سنة اكتشفت إن بند عدم المنافسة يمنعني أشتغل في مجالي كامل.»",
       en:"“I signed with confidence. A year later I found the non-compete blocked my entire field.”"},
   q1s:{ar:"موظف",en:"An employee"},
@@ -258,8 +260,8 @@ const T = {
      the purchase happens, not to a waiting list. */
   price_vat_cta:{ar:"ادفع داخل التطبيق بمدى أو Apple Pay أو STC Pay",
                  en:"Pay inside the app with mada, Apple Pay or STC Pay"},
-  p1g:{ar:"تحصل على: التقييم، والقرار، وأول تنبيه، وحاسبة نهاية الخدمة.",
-       en:"You get: the score, the decision, the first flag, and the end-of-service calculator."},
+  p1g:{ar:"تحصل على: التقييم، والقرار، وأخطر تنبيه، وحاسبة نهاية الخدمة.",
+       en:"You get: the score, the decision, your most serious flag, and the end-of-service calculator."},
   p2g:{ar:"تحصل على: نص خطاب كامل قابل للتعديل، بالعربي والإنجليزي، مبني على بنودك.",
        en:"You get: a complete editable letter in Arabic and English, built from your clauses."},
   p3g:{ar:"تحصل على: ملف يجمع الوقائع والمطالبة بالأرقام وقائمة مستنداتك.",
