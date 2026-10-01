@@ -2691,6 +2691,7 @@ const T = {
   pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانية دائمًا.",
                en:"The score, the decision and the first flag are always free."},
   pw_pay_rev:{ar:"افتح المراجعة",en:"Unlock the review"},
+  pw_pay_pair:{ar:"احصل على المراجعة والخطاب",en:"Get the review and letter"},
   scan_lock_t:{ar:"هذا فحص سريع",en:"That was a quick scan"},
   scan_lock_b:{ar:"بقية بنود عقدك، كل بند وحالته وسنده من النظام، تجيك في المراجعة الكاملة.",
                en:"The rest of your contract's clauses, each with its status and its basis in the law, are in the full review."},
@@ -13373,7 +13374,7 @@ function priceLabel(amt, monthly){
 
 /* The review, and the ways to hold more than one of it. */
 const PLANS_REVIEW = [
-  { name:"plan_review", desc:"plan_review_d", amt:199, pop:true },
+  { name:"plan_review", desc:"plan_review_d", amt:199, pop:false },
   /* Five reviews at 140 each. Priced as a pack rather than a subscription:
      nobody signs a contract monthly, so a monthly bill would be paid by people
      not using it, which is a business that resents its own customers. */
@@ -13387,7 +13388,7 @@ const PLANS_REVIEW = [
 
 /* Documents the reader takes away. */
 const PLANS = [
-  { name:"plan_letter", desc:"plan_letter_d", amt:149, pop:true },
+  { name:"plan_letter", desc:"plan_letter_d", amt:149, pop:false },
   { name:"plan_lawyer", desc:"plan_lawyer_d", amt:399, pop:false,
     contains:["plan_letter"], lawyer:true }
 ];
@@ -13427,7 +13428,10 @@ const PLANS_DRAFT = [
    replaced by review + letter at 299, offered only on the before-you-sign
    path. The case file stands alone on the dispute path; it already carries
    the assessment and the employer letter. */
-const BUNDLE = { name:"plan_review_letter", desc:"plan_review_letter_d", amt:299, tag:"plan_best",
+/* THE RECOMMENDED OPTION on the before-you-sign paywalls (founder, October
+   2026). `pop` gives it the "We recommend this" badge, the .rec highlight
+   and the default selection; pairSaving() adds "Save 49 SAR" beside it. */
+const BUNDLE = { name:"plan_review_letter", desc:"plan_review_letter_d", amt:299, pop:true, tag:"plan_pop",
                  contains:["plan_review","plan_letter"],
                  grants:{ review:"plan_review", letter:"plan_letter" } };
 const PLANS_BUNDLE = [BUNDLE];
@@ -13879,8 +13883,11 @@ function scanGate(kind){
        what they came for. Five pieces of paywall state were set here and the
        only one that mattered to the reader was missing. */
     pendingNav = { kind: "scan", payload: kind };
-    pwMode = "review"; pwOrigin = "review"; pwPlan = 0;
-    pwUpgrade = null; pwUpBack = null;
+    pwMode = "review"; pwOrigin = "review"; pwUpgrade = null; pwUpBack = null;
+    /* The recommended option, not the first card: the reader has not picked
+       a price yet. (#scanBuy keeps 199 selected, because its button names
+       199 and the reader just pressed it.) */
+    pwPlan = Math.max(0, activePlans().findIndex(p => p.pop));
     if (renderPaywall()) show("paywall");
     return false;
   }
@@ -14046,7 +14053,7 @@ function renderPaywall(){
     const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>
-       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:pairSaving(pl)?`<span class="badge save">${t("plan_save").replace("{amt}", priceLabel(pairSaving(pl)))}</span>`:""}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
+       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:`${pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}${pairSaving(pl)?`<span class="badge save">${t("plan_save").replace("{amt}", priceLabel(pairSaving(pl)))}</span>`:""}`}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
        <span class="price">${priceLabel(pl.amt, pl.monthly)}</span>`;
     /* An unbuyable card is inert rather than absent: it can be read and not
        selected, so its price informs without becoming a dead control that
@@ -14080,7 +14087,9 @@ function renderPaywall(){
      when the case file is bought from a termination — it is one product now —
      but the reader arrived asking what they are owed, not asking for a file.
      Naming it "case file" there answers a question they did not ask. */
-  pay.textContent = t(pwUpgrade ? "pw_pay_up" : isTerm ? "pw_pay_term"
+  pay.textContent = t(pwUpgrade ? "pw_pay_up"
+                    : chosen && chosen.name === BUNDLE.name ? "pw_pay_pair"
+                    : isTerm ? "pw_pay_term"
                     : isCase ? "pw_pay_case" : isReview ? "pw_pay_rev" : "pw_pay")
     + " " + priceLabel(chosen ? chosen.amt : 0);
   return true;
