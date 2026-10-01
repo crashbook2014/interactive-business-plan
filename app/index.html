@@ -1628,8 +1628,8 @@ const T = {
      That is what it says. */
   au_title_scan:{ar:"استخدمت فحصك المجاني هذا الشهر",
                  en:"You've used your free scan this month"},
-  au_sub_scan:{ar:"فحص واحد بالشهر مجانًا بدون حساب. الحساب يعطيك فحصك الجاي، ويحفظ اللي قرأناه لك، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك، وما نخزّنه عندنا.",
-               en:"One scan a month is free without an account. An account gives you your next scan, keeps what we have already read for you, and lets us reach you if you need help. Your contract text is read on your device, and we do not store it."},
+  au_sub_scan:{ar:"فحص واحد بالشهر مجانًا بدون حساب. الحساب يعطيك فحصك الجاي، ويحفظ اللي قرأناه لك، ويخلّينا نقدر نوصلك لو احتجت مساعدة. نص عقدك يُقرأ على جهازك وما نخزّنه عندنا، والعقد الممسوح ضوئيًا ما يُرفع إلا بموافقتك، ونقول لك قبلها.",
+               en:"One scan a month is free without an account. An account gives you your next scan, keeps what we have already read for you, and lets us reach you if you need help. Your contract text is read on your device and we do not store it; a scanned contract is uploaded only if you agree, and we tell you before it is."},
   /* NARROWED THREE TIMES, and the history is kept rather than tidied away,
      because each step changed a promise the previous one made.
      It first said the app "works without an account AND ALWAYS WILL". When the
@@ -1651,8 +1651,8 @@ const T = {
      was free by then and the conversion screen was underselling it, which is
      the opposite of the usual lie and still a lie, told on the one screen
      where being believed decides the outcome. */
-  au_sub:{ar:"قراءة عقدك، والحاسبة، ودليل الحقوق، كلها بدون حساب. الحساب يحفظ شغلك لو غيّرت جهازك، ويعطيك فحصك الجاي، ويخلّينا نقدر نوصلك لو احتجت مساعدة. ونص عقدك يُقرأ على جهازك وما نخزّنه عندنا.",
-          en:"Reading your contract, the calculator and the rights library all work without an account. An account keeps your work if you change devices, gives you your next scan, and lets us reach you if you need help. Your contract text is still read on your device and is never stored by us."},
+  au_sub:{ar:"قراءة عقدك، والحاسبة، ودليل الحقوق، كلها بدون حساب. الحساب يحفظ شغلك لو غيّرت جهازك، ويعطيك فحصك الجاي، ويخلّينا نقدر نوصلك لو احتجت مساعدة. ونص عقدك يُقرأ على جهازك وما نخزّنه عندنا، والعقد الممسوح ضوئيًا ما يُرفع إلا بموافقتك، ونقول لك قبلها.",
+          en:"Reading your contract, the calculator and the rights library all work without an account. An account keeps your work if you change devices, gives you your next scan, and lets us reach you if you need help. Your contract text is still read on your device and we do not store it; a scanned contract is uploaded only if you agree, and we tell you before it is."},
   au_google:{ar:"المتابعة بحساب Google",en:"Continue with Google"},
   au_apple:{ar:"المتابعة بحساب Apple",en:"Continue with Apple"},
   /* Hidden when the reader arrived here BECAUSE they asked to scan: offering
@@ -1825,7 +1825,9 @@ const T = {
      control that asks for the document, not on a slide seen once before the
      reader had a document to give. */
   hm_up_free:{ar:"الفحص والتقييم مجانًا",en:"The scan and the score are free"},
-  hm_up_priv:{ar:"ويُقرأ على جهازك",en:"and it's read on your device"},
+  /* Qualified, as on the homepage FAQ: a pasted or typed contract is read
+     on the device; a scan has to be uploaded, and only with consent. */
+  hm_up_priv:{ar:"ويُقرأ على جهازك، والممسوح ما يُرفع إلا بموافقتك",en:"read on your device; a scan is uploaded only if you agree"},
   /* Both are written as the reader would say it, in the tense they are
      actually in: the contract is signed, the thing has already gone wrong. */
   sit_rent:{ar:"عندي خلاف مع المؤجّر",en:"I have a dispute with my landlord"},
@@ -2158,9 +2160,6 @@ const T = {
   fu_soon:{ar:"قريبًا",en:"Coming soon"},
   fu_grid_h:{ar:"اللي نبنيه",en:"What we are building"},
 
-  fu_scan:{ar:"قراءة العقد المصوَّر",en:"Reading a photographed contract"},
-  fu_scan_d:{ar:"صوّر العقد الورقي أو ارفع مسحًا ضوئيًا، ووضوح يقرأه، بدون ما تنسخ النص بنفسك.",
-             en:"Photograph a paper contract or upload a scan, and Wodouh reads it without you having to type out the text."},
   fu_vault:{ar:"خزانة عقودي",en:"My contract vault"},
   fu_vault_d:{ar:"عقودك المهمة كلها مرتّبة في مكان واحد آمن.",
               en:"Your important contracts, organized in one secure place."},
@@ -2280,8 +2279,10 @@ const T = {
      lawyer-flagged plan while LAWYER_COMPILED is false, so listing it as
      something you can pay for is untrue right now. Comes back if the desk
      ever goes live. */
-  acc_pay_paid:{ar:"مدفوع: المخرجات فقط، وهي المراجعة الكاملة لكل البنود، وخطاب التفاوض، وملف القضية، وأسئلة المساعد بلا حدود.",
-                en:"Paid: outputs only, namely the full clause-by-clause review, the negotiation letter, the case file, and unlimited assistant questions."},
+  /* No assistant line: askLeft() caps every reader at ASK_PER_DAY, paid or
+     not, so "unlimited questions" was a paid promise the product broke. */
+  acc_pay_paid:{ar:"مدفوع: المخرجات فقط، وهي المراجعة الكاملة لكل البنود، وخطاب التفاوض، والمراجعة مع الخطاب، وملف القضية.",
+                en:"Paid: outputs only, namely the full clause-by-clause review, the negotiation letter, the review and letter together, and the case file."},
   acc_privacy:{ar:"الخصوصية",en:"Privacy"},
   acc_privacy_more:{ar:"الاستثناءات الثلاثة، وش يرسل كل واحد بالضبط",
                     en:"The three exceptions, and exactly what each one sends"},
@@ -2613,17 +2614,28 @@ const T = {
   pw_sh_found:{ar:"‏{n} وجدناها في حالتك: {list}",
                en:"{n} found in your situation: {list}"},
   pw_sh_law:{ar:"‏{n} منها مسندة إلى مادة موثّقة، و{m} اجتهاد وضوح، كلٌّ منها موسوم بمصدره",
-             en:"{n} of them cite a verified article and {m} {v} Wodouh's own reading. Each is labelled."},
+             en:"{n} of them {c} a verified article and {m} {v} Wodouh's own reading. Each is labelled."},
+  /* When every line cites a verified article, "and 0 are Wodouh's own
+     reading" is a counter, not a sentence. */
+  pw_sh_law_all:{ar:"كلها مسندة إلى مادة موثّقة، وكلٌّ منها موسوم بمصدره",
+                 en:"Each one cites a verified article, and is labelled with it."},
+  cites_1:{ar:"",en:"cites"}, cites_p:{ar:"",en:"cite"},
+  /* What the 349 buys, said before any count: the reader is paying for a
+     file and a letter, not for a tally of what we found. */
+  pw_sh_case_letter:{ar:"خطاب لصاحب العمل جاهز للإرسال، بالعربي والإنجليزي",
+                     en:"A letter to your employer, ready to send, in Arabic and English"},
+  pw_sh_case_file:{ar:"ملف قضيتك منسّق بالعربي والإنجليزي: الوقائع والمطالبة بالأرقام",
+                   en:"Your case file, formatted in Arabic and English: the facts and the claim in figures"},
   /* The pronoun follows the count. {n} is countNoun("cnt_item"): «بند واحد»
      needs «تقديره», «بندين» needs «تقديرهما», and only three and up take the
      feminine plural «تقديرها». One sentence for all three read «بند واحد لم
      نستطع تقديرها». renderPwShape() picks the form. */
-  pw_sh_gaps:{ar:"‏{n} لم نستطع تقديرها، ونقول لك ما ينقصها: {list}",
-              en:"{n} we could not assess, and what each one needs: {list}"},
-  pw_sh_gaps_1:{ar:"‏{n} لم نستطع تقديره، ونقول لك ما ينقصه: {list}",
-                en:"{n} we could not assess, and what it needs: {list}"},
-  pw_sh_gaps_2:{ar:"‏{n} لم نستطع تقديرهما، ونقول لك ما ينقصهما: {list}",
-                en:"{n} we could not assess, and what each one needs: {list}"},
+  pw_sh_gaps:{ar:"‏{n} لم نستطع تقديرها، والملف يقول لك وش تجيب لكل واحد: {list}",
+              en:"{n} we could not assess yet, and the file tells you what to bring for each: {list}"},
+  pw_sh_gaps_1:{ar:"‏{n} لم نستطع تقديره، والملف يقول لك وش تجيب له: {list}",
+                en:"{n} we could not assess yet, and the file tells you what to bring for it: {list}"},
+  pw_sh_gaps_2:{ar:"‏{n} لم نستطع تقديرهما، والملف يقول لك وش تجيب لكل واحد: {list}",
+                en:"{n} we could not assess yet, and the file tells you what to bring for each: {list}"},
   pw_sh_each:{ar:"كل مبلغ يذكر القاعدة، وكيف تنطبق على أرقامك، ومصدرها، ودرجة اليقين",
               en:"Every amount states its rule, how it applies to your numbers, its source, and how certain it is"},
   pw_sh_case_claim:{ar:"مطالبتك بالأرقام، كل بند بمصدره",
@@ -2688,8 +2700,8 @@ const T = {
              en:"End-of-service award: about {amt}, free, worked out the same way as the calculator. Your other entitlements, their total, the case file and the employer letter are in the full assessment."},
   pw_sh_eos_c:{ar:"مكافأة نهاية الخدمة: {amt} تقريبًا، مجانًا، إذا قُبل وصف إنهاء عقدك كما أدخلته. باقي حقوقك ومجموعها والملف وخطاب صاحب العمل في التقييم الكامل.",
                en:"End-of-service award: about {amt}, free, if the way your contract ended is accepted as you entered it. Your other entitlements, their total, the case file and the employer letter are in the full assessment."},
-  pw_rev_free:{ar:"التقييم والقرار وأول ملاحظة مجانية دائمًا.",
-               en:"The score, the decision and the first flag are always free."},
+  pw_rev_free:{ar:"التقييم والقرار وأخطر تنبيه مجانًا، بفحص واحد كل شهر.",
+               en:"The score, the decision and your most serious flag are free with one scan a month."},
   pw_pay_rev:{ar:"افتح المراجعة",en:"Unlock the review"},
   pw_pay_pair:{ar:"احصل على المراجعة والخطاب",en:"Get the review and letter"},
   scan_lock_t:{ar:"هذا فحص سريع",en:"That was a quick scan"},
@@ -2815,8 +2827,8 @@ const T = {
   pl_permo:{ar:"شهريًا",en:"a month"}, pl_peryr:{ar:"سنويًا",en:"a year"},
   pl_seat:{ar:"لكل 5 مقاعد",en:"for 5 seats"},
   pl_cta_free:{ar:"أنت عليها",en:"Your current plan"},
-  pl_cta_plus:{ar:"اشترك",en:"Subscribe"},
-  pl_cta_biz:{ar:"جرّب 14 يومًا مجانًا",en:"Start a 14-day free trial"},
+  pl_cta_plus:{ar:"اشترِ",en:"Buy"},
+  pl_cta_biz:{ar:"اشترِ 30 يومًا",en:"Buy 30 days"},
   pl_enterprise:{ar:"فريق أكبر من 20؟ تواصل معنا لتسعير المنشآت.",en:"More than 20 people? Contact us for enterprise pricing."},
   f_score:{ar:"تقييم العقد والتنبيهات",en:"Contract score and flags"},
   /* The catalogue's feature lines. Each names something the reader actually
@@ -3516,6 +3528,10 @@ const T = {
      with nothing after it — in both languages. */
   need_exc87:{ar:"سبب استقالتك، هل ينطبق أحد استثناءات المادة 87",
               en:"whether you resigned for one of the Article 87 reasons"},
+  /* termUnassessed() asks for these on the notice and compensation lines and
+     they had no label, so the gap sentence ended "…: ،" with nothing named. */
+  need_ctype:{ar:"نوع العقد: محدد المدة أو غير محدد",en:"whether your contract is fixed-term or open-ended"},
+  need_termEnd:{ar:"تاريخ انتهاء العقد محدد المدة",en:"when your fixed-term contract was due to end"},
 
   /* --- rules in plain language */
   tm_rule_eos:{ar:"مكافأة نهاية الخدمة: نصف شهر عن كل سنة من أول خمس سنوات، وشهر كامل عن كل سنة بعدها، على آخر أجر.",
@@ -6472,7 +6488,9 @@ const FU_ICONS = {
   tmpl:  '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7"/>'
 };
 const FU_CARDS = [
-  ["scan", "fu_scan",   "fu_scan_d"],
+  /* fu_scan ("reading a photographed contract") left the roadmap in October
+     2026: the upload box accepts JPEG/PNG/WebP and PDFs and reads them through
+     UPLOAD_URL, so it is built, and "coming soon" beside it was untrue. */
   ["vault", "fu_vault",  "fu_vault_d"],
   ["ask", "fu_ask",    "fu_ask_d"],
   ["alert", "fu_alert",  "fu_alert_d"],
@@ -8642,6 +8660,12 @@ const LINE_NEEDS = {
   tm_m_other:  ["otherAmt"]
 };
 
+/* The inputs a line still needs, named in the reader's language. The list
+   was joined with a hard-coded Arabic comma, so English read "a، b", and an
+   input with no label printed as nothing between two separators. */
+function needList(keys){
+  return keys.map(m => t("need_" + m)).filter(Boolean).join(lang === "ar" ? "، " : ", ");
+}
 function given(k){
   if (!term) return false;
   const v = term[k];
@@ -8811,13 +8835,16 @@ function termSections(){
       : h && h.award === "resign" ? "tm_src_8485"
       : h && h.award === "none" ? "src_method" : "tm_src_84");
 
-  S("tm_s_unpaid", termUnpaidOwed() > 0 ? "issue" : "ok",
+  /* Not entered is not "appears consistent": the same item is listed under
+     "what we could not assess" when its input is missing, and the two read
+     as a contradiction. Same test as termUnassessed(): given(). */
+  S("tm_s_unpaid", termUnpaidOwed() > 0 ? "issue" : given("unpaidMonths") ? "ok" : "review",
     termUnpaidOwed() > 0 ? "tm_s_unpaid_issue" : "tm_s_unpaid_ok",
     termUnpaidOwed() > 0 ? "tm_src_wage" : "src_you");
   S("tm_s_leave", termLeaveOwed() > 0 ? "issue" : "review",
     termLeaveOwed() > 0 ? "tm_s_leave_issue" : "tm_s_leave_review",
     "tm_src_111");
-  S("tm_s_other", termOtherOwed() > 0 ? "review" : "ok",
+  S("tm_s_other", termOtherOwed() > 0 || !given("otherAmt") ? "review" : "ok",
     termOtherOwed() > 0 ? "tm_s_other_review" : "tm_s_other_ok",
     "src_you");
   if (termComp() > 0) S("tm_s_comp", "review", "tm_s_comp_review", "tm_src_77");
@@ -9050,7 +9077,7 @@ function renderTermResult(){
              <dt>${t("tm_c_ev")}</dt><dd>${t(l.key + "_ev")}</dd>
            </dl>
            ${c.missing.length
-             ? `<p class="tm-gap">${t("tm_c_needmore")} ${c.missing.map(m => t("need_" + m)).join("، ")}</p>`
+             ? `<p class="tm-gap">${t("tm_c_needmore")} ${needList(c.missing)}</p>`
              : ""}
            <p class="src-line ${l.kind}">${l.kind === "law" ? t(l.src) : t("src_method") + " · " + t(l.src)}</p>
            ${meta.official ? `<p class="tm-off">${t("tm_c_source")}: ${t(meta.official)}</p>` : ""}
@@ -9065,7 +9092,7 @@ function renderTermResult(){
          <div class="hd"><b>${t("gap_title")}</b><span class="tm-tag issue">${t("cert_uncertain")}</span></div>
          <p>${t("gap_sub")}</p>
          ${gaps.map(g => `<p>• <b>${t(g.key)}</b>: ${t("tm_c_needmore")} ${
-           g.missing.map(m => t("need_" + m)).join("، ")}</p>`).join("")}
+           needList(g.missing)}</p>`).join("")}
        </div>`
     : "";
 
@@ -10727,6 +10754,9 @@ function renderPlans(){
      invents a yearly figure nobody set, is how a price screen starts lying. */
   const seg = document.getElementById("billSeg");
   if (seg){ seg.innerHTML = ""; seg.hidden = true; }
+  /* Re-read on every render: PAYMENT_LIVE can change after the flags load. */
+  const plDemo = document.getElementById("plDemo");
+  if (plDemo) plDemo.hidden = PAYMENT_LIVE;
   const fn = document.getElementById("plFree");
   if (fn){
     fn.hidden = !FREE_NOW;
@@ -10743,11 +10773,12 @@ function renderPlans(){
     const card = document.createElement("div");
     card.className = "pcard" + (pl.hi?" hi":"") + (pl.biz?" biz":"");
     const amount = typeof pl.m === "function" ? pl.m() : pl.m;
-    const unit = pl.once ? "" : t("pl_permo");
+    /* Business is 30 days paid once (September 2026), not a monthly seat
+       bundle: "a month · for 5 seats" contradicted its own "One seat" line. */
+    const unit = pl.once ? "" : pl.biz ? t("plan_30d") : t("pl_permo");
     const price = amount === 0
       ? `<b>${t("pl_free")}</b>`
-      : `<b>${fmtNum(amount)}</b><i>${lang==="ar"?"ر.س":"SAR"}${unit ? " " + unit : ""}</i>` +
-        (pl.seat ? `<i>· ${t("pl_seat")}</i>` : "");
+      : `<b>${fmtNum(amount)}</b><i>${lang==="ar"?"ر.س":"SAR"}${unit ? " " + unit : ""}</i>`;
     /* The one figure a feature line may carry, read from the constant that
        enforces it rather than copied into the string. */
     const ft = f => t(f).replace("{n}", fmtNum(ASK_PER_DAY));
@@ -13348,6 +13379,10 @@ function renderCheckoutNote(){
     `<a href="${CHECKOUT_WA}" target="_blank" rel="noopener noreferrer" ` +
     `style="display:block;padding:13px 0">${esc(t("pw_demo_cta"))}</a>`;
   document.querySelectorAll(".checkout-note").forEach(el => { el.innerHTML = html; });
+  /* The plans screen carried the same "checkout opens shortly" note with no
+     switch at all, so it would have said so beside a live checkout. */
+  const plDemo = document.getElementById("plDemo");
+  if (plDemo) plDemo.hidden = PAYMENT_LIVE;
 }
 
 /* Prices are numbers, not two hand-written strings per plan. Two strings drift;
@@ -14048,12 +14083,15 @@ function renderPaywall(){
        real weight. Before this the recommendation existed only as a small
        amber badge on a card identical to its neighbours — an opinion stated
        in the smallest type on the screen. */
-    b.className = "plan" + (i===pwPlan ? " sel" : "") + (pl.pop && !pl.soon ? " rec" : "")
+    /* A recommendation needs something to be recommended over: a paywall
+       with one card (the case file) carries no badge and no .rec. */
+    const rec = pl.pop && !pl.soon && activePlans().length > 1;
+    b.className = "plan" + (i===pwPlan ? " sel" : "") + (rec ? " rec" : "")
                 + (pl.credits ? " alt" : "");
     const soon = !!pl.soon;
     b.innerHTML =
       `<span class="radio"></span>
-       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:`${pl.pop?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}${pairSaving(pl)?`<span class="badge save">${t("plan_save").replace("{amt}", priceLabel(pairSaving(pl)))}</span>`:""}`}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
+       <span style="flex:1"><b>${t(pl.name)}${soon?`<span class="badge">${t("plan_soon")}</span>`:`${rec?`<span class="badge">${t(pl.tag||"plan_pop")}</span>`:""}${pairSaving(pl)?`<span class="badge save">${t("plan_save").replace("{amt}", priceLabel(pairSaving(pl)))}</span>`:""}`}</b><span>${t(soon ? "plan_soon_d" : pl.desc)}</span></span>
        <span class="price">${priceLabel(pl.amt, pl.monthly)}</span>`;
     /* An unbuyable card is inert rather than absent: it can be read and not
        selected, so its price informs without becoming a dead control that
@@ -14128,11 +14166,18 @@ function renderPwShape(isTerm, isCase){
       freeLine = t(eosLine.contested ? "pw_sh_eos_c" : "pw_sh_eos")
         .replace("{amt}", fmtNum(Math.round(eosLine.amt)) + " " + t("eos_sar"));
     }
+    /* The deliverables first: this is what the 349 buys. The counts below
+       describe the case; these describe the product. */
+    items.push(["✓", t("pw_sh_case_file"), false]);
+    items.push(["✓", t("pw_sh_case_letter"), false]);
+    items.push(["✓", t("pw_sh_case_docs"), false]);
     items.push([fmtNum(lines.length), t("pw_sh_found")
       .replace("{n}", countNoun("cnt_ent", lines.length))
       .replace("{list}", lines.map(l => t(l.key)).join(sep)), false]);
     /* "1 are Wodouh's own reading" — the verb agreed with nothing. */
-    items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law))
+    if (method === 0) items.push(["✓", t("pw_sh_law_all"), false]);
+    else items.push([fmtNum(law), t("pw_sh_law").replace("{n}", fmtNum(law))
+      .replace("{c}", t(law === 1 ? "cites_1" : "cites_p"))
       .replace("{m}", fmtNum(method)).replace("{v}", t(method === 1 ? "is_1" : "is_p")), false]);
     if (gaps.length)
       items.push([fmtNum(gaps.length), t(gaps.length === 1 ? "pw_sh_gaps_1"

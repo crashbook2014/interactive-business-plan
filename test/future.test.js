@@ -90,9 +90,12 @@ const ok = (c, m) => { if (!c) FAIL.push(m); console.log((c ? "  ok   " : "  FAI
     }, L);
 
     ok(r.dir === (L === "ar" ? "rtl" : "ltr"), `${L}: the document direction is right (${r.dir})`);
-    /* 13 since team seats and outgoing-template reading moved here off the
-       business workspace, where both were drawn as if they already worked. */
-    ok(r.cards.length === 13, `${L}: every planned feature renders (${r.cards.length})`);
+    /* 12: team seats and outgoing-template reading moved here off the
+       business workspace (13), then reading a photographed contract left
+       in October 2026 because the upload box already reads scans. Counted
+       against FU_CARDS so the next one to ship does not need this edited. */
+    const expected = await p.evaluate(() => FU_CARDS.length);
+    ok(r.cards.length === expected && expected === 12, `${L}: every planned feature renders (${r.cards.length})`);
 
     /* A card added in one language and forgotten in the other renders as a
        blank row rather than as an error, so emptiness is the assertion. */
