@@ -1,4 +1,4 @@
-/* Renders brand/wodouh-brand-guide.html to PDF with the real fonts.
+/* Renders brand/index.html (the live alwodouh.com/brand/ page) to PDF with the real fonts.
  * Start the static server first (node test/serve.js), then:
  *   node brand/render.js
  */
@@ -7,8 +7,9 @@ const env = require(path.join(__dirname, "..", "test", "_env.js"));
 (async () => {
   const b = await env.playwright().chromium.launch(env.launchOpts());
   const p = await b.newPage();
-  await p.goto(env.BASE + "/brand/wodouh-brand-guide.html", { waitUntil: "networkidle" });
+  await p.goto(env.BASE + "/brand/", { waitUntil: "networkidle" });
   await p.evaluate(() => document.fonts.ready);
+  await p.emulateMedia({ media: "print" });
   await p.pdf({ path: path.join(__dirname, "wodouh-brand-guide.pdf"), width: "297mm", height: "210mm",
                 printBackground: true, preferCSSPageSize: true });
   if (process.argv[2] === "--preview") {
