@@ -1,467 +1,440 @@
 <!doctype html>
-<html lang="en" dir="ltr">
-<head>
-<link rel="preload" href="../assets/fonts/noto-naskh-arabic-var.woff2" as="font" type="font/woff2" crossorigin/>
-<link rel="preload" href="../assets/fonts/nunito-var.woff2" as="font" type="font/woff2" crossorigin/>
-
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'"/>
-<meta name="referrer" content="strict-origin-when-cross-origin"/>
-<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22none%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214.5%22%20fill%3D%22%231E6E64%22%2F%3E%3Cg%20transform%3D%22translate%286.5%206.5%29%20scale%280.797%29%22%3E%3Ccircle%20cx%3D%2227.5%22%20cy%3D%2227.5%22%20r%3D%2217.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%226%22%2F%3E%3Cpath%20d%3D%22M19.5%2028.5l6%206%2011-12.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M41%2041l11.5%2011.5%22%20stroke%3D%22%23F7F1E6%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
-
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#F1E9D9" media="(prefers-color-scheme: light)"/>
-<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)"/>
-<meta name="robots" content="noindex,nofollow"/>
-<!-- Belt-and-suspenders: robots.txt already disallows /brand/ for the same
-     reason stated in admin/index.html — this is a reference page for how the
-     identity is used, not something a contract reader should ever land on.
-     Neither this tag nor robots.txt is a security control; nothing here is
-     protected by being hard to find. -->
-<meta name="description" content="Wodouh's brand identity reference — logo, colour, type, and voice."/>
-<link rel="canonical" href="https://alwodouh.com/brand/"/>
-<meta property="og:title" content="Wodouh — Brand Identity"/>
-<meta property="og:description" content="Wodouh's brand identity reference — logo, colour, type, and voice."/>
-<meta property="og:url" content="https://alwodouh.com/brand/"/>
-<meta property="og:image" content="https://alwodouh.com/assets/og-cover.png"/>
-<meta property="og:image:width" content="1200"/>
-<meta property="og:image:height" content="630"/>
-<meta property="og:locale" content="en_US"/>
-<meta name="twitter:card" content="summary_large_image"/>
-<title>Wodouh — Brand Identity</title>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wodouh brand identity</title>
+<meta name="description" content="Wodouh (وضوح) brand identity guide: logo, colour, type, the annotated-contract motif, icons, voice and real examples.">
+<link rel="icon" href="assets/app-icon.svg">
 <style>
-  /* Self-hosted brand faces (SIL Open Font License 1.1), served from
-     /assets/fonts so all three pages share one cached copy. Nothing is
-     fetched from a third party. Note this needs http(s): fonts are always
-     fetched in CORS mode, so opening these files directly from disk falls
-     back to system fonts. */
-  @font-face{font-family:'Noto Naskh Arabic';font-style:normal;font-weight:400 700;font-display:swap;
-    src:url(../assets/fonts/noto-naskh-arabic-var.woff2) format('woff2');
-    unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+08A0-08FF,U+200C-200E,U+2010-2011,U+FB50-FDFF,U+FE70-FEFC;}
-  @font-face{font-family:'Nunito';font-style:normal;font-weight:200 1000;font-display:swap;
-    src:url(../assets/fonts/nunito-var.woff2) format('woff2');
-    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
-  :root{
-    --teal:#1E6E64; --teal-ink:#134B44; --teal-soft:#DCE9E6;
-    --sand:#F1E9D9; --card:#FFFDF6;
-    --amber:#A87822; --amber-bg:#F6EAD2;
-    --red:#B4544A; --red-bg:#F3DFDC;
-    --green:#478353; --green-bg:#E2EEE2;
-    --ink:#2B3230; --ink-2:#5A625F;
-    --line:#BEAD88;
-    --e1:0 1px 2px rgba(74,60,40,.05), 0 1px 1px rgba(74,60,40,.03);
-    --e2:0 2px 6px rgba(74,60,40,.055), 0 10px 24px rgba(74,60,40,.045);
-    --e3:0 18px 44px rgba(74,60,40,.11);
-    --edge:inset 0 1px 0 rgba(255,255,255,.6);
-    --r-lg:18px; --r-xl:22px; --r-2xl:28px;
-    /* Same rhythm as the product and the site. */
-    --t-fast:160ms; --t:240ms; --t-slow:360ms;
-    --ease-out:cubic-bezier(.22,.72,.28,1);
-    --ease-spring:cubic-bezier(.22,1.2,.36,1);
-    --ease-move:cubic-bezier(.4,0,.2,1);
-    --en:'Nunito','Avenir Next Rounded','Segoe UI',-apple-system,'Trebuchet MS',sans-serif;
-    --ar:'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif;
-  }
-  /* The identity has to survive a dark surface — swatches keep their true
-     values, the page around them adapts. */
-  @media (prefers-color-scheme: dark){
-    :root{--e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
-          --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045);
-          --sand:#0F1513;--card:#212C29;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#41504C;
-          --teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
-  }
-  :root[data-theme="dark"]{--e1:0 1px 2px rgba(0,0,0,.45);--e2:0 3px 10px rgba(0,0,0,.42), 0 12px 28px rgba(0,0,0,.34);
-          --e3:0 20px 48px rgba(0,0,0,.55);--edge:inset 0 1px 0 rgba(255,255,255,.045);
-          --sand:#0F1513;--card:#212C29;--ink:#EDE6D8;--ink-2:#A3ABA6;--line:#41504C;
-          --teal:#46A695;--teal-ink:#8FCBBE;--teal-soft:#1B2E2B}
-  :root[data-theme="light"]{--sand:#F1E9D9;--card:#FFFDF6;--ink:#2B3230;--ink-2:#5A625F;--line:#BEAD88;
-          --teal:#1E6E64;--teal-ink:#134B44;--teal-soft:#DCE9E6}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--sand);color:var(--ink);font-family:var(--en);line-height:1.6;-webkit-font-smoothing:antialiased;
-       text-rendering:optimizeLegibility;font-kerning:normal}
-  h1,h2,h3{text-wrap:balance}
-  html[lang="en"] h2{letter-spacing:-.014em}
-  [lang="ar"]{font-family:var(--ar);direction:rtl}
-  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+@font-face{font-family:'Naskh';src:url(/assets/fonts/noto-naskh-arabic-var.woff2) format('woff2');font-weight:400 700}
+@font-face{font-family:'Nunito';src:url(/assets/fonts/nunito-var.woff2) format('woff2');font-weight:200 1000}
+@page{size:297mm 210mm;margin:0}
+:root{--teal:#1E6E64;--teal-ink:#134B44;--soft:#DCE9E6;--sand:#F1E9D9;--card:#FFFDF6;--line:#BEAD88;--ink:#2B3230;--ink2:#5A625F;
+  --amber:#A87822;--amber-bg:#F6EAD2;--amber-ink:#8A6114;--red:#B4544A;--red-bg:#F3DFDC;--red-ink:#8E3A31;--green:#478353;--green-bg:#E2EEE2;--green-ink:#33663D;--hl:#F2D58C}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E6DCC6}
+/* On screen the guide is a stack of sheets; in print and in the PDF each
+   .page is one A4 landscape page. One file for both, so the website and the
+   PDF cannot drift apart. */
+.bar{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:10px 16px;background:rgba(241,233,217,.94);border-bottom:1px solid #BEAD88;font-family:'Nunito',sans-serif}
+.bar b{color:#134B44;font-size:15px}
+.bar a{font-weight:800;font-size:14px;color:#FFFDF6;background:#1E6E64;border-radius:10px;padding:9px 16px;text-decoration:none}
+@media screen{
+  .stack{padding:24px 16px 48px;display:flex;flex-direction:column;align-items:center;gap:22px}
+  .page{box-shadow:0 14px 34px -18px rgba(43,50,48,.45);border-radius:6px}
+  @media (max-width:1180px){ .page{zoom:calc((100vw - 32px) / 1123px)} }
+}
+@media print{ .bar{display:none} .stack{padding:0} }
+body{font-family:'Nunito','Naskh',sans-serif;color:var(--ink)}
+.page{width:297mm;height:210mm;position:relative;overflow:hidden;background:var(--sand);page-break-after:always;padding:18mm 20mm 16mm}
+.page.ruled{background:repeating-linear-gradient(to bottom,var(--sand) 0 33px,rgba(190,173,136,.32) 33px 34px)}
+.ar{font-family:'Naskh';direction:rtl}
+.kick{font-weight:800;letter-spacing:.24em;font-size:11px;color:var(--teal);text-transform:uppercase}
+.kick .n{display:inline-block;border:1.5px solid var(--teal);border-radius:4px;padding:1px 6px;margin-inline-end:8px;letter-spacing:0}
+h1{font-size:40px;line-height:1.15;color:var(--teal-ink);font-weight:900}
+h2{font-size:30px;line-height:1.2;color:var(--teal-ink);font-weight:900;margin:6px 0 4px}
+h2 .hl,h1 .hl{background:linear-gradient(transparent 60%,#E9D7AE 60% 92%,transparent 92%)}
+h2 + .ar{font-size:20px;color:var(--teal);margin-bottom:12px}
+h3{font-size:15px;color:var(--teal-ink);font-weight:900;margin-bottom:4px}
+p,li{font-size:13px;line-height:1.6;color:var(--ink2)}
+.foot{position:absolute;left:20mm;right:20mm;bottom:8mm;display:flex;justify-content:space-between;font-size:10px;color:var(--ink2);border-top:1px solid var(--line);padding-top:5px}
+.grid{display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;position:relative}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:6px 6px 0 -1px var(--card),6px 6px 0 0 var(--line)}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;border-radius:4px;padding:2px 7px;text-transform:uppercase}
+.tag.real{background:var(--soft);color:var(--teal-ink)}
+.tag.tpl{background:var(--amber-bg);color:var(--amber-ink)}
+.mark{display:block}
+.do,.dont{font-weight:900;font-size:12px}
+.do{color:var(--green-ink)} .dont{color:var(--red-ink)}
+ul{padding-inline-start:16px}
+.shot{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 0 var(--line)}
+.shot img{display:block;width:100%}
+.shot.fit img{height:100%;object-fit:cover;object-position:top}
+.cap{font-size:11px;color:var(--ink2);margin-top:5px}
+.stamp{display:inline-block;border:1.5px dashed currentColor;border-radius:4px;padding:2px 9px;font-weight:800;font-size:12px;transform:rotate(-3deg)}
+mark{background:linear-gradient(transparent 40%,var(--hl) 40% 90%,transparent 90%);color:inherit;padding:0 3px}
+</style></head><body>
+<div class="bar"><b>وضوح · Wodouh brand identity</b><a href="wodouh-brand-guide.pdf" download>Download PDF</a></div>
+<div class="stack">
 
-  /* ---- motion layer (additive; the page had none) ---- */
-
-  /* Reveal on scroll. JS opts elements in, so nothing is hidden without it. */
-  .rv{opacity:0;transform:translateY(20px)}
-  .rv.in{opacity:1;transform:none;
-    transition:opacity var(--t-slow) var(--ease-out),transform var(--t-slow) var(--ease-out)}
-  .rv-d1{transition-delay:50ms} .rv-d2{transition-delay:100ms} .rv-d3{transition-delay:150ms}
-
-  /* The hero mark arrives with presence — it is the subject of the page. */
-  .hero .mark{animation:mark-in 620ms var(--ease-spring) both}
-  @keyframes mark-in{from{opacity:0;transform:scale(.82) rotate(-8deg)}to{opacity:1;transform:none}}
-  .hero .ar-name,.hero .en-name,.hero .promise{opacity:0;animation:hero-in var(--t-slow) var(--ease-out) forwards}
-  .hero .ar-name{animation-delay:180ms} .hero .en-name{animation-delay:260ms} .hero .promise{animation-delay:340ms}
-  @keyframes hero-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-
-  /* The marks are stroke-built, so on reveal they draw themselves — the
-     motion shows how the logo is constructed rather than decorating it. */
-  .logo-stage svg use,.logo-stage svg>circle,.logo-stage svg>path,.logo-stage svg>rect{
-    stroke-dasharray:240;stroke-dashoffset:240}
-  .logo-card.in .logo-stage svg use,.logo-card.in .logo-stage svg>circle,
-  .logo-card.in .logo-stage svg>path,.logo-card.in .logo-stage svg>rect{
-    stroke-dashoffset:0;transition:stroke-dashoffset 900ms var(--ease-out)}
-  .logo-card.in .logo-stage svg>path{transition-delay:120ms}
-
-  /* Cards lift on hover, compress on press */
-  .logo-stage,.card,.swatch,.dont,.small-test .chip{
-    transition:transform var(--t-fast) var(--ease-spring),box-shadow var(--t-fast) var(--ease-out)}
-  @media (hover:hover){
-    .logo-stage:hover,.card:hover,.swatch:hover,.dont:hover{transform:translateY(-3px);box-shadow:var(--e2),var(--edge)}
-  }
-
-  /* Swatches arrive in sequence, so the palette reads as a set */
-  .swatch .color{transition:transform var(--t) var(--ease-spring)}
-  @media (hover:hover){ .swatch:hover .color{transform:scale(1.03)} }
-
-  /* The mockup's ring sweeps when it comes into view, the way the real one does */
-  .phone .ring circle:last-of-type{stroke-dashoffset:320.4;
-    transition:stroke-dashoffset 1200ms var(--ease-out)}
-  .phone.in .ring circle:last-of-type{stroke-dashoffset:102.5}
-
-  @media (prefers-reduced-motion: reduce){
-    .rv,.rv.in,.hero .mark,.hero .ar-name,.hero .en-name,.hero .promise{
-      opacity:1 !important;transform:none !important;animation:none !important;transition:none !important}
-    .logo-stage svg use,.logo-stage svg>circle,.logo-stage svg>path,.logo-stage svg>rect{
-      stroke-dasharray:none !important;stroke-dashoffset:0 !important;transition:none !important}
-    .phone .ring circle:last-of-type{stroke-dashoffset:102.5 !important;transition:none !important}
-    .logo-stage:hover,.card:hover,.swatch:hover,.dont:hover{transform:none !important}
-  }
-  section{padding:56px 0;border-bottom:1px solid var(--line)}
-  h2{font-size:26px;font-weight:700;color:var(--teal-ink);margin-bottom:6px}
-  .kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
-  .lede{color:var(--ink-2);max-width:640px;margin-bottom:28px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:26px;box-shadow:var(--e1),var(--edge)}
-  .grid{display:grid;gap:20px}
-
-  /* hero */
-  .hero{padding:72px 0 56px;text-align:center;border-bottom:1px solid var(--line)}
-  .hero .mark{width:88px;height:88px;margin:0 auto 20px}
-  .hero .ar-name{font-family:var(--ar);font-size:56px;color:var(--teal-ink);line-height:1.2}
-  .hero .en-name{font-size:30px;font-weight:700;letter-spacing:.06em;color:var(--teal);margin-top:2px}
-  .hero .promise{margin-top:18px;color:var(--ink-2);font-size:17px}
-  .hero .promise [lang="ar"]{display:block;font-size:20px;color:var(--ink);margin-bottom:4px}
-
-  /* voice */
-  .voice{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .voice h3{font-size:16px;color:var(--teal-ink);margin-bottom:8px}
-  .voice p{font-size:14.5px;color:var(--ink-2)}
-  .voice .say{color:var(--ink);font-style:italic;margin-top:10px;font-size:14.5px}
-
-  /* logos */
-  .logos{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-  .logo-card{text-align:center}
-  .logo-stage{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:34px 20px;display:flex;align-items:center;justify-content:center;min-height:180px;box-shadow:var(--e1),var(--edge)}
-  .logo-card h3{font-size:15.5px;color:var(--teal-ink);margin:14px 0 4px}
-  .logo-card p{font-size:13.5px;color:var(--ink-2);line-height:1.5}
-  .small-test{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:26px}
-  .small-test .chip{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:var(--r-lg);padding:13px 18px;background:var(--card);box-shadow:var(--e1),var(--edge)}
-  .chip.on-teal{background:var(--teal);border-color:var(--teal)}
-  .small-test svg{width:48px;height:48px;display:block}
-  .small-test span{font-size:12.5px;color:var(--ink-2)}
-  .chip.on-teal span{color:#EAF2EF}
-
-  /* palette */
-  .swatches{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .swatch{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);background:var(--card);box-shadow:var(--e1),var(--edge)}
-  .swatch .color{height:84px;box-shadow:inset 0 0 0 1px rgba(43,50,48,.12)}
-  .swatch .meta{padding:12px 14px}
-  .swatch .name{font-size:13.5px;font-weight:700;color:var(--ink)}
-  .swatch .hex{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-  .swatch .use{font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.45}
-
-  /* type */
-  .type-grid{grid-template-columns:1fr 1fr}
-  @media(max-width:720px){.type-grid{grid-template-columns:1fr}}
-  .specimen .face{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
-  .specimen .big-ar{font-family:var(--ar);font-size:34px;color:var(--ink);line-height:1.8}
-  .specimen .big-en{font-size:28px;font-weight:700;color:var(--ink)}
-  .specimen .body-ar{font-family:var(--ar);font-size:18px;color:var(--ink-2);line-height:2;margin-top:10px}
-  .specimen .body-en{font-size:15.5px;color:var(--ink-2);margin-top:10px}
-
-  /* icon sizes */
-  .icon-row{display:flex;align-items:flex-end;gap:36px;flex-wrap:wrap}
-  .icon-row figure{text-align:center}
-  .icon-row figcaption{font-size:12.5px;color:var(--ink-2);margin-top:10px}
-  .icon-row svg{display:block;margin:0 auto}
-
-  /* phone mockup */
-  .mock-wrap{display:flex;justify-content:center}
-  .phone{width:min(390px,100%);background:var(--sand);border:1px solid var(--line);border-radius:36px;padding:24px 18px 26px;box-shadow:var(--e3),var(--edge)}
-  .phone .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .phone .top .t-en{font-size:15px;font-weight:700;color:var(--teal-ink)}
-  .phone .top .t-ar{font-family:var(--ar);font-size:17px;color:var(--teal-ink)}
-  .score-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);padding:24px;text-align:center;box-shadow:var(--e1),var(--edge)}
-  .ring{width:118px;height:118px;margin:0 auto 12px;position:relative}
-  .ring svg{transform:rotate(-90deg)}
-  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .ring .num b{font-size:30px;color:var(--teal-ink);line-height:1}
-  .ring .num i{font-style:normal;font-size:11.5px;color:var(--ink-2)}
-  .verdict-ar{font-family:var(--ar);font-size:18px;color:var(--ink);line-height:1.9}
-  .verdict-en{font-size:14px;color:var(--ink-2);margin-top:4px}
-  .doc-label{display:inline-block;margin-top:12px;font-size:12px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 12px;font-weight:700}
-  .flags{margin-top:16px;display:grid;gap:10px}
-  .flag{display:flex;gap:12px;align-items:flex-start;border-radius:16px;padding:12px 14px;text-align:start}
-  .flag .dot{flex:none;width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-top:2px}
-  .flag .dot svg{width:14px;height:14px}
-  .flag h4{font-size:13.5px;color:var(--ink)}
-  .flag h4 span[lang="ar"]{font-size:14.5px}
-  .flag p{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:2px}
-  .flag.red{background:var(--red-bg)} .flag.red .dot{background:var(--red)}
-  .flag.amber{background:var(--amber-bg)} .flag.amber .dot{background:var(--amber)}
-  .flag.green{background:var(--green-bg)} .flag.green .dot{background:var(--green)}
-  .cta{margin-top:18px;width:100%;border:0;cursor:pointer;background:var(--teal);color:#F1E9D9;font-family:var(--en);font-size:15px;font-weight:700;border-radius:16px;padding:14px}
-  .cta{display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap}
-  .cta span[lang="ar"]{font-family:var(--ar);font-weight:400;font-size:16px}
-
-  /* donts */
-  .donts{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .dont{border:1px solid var(--line);border-radius:var(--r-lg);padding:17px 18px;background:var(--card);font-size:14px;color:var(--ink-2);box-shadow:var(--e1),var(--edge)}
-  .dont b{color:var(--red);display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
-
-  footer{padding:40px 0 64px;color:var(--ink-2);font-size:13px;text-align:center}
-</style>
-</head>
-<body>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <g id="mark-lens">
-      <circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5" fill="none"/>
-      <path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round" fill="none"/>
-    </g>
-    <g id="mark-doc">
-      <rect x="14" y="6" width="36" height="52" rx="8" stroke-width="5" fill="none"/>
-      <path d="M24 18h16" stroke-width="4" stroke-linecap="round" opacity="0.35" fill="none"/>
-      <path d="M24 27h16" stroke-width="4" stroke-linecap="round" opacity="0.35" fill="none"/>
-    </g>
-    <g id="mark-book">
-      <path d="M32 10c-6-3.5-14-4.5-21-3v33c0 8 9 14.5 21 18 12-3.5 21-10 21-18V7c-7-1.5-15-.5-21 3z" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <path d="M32 10v22" stroke-width="4.5" stroke-linecap="round" opacity="0.45" fill="none"/>
-    </g>
-    <g id="icon-tile">
-      <rect width="64" height="64" rx="14.5" fill="#1E6E64"/>
-      <g transform="translate(6.5 6.5) scale(0.797)" stroke="var(--sand)">
-        <circle cx="27.5" cy="27.5" r="17.5" stroke-width="6" fill="none"/>
-        <path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round" fill="none"/>
-      </g>
-    </g>
-  </defs>
-</svg>
-
-<header class="hero">
-  <div class="wrap">
-    <svg class="mark" viewBox="0 0 64 64" stroke="var(--teal-ink)"><use href="#mark-lens"/></svg>
-    <div class="ar-name" lang="ar">وضوح</div>
-    <div class="en-name">Wodouh</div>
-    <p class="promise">
-      <span lang="ar">اقرأ عقدك بوضوح… قبل ما توقّع.</span>
-      Understand any contract clearly — before you sign.
-    </p>
+<!-- ================================================= 1 COVER: the homepage hero, as a page -->
+<section class="page" style="padding:16mm 18mm">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;align-items:center;gap:10px"><svg width="34" height="34" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg>
+      <div><div class="ar" style="font-size:22px;font-weight:700;color:var(--teal-ink);line-height:1">وضوح</div><div style="font-size:9px;font-weight:800;letter-spacing:.3em;color:var(--teal)">WODOUH</div></div></div>
+    <div class="kick">Brand identity guide · v2 · October 2026</div>
   </div>
-</header>
-
-<main class="wrap">
-
-<section>
-  <p class="kicker">Brand personality</p>
-  <h2>A knowledgeable friend, not a law firm</h2>
-  <p class="lede">Wodouh reads employment, rental, and freelance contracts and explains them like a trusted friend who happens to know contracts well: calm, warm, and on your side. Never intimidating, never bureaucratic, never cold.</p>
-  <div class="grid voice">
-    <div class="card">
-      <h3>Calm authority</h3>
-      <p>Confident and precise without jargon. Short sentences. Verdicts, not lectures.</p>
-      <p class="say">“This clause is common — nothing to worry about.”</p>
-    </div>
-    <div class="card">
-      <h3>Warmth</h3>
-      <p>Speaks Saudi-everyday Arabic and friendly English. Addresses you directly, before a decision that matters.</p>
-      <p class="say" lang="ar">«خذ راحتك، بس انتبه للبند الرابع قبل التوقيع.»</p>
-    </div>
-    <div class="card">
-      <h3>On your side</h3>
-      <p>Every flag comes with what it means for you and what to do next — negotiate, ask, or relax.</p>
-      <p class="say">“Worth negotiating: ask for 30 days’ notice instead of 60.”</p>
-    </div>
-  </div>
-</section>
-
-<section>
-  <p class="kicker">Logo</p>
-  <h2>Four concept variations</h2>
-  <p class="lede">All marks say “seeing clearly through something important.” Rounded stroke caps, generous negative space. No gavels, no scales, no briefcases.</p>
-  <div class="grid logos">
-    <div class="logo-card">
-      <div class="logo-stage"><svg width="96" height="96" viewBox="0 0 64 64" stroke="var(--teal-ink)"><use href="#mark-lens"/></svg></div>
-      <h3>1 · Lens-Check <em style="color:var(--teal);font-style:normal">(primary)</em></h3>
-      <p>A magnifying glass whose lens resolves into a checkmark: look closely, then feel sure.</p>
-    </div>
-    <div class="logo-card">
-      <div class="logo-stage">
-        <svg width="96" height="96" viewBox="0 0 64 64" stroke="var(--teal-ink)"><use href="#mark-doc"/><path d="M22 41l7 7 13-15" stroke="var(--teal)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      </div>
-      <h3>2 · Clear-Line Document</h3>
-      <p>A soft document with one confident teal check sweeping through the fine print.</p>
-    </div>
-    <div class="logo-card">
-      <div class="logo-stage"><svg width="96" height="96" viewBox="0 0 64 64" stroke="var(--teal-ink)"><use href="#mark-book"/></svg></div>
-      <h3>3 · Open Book · Shield</h3>
-      <p>Pages that open into a protective shape — knowledge as protection, softly drawn.</p>
-    </div>
-    <div class="logo-card">
-      <div class="logo-stage">
-        <svg width="200" height="96" viewBox="0 0 240 96">
-          <g transform="translate(16 16)" stroke="var(--teal-ink)"><use href="#mark-lens"/></g>
-          <text x="100" y="46" font-family="'Noto Naskh Arabic','Geeza Pro','Amiri','Traditional Arabic',serif" font-size="34" fill="var(--teal-ink)">وضوح</text>
-          <text x="100" y="76" font-family="'Nunito','Avenir Next Rounded','Segoe UI',sans-serif" font-size="22" font-weight="600" letter-spacing="1" fill="var(--teal)">Wodouh</text>
-        </svg>
-      </div>
-      <h3>4 · Bilingual lockup</h3>
-      <p>Mark plus naskh «وضوح» and the Latin wordmark, balanced for RTL and LTR use.</p>
-    </div>
-  </div>
-  <div class="small-test">
-    <div class="chip"><svg viewBox="0 0 64 64" stroke="var(--teal-ink)"><use href="#mark-lens"/></svg><span>48 × 48 px on sand</span></div>
-    <div class="chip on-teal"><svg viewBox="0 0 64 64" stroke="var(--sand)"><use href="#mark-lens"/></svg><span>48 × 48 px on teal</span></div>
-    <div class="chip"><svg viewBox="0 0 64 64"><use href="#icon-tile"/></svg><span>App icon at 48 px</span></div>
-  </div>
-</section>
-
-<section>
-  <p class="kicker">Color</p>
-  <h2>Palette</h2>
-  <p class="lede">Warm teal for trust and “go,” sand for paper-like calm. Amber, red, and green are functional only — they mean something in a verdict, and are never used as decoration.</p>
-  <div class="grid swatches">
-    <div class="swatch"><div class="color" style="background:#1E6E64"></div><div class="meta"><div class="name">Wodouh Teal</div><div class="hex">#1E6E64</div><div class="use">Primary — buttons, links, brand moments</div></div></div>
-    <div class="swatch"><div class="color" style="background:#134B44"></div><div class="meta"><div class="name">Teal Ink</div><div class="hex">#134B44</div><div class="use">Logo, headings on light surfaces</div></div></div>
-    <div class="swatch"><div class="color" style="background:#F1E9D9"></div><div class="meta"><div class="name">Sand</div><div class="hex">#F1E9D9</div><div class="use">App background — warm, paper-like</div></div></div>
-    <div class="swatch"><div class="color" style="background:#FFFDF6"></div><div class="meta"><div class="name">Cream Card</div><div class="hex">#FFFDF6</div><div class="use">Cards and raised surfaces</div></div></div>
-    <div class="swatch"><div class="color" style="background:#A87822"></div><div class="meta"><div class="name">Negotiation Amber</div><div class="hex">#A87822</div><div class="use">Functional: “worth negotiating” flags only</div></div></div>
-    <div class="swatch"><div class="color" style="background:#B4544A"></div><div class="meta"><div class="name">Muted Red</div><div class="hex">#B4544A</div><div class="use">Functional: “red flag” items only — never alarm-red</div></div></div>
-    <div class="swatch"><div class="color" style="background:#478353"></div><div class="meta"><div class="name">Clear Green</div><div class="hex">#478353</div><div class="use">Functional: “all clear” items only</div></div></div>
-    <div class="swatch"><div class="color" style="background:#2B3230"></div><div class="meta"><div class="name">Warm Ink</div><div class="hex">#2B3230</div><div class="use">Body text (secondary: #5A625F)</div></div></div>
-  </div>
-</section>
-
-<section>
-  <p class="kicker">Typography</p>
-  <h2>Soft naskh · humanist sans</h2>
-  <p class="lede">Arabic leads in Noto Naskh Arabic — rounded, human curves, never geometric Kufi. English pairs with Nunito, a humanist sans with rounded terminals. Both faces are self-hosted and embedded in the page, so the identity renders the same everywhere — no external font requests.</p>
-  <div class="grid type-grid">
-    <div class="card specimen" lang="ar">
-      <div class="face" lang="en" style="direction:ltr;text-align:left">Arabic — Noto Naskh Arabic</div>
-      <div class="big-ar">وضوح — اقرأ عقدك بثقة</div>
-      <div class="body-ar">نقرأ العقد كاملًا، نشرح كل بند بلغة بسيطة، وننبّهك للمخاطر قبل التوقيع. مدة الإشعار، الشرط الجزائي، وبند عدم المنافسة — كلها بوضوح.</div>
-    </div>
-    <div class="card specimen">
-      <div class="face">English — Nunito</div>
-      <div class="big-en">Read your contract with confidence</div>
-      <div class="body-en">We read the whole contract, explain every clause in plain language, and flag the risks before you sign. Notice periods, penalties, non-compete clauses — all made clear.</div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <p class="kicker">App icon</p>
-  <h2>Legible from 48 px up</h2>
-  <p class="lede">The Lens-Check mark in cream on Wodouh Teal, on a soft rounded tile. One idea, thick strokes — it stays readable at home-screen size.</p>
-  <div class="icon-row">
-    <figure><svg width="48" height="48" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>48 px</figcaption></figure>
-    <figure><svg width="64" height="64" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>64 px</figcaption></figure>
-    <figure><svg width="128" height="128" viewBox="0 0 64 64"><use href="#icon-tile"/></svg><figcaption>128 px</figcaption></figure>
-  </div>
-</section>
-
-<section>
-  <p class="kicker">UI mockup</p>
-  <h2>The “Contract Score” result card</h2>
-  <p class="lede">The moment of truth in the app: a calm verdict, then flags ordered by what deserves attention — explained like a friend would.</p>
-  <div class="mock-wrap">
-    <div class="phone">
-      <div class="top">
-        <span class="t-ar" lang="ar">تقييم العقد</span>
-        <span class="t-en">Contract Score</span>
-      </div>
-      <div class="score-card">
-        <div class="ring">
-          <svg width="118" height="118" viewBox="0 0 118 118">
-            <circle cx="59" cy="59" r="51" stroke="#BEAD88" stroke-width="9" fill="none"/>
-            <circle cx="59" cy="59" r="51" stroke="#1E6E64" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="102.5"/>
-          </svg>
-          <div class="num"><b>68</b><i>/ 100</i></div>
+  <div style="display:grid;grid-template-columns:1fr 1.05fr;gap:26px;margin-top:20mm;align-items:center">
+    <!-- the annotated contract -->
+    <div style="position:relative;transform:rotate(-2.2deg)">
+      <div style="position:absolute;inset:0;background:var(--card);border:1px solid var(--line);border-radius:8px;transform:translate(-10px,-8px) rotate(-1.4deg)"></div>
+      <div class="ar" style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px 24px 18px;box-shadow:0 18px 30px -18px rgba(43,50,48,.35);background-image:repeating-linear-gradient(to bottom,transparent 0 33px,rgba(190,173,136,.22) 33px 34px)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid var(--ink);padding-bottom:8px"><b style="font-size:19px;color:var(--ink)">عقد عمل</b><span style="font-size:11px;color:var(--ink2)">صفحة 2 من 6</span></div>
+        <div style="display:grid;grid-template-columns:22px 1fr;gap:6px;margin-top:14px"><b style="font-size:12px;color:var(--ink2)">5</b><div><span style="font-size:14.5px;line-height:1.9;background:#EFD1CC;color:var(--ink)">يلتزم الموظف بعدم العمل في أي نشاط مشابه داخل المملكة لمدة سنتين من تاريخ انتهاء العقد.</span><br><span style="display:inline-block;margin-top:6px;font-size:11.5px;color:var(--red-ink);background:var(--red-bg);border-radius:6px;padding:3px 10px">بند عدم المنافسة · انتبه قبل التوقيع</span></div></div>
+        <div style="display:grid;grid-template-columns:22px 1fr;gap:6px;margin-top:12px"><b style="font-size:12px;color:var(--ink2)">7</b><div><span style="font-size:14.5px;line-height:1.9;background:#ECDDBA;color:var(--ink)">على الطرف الراغب في إنهاء العقد إشعار الطرف الآخر كتابيًا قبل ستين يومًا.</span><br><span style="display:inline-block;margin-top:6px;font-size:11.5px;color:var(--amber-ink);background:var(--amber-bg);border-radius:6px;padding:3px 10px">مدة الإشعار · يستاهل التفاوض</span></div></div>
+        <div style="display:grid;grid-template-columns:22px 1fr;gap:6px;margin-top:12px"><b style="font-size:12px;color:var(--ink2)">3</b><div><span style="font-size:14.5px;line-height:1.9;background:#D8E7D6;color:var(--ink)">راتب أساسي شهري مع بدل سكن 25٪ وبدل نقل 10٪.</span></div></div>
+        <p style="font-size:13px;color:var(--teal-ink);margin-top:14px">✎ عقد عادل بشكل عام، فاوض على بندين قبل التوقيع.</p>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:16px">
+          <div style="flex:1"><div style="border-bottom:1.5px dashed var(--ink2);width:72%"></div><div style="font-size:10.5px;color:var(--ink2);margin-top:4px">توقيع الطرف الثاني (لم يُوقَّع بعد)</div></div>
+          <svg width="74" height="74" viewBox="0 0 124 124"><circle cx="62" cy="62" r="53" fill="none" stroke="#BEAD88" stroke-width="8" opacity=".6"/><circle cx="62" cy="62" r="53" fill="none" stroke="#1E6E64" stroke-width="8" stroke-linecap="round" stroke-dasharray="333" stroke-dashoffset="107" transform="rotate(-90 62 62)"/><text x="62" y="70" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="30" fill="#134B44">68</text></svg>
         </div>
-        <div class="verdict-ar" lang="ar">عقد عادل بشكل عام — فاوض على بندين قبل التوقيع</div>
-        <div class="verdict-en">Mostly fair — negotiate two clauses before you sign.</div>
-        <span class="doc-label">Employment contract · <span lang="ar">عقد عمل</span></span>
-        <div class="flags">
-          <div class="flag red">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v5M7 10.6v.4" stroke="var(--sand)" stroke-width="2.2" stroke-linecap="round"/></svg></div>
-            <div>
-              <h4>Non-compete clause · <span lang="ar">بند عدم المنافسة</span></h4>
-              <p>Blocks you from similar work for 2 years across all of Saudi Arabia. That’s unusually broad — ask to narrow it before signing.</p>
-            </div>
-          </div>
-          <div class="flag amber">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round"/></svg></div>
-            <div>
-              <h4>Notice period · <span lang="ar">مدة الإشعار</span></h4>
-              <p>60 days is on the long side. 30 days is common — worth asking.</p>
-            </div>
-          </div>
-          <div class="flag amber">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M7 3v4.5M7 10.6v.4" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round"/></svg></div>
-            <div>
-              <h4>Overtime pay · <span lang="ar">أجر العمل الإضافي</span></h4>
-              <p>The contract doesn’t say how overtime is paid. Ask for it in writing.</p>
-            </div>
-          </div>
-          <div class="flag green">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-            <div>
-              <h4>Salary &amp; benefits · <span lang="ar">الراتب والبدلات</span></h4>
-              <p>Clearly stated, paid monthly, with housing and transport allowances. All clear.</p>
-            </div>
-          </div>
-          <div class="flag green">
-            <div class="dot"><svg viewBox="0 0 14 14" fill="none"><path d="M3.2 7.4l2.6 2.6 5-5.6" stroke="#FFFDF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-            <div>
-              <h4>Annual leave · <span lang="ar">الإجازة السنوية</span></h4>
-              <p>30 days paid leave — matches the standard. All clear.</p>
-            </div>
-          </div>
-        </div>
-        <button class="cta"><span>Explain each clause</span><span aria-hidden="true">·</span><span lang="ar">اشرح لي البنود</span></button>
+      </div>
+    </div>
+    <!-- the headline -->
+    <div class="ar" style="text-align:right">
+      <span style="display:inline-block;font-size:12.5px;color:var(--teal-ink);background:var(--soft);border-radius:99px;padding:5px 14px">يعمل على جهازك، وما يُرفع عقدك إلا بموافقتك</span>
+      <div style="font-size:62px;font-weight:700;line-height:1.25;color:var(--teal-ink);margin-top:14px">اعرف موقفك،<br><span style="color:var(--teal)">قبل ما توقّع.</span></div>
+      <svg width="260" height="34" viewBox="0 0 300 38" style="display:block;margin-top:2px" fill="none" stroke="#1E6E64" stroke-width="2.6" stroke-linecap="round"><path d="M4 26c14-10 26-16 34-10 7 5-6 14 2 13 11-1 17-19 27-18 8 1 1 14 9 13 10-1 14-12 22-11 9 1 6 10 15 9 12-1 19-9 30-8s14 8 25 7c14-1 24-9 40-8 14 1 26 6 40 3 12-2 22-8 42-9"/></svg>
+      <div style="font-family:'Nunito';direction:ltr;text-align:right;font-size:22px;font-weight:800;color:var(--ink2);margin-top:10px">Know where you stand, before you sign.</div>
+      <div style="display:flex;gap:10px;justify-content:flex-start;margin-top:22px;direction:rtl">
+        <span style="font-size:14px;font-weight:700;color:var(--card);background:var(--teal);border-radius:10px;padding:10px 20px">حلّل عقدًا مجانًا</span>
+        <span style="font-family:'Nunito';font-size:14px;font-weight:800;color:var(--teal);border:1.5px solid var(--teal);border-radius:10px;padding:9px 18px">alwodouh.com</span></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:18mm;right:18mm;bottom:12mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:8px;font-size:11px;color:var(--ink2)">
+    <span>Logo · Colour · Type · Paper · The annotated contract · Icons · Voice · Examples</span><span class="ar">دليل هوية وضوح</span></div>
+</section>
+
+<!-- ================================================= 2 WHO WE ARE -->
+<section class="page">
+  <div class="kick"><span class="n">01</span>Who we are</div>
+  <h2>A knowledgeable friend, <span class="hl">not a law firm</span></h2>
+  <div class="ar">صديق يفهم في العقود، مو مكتب محاماة</div>
+  <div class="grid" style="grid-template-columns:1.3fr 1fr;margin-top:8px">
+    <div>
+      <p style="font-size:15px;color:var(--ink)">Wodouh reads employment, rental, freelance and loan contracts in Saudi Arabia and tells people, in plain Arabic and English, what binds them, what is unusual, and where each point comes from. It also works out what a worker is owed when a job ends.</p>
+      <p style="font-size:15px;color:var(--ink);margin-top:10px"><b style="color:var(--teal-ink)">Our promise:</b> you should never have to take our word for it. Every figure shows its rule, every flag shows its source, and what we could not assess is said out loud.</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:16px">
+        <div class="card"><h3>Calm authority</h3><p>Precise, short sentences. Verdicts, not lectures.</p></div>
+        <div class="card"><h3>Warm</h3><p>Everyday Saudi Arabic, friendly English. We talk to you, not about you.</p></div>
+        <div class="card"><h3>On your side</h3><p>Every flag says what it means for you and what to do next.</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px"><h3>Who it is for</h3><ul>
+        <li>An employee reading an offer before signing.</li>
+        <li>Someone let go last week, working out what they are owed.</li>
+        <li>A tenant, a freelancer, a borrower with a contract in front of them.</li>
+        <li>HR teams and brokers reading contracts every week (Wodouh for business).</li></ul></div>
+      <div class="card" style="border-color:var(--red);background:var(--red-bg)"><h3 style="color:var(--red-ink)">What we never claim</h3><ul>
+        <li>We are not a law firm and give no legal representation.</li>
+        <li>No guaranteed outcomes, no invented articles, no invented numbers.</li>
+        <li>No licence, seal or approval we do not hold.</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>02</span></div>
+</section>
+
+<!-- ================================================= 3 LOGO -->
+<section class="page">
+  <div class="kick"><span class="n">02</span>Logo</div>
+  <h2>The <span class="hl">lens-check</span> mark</h2>
+  <div class="ar">انظر عن قرب، ثم اطمئن</div>
+  <div class="grid" style="grid-template-columns:1.1fr 1fr 1fr;margin-top:6px;align-items:start">
+    <div class="card" style="text-align:center;padding:26px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+        <svg width="84" height="84" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg>
+        <div style="text-align:start"><div class="ar" style="font-size:40px;font-weight:700;color:var(--teal-ink);line-height:1">وضوح</div><div style="font-size:15px;font-weight:800;letter-spacing:.32em;color:var(--teal)">WODOUH</div></div>
+      </div>
+      <p style="margin-top:14px">Primary lockup. The mark sits on the leading side: left in English, and still left in Arabic, where the Arabic name leads the text.</p>
+    </div>
+    <div class="card">
+      <h3>How it is built</h3>
+      <p>A magnifying glass whose lens resolves into a check: look closely, then feel sure. Three strokes, rounded caps, no fill.</p>
+      <svg width="200" height="140" viewBox="0 0 64 44" fill="none" style="margin-top:8px"><g stroke="#134B44" opacity=".25"><path d="M0 10h64M0 45h64" stroke-width=".4" stroke-dasharray="1 1"/></g>
+        <g transform="translate(4 0) scale(.68)" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" stroke="#1E6E64"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round" stroke="#A87822"/></g>
+        <text x="44" y="12" font-size="3.4" fill="#5A625F" font-family="Nunito">lens</text><text x="44" y="22" font-size="3.4" fill="#1E6E64" font-family="Nunito">check</text><text x="44" y="34" font-size="3.4" fill="#A87822" font-family="Nunito">handle</text></svg>
+    </div>
+    <div class="card">
+      <h3>Clear space and size</h3>
+      <p>Keep clear space equal to the lens radius on every side. Smallest sizes: <b>24 px</b> on screen, <b>8 mm</b> in print. Below that, use the app icon tile.</p>
+      <div style="display:flex;gap:14px;align-items:flex-end;margin-top:14px">
+        <div style="text-align:center"><svg width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14.5" fill="#1E6E64"/><g transform="translate(6.5 6.5) scale(.797)" fill="none" stroke="#F7F1E6"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="6"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round"/></g></svg><div class="cap">App icon</div></div>
+        <div style="text-align:center"><svg width="32" height="32" viewBox="0 0 64 64"><rect width="64" height="64" rx="14.5" fill="#1E6E64"/><g transform="translate(6.5 6.5) scale(.797)" fill="none" stroke="#F7F1E6"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="6"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round"/></g></svg><div class="cap">32 px</div></div>
+        <div style="text-align:center"><svg width="24" height="24" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="6"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round"/></svg><div class="cap">24 px min</div></div>
       </div>
     </div>
   </div>
-</section>
-
-<section>
-  <p class="kicker">Guardrails</p>
-  <h2>What Wodouh never looks like</h2>
-  <div class="grid donts">
-    <div class="dont"><b>No law-firm signals</b>Gavels, scales of justice, briefcases, columns, navy &amp; gold.</div>
-    <div class="dont"><b>No cold fintech</b>Sterile white, harsh gradients, sharp corners, geometric Kufi Arabic.</div>
-    <div class="dont"><b>No alarm</b>Bright alarm-red, warning sirens, ALL-CAPS threats. Risks are explained calmly.</div>
-    <div class="dont"><b>No decoration with meaning-colors</b>Amber, red, and green appear only inside verdicts and flags.</div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:14px">
+    <div style="background:var(--sand);border:1px solid var(--line);border-radius:8px;height:90px;display:grid;place-items:center"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div>
+    <div style="background:var(--teal);border-radius:8px;height:90px;display:grid;place-items:center"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="#F1E9D9"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div>
+    <div style="background:#0F1513;border-radius:8px;height:90px;display:grid;place-items:center"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="#8FCBBE"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div>
   </div>
+  <p class="cap" style="margin-top:6px">Approved colourways: Teal Ink on Sand · Sand on Teal · Teal Ink (dark) on night. Files: brand/assets/logo-1-lens-check.svg, logo-4-wordmark.svg, app-icon.svg.</p>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>03</span></div>
 </section>
 
-</main>
+<!-- ================================================= 4 LOGO DON'TS -->
+<section class="page">
+  <div class="kick"><span class="n">03</span>Logo misuse</div>
+  <h2>Keep it <span class="hl">calm and whole</span></h2>
+  <div class="ar">لا تمدّه، ولا تلوّنه، ولا تزخرفه</div>
+  <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:14px">
+    <div class="card" style="text-align:center"><div style="height:90px;display:grid;place-items:center"><svg width="90" height="50" viewBox="0 0 64 64" preserveAspectRatio="none" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div><div class="dont">✕ Stretched</div></div>
+    <div class="card" style="text-align:center"><div style="height:90px;display:grid;place-items:center"><svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#7A3FD1"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div><div class="dont">✕ Off-palette colour</div></div>
+    <div class="card" style="text-align:center"><div style="height:90px;display:grid;place-items:center;background:repeating-linear-gradient(45deg,#c2493a 0 8px,#f0b13c 8px 16px,#3a7bc2 16px 24px);border-radius:6px"><svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div><div class="dont">✕ Busy background</div></div>
+    <div class="card" style="text-align:center"><div style="height:90px;display:grid;place-items:center"><svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#134B44" style="transform:rotate(-30deg)"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div><div class="dont">✕ Rotated</div></div>
+    <div class="card" style="text-align:center"><div style="height:90px;display:grid;place-items:center"><svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#134B44" style="filter:drop-shadow(4px 4px 3px rgba(0,0,0,.6))"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg></div><div class="dont">✕ Shadows, glows, 3D</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card"><h3>Never in the Wodouh world</h3><ul>
+      <li>Law-firm signals: gavels, columns, briefcases, navy and gold.</li>
+      <li>Cold fintech: sterile white, harsh gradients, sharp corners, geometric Kufi.</li>
+      <li>Alarm: bright red, sirens, ALL-CAPS threats. Risks are explained calmly.</li>
+      <li>Emoji as icons. They render differently on every phone and read as chat.</li></ul></div>
+    <div class="card"><h3>Always</h3><ul>
+      <li>The mark exactly as drawn, from the SVG files, never redrawn.</li>
+      <li>One of the three approved colourways.</li>
+      <li>Rounded strokes, generous space, paper calm.</li>
+      <li>Arabic and English given equal care.</li>
+      <li>When in doubt, show a contract being read: clause, highlight, margin note.</li></ul></div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>04</span></div>
+</section>
 
-<footer>
-  <span lang="ar">وضوح</span> · Wodouh — brand identity v1
-</footer>
+<!-- ================================================= 5 COLOUR -->
+<section class="page">
+  <div class="kick"><span class="n">04</span>Colour</div>
+  <h2>Teal for trust, <span class="hl">sand for paper</span></h2>
+  <div class="ar">التيل للثقة، والرملي لهدوء الورق</div>
+  <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:8px">
+    <div><div style="height:96px;border-radius:8px;background:#1E6E64"></div><h3 style="margin-top:6px">Wodouh Teal</h3><p>#1E6E64 · buttons, links, brand moments</p></div>
+    <div><div style="height:96px;border-radius:8px;background:#134B44"></div><h3 style="margin-top:6px">Teal Ink</h3><p>#134B44 · logo, headings</p></div>
+    <div><div style="height:96px;border-radius:8px;background:#F1E9D9;border:1px solid var(--line)"></div><h3 style="margin-top:6px">Sand</h3><p>#F1E9D9 · backgrounds</p></div>
+    <div><div style="height:96px;border-radius:8px;background:#FFFDF6;border:1px solid var(--line)"></div><h3 style="margin-top:6px">Card</h3><p>#FFFDF6 · paper, cards</p></div>
+    <div><div style="height:96px;border-radius:8px;background:#2B3230"></div><h3 style="margin-top:6px">Warm Ink</h3><p>#2B3230 · text (#5A625F secondary)</p></div>
+  </div>
+  <div class="grid" style="grid-template-columns:1.4fr 1fr;margin-top:16px">
+    <div>
+      <h3>Functional colours: they mean something, so they are never decoration</h3>
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:6px">
+        <div class="card" style="background:#F6EAD2;border-color:#A87822"><span class="stamp" style="color:#8A6114">Worth negotiating</span><p style="margin-top:6px">Amber #A87822 · ink #8A6114 · bg #F6EAD2</p></div>
+        <div class="card" style="background:#F3DFDC;border-color:#B4544A"><span class="stamp" style="color:#8E3A31">Read before signing</span><p style="margin-top:6px">Red #B4544A · ink #8E3A31 · bg #F3DFDC</p></div>
+        <div class="card" style="background:#E2EEE2;border-color:#478353"><span class="stamp" style="color:#33663D">All clear</span><p style="margin-top:6px">Green #478353 · ink #33663D · bg #E2EEE2</p></div>
+      </div>
+      <h3 style="margin-top:14px">Proportion</h3>
+      <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin-top:4px;border:1px solid var(--line)">
+        <div style="flex:60;background:#F1E9D9"></div><div style="flex:25;background:#1E6E64"></div><div style="flex:10;background:#2B3230"></div><div style="flex:5;background:linear-gradient(90deg,#A87822,#B4544A,#478353)"></div></div>
+      <p class="cap">About 60 sand and card · 25 teal · 10 ink · 5 functional, and only where a verdict needs it.</p>
+    </div>
+    <div class="card" style="background:#0F1513;border-color:#41504C">
+      <h3 style="color:#8FCBBE">Dark mode</h3>
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px">
+        <div><div style="height:46px;border-radius:6px;background:#46A695"></div><p style="color:#A3ABA6;font-size:11px">Teal #46A695</p></div>
+        <div><div style="height:46px;border-radius:6px;background:#8FCBBE"></div><p style="color:#A3ABA6;font-size:11px">Ink #8FCBBE</p></div>
+        <div><div style="height:46px;border-radius:6px;background:#212C29;border:1px solid #41504C"></div><p style="color:#A3ABA6;font-size:11px">Card #212C29</p></div>
+        <div><div style="height:46px;border-radius:6px;background:#EDE6D8"></div><p style="color:#A3ABA6;font-size:11px">Text #EDE6D8</p></div>
+      </div>
+      <p style="color:#A3ABA6;margin-top:8px">Night is #0F1513, never pure black. Every pair the app uses passes WCAG AA for its size; the app's own contrast tests enforce it.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>05</span></div>
+</section>
 
-<script src="brand.js"></script>
-</body>
-</html>
+<!-- ================================================= 6 TYPE -->
+<section class="page">
+  <div class="kick"><span class="n">05</span>Typography</div>
+  <h2>Soft naskh, <span class="hl">humanist sans</span></h2>
+  <div class="ar">نسخ ناعم، وحروف لاتينية دافئة</div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+    <div class="card">
+      <div class="kick" style="color:var(--ink2)">Arabic · Noto Naskh Arabic</div>
+      <div class="ar" style="font-size:44px;font-weight:700;color:var(--teal-ink);margin-top:4px">اقرأ عقدك بثقة</div>
+      <div class="ar" style="font-size:16px;line-height:1.9;color:var(--ink)">نقرأ العقد كاملًا، ونشرح كل بند بلغة بسيطة، وننبّهك للمخاطر قبل التوقيع: مدة الإشعار، والشرط الجزائي، وبند عدم المنافسة.</div>
+      <p style="margin-top:6px">Regular 400 for reading, Bold 700 for headings. Never geometric Kufi.</p>
+    </div>
+    <div class="card">
+      <div class="kick" style="color:var(--ink2)">English · Nunito</div>
+      <div style="font-size:40px;font-weight:900;color:var(--teal-ink);margin-top:4px;line-height:1.2">Read your contract with confidence</div>
+      <div style="font-size:15px;line-height:1.7;color:var(--ink)">We read the whole contract, explain every clause in plain language, and flag the risks before you sign.</div>
+      <p style="margin-top:6px">Regular 400 to Black 900. Rounded terminals match the rounded strokes of the mark.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>The scale: nine sizes, nothing in between</h3>
+    <div style="display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;margin-top:6px;color:var(--teal-ink)">
+      <span style="font-size:36px;font-weight:900">36</span><span style="font-size:24px;font-weight:900">24</span><span style="font-size:19px;font-weight:800">19</span><span style="font-size:16.5px;font-weight:800">16.5</span><span style="font-size:15px;font-weight:700">15</span><span style="font-size:14px">14</span><span style="font-size:13px">13</span><span style="font-size:12px">12</span><span style="font-size:10.5px">10.5</span></div>
+    <p style="margin-top:6px">Sizes in px for screens; the app's type-scale test fails any size outside this list. Figures are written in Western numerals (149, 299) in both languages, so a price never has to be read twice.</p>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>06</span></div>
+</section>
+
+<!-- ================================================= 7 PAPER -->
+<section class="page ruled">
+  <div class="kick"><span class="n">06</span>Design language</div>
+  <h2>Everything is <span class="hl">a contract on paper</span></h2>
+  <div class="ar">كل شيء ورقة عقد تقرأها معنا</div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+    <div class="card"><h3>Ruled sheet + second sheet</h3>
+      <div class="sheet" style="height:84px;margin:10px 8px 10px 0;background:repeating-linear-gradient(to bottom,#FFFDF6 0 17px,#EDE3CC 17px 18px)"></div>
+      <p>Documents sit on ruled paper with a second sheet peeking out behind.</p></div>
+    <div class="card"><h3>The highlighter</h3>
+      <p style="font-size:15px;color:var(--ink);margin:12px 0">The employee may not work <mark>anywhere in the Kingdom for two years</mark> after the contract ends.</p>
+      <p>The clause that matters is highlighted, not underlined or bolded.</p></div>
+    <div class="card"><h3>Stamps, not pills</h3>
+      <div style="margin:14px 0;display:flex;gap:10px;flex-wrap:wrap"><span class="stamp" style="color:var(--amber-ink);background:var(--amber-bg)">We recommend this</span><span class="stamp" style="color:var(--teal-ink);background:var(--soft);transform:none">Save 49 SAR</span><span class="stamp" style="color:var(--red-ink);background:var(--red-bg);transform:rotate(2deg)">Read before signing</span></div>
+      <p>Badges are dashed and slightly turned, like a rubber stamp. Facts about price stay straight.</p></div>
+    <div class="card" style="overflow:hidden"><h3>Folded corner</h3>
+      <div style="position:relative;height:70px;margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:6px"><div style="position:absolute;top:-1px;left:-1px;width:22px;height:22px;background:linear-gradient(135deg,var(--sand) 50%,#E5D9BF 50%)"></div></div>
+      <p style="margin-top:6px">Index cards for samples, sources and situations.</p></div>
+    <div class="card"><h3>Tape</h3>
+      <div style="position:relative;height:70px;margin-top:8px;background:var(--teal);border-radius:8px"><div style="position:absolute;top:-7px;left:50%;width:70px;height:16px;margin-left:-35px;background:rgba(241,233,217,.75);border:1px solid var(--line);transform:rotate(-2deg)"></div></div>
+      <p style="margin-top:6px">Holds the one primary action to the page.</p></div>
+    <div class="card"><h3>The signature line</h3>
+      <div style="height:70px;display:flex;align-items:flex-end;gap:10px;margin-top:8px"><span style="font-size:12px;color:var(--ink2)">Signature</span><span style="flex:1;border-bottom:1.5px dashed var(--ink2)"></span></div>
+      <p style="margin-top:6px">Letters end like real letters: the reader signs, not us.</p></div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>07</span></div>
+</section>
+
+<!-- ================================================= 7b THE ANNOTATED CONTRACT -->
+<section class="page">
+  <div class="kick"><span class="n">06b</span>Signature motif</div>
+  <h2>The <span class="hl">annotated contract</span></h2>
+  <div class="ar">العقد المُعلَّق عليه: هويتنا في صورة واحدة</div>
+  <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-top:4px;align-items:start">
+    <div><div class="shot" style="border-radius:10px"><img src="assets/hero-ar.jpg"></div><p class="cap"><span class="tag real">Real product</span> alwodouh.com home, Arabic. The hero is a contract being read with you.</p></div>
+    <div>
+      <ol style="padding-inline-start:18px;display:grid;gap:7px">
+        <li><b style="color:var(--teal-ink)">Margin clause numbers.</b> 5, 7, 3: real clause numbers sit in the margin, like a printed contract.</li>
+        <li><b style="color:var(--teal-ink)">Colour-coded highlight + margin note.</b> Red "pause before signing", amber "worth negotiating", green "all clear". The note names the clause and the action, never a threat.</li>
+        <li><b style="color:var(--teal-ink)">Page counter.</b> «صفحة 2 من 6»: we are in the middle of a real document, not a slogan.</li>
+        <li><b style="color:var(--teal-ink)">The pen note.</b> ✎ one-line verdict in teal, as if written in the margin by a friend.</li>
+        <li><b style="color:var(--teal-ink)">The unsigned line.</b> «لم يُوقَّع بعد»: the decision is still the reader's.</li>
+        <li><b style="color:var(--teal-ink)">Score seal.</b> The 0 to 100 ring, stamped at the foot of the page.</li>
+        <li><b style="color:var(--teal-ink)">Hand-drawn underline.</b> A single pen stroke under the headline. Used once per screen, never as decoration elsewhere.</li>
+        <li><b style="color:var(--teal-ink)">Sections are clauses.</b> Every section kicker is numbered like a clause, on a ruled card: <span class="ar" style="color:var(--teal)">البند 1 · وش هو وضوح</span>, "Clause 1 · What Wodouh is".</li>
+      </ol>
+    </div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>07b</span></div>
+</section>
+
+<!-- ================================================= 8 ICONS -->
+<section class="page">
+  <div class="kick"><span class="n">07</span>Iconography</div>
+  <h2>Line icons, <span class="hl">never emoji</span></h2>
+  <div class="ar">أيقونات خطية، بدون إيموجي</div>
+  <p style="max-width:720px">24 px grid · 1.7 to 2.2 stroke · rounded caps and joins · no fill · Teal Ink on a soft-teal tile with a paper border. The same rules as the tab bar.</p>
+  <div id="icons" style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:16px"></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
+    <div class="card"><span class="do">✓ Do</span><p>One idea per icon. Pair every icon with a word; icons never stand alone as the only label.</p></div>
+    <div class="card"><span class="dont">✕ Don't</span><p>Emoji, filled glyphs, gradients, or justice clichés like gavels and columns.</p></div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>08</span></div>
+</section>
+
+<!-- ================================================= 9 VOICE -->
+<section class="page">
+  <div class="kick"><span class="n">08</span>Voice</div>
+  <h2>Say it <span class="hl">like a friend who knows</span></h2>
+  <div class="ar">قلها مثل صديق يفهم</div>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">
+    <div class="card"><h3>Arabic first</h3><p>Everyday Saudi (Gulf) Arabic, warm and clear. English is a full equal, plain and professional, never a word-for-word translation.</p></div>
+    <div class="card"><h3>Show the source</h3><p>Every figure names its rule; every flag names its article, or says it is our own reading. Say what we could not assess.</p></div>
+    <div class="card"><h3>No pressure</h3><p>Many readers have just lost their income. No fear, no false urgency, no countdowns, no "guaranteed".</p></div>
+  </div>
+  <h3 style="margin-top:14px">Before and after, from our own product</h3>
+  <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+    <div class="card" style="border-color:var(--red)"><span class="dont">✕ Before</span><p style="color:var(--ink)">"Not satisfied? We refund you, no questions asked."</p></div>
+    <div class="card" style="border-color:var(--green)"><span class="do">✓ After</span><p style="color:var(--ink)">"If we got it wrong, we refund you in full."</p><p class="ar" dir="rtl" style="color:var(--ink);text-align:right">«إذا كان الخطأ منّا، نرجّع لك المبلغ كاملًا.»</p></div>
+    <div class="card" style="border-color:var(--red)"><span class="dont">✕ Before</span><p style="color:var(--ink)">"Your score and flags are always free."</p></div>
+    <div class="card" style="border-color:var(--green)"><span class="do">✓ After</span><p style="color:var(--ink)">"The score, the decision and your most serious flag are free with one scan a month."</p></div>
+    <div class="card" style="border-color:var(--red)"><span class="dont">✕ Before</span><p style="color:var(--ink)">"Lock in launch pricing."</p></div>
+    <div class="card" style="border-color:var(--green)"><span class="do">✓ After</span><p style="color:var(--ink)">"You'll reach a person, not a form. Ask about your situation."</p></div>
+  </div>
+  <p class="cap" style="margin-top:10px">House style: no em dashes and no slashes in copy; commas and full stops instead. Western numerals. "Wodouh is not a law firm" wherever legal content appears.</p>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>09</span></div>
+</section>
+
+<!-- ================================================= 10 APP -->
+<section class="page">
+  <div class="kick"><span class="n">09</span>In use · the app</div>
+  <h2>The product <span class="hl">is the brand</span> <span class="tag real" style="vertical-align:middle">Real product, alwodouh.com</span></h2>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:10px;align-items:start">
+    <div><div class="shot fit" style="height:118mm"><img src="assets/walk-home-ar.jpg"></div><p class="cap">Home, Arabic. One primary action, taped.</p></div>
+    <div><div class="shot fit" style="height:118mm"><img src="assets/walk-result-en.jpg"></div><p class="cap">Result. Score, verdict, the clause highlighted.</p></div>
+    <div><div class="shot fit" style="height:118mm"><img src="assets/paywall-review-ar.jpg"></div><p class="cap">Paywall. One recommendation, stamped.</p></div>
+    <div><div class="shot fit" style="height:118mm"><img src="assets/walk-letter-en.jpg"></div><p class="cap">Letter. Ruled paper, signature line.</p></div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>10</span></div>
+</section>
+
+<!-- ================================================= 11 SOCIAL -->
+<section class="page">
+  <div class="kick"><span class="n">10</span>In use · social</div>
+  <h2>X profile and <span class="hl">posts</span></h2>
+  <div style="display:grid;grid-template-columns:62mm 1fr;gap:14px;margin-top:8px;align-items:start">
+    <div><div class="shot"><img src="assets/profile-mockup-light.png"></div><p class="cap"><span class="tag tpl">Template</span> Profile: avatar 400×400, banner 1500×500 (brand/assets).</p></div>
+    <div>
+      <div class="shot" style="border-radius:8px;width:100%"><img src="assets/banner.png"></div><p class="cap">Banner. Nothing essential in the bottom corners, where the avatar sits in both Arabic and English layouts.</p>
+      <div style="display:grid;grid-template-columns:62mm 62mm 1fr;gap:12px;margin-top:8px;align-items:start">
+        <div class="sheet" style="height:62mm;padding:14px;display:flex;flex-direction:column;background:repeating-linear-gradient(to bottom,#FFFDF6 0 25px,#EDE3CC 25px 26px)">
+          <div class="kick" style="font-size:8.5px">Clause of the week · <span class="ar">بند الأسبوع</span></div>
+          <div class="ar" style="font-size:15px;line-height:1.75;color:var(--ink);margin-top:6px;flex:1">يلتزم الموظف بعدم العمل في أي نشاط مشابه <mark>داخل المملكة لمدة سنتين</mark>.</div>
+          <span class="stamp ar" style="color:var(--red-ink);background:var(--red-bg);font-size:11px;align-self:flex-end">انتبه قبل التوقيع</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:10px;color:var(--ink2)"><span>alwodouh.com</span><svg width="16" height="16" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="6"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="6" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="7" stroke-linecap="round"/></svg></div></div>
+        <div style="height:62mm;padding:14px;border-radius:8px;background:var(--teal);color:var(--sand);display:flex;flex-direction:column">
+          <div class="kick" style="font-size:8.5px;color:#DCE9E6">Q&amp;A · <span class="ar">سؤال وجواب</span></div>
+          <div class="ar" style="font-size:17px;font-weight:700;line-height:1.5;margin-top:8px">انتهى عقدي، هل فات الأوان أطالب؟</div>
+          <div class="ar" style="font-size:12px;line-height:1.7;color:#DCE9E6;margin-top:6px;flex:1">الدعوى العمالية لا تُسمع بعد 12 شهرًا من انتهاء العلاقة. نظام العمل، المادة 222.</div>
+          <div style="font-size:10px;color:#DCE9E6">alwodouh.com</div></div>
+        <div><p class="cap" style="margin-top:0"><span class="tag tpl">Template</span></p><p style="margin-top:6px">Post cards, 1080×1080. Paper for clauses, teal for questions.</p><p style="margin-top:6px">Every legal statement carries its source line. Never a claim without its article, and never an article that is not verified.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>11</span></div>
+</section>
+
+<!-- ================================================= 12 DOCUMENTS & MARKETING -->
+<section class="page">
+  <div class="kick"><span class="n">11</span>In use · documents and marketing</div>
+  <h2>Paper the reader <span class="hl">signs and sends</span></h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1.15fr;margin-top:8px;align-items:start">
+    <div><div class="shot fit" style="height:120mm"><img src="assets/walk-letter-ar.jpg"></div><p class="cap"><span class="tag real">Real product</span> Negotiation letter, Arabic. The reader's voice, no Wodouh footer.</p></div>
+    <div><div class="shot fit" style="height:120mm"><img src="assets/paywall-case-en.jpg"></div><p class="cap"><span class="tag real">Real product</span> Case paywall. Leads with what you get.</p></div>
+    <div>
+      <div style="width:62%;margin:0 auto;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:var(--sand);border:1px solid var(--line);position:relative;padding:22px 18px;background:repeating-linear-gradient(to bottom,var(--sand) 0 25px,rgba(190,173,136,.35) 25px 26px)">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="#134B44"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg>
+        <div class="ar" style="font-size:24px;font-weight:700;color:var(--teal-ink);line-height:1.4;margin-top:24px">قبل ما توقّع،<br><span style="background:linear-gradient(transparent 60%,#E9D7AE 60% 92%,transparent 92%)">الصق عقدك هنا.</span></div>
+        <div class="ar" style="font-size:13px;color:var(--ink2);margin-top:10px;line-height:1.7">تقييم واضح، وأخطر بند فيه، ومصدره من النظام. مجانًا، بفحص واحد كل شهر.</div>
+        <div style="position:absolute;left:18px;right:18px;bottom:22px;text-align:center;font-weight:800;font-size:13px;color:var(--card);background:var(--teal);border-radius:8px;padding:9px">alwodouh.com</div>
+      </div>
+      <p class="cap" style="text-align:center"><span class="tag tpl">Template</span> Story / WhatsApp status, 1080×1920.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Wodouh brand identity guide</span><span>12</span></div>
+</section>
+
+<!-- ================================================= 13 BACK -->
+<section class="page" style="background:var(--teal);color:var(--sand);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none" stroke="#F1E9D9"><circle cx="27.5" cy="27.5" r="17.5" stroke-width="5.5"/><path d="M19.5 28.5l6 6 11-12.5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 41l11.5 11.5" stroke-width="6.5" stroke-linecap="round"/></svg>
+  <div class="ar" style="font-size:52px;font-weight:700;margin-top:10px">وضوح</div>
+  <div style="font-size:20px;font-weight:800;letter-spacing:.32em">WODOUH</div>
+  <div style="font-size:16px;margin-top:24px">alwodouh.com · support@alwodouh.com</div>
+  <p style="color:#DCE9E6;max-width:640px;margin-top:22px;font-size:11px">Wodouh is a technology platform providing general legal information and AI-assisted contract tools. It is not a law firm and does not provide legal representation. Operated as an independent Saudi activity under a Freelance Work Certificate.</p>
+</section>
+
+</div>
+<script>
+const ICONS = {
+  "Upload":'<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
+  "Review":'<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  "Rights":'<path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.8"/>',
+  "Reminders":'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  "Ask":'<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M10 9a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1v.4"/><path d="M12 14.2h.01"/>',
+  "Calendar":'<path d="M4 6h16v14H4z"/><path d="M4 10h16M8 3v4M16 3v4"/><path d="M8 14h3"/>',
+  "Vault":'<path d="M3 4h18v4H3z"/><path d="M4.5 8v12h15V8"/><path d="M10 12h4"/>',
+  "Compare":'<path d="M4 4h7v11H4z"/><path d="M13 9h7v11h-7z"/><path d="M6.5 8h2M6.5 11h2M15.5 13h2M15.5 16h2"/>',
+  "Letter":'<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/><path d="M13 20h7"/>',
+  "Loan":'<path d="M3 9l9-5 9 5z"/><path d="M5.5 9v8.5M10 9v8.5M14 9v8.5M18.5 9v8.5"/><path d="M3 20h18"/>',
+  "Team":'<circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 14.4A5.5 5.5 0 0 1 20.5 20"/>',
+  "Account":'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+};
+document.getElementById("icons").innerHTML = Object.entries(ICONS).map(([n,d]) =>
+  `<div style="text-align:center"><div style="width:64px;height:64px;margin:0 auto;border:1px solid var(--line);border-radius:10px;background:var(--soft);display:grid;place-items:center">
+   <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#134B44" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${d}</svg></div>
+   <div class="cap" style="font-weight:700;color:var(--ink)">${n}</div></div>`).join("");
+</script>
+</body></html>
