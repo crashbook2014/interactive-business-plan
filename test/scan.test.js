@@ -93,20 +93,45 @@ const PNG = () => new File([new Uint8Array([137, 80, 78, 71])], "contract.png", 
     await p.close();
   }
 
-  /* --------------------------- 2. a font problem is NOT offered the upload */
-  console.log("\n— but a file the upload could not help is not offered it");
+  /* ---------------- 2. a PDF we could not read is offered the AI, a text file is not */
+  console.log("\n— an unreadable PDF is offered the AI read; an unreadable text file is not");
   {
     const { p } = await wired();
     const out = await p.evaluate(async () => {
       nat = "sa"; obDone = true;
-      /* Glyph soup: text operators ran, the output was not letters. Sending
-         the file would waste an upload — re-exporting is what fixes it. */
-      noreadReason = "glyphs"; pendingScan = null;
+      /* Glyph soup in a PDF: text operators ran, the output was not letters.
+         Common in Arabic PDFs, and on a phone there is nothing to re-export
+         from, so the AI read is the way forward. */
+      noreadReason = "glyphs";
+      pendingScan = new File([new Uint8Array([37, 80, 68, 70])], "c.pdf", { type: "application/pdf" });
       renderNoread(); show("noread");
       const btn = document.getElementById("nrScan");
-      return { shown: !!btn && !btn.hidden };
+      const pdf = { shown: !!btn && !btn.hidden, label: btn.textContent,
+                    body: document.getElementById("nrBody").textContent };
+      /* A text file that came out unreadable keeps nothing to send. */
+      pendingScan = null; renderNoread();
+      return { pdf, txtShown: !btn.hidden };
     });
-    ok(!out.shown, "a font problem gets the re-export advice, not an upload");
+    ok(out.pdf.shown, "a PDF with unreadable fonts is offered the AI read");
+    ok(/الذكاء الاصطناعي|AI/.test(out.pdf.label), `and the button says what it does ("${out.pdf.label}")`);
+    ok(/ذكاء الاصطناعي|AI/.test(out.pdf.body), `and the page above it says the same ("${out.pdf.body.slice(0, 50)}")`);
+    ok(!out.txtShown, "an unreadable text file is not offered an upload");
+    await p.close();
+  }
+
+  /* and the real path: handleFile() keeps the PDF on a font failure */
+  {
+    const { p } = await wired();
+    const kept = await p.evaluate(async () => {
+      nat = "sa"; obDone = true;
+      const body = "%PDF-1.4\n1 0 obj<<>>stream\nBT (\x01\x02\x03\x04) Tj ET\nendstream endobj\n%%EOF";
+      await handleFile(new File([body], "hr-letter.pdf", { type: "application/pdf" }));
+      await new Promise((r) => setTimeout(r, 2600));
+      return { reason: noreadReason, kept: !!pendingScan && pendingScan.name,
+               shown: !document.getElementById("nrScan").hidden };
+    });
+    ok(kept.kept === "hr-letter.pdf", `handleFile() keeps an unreadable PDF for the offer (${kept.reason})`);
+    ok(kept.shown, "and the offer is on screen");
     await p.close();
   }
 
@@ -229,11 +254,38 @@ const PNG = () => new File([new Uint8Array([137, 80, 78, 71])], "contract.png", 
                authOn: authOn() };
     });
     if (out.authOn) {
-      ok(out.signedOutHidden, "signed out, no offer — it would only 401");
+      ok(!out.signedOutHidden, "signed out, the offer still shows: it walks them through sign-in");
     } else {
       ok(true, "no auth configured in this build, so there is no signed-out case");
     }
     ok(out.unconfiguredHidden, "no endpoint, no offer");
+    await p.close();
+  }
+
+  /* -------------------------- 6. signed out, the tap goes to sign-in first */
+  console.log("\n— a signed-out reader is taken to sign-in, and nothing is sent");
+  {
+    const { p, seen } = await wired({ signedOut: true });
+    const out = await p.evaluate(async () => {
+      nat = "sa"; obDone = true; noreadReason = "glyphs";
+      pendingScan = new File([new Uint8Array([37, 80, 68, 70])], "c.pdf", { type: "application/pdf" });
+      renderNoread(); show("noread");
+      if (!authOn()) return { authOn: false };
+      await offerScan();
+      await new Promise((r) => setTimeout(r, 300));
+      const at = document.querySelector(".screen.active").id;
+      /* Signing in on the page brings them back with the file still held. */
+      resumeAfterAuth();
+      return { authOn: true, at, back: document.querySelector(".screen.active").id,
+               still: !!pendingScan };
+    });
+    if (out.authOn) {
+      ok(out.at === "screen-signin", `tapping the offer opens sign-in (${out.at})`);
+      ok(!seen.upload, "and nothing is uploaded before they have an account");
+      ok(out.back === "screen-noread" && out.still, "signing in returns them to the file, still held");
+    } else {
+      ok(true, "no auth configured in this build, so there is no signed-out case");
+    }
     await p.close();
   }
 

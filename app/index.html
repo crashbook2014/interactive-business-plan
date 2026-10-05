@@ -2466,16 +2466,24 @@ const T = {
      here, because a reader deciding whether to hand over a contract is owed
      the name of who receives it. */
   scan_ok_t:{ar:"نرسل الملف نفسه؟",en:"Send the file itself?"},
-  scan_ok_b:{ar:"عشان نقرأ صورة، لازم نرسل الملف نفسه، مو نصًّا منه، إلى نموذج Claude من Anthropic. يُحذف بعد ساعة، وما نحتفظ به. وما راح نطلّع لك تقييمًا من 100 على صورة: قواعد وضوح ما قرأت نصًّا، واللي تحت قراءة الذكاء الاصطناعي وحده.",
-             en:"To read a photograph we must send the file itself, not text taken from it, to Anthropic's Claude model. It is deleted after one hour and we keep nothing. We will not give a photograph a score out of 100: Wodouh's own rules had no text to read, so what follows is the AI's reading alone."},
+  scan_ok_b:{ar:"عشان نقرأ هذا الملف، لازم نرسل الملف نفسه، مو نصًّا منه، إلى نموذج Claude من Anthropic. يُحذف بعد ساعة، وما نحتفظ به. وما راح يطلع له تقييم من 100: قواعد وضوح ما قرأت نصًّا، واللي تحت قراءة الذكاء الاصطناعي وحده.",
+             en:"To read this file we must send the file itself, not text taken from it, to Anthropic's Claude model. It is deleted after one hour and we keep nothing. It will not get a score out of 100: Wodouh's own rules had no text to read, so what follows is the AI's reading alone."},
   scan_ok_yes:{ar:"أرسله واقرأه",en:"Send it and read it"},
   nrs_send:{ar:"اقرأها كصورة",en:"Read it as a photograph"},
   scan_signin:{ar:"تحتاج تسجّل الدخول عشان نرسل الملف.",en:"You need to sign in before we can send the file."},
   scan_failed:{ar:"ما قدرنا نرسل الملف. جرّب مرة ثانية، أو الصق النص.",
                en:"We could not send the file. Please try again, or paste the text instead."},
   nrs_title:{ar:"هذا الملف صورة، مو نص",en:"This file is an image, not text"},
-  nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة. ما نقدر نقرأ الصور إلى الآن، لكن نص العقد يشتغل معنا تمامًا.",
-            en:"This appears to be a scan or a photograph. We cannot read images yet, but we can read the contract's text in full."},
+  nrs_body:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة، وما فيه نص نقدر نقرأه على جوالك. لكن لو لصقت نص العقد يشتغل معنا تمامًا.",
+            en:"This appears to be a scan or a photograph, with no text in it we can read on your phone. Pasting the contract's text works in full."},
+  /* WHEN THE AI CAN READ IT, SAY SO. The two bodies above are the answer when
+     nothing can be sent; these are the answer when the offer is on screen,
+     so the page and the button underneath it tell the reader the same thing. */
+  nrs_body_ai:{ar:"يبدو أنه مستند ممسوح ضوئيًا أو صورة، وما فيه نص نقدر نقرأه على جوالك. نقدر نرسله للذكاء الاصطناعي يقرأه، أو الصق نص العقد بنفسك.",
+               en:"This appears to be a scan or a photograph, with no text in it we can read on your phone. We can send it to the AI to read, or you can paste the contract's text yourself."},
+  nr_body_ai:{ar:"خطوط هذا الملف ما تنقرأ على جوالك، وهذا يصير كثير مع ملفات PDF العربية. نقدر نرسله للذكاء الاصطناعي يقرأه، أو الصق النص بنفسك.",
+              en:"This PDF's fonts can't be read on your phone, which happens a lot with Arabic PDFs. We can send it to the AI to read, or you can paste the text yourself."},
+  nr_send:{ar:"خلّ الذكاء الاصطناعي يقرأ الملف",en:"Let the AI read the file"},
   nrs_tips:{ar:["افتح الملف على الجوال، حدّد النص وانسخه، ثم الصقه هنا","لو عندك النسخة الأصلية من Word، صدّرها PDF وارفعها","أو الصق أهم البنود فقط، التجربة والإشعار وعدم المنافسة"],
             en:["Open the file, select the text, copy it and paste it here","If you have the original Word file, export it to PDF and upload that","Or paste only the key clauses: probation, notice and non-compete"]},
   offline:{ar:"يبدو أنك غير متصل، تحقق من الاتصال وحاول مرة ثانية.",
@@ -6862,6 +6870,10 @@ const RESUME = {
      the letter they asked to see is the one they get — in the language they
      are reading now, not the one it was first drawn in. */
   letter: () => openPaywall(),
+  /* Back to the unread file after signing in for the AI read. A provider
+     sign-in (Google, Apple) leaves the page, and the File object goes with
+     it, so then the upload box is the honest place to land. */
+  noread: () => { if (pendingScan){ renderNoread(); show("noread"); } else show("intake"); },
 };
 function resumeAfterAuth(){
   const p = pendingNav; pendingNav = null;
@@ -9353,6 +9365,11 @@ function uploadUrl(){
 function scanAvailable(){
   return !!uploadUrl() && !!analyzeUrl() && (!authOn() || signedIn());
 }
+/* Whether to SHOW the offer. Signing in is no longer a reason to hide it:
+   offerScan() takes a signed-out reader through sign-in first. */
+function scanOffered(){
+  return !!uploadUrl() && !!analyzeUrl();
+}
 
 /* THE ANON KEY GOES IN `authorization`, NOT IN `apikey`, AND THAT IS THE WHOLE
  * FIX FOR A FORTNIGHT OF FAILED AI CALLS.
@@ -11704,20 +11721,22 @@ let noreadReason = "glyphs";
 function renderNoread(){
   const scan = noreadReason === "scan";
   const p = scan ? "nrs_" : "nr_";
+  const can = !!pendingScan && scanOffered();
   document.getElementById("nrTitle").textContent = t(p + "title");
-  document.getElementById("nrBody").textContent = t(p + "body");
+  document.getElementById("nrBody").textContent = t(p + (can ? "body_ai" : "body"));
   document.getElementById("nrRetry").textContent = t("nr_retry");
   document.getElementById("nrSample").textContent = t("nr_sample");
   document.getElementById("nrTips").innerHTML =
     T[p + "tips"][lang].map(x=>`<li>${esc(x)}</li>`).join("");
-  /* Offered only where it helps: a photograph or a PDF with no text layer.
-     A font problem is fixed by re-exporting, and sending the file would waste
-     the reader's time and an upload for nothing. */
+  /* Offered for a photograph and for ANY PDF we could not read on the phone.
+     It used to skip the font failure on the theory that re-exporting fixes
+     it, but on a phone there is nothing to re-export from: an Arabic PDF from
+     an HR system, opened in Safari, dead-ended on four tips and no way
+     forward. The AI reads the PDF itself, fonts and all. */
   const btn = document.getElementById("nrScan");
   if (btn){
-    const can = scan && !!pendingScan && scanAvailable();
     btn.hidden = !can;
-    if (can) btn.textContent = t("nrs_send");
+    if (can) btn.textContent = t(scan ? "nrs_send" : "nr_send");
     /* The retry stays primary when there is no offer, and steps down to the
        secondary role when there is — two primaries is no hierarchy at all. */
     const retry = document.getElementById("nrRetry");
@@ -11739,7 +11758,14 @@ let pendingScan = null;
 let scanBusy = false;
 
 async function offerScan(){
-  if (scanBusy || !pendingScan || !scanAvailable()) return;
+  if (scanBusy || !pendingScan || !scanOffered()) return;
+  /* SIGNED OUT IS A STEP, NOT A DEAD END. upload refuses an anonymous file,
+     because a file with no owner cannot be checked later. The offer used to
+     vanish for a signed-out reader, leaving them nowhere to go; it now walks
+     them through sign-in and back to this screen, file still in hand when the
+     sign-in happened on the page (email or phone code). */
+  if (authOn() && !signedIn()){ authRedirect("noread", "noread"); return; }
+  if (!scanAvailable()) return;
   const ok = await askConfirm({
     title: t("scan_ok_t"), body: t("scan_ok_b"),
     yes: t("scan_ok_yes"), no: t("dlg_cancel")
@@ -11861,10 +11887,10 @@ async function handleFile(file){
      readers the same thing sends one of them round a loop that cannot end. */
   if (!legible(text)){
     noreadReason = (isPdf && ops === 0) ? "scan" : "glyphs";
-    /* Held for the offer, and only in the case the offer covers. A font
-       problem is not fixed by sending the file — re-exporting it is — so a
-       "glyphs" failure keeps nothing. */
-    pendingScan = noreadReason === "scan" ? file : null;
+    /* Held for the offer. A PDF is kept on either failure, because the AI
+       reads the PDF itself and so gets past a font problem too; a text file
+       that came out unreadable has nothing more to give, so it keeps nothing. */
+    pendingScan = (noreadReason === "scan" || isPdf) ? file : null;
     current = null;
     runLoading(()=>{ buzz(12); renderNoread(); show("noread"); });
     return;
