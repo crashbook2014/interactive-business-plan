@@ -19,9 +19,11 @@ than they would in most products.
 Everything is one self-contained file, `app/index.html`. No framework, no build
 step, no runtime dependencies.
 
-You share a vocabulary with three other agents. Read `docs/agent-team.md`
-before your first report: the issue format, the severity ladder and the rules
-all four obey are there, and they bind you.
+You are one of the core four (engineer, experience, red team, conversion).
+Read `docs/agent-team.md` before your first report: the rules, the issue
+format, the severity ladder, **and the "Current state" section**, which is
+where live facts live. This file deliberately states none, because the ones it
+used to state went stale.
 
 ## Start by proving the basics still hold
 
@@ -32,18 +34,17 @@ npm test                 # every suite, starts its own server
 If that is red, **that is your report** — stop and say so. Do not go looking
 for subtleties while something is actually broken.
 
-Then, optionally:
+Then read production (rule 11 in `docs/agent-team.md`: read only). Run the
+queries in "Reading production": flags, function versions, and a diff of each
+deployed function against the repo. **A deployed function that differs from
+`main`, a flag that contradicts a compiled constant's comment, or a claim in
+`CLAUDE.md` that production contradicts is a finding.** This is the drift no
+suite can see, and it has shipped here: CLAUDE.md named a function version
+three releases old.
 
-```
-node test/watchdog.js https://alwodouh.com
-```
-
-**This sandbox's proxy blocks `github.io`, so this will usually fail with 403s
-and a tunnel error. That is not a product failure and it is not your report.**
-Write `BLOCKED — EXTERNAL ACCESS UNAVAILABLE` and continue with everything
-else. An earlier version of this file told you to stop on any red, which would
-have ended every run at this line before the review began. Distinguishing
-infrastructure from product is part of the job, not an excuse.
+`node test/watchdog.js https://alwodouh.com` will fail from this sandbox (the
+proxy refuses the site). Write `BLOCKED — EXTERNAL ACCESS UNAVAILABLE` and use
+the `live screenshots` workflow for anything you need to see LIVE.
 
 ## Then walk the app
 
@@ -64,7 +65,10 @@ every CTA, every back label, every heading against the screen it sits on.
 
 ### 2. Is the money coherent?
 Every price against every other. A bundle that costs less than one of its parts
-is a real defect — that shipped once. Check `PLANS`, `PLANS_CASE`, `PLANS_TERM`.
+is a real defect — that shipped once. Check `PLANS_REVIEW`, `PLANS`, `PLANS_CASE`, `BUNDLE` in the app against
+`PLANS` in `supabase/functions/_shared/tap.mjs`: **the price the button shows
+and the price Tap charges must be the same number.** Then check the landing
+page (`assets/landing.js`), `terms/` and `refund/` against both.
 
 ### 3. Does every figure carry a source?
 Every riyal on screen must show its origin, and every article number must
@@ -92,8 +96,11 @@ assumption and never silence. Check the "What we could not assess" section
 appears when inputs are missing.
 
 ### 8. The privacy promise
-With no `ANALYZE_URL` configured there must be **zero off-origin requests**.
-Watch the network; do not read the code and conclude.
+Watch the network; do not read the code and conclude. Before the reader
+consents, there must be **no request carrying contract text or a file**. After
+consent, text goes only to `ANALYZE_URL` and a file only to `UPLOAD_URL`. Check
+the consent copy names what leaves and who receives it, and that declining
+sends nothing.
 
 
 ### 9. The data lifecycle, traced rather than assumed
@@ -107,16 +114,15 @@ original file → extracted text → rule matching → results → figures
    → what survives a reinstall → what a user could delete, if anything
 ```
 
-Facts you should confirm rather than take from me: `localStorage["wodouh.v1"]`
-holds no contract text, every field is rebuilt on read, and **there is no
-user-facing delete control anywhere in the app.** If any of that has changed,
-that is a finding.
+Confirm rather than assume: what `localStorage["wodouh.v1"]` holds, that every
+field is rebuilt on read, and that the delete control (`renderWipe()`) removes
+what it says it removes. Then the server side: an uploaded file is meant to be
+deleted upstream after analysis and swept after `expires_at`. Read
+`uploads` for rows past expiry with `deleted_at` null (a count only).
 
-### 10. The AI, when it is configured
+### 10. The AI, which is live
 
-Today `analyzeUrl()` returns null and the feature does not exist for any
-reader. Dormant is a state, not a defect. When it *is* configured, prove the
-model cannot:
+Check its switch in production first. Then prove the model cannot:
 
 - change any riyal figure — the amounts must be byte-identical before and after
 - invent a clause, an article, or a legal requirement
@@ -132,8 +138,9 @@ it does not cover, not re-running what it does.
 
 Entry → onboarding → document → processing → analysis → results → action →
 premium → payment → output → history. Then break it: refresh mid-flow, navigate
-back, submit twice, upload a corrupted PDF, a scanned PDF, a mixed-language
-document, a very long one, a zero-byte one. **Interrupted requests and repeat
+back, submit twice, upload a corrupted PDF, a scanned PDF, **an Arabic PDF
+whose fonts the phone cannot decode** (the founder hit this on an iPhone in
+October), a mixed-language document, a very long one, a zero-byte one. **Interrupted requests and repeat
 actions are where state machines lie.**
 
 ## How to report

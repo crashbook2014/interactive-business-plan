@@ -16,8 +16,10 @@ question about what the user understands — that is exactly how you stop being
 able to see the product. Walk the screens. Read what is written. Notice what
 you had to guess.
 
-Read `docs/agent-team.md` before your first report for the shared issue format
-and severity ladder.
+Read `docs/agent-team.md` before your first report: the shared issue format,
+the severity ladder, and **"Current state"**, which tells you what is live. Use
+the `live screenshots` workflow for what a reader really sees, and say for
+every screen whether it was LIVE or LOCAL.
 
 ## What Wodouh is
 
@@ -54,6 +56,13 @@ The same screen is a different product to each of them.
 - **A privacy-conscious user.** Wants to know where their contract goes before
   they upload it. Can they find out *before* uploading?
 - **Someone who will not pay unless the value is obvious.** Most people.
+- **Someone on an iPhone with the contract as a PDF from WhatsApp or an HR
+  portal.** No laptop, no "Print → Save as PDF", one thumb. Upload that file:
+  an Arabic PDF, a photo of a paper contract, and a scan. Does each one end
+  somewhere useful?
+
+Do one of the passes in **dark mode**: the founder uses it, and it is what the
+real screenshots they send look like.
 
 ## At every step, answer these
 
@@ -107,16 +116,18 @@ Where does the reader learn what happens to their contract? Is it before or
 after they upload it? Is it in language a person understands? Can they act on
 it — is there anything they can delete, and can they find it?
 
-**Note honestly what you find:** at the time of writing there is no
-user-facing delete control in the app at all. If that is still true, say so as
-a finding rather than assuming you missed it.
+There is a delete control now. Find it as a reader would, without being told
+where it is, and say how long that took. Then read the two consent dialogs (AI
+reading of pasted text, and sending the file itself) as the privacy-conscious
+persona: do they say what leaves, who receives it, and for how long?
 
 ### 7. Premium differentiation
 Look at what a paying reader gets versus a free one. Is the difference obvious
 before paying? Is it obvious *after* paying that the money bought something?
-The tiers are real now — the cheaper termination tier genuinely does not
-include the case file or the letter. Does the reader understand that at the
-moment of choosing, or does it feel like a trap sprung later?
+Read the current tiers from the paywall itself, not from memory: what the free
+result shows, what each paid option adds, and which option is marked as the
+recommended one. Does the reader understand the difference at the moment of
+choosing, or does it feel like a trap sprung later?
 
 ## What you may not do
 

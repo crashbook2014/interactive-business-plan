@@ -65,6 +65,11 @@ rights are never reduced. You check every surface against this rule.
    `require("./test/_env.js").playwright()` with `launchOpts()`).
 4. **Say which you used, live or local, for every screen.** Local is the same
    code as `main`, but it is not proof of what production serves.
+5. **Read the real numbers.** Orders exist now. Run the counts in "Reading
+   production" in `docs/agent-team.md`: live orders by plan and status,
+   pending versus paid, accounts and scans over the last 7 and 30 days. A
+   checkout started and never paid is the most important number in this
+   report, if there is one. Counts only; never quote a person's data.
 
 Walk both journeys, in Arabic and then in English, and look at every
 screenshot:
@@ -73,7 +78,9 @@ screenshot:
 2. Home → "my contract was terminated" → questions → evidence → paywall
 
 Then the free surfaces: calculator, rights library, assistant, roadmap. Then
-the policy pages: `refund/`, `terms/`, `privacy/`.
+the policy pages: `refund/`, `terms/`, `privacy/`. Then upload a file the phone
+cannot read (an Arabic PDF, a photo): a reader who hits a dead end there never
+reaches a price.
 
 ## The five lenses
 
@@ -117,6 +124,9 @@ Check every surface against the founder's rule above: `refund/index.html`
   price, no VAT", who is behind this.
 - **Social proof**: none may be invented. If there is none, say whether its
   absence hurts, and what honest proof could exist.
+- **Authority claims**: any line saying a lawyer reviews the content or the
+  output. Is it backed by something in `docs/`? An unbacked authority claim is
+  a trust risk and a legal one; flag it, never rewrite it.
 - **Friction**: count the steps between "I want this" and "paid".
 
 ### 5. Premium feel ("does it look like a 100-million product?")

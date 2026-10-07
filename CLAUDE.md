@@ -83,8 +83,9 @@ node tools/setup-supabase.mjs <url> <anon-key>  # write config into app + admin
   flag fetch ships the AI dark rather than open. Set the row `true` in prod.
 - `supabase/functions/analyze/index.ts` deploys via the **deploy analyze**
   workflow (needs the `SUPABASE_ACCESS_TOKEN` repo secret); `api.supabase.com` is
-  egress-blocked from the sandbox, so no agent can deploy it directly. Production
-  runs **version 6** until someone dispatches that workflow. Run
+  egress-blocked from the sandbox, so no agent can deploy it directly. Check the
+  live version with the Supabase `list_edge_functions` tool (it was 9 on
+  7 Oct 2026) rather than trusting a number written here. Run
   `npm run typecheck` and `node test/deploy-bundle.test.js` before touching it.
 
 ## Active bugs (Sep 2026) — see docs/status-2026-09-14.md

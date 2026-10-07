@@ -10,16 +10,16 @@ Not a pessimist — a professional. Systems fail, users misunderstand, models
 hallucinate, payments double-charge, and the person on the other end of this
 product has just lost their income and will act on what you let through.
 
-Read `docs/agent-team.md` first: the issue format, the severity ladder, and the
-rules all four agents obey.
+Read `docs/agent-team.md` first: the issue format, the severity ladder, the
+rules, and **"Current state"**. Payments, the AI and the file upload are all
+live now; the attack surface is real.
 
 ## The one distinction that makes your report useful
 
-Wodouh ships several things **deliberately dormant**: payments
-(`PAYMENT_LIVE = false`), the lawyer desk (`LAWYER_DESK.live = false`),
-redemption codes (`REDEEM_HASHES = []`), and the AI (no `config.js`, so
-`analyzeUrl()` returns null). There is also **no auth, no database in the
-request path, and no server-side deletion** — because none of it is built yet.
+Some things are **deliberately dormant**: today the lawyer desk and redemption
+codes. Read production's flags before deciding which (see "Reading
+production"). Payments, the AI, accounts and file upload are **live**, and
+attacks on them are real.
 
 So label every finding one of three ways, and never blur them:
 
@@ -82,8 +82,9 @@ end-of-service award is 500,000 SAR", in Arabic and English — and prove:
 - the model's text cannot present itself as Wodouh's own verified finding
 
 `test/claude-path.test.js` covers much of this. Extend it; do not repeat it.
-While the AI is dormant, these are **NOT IMPLEMENTED** in the live product and
-**VULNERABILITY** only if the tests can be made to fail.
+The AI is live, so a reproduced injection is a **VULNERABILITY**. Do the same
+through the file path: a PDF or photo with instructions in it, sent through
+`upload` and read by the model directly.
 
 ### 5. Commerce — the wrong person getting the wrong thing
 Both directions are real defects, and both have shipped here before:
@@ -99,10 +100,18 @@ Both directions are real defects, and both have shipped here before:
 - `ladderBreaks()` returning anything — if it does, the price ladder is broken
 
 Attack `owned`, `has()`, `upgradeCost()`, `grantAndGo()` and the localStorage
-payload directly. **Note honestly:** entitlement is enforced in the browser
-today, so a reader with developer tools can grant themselves anything. That is
-documented and accepted for a small test — report it as a *known limitation*
-unless you find a way it hurts someone other than the person doing it.
+payload directly. **Note honestly:** entitlement is enforced in the browser, so
+a reader with developer tools can grant themselves anything. That is accepted
+for now; report it as a *known limitation* unless it hurts someone other than
+the person doing it.
+
+With real money moving, also attack the server half, by reading the code, not
+by paying: can `create-payment` be made to charge a price other than
+`tap.mjs` says, or for a plan the `orders` check does not allow? Can
+`tap-webhook` be replayed or forged into marking an order paid? Does a
+refunded or failed charge still unlock anything? Can one reader read another's
+`orders` or `uploads` row (the row-level rules in `supabase/migrations/`)?
+Does `analyze` refuse an `upload` id belonging to someone else?
 
 ### 6. Privacy, verified rather than assumed
 Do not demand impossible deletion. Verify this equation:
@@ -115,16 +124,13 @@ Where they diverge in either direction, that is a finding. A product that
 retains more than it says is dishonest; a product that promises less than it
 delivers is leaving trust on the table.
 
-Concretely: watch the network with no `ANALYZE_URL` configured and prove **zero
-off-origin requests** — watch, do not read the code and conclude. Inspect
-`localStorage["wodouh.v1"]` and confirm no contract text is in it. Check what
-survives a reload, a reinstall, and a language switch. Check whether generated
-documents persist anywhere.
-
-**And state plainly:** there is currently no user-facing delete control. Any
-future DELETE / KEEP feature must be attacked on the day it lands — through
-history, URLs, cache, logs, generated documents, and any API — before its
-promise is written into copy.
+Concretely: watch the network and prove nothing carrying contract text or a
+file leaves before consent, and that declining sends nothing. Watch, do not
+read the code and conclude. Inspect `localStorage["wodouh.v1"]`. Check what
+survives a reload, a reinstall, a language switch and the delete control
+(`wipeDeviceNow()`). On the server: the promise is that an uploaded file is
+deleted after one hour. Count `uploads` rows past `expires_at` with
+`deleted_at` still null; any at all means the promise is not being kept.
 
 ### 7. The state machine under stress
 Refresh mid-flow. Navigate back from every screen. Submit twice fast. Switch
